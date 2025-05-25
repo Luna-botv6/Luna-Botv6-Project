@@ -43,3 +43,10 @@ mantenibilidad, escalabilidad y estabilidad.
 - Archivos principales: `main.js`, `handler.js`, `config.js`, `index.js`
 - Carpeta de base de datos modular: `database/`
 - Carpeta de sesión: `MysticSession` (solo contiene sesión activa, no datos persistentes)
+
+IMPORTANTE:
+
+1. Edita el archivo 'config.js' y coloca tu número en la sección correspondiente.
+2. En la carpeta 'plugins/antispam.js', añade también tu número.
+
+LunaBot cuenta con un sistema antispam personalizado. Si no agregas tu número, el bot podría bloquearte automáticamente.
