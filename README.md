@@ -50,3 +50,10 @@ IMPORTANTE:
 2. En la carpeta 'plugins/antispam.js', añade también tu número.
 
 LunaBot cuenta con un sistema antispam personalizado. Si no agregas tu número, el bot podría bloquearte automáticamente.
+
+NOTA:
+
+Todas las actualizaciones, nuevos comandos y funciones de LunaBot se anunciarán exclusivamente desde la página oficial en WhatsApp.
+
+Únete aquí para estar al tanto de todo:  
+https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y
