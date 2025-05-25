@@ -369,7 +369,6 @@ ${tradutor.texto1[26]}
 ╭───── • ◆ • ────────────╮
 ├🗺️ _${usedPrefix}adventure_
 ├🏹 _${usedPrefix}cazar_
-├💎 _${usedPrefix}minard
 ├🧰 _${usedPrefix}cofre_
 ├🥸 _${usedPrefix}robard (robar diamantes)_
 ├💰 _${usedPrefix}balance_
@@ -382,6 +381,8 @@ ${tradutor.texto1[26]}
 ├💼 _${usedPrefix}work_
 ├⛏️ _${usedPrefix}minar_
 ├⛏️ _${usedPrefix}minar2_
+├💎 _${usedPrefix}minard_
+├🎁 _${usedPrefix}minarluna_
 ├🛒 _${usedPrefix}buy_
 ├🛍️ _${usedPrefix}buyall_
 ├✅ _${usedPrefix}verificar_
