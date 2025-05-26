@@ -59,6 +59,9 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
   if (groupFeatures.includes(type)) {
     chat[type] = isEnable;
+    import('../lib/funcConfig.js').then(({ setConfig }) => {
+      setConfig(m.chat, type, isEnable);
+    });
     await conn.sendMessage(m.chat, { text: `✅ Función *${type}* ${isEnable ? 'activada' : 'desactivada'} correctamente en este chat.` });
   } else if (botFeatures.includes(type)) {
     if (!isOwner) throw 'Este comando solo lo puede usar el owner del bot.';
