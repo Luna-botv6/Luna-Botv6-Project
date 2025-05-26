@@ -1,27 +1,39 @@
+import fs from 'fs';
+import { getAllUsers } from '../lib/usersDB.js';
+import { getAllChats } from '../lib/chatsDB.js';
 
+const handler = async (m, { conn, isOwner }) => {
+  // Obtener idioma del usuario que ejecuta el comando
+  const users = getAllUsers();
+  const user = users[m.sender] || {};
+  const idioma = user.language || global.defaultLenguaje;
 
-const handler = async (m, {conn, isOwner}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.owner_banlist
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.owner_banlist;
 
+  // Filtrar usuarios baneados
+  const bannedUsers = Object.entries(users).filter(([, data]) => data.banned);
 
-  const chats = Object.entries(global.db.data.chats).filter((chat) => chat[1].isBanned);
-  const users = Object.entries(global.db.data.users).filter((user) => user[1].banned);
+  // Obtener chats y filtrar baneados
+  const chats = getAllChats();
+  const bannedChats = Object.entries(chats).filter(([, data]) => data.isBanned);
+
+  // Construir texto
   const caption = `
 ┌${tradutor.texto1}
-├ Total : ${users.length} ${users ? '\n' + users.map(([jid], i) => `
+├ Total : ${bannedUsers.length} ${bannedUsers.length ? '\n' + bannedUsers.map(([jid]) => `
 ├ ${isOwner ? '@' + jid.split`@`[0] : jid}`.trim()).join('\n') : '├'}
 └────
 
 ┌${tradutor.texto2}
-├ Total : ${chats.length} ${chats ? '\n' + chats.map(([jid], i) => `
+├ Total : ${bannedChats.length} ${bannedChats.length ? '\n' + bannedChats.map(([jid]) => `
 ├ ${isOwner ? '@' + jid.split`@`[0] : jid}`.trim()).join('\n') : '├'}
 └────
 `.trim();
-  m.reply(caption, null, {mentions: conn.parseMention(caption)});
+
+  m.reply(caption, null, { mentions: conn.parseMention(caption) });
 };
+
 handler.command = /^banlist(ned)?|ban(ned)?list|daftarban(ned)?$/i;
 handler.rowner = true;
 export default handler;
