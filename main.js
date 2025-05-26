@@ -22,6 +22,7 @@ import store from './src/libraries/store.js';
 const { DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, jidNormalizedUser, PHONENUMBER_MCC } = await import("@whiskeysockets/baileys");
 import readline from 'readline';
 import NodeCache from 'node-cache';
+import { restaurarConfiguraciones } from './lib/funcConfig.js';
 
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
@@ -213,6 +214,7 @@ const connectionOptions = {
 };
 
 global.conn = makeWASocket(connectionOptions);
+restaurarConfiguraciones(global.conn);
 conn.ev.on('connection.update', connectionUpdate);
 
 if (!fs.existsSync(`./${authFile}/creds.json`)) {
