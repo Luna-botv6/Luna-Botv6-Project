@@ -184,8 +184,7 @@ console.log('[ ❗ ] Por favor, seleccione solo 1 o 2.\n')
 console.info = () => {} // https://github.com/skidy89/baileys actualmente no muestra logs molestos en la consola
 const connectionOptions = {
   logger: Pino({ level: 'silent' }),
-  printQRInTerminal: true, // ✅ Mostrar QR en consola
-  mobile: false, // ❌ No usar modo móvil aquí
+  printQRInTerminal: true, // 👈 Esto mostrará QR
   browser: ['LunaBotV6', 'Chrome', '1.0.0'],
   auth: {
     creds: state.creds,
@@ -207,6 +206,7 @@ const connectionOptions = {
   generateHighQualityLinkPreview: true,
   cachedGroupMetadata: (jid) => global.conn.chats[jid] ?? {},
 };
+
 
 
 global.conn = makeWASocket(connectionOptions);
