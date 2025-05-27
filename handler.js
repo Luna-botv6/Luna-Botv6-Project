@@ -8,6 +8,14 @@ import fs from 'fs';
 import chalk from 'chalk';
 import mddd5 from 'md5';
 import ws from 'ws';
+const recentMessages = new Set()
+function isDuplicate(id) {
+  if (recentMessages.has(id)) return true
+  recentMessages.add(id)
+  setTimeout(() => recentMessages.delete(id), 2000)
+  return false
+}
+
 
 function logError(e, plugin = 'general') {
   const emoji = '💥';
@@ -44,8 +52,10 @@ export async function handler(chatUpdate) {
   this.pushMessage(chatUpdate.messages).catch(console.error);
 
   let m = chatUpdate.messages[chatUpdate.messages.length - 1];
-  if (!m || typeof m !== 'object' || !m.message) return;
-  if (m.key?.remoteJid === 'status@broadcast') return;
+if (!m || typeof m !== 'object' || !m.message) return;
+if (m.key?.remoteJid?.endsWith('broadcast')) return;
+if (m.key?.id && isDuplicate(m.key.id)) return;
+if (m.isBaileys) return;
 
   const sender = m.key?.fromMe ? this.user.jid : (m.key?.participant || m.participant || m.key?.remoteJid || '');
   const chat = m.key?.remoteJid || '';
