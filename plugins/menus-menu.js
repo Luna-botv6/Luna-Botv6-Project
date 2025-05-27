@@ -17,7 +17,7 @@ const handler = async (m, { conn, usedPrefix, usedPrefix: _p, __dirname, text, i
     // const pp = imagen7;
 
     // let vn = './src/assets/audio/01J673Y3TGCFF1D548242AX68Q.mp3'
-    const videoPath = './src/assets/images/menu/languages/es/VID-20250519-WA0089.mp4';
+    const videoPath = './src/assets/images/menu/languages/es/InShot_20250527_055752114.mp4';
     const d = new Date(new Date + 3600000);
     const locale = 'es-ES';
     const week = d.toLocaleDateString(locale, { weekday: 'long' });
