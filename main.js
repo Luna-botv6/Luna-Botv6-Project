@@ -411,9 +411,16 @@ if (opcion == '1' || methodCodeQR) {
   }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
 if (reason == 405) {
-await fs.unlinkSync("./MysticSession/" + "creds.json")
-console.log(chalk.bold.redBright(`[ ⚠ ] Conexión replazada, Por favor espere un momento me voy a reiniciar...\nSi aparecen error vuelve a iniciar con : npm start`)) 
-process.send('reset')}
+  const credPath = "./MysticSession/creds.json";
+  if (existsSync(credPath)) {
+    unlinkSync(credPath);
+    console.log(chalk.bold.redBright(`[ ⚠ ] Conexión reemplazada, archivo de credenciales eliminado.`));
+  } else {
+    console.log(chalk.yellow(`[ ℹ️ ] Archivo de credenciales ya no existe.`));
+  }
+  console.log(chalk.bold.redBright(`[ ⚠ ] Por favor espere un momento, me voy a reiniciar...\nSi aparecen errores, vuelve a iniciar con: npm start`));
+  process.send('reset');
+}
 if (connection === 'close') {
     if (reason === DisconnectReason.badSession) {
         conn.logger.error(`[ ⚠ ] Sesión incorrecta, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
