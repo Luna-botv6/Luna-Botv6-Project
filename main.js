@@ -409,7 +409,7 @@ if (opcion == '1' || methodCodeQR) {
     console.log(chalk.yellow('[ ℹ️ ] Conectado correctamente.'));
   }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-if (reason == 405) {
+if (reason == 405 && !update.qr) {
   try {
     unlinkSync("./MysticSession/creds.json");
     console.log(chalk.bold.redBright(`[ ⚠ ] Conexión reemplazada, archivo de credenciales eliminado.`));
@@ -421,8 +421,9 @@ if (reason == 405) {
     }
   }
   console.log(chalk.bold.redBright(`[ ⚠ ] Por favor espere un momento, me voy a reiniciar...\nSi aparecen errores, vuelve a iniciar con: npm start`));
-  process.send('reset');
+  process.send?.('reset'); 
 }
+
 
 if (connection === 'close') {
     if (reason === DisconnectReason.badSession) {
