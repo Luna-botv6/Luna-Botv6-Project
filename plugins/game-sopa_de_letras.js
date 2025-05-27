@@ -31,7 +31,7 @@ const juegos = [
       { palabra: 'raton', fila: 1, columna: 6 },
       { palabra: 'lechuza', fila: 10, columna: 7 },
       { palabra: 'elefante', fila: 8, columna: 10 },
-      { palabra: 'jirafa', fila: 4, columna: 9 },
+      { palabra: 'jirafa', fila: 4, columna: 1 },
       { palabra: 'alcon', fila: 7, columna: 3 },
     ]
   },
@@ -51,7 +51,7 @@ const juegos = [
       { palabra: 'manzana', fila: 4, columna: 8 },
       { palabra: 'banana', fila: 8, columna: 10 },
       { palabra: 'pera', fila: 10, columna: 4 },
-      { palabra: 'naranja', fila: 9, columna: 7 },
+      { palabra: 'naranja', fila: 3, columna: 4 },
       { palabra: 'uva', fila: 3, columna: 4 },
     ]
   }
