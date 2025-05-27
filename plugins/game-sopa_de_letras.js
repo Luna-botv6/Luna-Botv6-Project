@@ -12,7 +12,7 @@ const juegos = [
       { palabra: 'jueves', fila: 5, columna: 5 },
       { palabra: 'viernes', fila: 10, columna: 10 },
       { palabra: 'sabado', fila: 9, columna: 9 },
-      { palabra: 'domingo', fila: 1, columna: 7 },
+      { palabra: 'domingo', fila: 9, columna: 7 },
     ]
   },
   {
@@ -51,7 +51,7 @@ const juegos = [
       { palabra: 'manzana', fila: 4, columna: 8 },
       { palabra: 'banana', fila: 8, columna: 10 },
       { palabra: 'pera', fila: 10, columna: 4 },
-      { palabra: 'naranja', fila: 3, columna: 4 },
+      { palabra: 'naranja', fila: 3, columna: 3 },
       { palabra: 'uva', fila: 3, columna: 4 },
     ]
   }
@@ -65,16 +65,31 @@ async function handler(m, { conn, args, usedPrefix, command }) {
     const juegoSeleccionado = juegos[Math.floor(Math.random() * juegos.length)]
     const partida = juegoSeleccionado.palabras[Math.floor(Math.random() * juegoSeleccionado.palabras.length)]
 
+    const timeout = setTimeout(() => {
+      if (conn.sopadeletras[id]) {
+        conn.reply(id, `⏰ *Se acabó el tiempo.* La palabra era *${conn.sopadeletras[id].palabra}*.\n¡Intenta nuevamente con *${usedPrefix + command}*!`, m)
+        delete conn.sopadeletras[id]
+      }
+    }, 90000)
+
     conn.sopadeletras[id] = {
       rutaImagen: juegoSeleccionado.ruta,
       palabra: partida.palabra,
       fila: partida.fila,
-      columna: partida.columna
+      columna: partida.columna,
+      timeout
     }
+
+    // Mensaje a los 30 segundos (quedan 15)
+    setTimeout(() => {
+      if (conn.sopadeletras[id]) {
+        conn.reply(id, `⏳ *¡Te quedan 15 segundos!* ¡Tu Puedes! 🫂`, m)
+      }
+    }, 75000)
 
     await conn.sendMessage(id, {
       image: { url: juegoSeleccionado.ruta },
-      caption: `🧩 *Sopa de Letras: Encuentra la Palabra*\n\n🔤 Palabra a buscar: *${partida.palabra}*\n📌 Responde con: *${usedPrefix + command} fila columna*\n📝 Ejemplo: *${usedPrefix + command} 3 10*\n\n📖 *¿Cómo se juega?*\n1️⃣ Busca la palabra en la imagen.\n2️⃣ Cuando encuentres la primera letra (ej: la "N" de "naranja"), anota la fila donde empieza.\n3️⃣ Luego sigue la palabra horizontalmente y encuentra la letra donde termina (ej: la "A").\n4️⃣ Cuenta la columna donde termina.\n✅ Usa esos números para responder: fila donde comienza, columna donde termina.\n\n🎯 ¡Mucha suerte!`
+      caption: `🧩 *Sopa de Letras: Encuentra la Palabra*\n\n🔤 Palabra a buscar: *${partida.palabra}*\n📌 Responde con: *${usedPrefix + command} fila columna*\n📝 Ejemplo: *${usedPrefix + command} 3 10*\n\n📖 *¿Cómo se juega?*\n1️⃣ Busca la palabra en la imagen.\n2️⃣ Cuando encuentres la primera letra (ej: la "N" de "naranja"), anota la fila donde empieza.\n3️⃣ Luego sigue la palabra horizontalmente y encuentra la letra donde termina (ej: la "A").\n4️⃣ Cuenta la columna donde termina.\n✅ Usa esos números para responder: fila donde comienza, columna donde termina.\n\n⏱️ *Tienes 45 segundos para responder.*\n🎯 ¡Mucha suerte!`
     })
     return
   }
@@ -89,6 +104,8 @@ async function handler(m, { conn, args, usedPrefix, command }) {
 
     const partida = conn.sopadeletras[id]
     if (!partida) return m.reply(`⚠️ No tienes una partida activa. Usa:\n${usedPrefix + command}`)
+
+    clearTimeout(partida.timeout) // Detener el conteo si responde
 
     if (fila === partida.fila && columna === partida.columna) {
       const expGanada = 2500
