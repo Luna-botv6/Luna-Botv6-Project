@@ -110,7 +110,7 @@ ${tradutor.texto1[13]}
 ├🎶 _${usedPrefix}cancion_
 ├🧭 _${usedPrefix}pista_
 ├🧞 _${usedPrefix}akinator_
-├🔤 _${usedPrefix}wordfind_
+├🔤 _${usedPrefix}sopadeletras_
 ├🗺️ _${usedPrefix}glx (RPG Mundo)_
 ├🎰 _${usedPrefix}ruleta 🎰(RPG)_
 ├ ⌨️${usedPrefix}ahorcado_ 
