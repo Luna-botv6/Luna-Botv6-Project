@@ -57,3 +57,41 @@ Todas las actualizaciones, nuevos comandos y funciones de LunaBot se anunciarán
 
 Únete aquí para estar al tanto de todo:  
 https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y
+
+## Despliegue en BoxMineWorld
+
+<a href="https://boxmineworld.com">
+
+<img width="180px"
+
+src="https://boxmineworld.com/img/Logo.png" />
+
+</a>
+
+<details>
+
+<summary><b>: paperclip: Enlaces
+
+Importantes</b></summary>
+
+**Sitio Web:**
+
+[boxmineworld.com](https://boxmineworld .com)
+
+**Área de Clientes:**
+
+[dash.boxmineworld.com](https://dash .boxmineworld.com)
+
+**Panel de Control: **
+
+[panel.boxmineworld.com] (https://panel boxmineworld.com)
+
+**Documentación:**
+
+[docs.boxmineworld.com](https://docs boxmineworld.com)
+
+**Comunidad de Discord:** [¡Únete aquí!]
+
+(https://discord.gg/84qsr4v)
+
+</details>
