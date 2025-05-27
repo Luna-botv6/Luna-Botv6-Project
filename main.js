@@ -79,6 +79,7 @@ if (existsSync(sessionFolder)) {
 
 // 🔁 Limpieza periódica de claves rotas en MysticSession cada 5 minutos
 setInterval(() => {
+  console.log('[DEBUG] Verificando claves rotas (cada 1 hora)...');
   if (existsSync(sessionFolder)) {
     const archivos = readdirSync(sessionFolder);
     const clavesRotas = archivos.filter(file =>
