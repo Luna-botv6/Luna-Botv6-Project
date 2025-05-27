@@ -183,36 +183,31 @@ console.log('[ ❗ ] Por favor, seleccione solo 1 o 2.\n')
 
 console.info = () => {} // https://github.com/skidy89/baileys actualmente no muestra logs molestos en la consola
 const connectionOptions = {
-    logger: Pino({ level: 'silent' }),
-    printQRInTerminal: opcion === '1' || methodCodeQR,
-    mobile: MethodMobile,
-    browser: opcion === '1' ? ['TheMystic-Bot-MD', 'Safari', '2.0.0'] : methodCodeQR ? ['TheMystic-Bot-MD', 'Safari', '2.0.0'] : ['Ubuntu', 'Chrome', '20.0.04'],
-    auth: {
-        creds: state.creds,
-        keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: 'fatal' }).child({ level: 'fatal' })),
-    },
-    waWebSocketUrl: 'wss://web.whatsapp.com/ws/chat?ED=CAIICA',
-    markOnlineOnConnect: true,
-    generateHighQualityLinkPreview: true,
-    getMessage: async (key) => {
-        let jid = jidNormalizedUser(key.remoteJid);
-        let msg = await store.loadMessage(jid, key.id);
-        return msg?.message || "";
-    },
-    patchMessageBeforeSending: async (message) => {
-        let messages = 0;
-        global.conn.uploadPreKeysToServerIfRequired();
-        messages++;
-        return message;
-    },
-    msgRetryCounterCache: msgRetryCounterCache,
-    userDevicesCache: userDevicesCache,
-    //msgRetryCounterMap,
-    defaultQueryTimeoutMs: undefined,
-    cachedGroupMetadata: (jid) => global.conn.chats[jid] ?? {},
-    version: [2, 3000, 1015901307],
-    //userDeviceCache: msgRetryCounterCache <=== quien fue el pendejo?????
+  logger: Pino({ level: 'silent' }),
+  printQRInTerminal: true, // ✅ Mostrar QR en consola
+  mobile: false, // ❌ No usar modo móvil aquí
+  browser: ['LunaBotV6', 'Chrome', '1.0.0'],
+  auth: {
+    creds: state.creds,
+    keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: 'fatal' }).child({ level: 'fatal' })),
+  },
+  version: [2, 3000, 1015901307],
+  getMessage: async (key) => {
+    let jid = jidNormalizedUser(key.remoteJid);
+    let msg = await store.loadMessage(jid, key.id);
+    return msg?.message || "";
+  },
+  patchMessageBeforeSending: async (message) => {
+    global.conn.uploadPreKeysToServerIfRequired();
+    return message;
+  },
+  msgRetryCounterCache,
+  userDevicesCache,
+  markOnlineOnConnect: true,
+  generateHighQualityLinkPreview: true,
+  cachedGroupMetadata: (jid) => global.conn.chats[jid] ?? {},
 };
+
 
 global.conn = makeWASocket(connectionOptions);
 restaurarConfiguraciones(global.conn);
