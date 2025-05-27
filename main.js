@@ -183,31 +183,36 @@ console.log('[ ❗ ] Por favor, seleccione solo 1 o 2.\n')
 
 console.info = () => {} // https://github.com/skidy89/baileys actualmente no muestra logs molestos en la consola
 const connectionOptions = {
-  logger: Pino({ level: 'silent' }),
-  printQRInTerminal: true, // 👈 Esto mostrará QR
-  browser: ['LunaBotV6', 'Chrome', '1.0.0'],
-  auth: {
-    creds: state.creds,
-    keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: 'fatal' }).child({ level: 'fatal' })),
-  },
-  version: [2, 3000, 1015901307],
-  getMessage: async (key) => {
-    let jid = jidNormalizedUser(key.remoteJid);
-    let msg = await store.loadMessage(jid, key.id);
-    return msg?.message || "";
-  },
-  patchMessageBeforeSending: async (message) => {
-    global.conn.uploadPreKeysToServerIfRequired();
-    return message;
-  },
-  msgRetryCounterCache,
-  userDevicesCache,
-  markOnlineOnConnect: true,
-  generateHighQualityLinkPreview: true,
-  cachedGroupMetadata: (jid) => global.conn.chats[jid] ?? {},
+    logger: Pino({ level: 'silent' }),
+    printQRInTerminal: opcion === '1' || methodCodeQR,
+    mobile: MethodMobile,
+    browser: opcion === '1' ? ['TheMystic-Bot-MD', 'Safari', '2.0.0'] : methodCodeQR ? ['TheMystic-Bot-MD', 'Safari', '2.0.0'] : ['Ubuntu', 'Chrome', '20.0.04'],
+    auth: {
+        creds: state.creds,
+        keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: 'fatal' }).child({ level: 'fatal' })),
+    },
+    waWebSocketUrl: 'wss://web.whatsapp.com/ws/chat?ED=CAIICA',
+    markOnlineOnConnect: true,
+    generateHighQualityLinkPreview: true,
+    getMessage: async (key) => {
+        let jid = jidNormalizedUser(key.remoteJid);
+        let msg = await store.loadMessage(jid, key.id);
+        return msg?.message || "";
+    },
+    patchMessageBeforeSending: async (message) => {
+        let messages = 0;
+        global.conn.uploadPreKeysToServerIfRequired();
+        messages++;
+        return message;
+    },
+    msgRetryCounterCache: msgRetryCounterCache,
+    userDevicesCache: userDevicesCache,
+    //msgRetryCounterMap,
+    defaultQueryTimeoutMs: undefined,
+    cachedGroupMetadata: (jid) => global.conn.chats[jid] ?? {},
+    version: [2, 3000, 1015901307],
+    //userDeviceCache: msgRetryCounterCache <=== quien fue el pendejo?????
 };
-
-
 
 global.conn = makeWASocket(connectionOptions);
 restaurarConfiguraciones(global.conn);
@@ -404,22 +409,10 @@ if (opcion == '1' || methodCodeQR) {
     console.log(chalk.yellow('[ ℹ️ ] Conectado correctamente.'));
   }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-if (reason == 405 && !update.qr) {
-  try {
-    unlinkSync("./MysticSession/creds.json");
-    console.log(chalk.bold.redBright(`[ ⚠ ] Conexión reemplazada, archivo de credenciales eliminado.`));
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      console.log(chalk.yellow(`[ ℹ️ ] El archivo de credenciales ya no existe.`));
-    } else {
-      console.error(chalk.red(`[ ❌ ] Error al eliminar el archivo de credenciales: ${e.message}`));
-    }
-  }
-  console.log(chalk.bold.redBright(`[ ⚠ ] Por favor espere un momento, me voy a reiniciar...\nSi aparecen errores, vuelve a iniciar con: npm start`));
-  process.send?.('reset'); 
-}
-
-
+if (reason == 405) {
+await fs.unlinkSync("./MysticSession/" + "creds.json")
+console.log(chalk.bold.redBright(`[ ⚠ ] Conexión replazada, Por favor espere un momento me voy a reiniciar...\nSi aparecen error vuelve a iniciar con : npm start`)) 
+process.send('reset')}
 if (connection === 'close') {
     if (reason === DisconnectReason.badSession) {
         conn.logger.error(`[ ⚠ ] Sesión incorrecta, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
