@@ -1,171 +1,115 @@
-//CREADO POR @gata_dios
+import path from 'path'
+import { addExp, addMoney } from '../lib/stats.js'
 
-let fila, columna, sopaNube, sopaPalabra, sopaDir, userSP, cambioLetra, diamante = null
-let intentos = 0
-let handler = async (m, { conn, text, usedPrefix, command }) => {
-    const datas = global
-    const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-    const tradutor = _translate.plugins.game_sopa_de_letras
+// Lista de imágenes con sus palabras correspondientes
+const juegos = [
+  {
+    ruta: path.resolve('./src/sopa/SOPA2.jpg'),
+    palabras: [
+      { palabra: 'lunes', fila: 4, columna: 8 },
+      { palabra: 'martes', fila: 3, columna: 5 },
+      { palabra: 'miercoles', fila: 4, columna: 4 },
+      { palabra: 'jueves', fila: 5, columna: 5 },
+      { palabra: 'viernes', fila: 10, columna: 10 },
+      { palabra: 'sabado', fila: 9, columna: 9 },
+      { palabra: 'domingo', fila: 1, columna: 7 },
+    ]
+  },
+  {
+    ruta: path.resolve('./src/sopa/SOPA4.jpg'),
+    palabras: [
+      { palabra: 'gato', fila: 2, columna: 4 },
+      { palabra: 'arboles', fila: 7, columna: 8 },
+      { palabra: 'pato', fila: 3, columna: 8 },
+      { palabra: 'casa', fila: 4, columna: 10 },
+      { palabra: 'leon', fila: 9, columna: 4 },
+    ]
+  },
+  {
+    ruta: path.resolve('./src/sopa/SOPA5.jpg'),
+    palabras: [
+      { palabra: 'raton', fila: 1, columna: 6 },
+      { palabra: 'lechuza', fila: 10, columna: 7 },
+      { palabra: 'elefante', fila: 8, columna: 10 },
+      { palabra: 'jirafa', fila: 4, columna: 9 },
+      { palabra: 'alcon', fila: 7, columna: 3 },
+    ]
+  },
+  {
+    ruta: path.resolve('./src/sopa/SOPA6.jpg'),
+    palabras: [
+      { palabra: 'azul', fila: 3, columna: 5 },
+      { palabra: 'rojo', fila: 8, columna: 4 },
+      { palabra: 'amarillo', fila: 4, columna: 9 },
+      { palabra: 'negro', fila: 5, columna: 5 },
+      { palabra: 'verde', fila: 4, columna: 6 },
+    ]
+  },
+  {
+    ruta: path.resolve('./src/sopa/SOPA7.jpg'),
+    palabras: [
+      { palabra: 'manzana', fila: 4, columna: 8 },
+      { palabra: 'banana', fila: 8, columna: 10 },
+      { palabra: 'pera', fila: 10, columna: 4 },
+      { palabra: 'naranja', fila: 9, columna: 7 },
+      { palabra: 'uva', fila: 3, columna: 4 },
+    ]
+  }
+]
 
+async function handler(m, { conn, args, usedPrefix, command }) {
+  conn.sopadeletras = conn.sopadeletras || {}
+  const id = m.chat
 
-    if (!userSP) {
-        userSP = m.sender.split("@")[0]
-        await conn.reply(m.chat, `*@${m.sender.split("@")[0]} ${tradutor.texto1}`, m, { mentions: [m.sender] })
+  if (!args.length) {
+    const juegoSeleccionado = juegos[Math.floor(Math.random() * juegos.length)]
+    const partida = juegoSeleccionado.palabras[Math.floor(Math.random() * juegoSeleccionado.palabras.length)]
+
+    conn.sopadeletras[id] = {
+      rutaImagen: juegoSeleccionado.ruta,
+      palabra: partida.palabra,
+      fila: partida.fila,
+      columna: partida.columna
     }
 
-    async function generarSopaDeLetras() {
-        const LADO = 16 // Si es alto o bajo, puede dar error, deja como esta
-        let sopaDeLetras = new Array(LADO);
+    await conn.sendMessage(id, {
+      image: { url: juegoSeleccionado.ruta },
+      caption: `🧩 *Sopa de Letras: Encuentra la Palabra*\n\n🔤 Palabra a buscar: *${partida.palabra}*\n📌 Responde con: *${usedPrefix + command} fila columna*\n📝 Ejemplo: *${usedPrefix + command} 3 10*\n\n📖 *¿Cómo se juega?*\n1️⃣ Busca la palabra en la imagen.\n2️⃣ Cuando encuentres la primera letra (ej: la "N" de "naranja"), anota la fila donde empieza.\n3️⃣ Luego sigue la palabra horizontalmente y encuentra la letra donde termina (ej: la "A").\n4️⃣ Cuenta la columna donde termina.\n✅ Usa esos números para responder: fila donde comienza, columna donde termina.\n\n🎯 ¡Mucha suerte!`
+    })
+    return
+  }
 
-        for (let i = 0; i < LADO; i++) {
-            sopaDeLetras[i] = new Array(LADO)
-        }
+  if (args.length === 2) {
+    const fila = parseInt(args[0])
+    const columna = parseInt(args[1])
 
-        const PALABRAS = tradutor.texto2
-        const PALABRA = PALABRAS[Math.floor(Math.random() * PALABRAS.length)]
-
-        let filaInicial = Math.floor(Math.random() * LADO)
-        let columnaInicial = Math.floor(Math.random() * LADO)
-        const DIRECCIONES = ["horizontal", "vertical", "diagonalDerecha", "diagonalIzquierda"]
-        const DIRECCION = DIRECCIONES[Math.floor(Math.random() * DIRECCIONES.length)]
-
-        let palabraAgregada = false
-        while (!palabraAgregada) {
-            filaInicial = Math.floor(Math.random() * LADO)
-            columnaInicial = Math.floor(Math.random() * LADO)
-
-            // Algoritmo para garantizar la palabra 
-            let palabraEntra = true;
-            for (let i = 0; i < PALABRA.length; i++) {
-                if (DIRECCION === "horizontal" && (columnaInicial + i >= LADO)) {
-                    palabraEntra = false
-                    break;
-                } else if (DIRECCION === "vertical" && (filaInicial + i >= LADO)) {
-                    palabraEntra = false
-                    break;
-                } else if (DIRECCION === "diagonalDerecha" && (filaInicial + i >= LADO || columnaInicial + i >= LADO)) {
-                    palabraEntra = false
-                    break;
-                } else if (DIRECCION === "diagonalIzquierda" && (filaInicial + i >= LADO || columnaInicial - i < 0)) {
-                    palabraEntra = false
-                    break;
-                }
-            }
-
-            // Si la palabra entra, agregar a la sopa de letras
-            if (palabraEntra) {
-                for (let i = 0; i < PALABRA.length; i++) {
-                    if (DIRECCION === "horizontal") {
-                        sopaDeLetras[filaInicial][columnaInicial + i] = PALABRA.charAt(i)
-                    } else if (DIRECCION === "vertical") {
-                        sopaDeLetras[filaInicial + i][columnaInicial] = PALABRA.charAt(i)
-                    } else if (DIRECCION === "diagonalDerecha") {
-                        sopaDeLetras[filaInicial + i][columnaInicial + i] = PALABRA.charAt(i)
-                    } else {
-                        sopaDeLetras[filaInicial + i][columnaInicial - i] = PALABRA.charAt(i)
-                    }
-                }
-                palabraAgregada = true;
-            }
-        }
-
-        // Diseño 
-        const LETRAS_POSIBLES = "ⒶⒷⒸⒹⒺⒻⒼⒽⒾⒿⓀⓁⓜⓃⓄⓅⓆⓇⓈⓉⓊⓋⓌⓍⓎⓏ"
-        const numerosUni = ["⓿", "❶", "❷", "❸", "❹", "❺", "❻", "❼", "❽", "❾", "❿", "⓫", "⓬", "⓭", "⓮", "⓯", "⓰", "⓱", "⓲", "⓳", "⓴"]
-        let sopaDeLetrasConBordes = ""
-        sopaDeLetrasConBordes += "     " + [...Array(LADO).keys()].map(num => numerosUni[num]).join(" ") + "\n"
-        //sopaDeLetrasConBordes += "   *╭" + "┄".repeat(LADO) + '┄┄' + "╮*\n"
-
-        for (let i = 0; i < LADO; i++) {
-            let fila = numerosUni[i] + " "
-
-            for (let j = 0; j < LADO; j++) {
-                if (sopaDeLetras[i][j]) {
-                    fila += sopaDeLetras[i][j] + " "
-                } else {
-                    let letraAleatoria = LETRAS_POSIBLES.charAt(Math.floor(Math.random() * LETRAS_POSIBLES.length))
-                    fila += letraAleatoria + " "
-                }
-            }
-            fila += ""
-            sopaDeLetrasConBordes += fila + "\n"
-        }
-        //sopaDeLetrasConBordes += "   *╰" + "┄".repeat(LADO) + '┄┄' + "╯*"
-        sopaDeLetrasConBordes = sopaDeLetrasConBordes.replace(/[a-zA-Z]/g, letra => LETRAS_POSIBLES[letra.charCodeAt() - 65] || letra)
-
-        await m.reply(`${tradutor.texto3[0]}
-${tradutor.texto3[1]} \`\`\`"${PALABRA}"\`\`\`
-${tradutor.texto3[2]}
-
-${tradutor.texto3[3]} _"${PALABRA.charAt(0)}"_ ${tradutor.texto3[4]} _"${PALABRA}"_ ${tradutor.texto3[5]} _${intentos}_ ${tradutor.texto3[6]}
-
-${tradutor.texto3[7]}
-❇️ \`\`\`${usedPrefix + command} 28\`\`\`
-➡️ \`\`\`${tradutor.texto3[8]}\`\`\`    ⬇️ \`\`\`${tradutor.texto3[9]}\`\`\``.trim())
-        await m.reply(`🔠 *${PALABRA.split("").join(" ")}* 🔠\n\n` + sopaDeLetrasConBordes.trimEnd())
-        fila = filaInicial
-        columna = columnaInicial
-        sopaNube = sopaDeLetrasConBordes
-        sopaPalabra = PALABRA
-        sopaDir = DIRECCION.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/^./, str => str.toUpperCase())
+    if (isNaN(fila) || isNaN(columna)) {
+      return m.reply(`❌ Las coordenadas deben ser números válidos.\nUso correcto:\n${usedPrefix + command} fila columna`)
     }
 
-    // Condiciones del juego
-    cambioLetra = sopaDir
-    let tagUser = userSP + '@s.whatsapp.net'
-    if (userSP != m.sender.split("@")[0]) {
-        await conn.reply(m.chat, `*@${tagUser.split("@")[0]} ${tradutor.texto4}`, m, { mentions: [tagUser] })
-        return
-    }
-    if (intentos === 0) {
-        intentos = 3
-        generarSopaDeLetras()
-        resetUserSP(sopaDir)
+    const partida = conn.sopadeletras[id]
+    if (!partida) return m.reply(`⚠️ No tienes una partida activa. Usa:\n${usedPrefix + command}`)
 
-        async function resetUserSP() {
-            await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000)) // 2 min
-            if (intentos !== 0) {
-                await conn.reply(m.chat, `*@${m.sender.split("@")[0]} ${tradutor.texto5}`, m, { mentions: [m.sender] })
-            }
-            await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000)) // 3 min
-            if (intentos !== 0) {
-                await conn.reply(m.chat, `*@${m.sender.split("@")[0]} ${tradutor.texto6[0]} _"${sopaPalabra}"_ ${tradutor.texto6[1]} _${sopaDir}_ ${tradutor.texto6[2]} _${fila}_ ${tradutor.texto6[2]} _${columna}_*`, m, { mentions: [m.sender] })
-                fila = null, columna = null, sopaNube = null, sopaPalabra = null, sopaDir = null, userSP = null, cambioLetra = null
-                intentos = 0
-            }
-        }
+    if (fila === partida.fila && columna === partida.columna) {
+      const expGanada = 2500
+      const diamantesGanados = 250
+
+      await addExp(m.sender, expGanada)
+      await addMoney(m.sender, diamantesGanados)
+
+      delete conn.sopadeletras[id]
+
+      return m.reply(
+        `🎉 ¡Correcto! La palabra *${partida.palabra}* estaba en fila ${fila}, columna ${columna}.\n` +
+        `Has ganado +${expGanada} EXP y +${diamantesGanados} diamantes 💎.`
+      )
     } else {
-        if (`${fila}${columna}` == text) {
-            if (sopaPalabra.length <= 4) {
-                diamante = 4
-            } else if (sopaPalabra.length <= 8) {
-                diamante = 8
-            } else if (sopaPalabra.length <= 11) {
-                diamante = 24
-            } else {
-                diamante = 32
-            }
-            global.db.data.users[m.sender].limit += diamante
-
-            await m.reply(`\`\`\`${tradutor.texto7[0]} ${diamante} ${rpgshop.emoticon('limit')}!!\`\`\`\n\n${tradutor.texto7[1]} _"${sopaPalabra}"_ ${tradutor.texto7[2]} _${cambioLetra}_ ${tradutor.texto7[3]} _${fila}_ ${tradutor.texto7} _${columna}_*`)
-            fila = null, columna = null, sopaNube = null, sopaPalabra = null, sopaDir = null, userSP = null, cambioLetra = null
-            intentos = 0
-            return
-        } else {
-            if (intentos === 1) {
-                fila = null, columna = null, sopaNube = null, sopaPalabra = null, sopaDir = null, userSP = null, cambioLetra = null
-                intentos = 0
-                await m.reply(`${tradutor.texto8[0]} _"${sopaPalabra}"_ ${tradutor.texto8[1]} _${cambioLetra}_ ${tradutor.texto8[2]} _${fila}_ ${tradutor.texto8[2]} _${columna}_*`)
-                return
-            } else {
-                intentos -= 1
-                await m.reply(`${tradutor.texto9[0]} _${intentos}_ ${tradutor.texto9[1]}${intentos === 1 ? '' : `\n${tradutor.texto9[2]} \`\`\`${sopaPalabra}\`\`\``}\n\n${intentos === 1 ? `\`\`\`${tradutor.texto9[3]}\`\`\`\n${tradutor.texto9[4]} _${sopaPalabra}_ ${tradutor.texto9[5]} _"${cambioLetra}"_*\n\n` : ''}${sopaNube}`)
-                return
-            }
-        }
+      return m.reply(`❌ Incorrecto. La palabra no está en esa posición. Intenta de nuevo.`)
     }
+  }
+
+  return m.reply(`❗ Uso correcto:\n- Iniciar juego: *${usedPrefix + command}*\n- Responder: *${usedPrefix + command} fila columna*`)
 }
 
-handler.command = /^(buscarpalabra|sopa|soup|wordsearch|wordfind|spdeletras|spletras|sppalabras|spalabras|spdepalabras)$/i
+handler.command = /^sopadeletras$/i
 export default handler
