@@ -23,6 +23,7 @@ const { DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, make
 import readline from 'readline';
 import NodeCache from 'node-cache';
 import { restaurarConfiguraciones } from './lib/funcConfig.js';
+import { getOwnerFunction } from './lib/owner-funciones.js';
 
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
@@ -416,12 +417,16 @@ if (connection === 'close') {
     if (reason === DisconnectReason.badSession) {
         conn.logger.error(`[ ⚠ ] Sesión incorrecta, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
         //process.exit();
-    } else if (reason === DisconnectReason.connectionClosed) {
-        conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando...`);
-        await global.reloadHandler(true).catch(console.error);
+ } else if (reason === DisconnectReason.connectionClosed) {
+    conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando en 2 segundos...`);
+    setTimeout(async () => {
+      await global.reloadHandler(true).catch(console.error);
+    }, 2000);
     } else if (reason === DisconnectReason.connectionLost) {
-        conn.logger.warn(`[ ⚠ ] Conexión perdida con el servidor, reconectando...`);
-        await global.reloadHandler(true).catch(console.error);
+    conn.logger.warn(`[ ⚠ ] Conexión perdida con el servidor, reconectando en 2 segundos...`);
+    setTimeout(async () => {
+      await global.reloadHandler(true).catch(console.error);
+    }, 2000);
     } else if (reason === DisconnectReason.connectionReplaced) {
         conn.logger.error(`[ ⚠ ] Conexión reemplazada, se ha abierto otra nueva sesión. Por favor, cierra la sesión actual primero.`);
         //process.exit();
@@ -432,8 +437,10 @@ if (connection === 'close') {
         conn.logger.info(`[ ⚠ ] Reinicio necesario, reinicie el servidor si presenta algún problema.`);
         await global.reloadHandler(true).catch(console.error);
     } else if (reason === DisconnectReason.timedOut) {
-        conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando...`);
-        await global.reloadHandler(true).catch(console.error);
+    conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando en 2 segundos...`);
+    setTimeout(async () => {
+      await global.reloadHandler(true).catch(console.error);
+    }, 2000);
     } else {
         conn.logger.warn(`[ ⚠ ] Razón de desconexión desconocida. ${reason || ''}: ${connection || ''}`);
         await global.reloadHandler(true).catch(console.error);
@@ -474,7 +481,34 @@ global.reloadHandler = async function(restatConn) {
     conn.ev.off('connection.update', conn.connectionUpdate);
     conn.ev.off('creds.update', conn.credsUpdate);
   }
+// Carga las configuraciones
+const funcionesOwner = getOwnerFunction();
 
+// Evento para manejar mensajes entrantes (antiprivado y modogrupos)
+conn.ev.on('messages.upsert', async ({ messages }) => {
+  if (!Array.isArray(messages)) return;
+  const m = messages[0];
+  if (!m.message || m.key?.remoteJid === 'status@broadcast') return;
+
+  const isGroup = m.key.remoteJid.endsWith('@g.us');
+  const sender = m.key.participant || m.key.remoteJid;
+
+  // Función antiprivado
+  if (funcionesOwner.antiprivado && !isGroup && !global.owner.includes(sender.split('@')[0])) {
+    try {
+      await conn.sendMessage(sender, { text: '🚫 *No puedo responder en chats privados.*' });
+    } catch (e) {}
+    return;
+  }
+
+  // Función modogrupos
+  if (funcionesOwner.modogrupos && !isGroup) {
+    try {
+      await conn.sendMessage(sender, { text: '🚫 *Solo puedo responder en grupos.*' });
+    } catch (e) {}
+    return;
+  }
+});
   // Para cambiar estos mensajes, solo los archivos en la carpeta de language, 
   // busque la clave "handler" dentro del json y cámbiela si es necesario
   conn.welcome = '👋 ¡Bienvenido/a!\n@user';
