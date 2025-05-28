@@ -1,7 +1,7 @@
 import { loadAntiSpam, saveAntiSpam } from '../lib/antispamDB.js'
 
-const SPAM_THRESHOLD = 3
-const INTERVAL_MS = 10 * 1000
+const SPAM_THRESHOLD = 6       // Permitimos hasta 6 mensajes en el intervalo antes de advertir
+const INTERVAL_MS = 20 * 1000  // 20 segundos de ventana para contar mensajes
 const MESSAGE_LENGTH_LIMIT = 4000
 
 global.antispamActivo = true
@@ -29,8 +29,10 @@ export async function before(m, { isCommand, conn }) {
 
   const data = antispam[sender]
 
+  // Solo contar mensajes que empiecen con / o que sean largos, ignorar el resto
   if (!m.text.startsWith('/') && !isLargo) return
 
+  // Si estamos dentro del intervalo, incrementar conteo, sino resetear a 1
   if (now - data.lastTime < INTERVAL_MS) data.count += 1
   else data.count = 1
 
@@ -48,7 +50,7 @@ export async function before(m, { isCommand, conn }) {
   if (data.count > SPAM_THRESHOLD || isLargo) {
     data.warns += 1
 
-    if (data.warns >= 2) {
+    if (data.warns >= 3) { // Bloquea después de 3 advertencias
       const [ownerJid] = global.owner[0]
       const ownerFullJid = `${ownerJid}@s.whatsapp.net`
 
@@ -83,6 +85,3 @@ export async function before(m, { isCommand, conn }) {
   antispam[sender] = data
   saveAntiSpam(antispam)
 }
-
- 
-      
