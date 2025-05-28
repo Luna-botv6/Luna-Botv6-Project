@@ -386,6 +386,7 @@ ${tradutor.texto1[26]}
 ├💰 _${usedPrefix}juegolimit_
 ├🏁 _${usedPrefix}carreraautos_
 ├🛒 _${usedPrefix}buy_
+├✨ _${usedPrefix}verexp *<@tag>*_
 ├🛍️ _${usedPrefix}buyall_
 ├✅ _${usedPrefix}verificar_
 ├🕵️ _${usedPrefix}robar *<cant> <@tag>*_
