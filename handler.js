@@ -109,7 +109,6 @@ if (m.isBaileys) return;
       }
       if (user) {
         // im gona cook this
-        // why the fuck nobody put the code like this in 3 years??????
         // credit to mystic or skidy89
         const dick = {
           afk: -1,
@@ -519,7 +518,6 @@ if (m.isBaileys) return;
         }
       for (const dicks in dick) {
         if (user[dicks] === undefined || !user.hasOwnProperty(dicks)) {
-          user[dicks] = dick[dicks] // god pls forgive me
         }
       }}
       const akinator = global.db.data.users[m.sender].akinator;
@@ -640,7 +638,6 @@ if (m.isBaileys) return;
         }
         for (const game in gameGalaxy) {
           if (gameglx[game] === undefined || !gameglx.hasOwnProperty(game)) {
-            gameglx[game] = gameGalaxy[game] ?? {} // ctrl + v moment 
           }
         }
       }
@@ -681,7 +678,6 @@ if (m.isBaileys) return;
         }
         for (const chatss in chats) {
           if (chat[chatss] === undefined || !chat.hasOwnProperty(chatss)) {
-            chat[chatss] = chats[chatss] ?? {}// ctrl + v moment
           }
         }
       }
@@ -702,7 +698,6 @@ if (m.isBaileys) return;
         };
         for (const setting in settings) {
           if (settings[setting] === undefined || !settings.hasOwnProperty(setting)) {
-            settings[setting] = setttings[setting] ?? {} // ctrl + v moment
           }
         }
       }
