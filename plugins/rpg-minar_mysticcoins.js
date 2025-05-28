@@ -16,7 +16,7 @@ const handler = async (m, { conn }) => {
 
   if (now - lastTime < cooldown) {
     const remaining = cooldown - (now - lastTime)
-    throw ` *�A�n est�s cansado!* \n\n Podr�s minar diamantes nuevamente en *${msToTime(remaining)}*`
+    throw `⏳ *¡Aún estás cansado!* \n\n⌛ Podrás minar diamantes nuevamente en *${msToTime(remaining)}* 💎`
   }
 
   const reward = calcularDiamantes()
@@ -26,12 +26,12 @@ const handler = async (m, { conn }) => {
   const total = getMoney(userId)
 
   let mensaje = `
-* MINADO EXITOSO*
+✨ *MINADO EXITOSO* ✨
 
- Has encontrado *${reward} diamantes* 
- Total acumulado: *${total} diamantes*
+💎 Has encontrado *${reward} diamantes* 💎
+📦 Total acumulado: *${total} diamantes*
 
- Podr�s volver a minar en *10 minutos*
+⏰ Podrás volver a minar en *10 minutos*
 `.trim()
 
   m.reply(mensaje)
