@@ -1110,7 +1110,8 @@ ${tradutor.texto1[1]} ${messageNumber}/3
     }
     const settingsREAD = global.db.data.settings[mconn.conn.user.jid] || {};
     if (opts['autoread']) await mconn.conn.readMessages([m.key]);
-    if (settingsREAD.autoread2) await mconn.conn.readMessages([m.key]);
+    if (settingsREAD.autoread || settingsREAD.autoread2) await mconn.conn.readMessages([m.key]);
+
   }
 }
 
