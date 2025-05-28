@@ -447,8 +447,8 @@ ${tradutor.texto1[28]}
 ├ _${usedPrefix}unblock *<@tag / num>*_ ⛔
 ├ _${usedPrefix}enable *restrict*_ 🔐
 ├ _${usedPrefix}disable *restrict*_ 🚫
-├ _${usedPrefix}enable *autoread*_ 🗣️
-├ _${usedPrefix}disable *autoread*_ 👀
+├ _${usedPrefix}autoread *on*_ 🗣️
+├ _${usedPrefix}autoread *off*_ 👀
 ├ _${usedPrefix}enable *public*_ 🌐
 ├ _${usedPrefix}disable *public*_ 🔒
 ├ _${usedPrefix}enable *pconly*_ 📱
