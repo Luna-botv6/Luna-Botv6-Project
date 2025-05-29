@@ -1,18 +1,17 @@
 import fs from 'fs'
 import path from 'path'
 import { addExp, removeExp, getExp } from '../lib/stats.js'
+import { tieneProteccion } from '../lib/usarprote.js'  // Importamos la función
 
 const COOLDOWN_FILE = './database/robCooldown.json'
 const MAX_ROB = 3000
 const COOLDOWN = 7200000 // 2 horas
 
-// Asegura que el archivo de cooldown existe
 function ensureCooldownFile() {
   if (!fs.existsSync('./database')) fs.mkdirSync('./database')
   if (!fs.existsSync(COOLDOWN_FILE)) fs.writeFileSync(COOLDOWN_FILE, '{}')
 }
 
-// Carga y guarda cooldowns
 function loadCooldowns() {
   ensureCooldownFile()
   try {
@@ -26,7 +25,6 @@ function saveCooldowns(data) {
   fs.writeFileSync(COOLDOWN_FILE, JSON.stringify(data, null, 2))
 }
 
-// Convertidor de milisegundos a tiempo legible
 function msToTime(duration) {
   const seconds = Math.floor((duration / 1000) % 60)
   const minutes = Math.floor((duration / (1000 * 60)) % 60)
@@ -50,6 +48,11 @@ const handler = async (m, { conn }) => {
 
   if (target === sender) {
     return m.reply('🤨 ¿Robarte a ti mismo? Eso no tiene sentido.')
+  }
+
+  // Revisión de protección activa
+  if (tieneProteccion(target)) {
+    return m.reply(`❌ El usuario @${target.split`@`[0]} tiene protección activada y no puedes robarle XP ni diamantes.`, null, { mentions: [target] })
   }
 
   // Manejar cooldown
@@ -87,4 +90,3 @@ handler.tags = ['econ']
 handler.command = ['rob', 'robar']
 
 export default handler
-

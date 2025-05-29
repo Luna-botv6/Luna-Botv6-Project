@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { addMoney, removeMoney, getMoney } from '../lib/stats.js'
+import { tieneProteccion } from '../lib/usarprote.js'  // <-- importamos
 
 const cooldownPath = './database/robCooldownMoney.json'
 const cooldownTime = 2 * 60 * 60 * 1000 // 2 horas
@@ -43,6 +44,11 @@ const handler = async (m, { conn, command }) => {
   else who = m.chat
 
   if (!who) return m.reply('❌ Etiqueta a alguien para robarle diamantes.')
+
+  // Verificar protección activa
+  if (tieneProteccion(who)) {
+    return m.reply(`🚫 @${who.split`@`[0]} está protegido y no puedes robarle diamantes.`, null, { mentions: [who] })
+  }
 
   const targetDiamonds = getMoney(who)
   const toRob = Math.floor(Math.random() * maxRob)
