@@ -117,6 +117,7 @@ ${tradutor.texto1[13]}
 ├ 🎮${usedPrefix}tictactoe_
 ├ ⛵${usedPrefix}batalla_
 ├ 👀🔍${usedPrefix}veoveo_
+├ 🛡️${usedPrefix}usarprote_
 ╰───── • ◆ • ─────────────╯  
 
 ${tradutor.texto1[14]}
