@@ -1,5 +1,6 @@
-# Luna-Botv6-Project
-Luna es un bot de WhatsApp avanzado y personalizable, diseñado para ofrecer herramientas útiles, entretenimiento, funciones de moderación y comandos inteligentes, todo en una interfaz amigable y adaptable.
+# Luna-Botv6-Project 🌙🤖
+
+**Luna** es un bot avanzado y personalizable para WhatsApp 📱, diseñado para ofrecerte una experiencia completa y versátil. Combina herramientas útiles 🛠️, entretenimiento 🎉, funciones de moderación 🛡️ y comandos inteligentes ⚙️, todo dentro de una interfaz intuitiva y adaptable a tus necesidades.
 
 
 Requisitos y Características del Proyecto LunaBotV6
