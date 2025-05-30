@@ -216,6 +216,10 @@ const connectionOptions = {
 
 global.conn = makeWASocket(connectionOptions);
 restaurarConfiguraciones(global.conn);
+const ownerConfig = getOwnerFunction()
+if (ownerConfig.modopublico) global.conn.public = true
+if (ownerConfig.auread) global.opts['autoread'] = true
+if (ownerConfig.modogrupos) global.conn.modogrupos = true
 conn.ev.on('connection.update', connectionUpdate);
 
 if (!fs.existsSync(`./${authFile}/creds.json`)) {
