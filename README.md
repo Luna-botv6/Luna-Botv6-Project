@@ -1,6 +1,7 @@
 # Luna-Botv6-Project
 Luna es un bot de WhatsApp avanzado y personalizable, diseñado para ofrecer herramientas útiles, entretenimiento, funciones de moderación y comandos inteligentes, todo en una interfaz amigable y adaptable.
 
+
 Requisitos y Características del Proyecto LunaBotV6
 LunaBotV6 es un bot de WhatsApp altamente personalizado, basado originalmente en
 TheMystic-Bot-MD y adaptado progresivamente para usar la versión moderna de Baileys utilizada
@@ -50,6 +51,9 @@ IMPORTANTE:
 2. En la carpeta 'plugins/antispam.js', añade también tu número.
 
 LunaBot cuenta con un sistema antispam personalizado. Si no agregas tu número, el bot podría bloquearte automáticamente.
+
+[!IMPORTANT]  
+> Luna-Botv6 es un proyecto basado en el código de Mystic Bot-md. Aunque se han modificado varias lógicas, se conservarán algunas marcas de agua de Mystic Bot como muestra de respeto y reconocimiento al trabajo de Bruno Sobrino.
 
 NOTA:
 
