@@ -55,8 +55,6 @@ ${tradutor.texto1[10]}
 ╭───── • ◆ •  ─────────────╮
 ├🎭 _${usedPrefix}menuanimes_
 ├🌐 _${usedPrefix}lang_
-├👥 _${usedPrefix}langgroup_
-├🕹️ _${usedPrefix}glx_
 ╰───── • ◆ • ──────────────╯
 
 ${tradutor.texto1[11]}
@@ -81,23 +79,11 @@ ${tradutor.texto1[13]}
 ├🧠 _${usedPrefix}mates *<noob / easy / medium / hard / extreme / impossible / impossible2>*_
 ├📝 _${usedPrefix}fake *<txt1> <@tag> <txt2>*_
 ├✂️ _${usedPrefix}ppt *<papel / tijera / piedra>*_
-├💋 _${usedPrefix}prostituto *<nombre / @tag>*_
-├💄 _${usedPrefix}prostituta *<nombre / @tag>*_
-├🏳️‍🌈 _${usedPrefix}gay2 *<nombre / @tag>*_
-├🌈 _${usedPrefix}lesbiana *<nombre / @tag>*_
-├✊ _${usedPrefix}pajero *<nombre / @tag>*_
-├✋ _${usedPrefix}pajera *<nombre / @tag>*_
-├🤨 _${usedPrefix}puto *<nombre / @tag>*_
-├🤭 _${usedPrefix}puta *<nombre / @tag>*_
-├🦾 _${usedPrefix}manco *<nombre / @tag>*_
-├🦿 _${usedPrefix}manca *<nombre / @tag>*_
-├🐀 _${usedPrefix}rata *<nombre / @tag>*_
 ├❤️ _${usedPrefix}love *<nombre / @tag>*_
 ├🔍 _${usedPrefix}doxear *<nombre / @tag>*_
 ├❓ _${usedPrefix}pregunta *<txt>*_
 ├⚔️ _${usedPrefix}suitpvp *<@tag>*_
 ├🎰 _${usedPrefix}slot *<apuesta>*_
-├❌ _${usedPrefix}ttt *${tradutor.texto1[32]}*_
 ├🗑️ _${usedPrefix}delttt_
 ├🧩 _${usedPrefix}acertijo_
 ├🐵 _${usedPrefix}simi *<txt>*_
@@ -109,7 +95,6 @@ ${tradutor.texto1[13]}
 ├⚠️ _${usedPrefix}reto_
 ├🎶 _${usedPrefix}cancion_
 ├🧭 _${usedPrefix}pista_
-├🧞 _${usedPrefix}akinator_
 ├🔤 _${usedPrefix}sopadeletras_
 ├🗺️ _${usedPrefix}glx (RPG Mundo)_
 ├🎰 _${usedPrefix}ruleta 🎰(RPG)_
@@ -195,7 +180,6 @@ ${tradutor.texto1[16]}
 ╭───── • ◆ • ─────────────╮
 ├🐱‍💻 _${usedPrefix}githubsearch *<txt>*_
 ├🎬 _${usedPrefix}pelisplus *<txt>*_
-├📲 _${usedPrefix}modapk *<txt>*_
 ├🔍🧩 _${usedPrefix}stickersearch *<txt>*_
 ├🔍🧩 _${usedPrefix}stickersearch2 *<txt>*_
 ├🔞🔍 _${usedPrefix}xnxxsearch *<txt>*_
@@ -239,13 +223,11 @@ ${tradutor.texto1[16]}
 ├👻 _${usedPrefix}fantasmas_
 ├🧹 _${usedPrefix}destraba_
 ├🖼️ _${usedPrefix}setpp *<img>*_
-├👑 _admins *<txt>*_ ${tradutor.texto1[31]}
 ╰───── • ◆ • ─────────────╯
 
 ${tradutor.texto1[18]}
  
 ╭───── • ◆ • ─────────────╮
-├🎨 _${usedPrefix}toanime *<img>*_
 ├🎞️🎙️ _${usedPrefix}togifaud *<video>*_
 ├🖼️ _${usedPrefix}toimg *<sticker>*_
 ├🎧 _${usedPrefix}tomp3 *<video>*_
@@ -314,30 +296,12 @@ ${tradutor.texto1[21]}
 ├👤 _${usedPrefix}randomprofile_
 ╰───── • ◆ • ─────────────╯
 
-${tradutor.texto1[22]}
- 
-╭───── • ◆ • ─────────────╮
-├🎶 _${usedPrefix}bass_
-├💥 _${usedPrefix}blown_
-├🔊 _${usedPrefix}deep_
-├👂💣 _${usedPrefix}earrape_
-├⚡ _${usedPrefix}fast_
-├🍔 _${usedPrefix}fat_
-├🌙 _${usedPrefix}nightcore_
-├🔄 _${usedPrefix}reverse_
-├🤖 _${usedPrefix}robot_
-├🐢 _${usedPrefix}slow_
-├💨 _${usedPrefix}smooth_
-├🙉 _${usedPrefix}tupai_
-╰───── • ◆ • ─────────────╯
 
 ${tradutor.texto1[25]}
 
 ╭───── • ◆ • ─────────────╮
 ├🔍 _${usedPrefix}inspect *<wagc_url>*_
-├🤖 _${usedPrefix}chatgpt *<txt>*_
 ├🗑️ _${usedPrefix}delchatgpt_
-├🗣️ _${usedPrefix}gptvoz *<txt>*_
 ├🎨 _${usedPrefix}dall-e *<txt>*_
 ├📱💬 _${usedPrefix}spamwa *num|txt|cant>*_
 ├🖼️ _${usedPrefix}tamaño *<cant> <img / video>*_
@@ -350,7 +314,6 @@ ${tradutor.texto1[25]}
 ├🔗 _${usedPrefix}acortar *<url>*_
 ├➗ _${usedPrefix}calc *<operacion>*_
 ├🗑️ _${usedPrefix}del *<msj>*_
-├🎶 _${usedPrefix}whatmusic *<audio>*_
 ├📸 _${usedPrefix}readqr *<img>*_
 ├🔲 _${usedPrefix}qrcode *<txt>*_
 ├📖 _${usedPrefix}readmore *<txt1|txt2>*_
@@ -439,7 +402,6 @@ ${tradutor.texto1[28]}
 ├ _${usedPrefix}resetprefix_ 🔄
 ├ _${usedPrefix}autoadmin_ 👨‍💻
 ├ _${usedPrefix}grouplist_ 📝
-├ _${usedPrefix}chetar_ 🛡️
 ├ _${usedPrefix}leavegc_ 🚪
 ├ _${usedPrefix}cajafuerte_ 🔒
 ├ _${usedPrefix}blocklist_ 🚫
