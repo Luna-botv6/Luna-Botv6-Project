@@ -31,9 +31,9 @@ export default async function (m, conn = { user: {} }) {
   const user = global.db.data.users[m.sender];
   const me = PhoneNumber('+' + (conn.user?.jid || '').replace('@s.whatsapp.net', '')).getNumber('international');
 
-  console.log(chalk.bold.greenBright('╭⋙════ ⋆★⋆ ════ ⋘•>🌙<•⋙════ ⋆★⋆ ════ ⋙╮'));
+  console.log(chalk.bold.cyanBright('╭⋙════ ⋆★⋆ ════ ⋘•>🌙 <•⋙════ ⋆★⋆ ════ ⋙╮'));
     console.log('')
-  console.log(chalk.bold.greenBright(`☆            ✧°˚ Luna-BotV6 ˚°✧         `));
+  console.log(chalk.bold.magentaBright(`☆            ✧°˚ Luna-BotV6 ˚°✧         `));
     console.log('')
   console.log(`┊ ${chalk.redBright('╰➤🤖 Luna-Bot:')} ${me} ~ ${conn.user.name}${conn.user.jid !== global.conn.user.jid ? chalk.gray(' (Sub Bot)') : ''}`);
     console.log('\n')
@@ -47,8 +47,8 @@ export default async function (m, conn = { user: {} }) {
     console.log('\n')
   console.log(`┊ ${chalk.yellow('╰➤📥 En:')} ${chalk.yellow(chat)} (${m.chat})`);
     console.log('\n')
-  console.log(`☆ ${chalk.cyan('╰➤💬 Tipo Msg:')} ${chalk.cyan(m.mtype?.replace(/message$/i, '').replace('audio', m.msg?.ptt ? 'PTT' : 'Audio'))}`);
-  console.log(chalk.bold.greenBright('╰⋙════ ⋆★⋆ ════ ⋘•>🌙<•⋙════ ⋆★⋆ ════ ⋙╯'));
+  console.log(`${chalk.hex('#FFB347')('☆')} ${chalk.cyan('╰➤💬 Tipo Msg:')} ${chalk.cyan(m.mtype?.replace(/message$/i, '').replace('audio', m.msg?.ptt ? 'PTT' : 'Audio'))}`);
+  console.log(chalk.bold.cyanBright('╰⋙════ ⋆★⋆ ════ ⋘•>🌙 <•⋙════ ⋆★⋆ ════ ⋙╯'));
 
   if (img) console.log(img.trimEnd());
 
