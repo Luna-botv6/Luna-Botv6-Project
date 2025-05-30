@@ -55,6 +55,9 @@ LunaBot cuenta con un sistema antispam personalizado. Si no agregas tu número, 
 [!IMPORTANT]  
 > Luna-Botv6 es un proyecto basado en el código de Mystic Bot-md. Aunque se han modificado varias lógicas, se conservarán algunas marcas de agua de Mystic Bot como muestra de respeto y reconocimiento al trabajo de Bruno Sobrino.
 
+[!EXTRA]  
+> Luna-Botv6 es un proyecto en constante desarrollo basado en Mystic Bot-md. Aunque no está al 100% terminado, se están implementando mejoras y ajustes para optimizar su funcionamiento y ofrecer una mejor experiencia a los usuarios. El bot incluye nuevas funcionalidades y ajustes en la lógica para hacerlo más eficiente y versátil.
+
 NOTA:
 
 Todas las actualizaciones, nuevos comandos y funciones de LunaBot se anunciarán exclusivamente desde la página oficial en WhatsApp.
