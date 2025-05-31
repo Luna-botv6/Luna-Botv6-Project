@@ -18,7 +18,7 @@ global.defaultLenguaje = 'es';
 global.owner = [
   ['5493483466763', '👑 Ehl villano 👑', true],
   ['50259727165', 'MOD-DECO', true],
-  ['5217773461176', 'MOD-ALEXA', true],
+  ['5217773461176', 'MOD-killerQueen', true],
 ];
 
 global.suittag = ['5493483466763'];
