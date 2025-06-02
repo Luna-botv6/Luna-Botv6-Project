@@ -2,7 +2,7 @@ import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as  crypto from 'crypto'
+import * as crypto from 'crypto'
 import { ffmpeg } from './converter.js'
 import fluent_ffmpeg from 'fluent-ffmpeg'
 import { spawn } from 'child_process'
@@ -14,11 +14,7 @@ import fetch from 'node-fetch'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const tmp = path.join(__dirname, '../tmp')
-/**
- * Image to Sticker
- * @param {Buffer} img Image Buffer
- * @param {String} url Image URL
- */
+
 function sticker2(img, url) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -27,7 +23,7 @@ function sticker2(img, url) {
         if (res.status !== 200) throw await res.text()
         img = await res.buffer()
       }
-      const inp = path.join(tmp, +new Date + '.jpeg')
+      const inp = path.join(tmp, +new Date() + '.jpeg')
       await fs.promises.writeFile(inp, img)
       const ff = spawn('ffmpeg', [
         '-y',
@@ -43,7 +39,7 @@ function sticker2(img, url) {
       const bufs = []
       const [_spawnprocess, ..._spawnargs] = [...(module.exports.support.gm ? ['gm'] : module.exports.magick ? ['magick'] : []), 'convert', 'png:-', 'webp:-']
       const im = spawn(_spawnprocess, _spawnargs)
-      im.on('error', e => conn.reply(m.chat, util.format(e), m))
+      im.on('error', e => console.error(e))
       im.stdout.on('data', chunk => bufs.push(chunk))
       ff.stdout.pipe(im.stdin)
       im.on('exit', () => {
@@ -55,13 +51,6 @@ function sticker2(img, url) {
   })
 }
 
-/**
- * Image/Video to Sticker
- * @param {Buffer} img Image/Video Buffer
- * @param {String} url Image/Video URL
- * @param {String} packname EXIF Packname
- * @param {String} author EXIF Author
- */
 async function sticker3(img, url, packname, author) {
   url = url ? url : await uploadFile(img)
   const res = await fetch('https://api.xteam.xyz/sticker/wm?' + new URLSearchParams(Object.entries({
@@ -72,11 +61,6 @@ async function sticker3(img, url, packname, author) {
   return await res.buffer()
 }
 
-/**
- * Image to Sticker
- * @param {Buffer} img Image/Video Buffer
- * @param {String} url Image/Video URL
- */
 async function sticker4(img, url) {
   if (url) {
     const res = await fetch(url)
@@ -100,11 +84,6 @@ async function sticker5(img, url, packname, author, categories = [''], extra = {
   return (new Sticker(img ? img : url, stickerMetadata)).toBuffer()
 }
 
-/**
- * Convert using fluent-ffmpeg
- * @param {string} img 
- * @param {string} url 
- */
 function sticker6(img, url) {
   return new Promise(async (resolve, reject) => {
     if (url) {
@@ -120,7 +99,6 @@ function sticker6(img, url) {
     const tmp = path.join(__dirname, `../tmp/${+ new Date()}.${type.ext}`)
     const out = path.join(tmp + '.webp')
     await fs.promises.writeFile(tmp, img)
-    // https://github.com/MhankBarBar/termux-wabot/blob/main/index.js#L313#L368
     const Fffmpeg = /video/i.test(type.mime) ? fluent_ffmpeg(tmp).inputFormat(type.ext) : fluent_ffmpeg(tmp).input(tmp)
     Fffmpeg
       .on('error', function (err) {
@@ -140,49 +118,35 @@ function sticker6(img, url) {
       .save(out)
   })
 }
-/**
- * Add WhatsApp JSON Exif Metadata
- * Taken from https://github.com/pedroslopez/whatsapp-web.js/pull/527/files
- * new json made by https://github.com/Skidy89
- * @param {Buffer} webpSticker 
- * @param {String} packname 
- * @param {String} author 
- * @param {String} categories 
- * @param {Object} extra 
- * @returns 
- */
-async function addExif(webpSticker, packname, author, categories = [''], metadata) {
-  const img = new webp.Image();
+
+async function addExif(webpSticker, packname, author, categories = [''], metadata = {}) {
+  const img = new webp.Image()
   const stickerPackId = 'MYSTIC' + crypto.randomBytes(12).toString('hex').toUpperCase()
+
   const json = {
-      "sticker-pack-id": metadata.packId ? metadata.packId : `${stickerPackId}`,
-      "sticker-pack-name": packname ? packname : undefined,
-      "sticker-pack-publisher": author ? author : undefined,
-      "android-app-store-link": metadata.androidAppStoreLink ? metadata.androidAppStoreLink : undefined,
-      "ios-app-store-link": metadata.iosAppStoreLink ? metadata.iosAppStoreLink : undefined,
-      "is-ai-sticker": metadata.isAiSticker ? 1 : undefined,
-      "is-first-party-sticker": metadata.isFirstPartySticker ? 1 : undefined,
-      "accessibility-text": metadata.accessibilityText ? metadata.accessibilityText : undefined,
-      "avatar-sticker-template-id": metadata.templateId ? metadata.templateId : undefined,
-      "is-avatar-sticker": metadata.isAvatarSticker ? 1 : undefined,
-      "sticker-maker-source-type": metadata.stickerMakerSourceType ? metadata.stickerMakerSourceType : undefined,
-      "emojis": categories ? categories : undefined
-  };
-  const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00]);
-  const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8');
-  const exif = Buffer.concat([exifAttr, jsonBuffer]);
-  exif.writeUIntLE(jsonBuffer.length, 14, 4);
+    "sticker-pack-id": metadata.packId ? metadata.packId : `${stickerPackId}`,
+    "sticker-pack-name": packname ? packname : undefined,
+    "sticker-pack-publisher": author ? author : undefined,
+    "android-app-store-link": metadata.androidAppStoreLink ? metadata.androidAppStoreLink : undefined,
+    "ios-app-store-link": metadata.iosAppStoreLink ? metadata.iosAppStoreLink : undefined,
+    "is-ai-sticker": metadata.isAiSticker ? 1 : undefined,
+    "is-first-party-sticker": metadata.isFirstPartySticker ? 1 : undefined,
+    "accessibility-text": metadata.accessibilityText ? metadata.accessibilityText : undefined,
+    "avatar-sticker-template-id": metadata.templateId ? metadata.templateId : undefined,
+    "is-avatar-sticker": metadata.isAvatarSticker ? 1 : undefined,
+    "sticker-maker-source-type": metadata.stickerMakerSourceType ? metadata.stickerMakerSourceType : undefined,
+    "emojis": categories ? categories : undefined
+  }
+
+  const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00])
+  const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8')
+  const exif = Buffer.concat([exifAttr, jsonBuffer])
+  exif.writeUIntLE(jsonBuffer.length, 14, 4)
   await img.load(webpSticker)
   img.exif = exif
   return await img.save(null)
 }
 
-/**
- * Image/Video to Sticker
- * @param {Buffer} img Image/Video Buffer
- * @param {String} url Image/Video URL
- * @param {...String} 
-*/
 async function sticker(img, url, ...args) {
   let lastError, stiker
   for (const func of [
