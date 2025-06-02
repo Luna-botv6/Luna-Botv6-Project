@@ -36,30 +36,31 @@ const handler = async (m, { conn, command }) => {
 
   if (now < lastTime + cooldownTime) {
     const timeLeft = msToTime(lastTime + cooldownTime - now)
-    return m.reply(`⏳ Debes esperar ${timeLeft} para volver a robar diamantes.`)
+    return m.reply(` Debes esperar ${timeLeft} para volver a robar diamantes.`)
   }
 
   let who
   if (m.isGroup) who = m.mentionedJid?.[0] || m.quoted?.sender || false
   else who = m.chat
 
-  if (!who) return m.reply('❌ Etiqueta a alguien para robarle diamantes.')
+  if (!who) return m.reply(' Etiqueta a alguien para robarle diamantes.')
 
-  // Verificar protección activa
-  if (tieneProteccion(who)) {
-    return m.reply(`🚫 @${who.split`@`[0]} está protegido y no puedes robarle diamantes.`, null, { mentions: [who] })
+  // Verificar protecci�n activa (arreglado)
+  const proteccion = tieneProteccion(who)
+  if (proteccion.activa) {
+    return m.reply(` @${who.split`@`[0]} est� protegido y no puedes robarle diamantes.`, null, { mentions: [who] })
   }
 
   const targetDiamonds = getMoney(who)
   const toRob = Math.floor(Math.random() * maxRob)
 
   if (targetDiamonds < toRob) {
-    if (targetDiamonds === 0) return m.reply(`😥 No se puede robar, el usuario no tiene diamantes.`)
+    if (targetDiamonds === 0) return m.reply(` No se puede robar, el usuario no tiene diamantes.`)
     await addMoney(userId, targetDiamonds)
     await removeMoney(who, targetDiamonds)
     cooldowns[userId] = now
     setCooldowns(cooldowns)
-    return m.reply(`💎 Robaste ${targetDiamonds} diamantes de un pobre 😢`)
+    return m.reply(` Robaste ${targetDiamonds} diamantes de un pobre `)
   }
 
   await addMoney(userId, toRob)
@@ -67,7 +68,7 @@ const handler = async (m, { conn, command }) => {
   cooldowns[userId] = now
   setCooldowns(cooldowns)
 
-  return m.reply(`💎 Robaste ${toRob} diamantes a @${who.split`@`[0]} 💰`, null, { mentions: [who] })
+  return m.reply(` Robaste ${toRob} diamantes a @${who.split`@`[0]} `, null, { mentions: [who] })
 }
 
 handler.help = ['robardiamantes']

@@ -1,17 +1,9 @@
 import { addExp, addMoney, getExp, getMoney, spendExp, spendMoney } from '../lib/stats.js'
 
-const cooldown = 5 * 60 * 1000 // 5 minutos
-const tiempos = {}
-
 const handler = async (m, { conn, usedPrefix, args }) => {
   const id = m.sender
 
   if (args.length < 3) {
-    if (tiempos[id] && (Date.now() - tiempos[id]) < cooldown) {
-      const tiempoRestante = Math.ceil((cooldown - (Date.now() - tiempos[id])) / 1000)
-      return m.reply(`⏳ Espera *${tiempoRestante} segundos* antes de volver a jugar.`)
-    }
-
     const message = `
 🎰 *¡Bienvenido a la Ruleta de Colores!* 🎰
 
@@ -25,12 +17,11 @@ Ejemplo:
 *${usedPrefix}ruleta money verde 100*
 
 O elige una opción rápida tocando un botón:
-
 `.trim()
 
     const botones = [
       ['🟢 Apuesta Exp Verde 300', `${usedPrefix}ruleta exp verde 300`],
-      ['🔴 Apuesta Diamants Rojo 50', `${usedPrefix}ruleta money rojo 50`],
+      ['🔴 Apuesta Diamantes Rojo 50', `${usedPrefix}ruleta money rojo 50`],
       ['⚪ Apuesta Exp Blanco 250', `${usedPrefix}ruleta exp blanco 250`]
     ]
 
@@ -44,8 +35,6 @@ O elige una opción rápida tocando un botón:
       null,
       m
     )
-
-    tiempos[id] = Date.now()
     return
   }
 
@@ -53,7 +42,7 @@ O elige una opción rápida tocando un botón:
   const color = args[1]?.toLowerCase()
   const cantidad = parseInt(args[2])
 
-  if (!['exp', 'money'].includes(tipo)) return m.reply('❌ Debes apostar "Exp" o "money" (Diamantes).')
+  if (!['exp', 'money'].includes(tipo)) return m.reply('❌ Debes apostar "exp" o "money" (diamantes).')
   if (!['verde', 'rojo', 'blanco'].includes(color)) return m.reply('❌ Colores válidos: verde, rojo o blanco.')
   if (isNaN(cantidad) || cantidad < 1) return m.reply('❌ Ingresa una cantidad válida mayor a 0.')
 

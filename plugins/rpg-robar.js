@@ -50,9 +50,14 @@ const handler = async (m, { conn }) => {
     return m.reply('🤨 ¿Robarte a ti mismo? Eso no tiene sentido.')
   }
 
-  // Revisión de protección activa
-  if (tieneProteccion(target)) {
-    return m.reply(`❌ El usuario @${target.split`@`[0]} tiene protección activada y no puedes robarle XP ni diamantes.`, null, { mentions: [target] })
+  // Revisión de protección activa (arreglado)
+  const proteccion = tieneProteccion(target)
+  if (proteccion.activa) {
+    return m.reply(
+      `❌ El usuario @${target.split`@`[0]} tiene protección activada y no puedes robarle XP ni diamantes.`,
+      null,
+      { mentions: [target] }
+    )
   }
 
   // Manejar cooldown
