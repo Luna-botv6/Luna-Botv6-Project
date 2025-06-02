@@ -8,6 +8,8 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import { platform } from 'process';
 import { readdirSync, statSync, unlinkSync, existsSync, readFileSync, watch } from 'fs';
 import yargs from 'yargs';
+import fs from 'fs';
+import { readdir, unlink, stat } from 'fs/promises';
 import { spawn } from 'child_process';
 import lodash from 'lodash';
 import chalk from 'chalk';
@@ -55,49 +57,6 @@ global.videoList = [];
 global.videoListXXX = [];
 
 const __dirname = global.__dirname(import.meta.url);
-
-// 🔧 Limpieza automática de claves rotas en MysticSession
-const sessionFolder = './MysticSession';
-
-if (existsSync(sessionFolder)) {
-  const archivos = readdirSync(sessionFolder);
-  const clavesRotas = archivos.filter(file =>
-    file.startsWith('pre-key-') ||
-    file.startsWith('sender-key-') ||
-    file.startsWith('app-state-sync-key-')
-  );
-
-  for (const file of clavesRotas) {
-    try {
-      unlinkSync(path.join(sessionFolder, file));
-      console.log('[🧹] Clave eliminada:', file);
-    } catch (e) {
-      console.error(`[❌] Error al eliminar ${file}:`, e.message);
-    }
-  }
-}
-
-// 🔁 Limpieza periódica de claves rotas en MysticSession cada 5 minutos
-setInterval(() => {
-  if (existsSync(sessionFolder)) {
-    const archivos = readdirSync(sessionFolder);
-    const clavesRotas = archivos.filter(file =>
-      file.startsWith('pre-key-') ||
-      file.startsWith('sender-key-') ||
-      file.startsWith('app-state-sync-key-')
-    );
-    for (const file of clavesRotas) {
-      try {
-        unlinkSync(path.join(sessionFolder, file));
-        console.log('[🧹][Auto] Clave eliminada:', file);
-      } catch (e) {
-        console.error(`[❌][Auto] Error al eliminar ${file}:`, e.message);
-      }
-    }
-  }
-},60 * 60 * 1000); // Cada 1 hora
-
-
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());
 global.prefix = new RegExp('^[' + (opts['prefix'] || '*/i!#$%+£¢€¥^°=¶∆×÷π√✓©®:;?&.\\-.@').replace(/[|\\{}()[\]^$+*?.\-\^]/g, '\\$&') + ']');
 global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile(`${opts._[0] ? opts._[0] + '_' : ''}database.json`));
@@ -158,8 +117,7 @@ loadChatgptDB();
 
 
 const {state, saveCreds} = await useMultiFileAuthState(global.authFile);
-
-const {version} = await fetchLatestBaileysVersion();
+const { version } = await fetchLatestBaileysVersion();
 let phoneNumber = global.botnumber || process.argv.find(arg => /^\+\d+$/.test(arg));
 
 const methodCodeQR = process.argv.includes("qr")
@@ -169,17 +127,24 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
 
 //Código adaptado para la compatibilidad de ser bot con el código de 8 digitos. Hecho por: https://github.com/GataNina-Li
-let opcion
-if (methodCodeQR) {
-opcion = '1'
+let opcion; // solo se declara una vez
+
+opcion = '1';
+try {
+  if (methodCodeQR) {
+    opcion = '1';
+  } else if (!methodCode && !fs.existsSync(`./${authFile}/creds.json`)) {
+    do {
+      opcion = await question('[ ℹ️ ] Seleccione una opción:\n1. Con código QR\n2. Con código de texto de 8 dígitos\n---> ');
+      if (!/^[1-2]$/.test(opcion)) {
+        console.log('[ ❗ ] Por favor, seleccione solo 1 o 2.\n');
+      }
+    } while (!['1', '2'].includes(opcion) || fs.existsSync(`./${authFile}/creds.json`));
+  }
+} catch (error) {
+  console.error('[❌] Error al seleccionar opción:', error);
 }
-if (!methodCodeQR && !methodCode && !fs.existsSync(`./${authFile}/creds.json`)) {
-do {
-opcion = await question('[ ℹ️ ] Seleccione una opción:\n1. Con código QR\n2. Con código de texto de 8 dígitos\n---> ')
-if (!/^[1-2]$/.test(opcion)) {
-console.log('[ ❗ ] Por favor, seleccione solo 1 o 2.\n')
-}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${authFile}/creds.json`))
-}
+
 
 console.info = () => {} // https://github.com/skidy89/baileys actualmente no muestra logs molestos en la consola
 const connectionOptions = {
@@ -194,23 +159,34 @@ const connectionOptions = {
     waWebSocketUrl: 'wss://web.whatsapp.com/ws/chat?ED=CAIICA',
     markOnlineOnConnect: true,
     generateHighQualityLinkPreview: true,
-    getMessage: async (key) => {
-        let jid = jidNormalizedUser(key.remoteJid);
-        let msg = await store.loadMessage(jid, key.id);
-        return msg?.message || "";
-    },
-    patchMessageBeforeSending: async (message) => {
-        let messages = 0;
-        global.conn.uploadPreKeysToServerIfRequired();
-        messages++;
-        return message;
-    },
+   getMessage: async (key) => {
+  try {
+    let jid = jidNormalizedUser(key.remoteJid);
+    let msg = await store.loadMessage(jid, key.id);
+    return msg?.message || "";
+  } catch (e) {
+    console.error('[❌] Error en getMessage:', e);
+    return '';
+  }
+},
+
+patchMessageBeforeSending: async (message) => {
+  try {
+    global.conn.uploadPreKeysToServerIfRequired();
+    return message;
+  } catch (e) {
+    console.error('[❌] Error en patchMessageBeforeSending:', e);
+    return message;
+  }
+},
+
     msgRetryCounterCache: msgRetryCounterCache,
     userDevicesCache: userDevicesCache,
     //msgRetryCounterMap,
     defaultQueryTimeoutMs: undefined,
     cachedGroupMetadata: (jid) => global.conn.chats[jid] ?? {},
-    version: [2, 3000, 1023223821],
+    version,
+
     //userDeviceCache: msgRetryCounterCache <=== quien fue el pendejo?????
 };
 
@@ -259,6 +235,10 @@ rl.close()
 conn.isInit = false;
 conn.well = false;
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);
+purgeSession();
+purgeSessionSB();
+purgeOldFiles();
+
 
 if (!opts['test']) {
   if (global.db) {
@@ -273,15 +253,22 @@ if (opts['server']) (await import('./server.js')).default(global.conn, PORT);
 
 
 
-function clearTmp() {
-  const tmp = [join(__dirname, './src/tmp')];
-  const filename = [];
-  tmp.forEach((dirname) => readdirSync(dirname).forEach((file) => filename.push(join(dirname, file))));
-  return filename.map((file) => {
-    const stats = statSync(file);
-    if (stats.isFile() && (Date.now() - stats.mtimeMs >= 1000 * 60 * 3)) return unlinkSync(file); // 3 minutes
-    return false;
-  });
+async function clearTmp() {
+  const tmp = [join('./src/tmp')];
+  try {
+    for (const dirname of tmp) {
+      const files = await readdir(dirname);
+      await Promise.all(files.map(async file => {
+        const filePath = join(dirname, file);
+        const stats = await stat(filePath);
+        if (stats.isFile() && (Date.now() - stats.mtimeMs >= 1000 * 60 * 3)) {
+          await unlink(filePath);
+        }
+      }));
+    }
+  } catch (err) {
+    console.error('[❌] Error en clearTmp:', err.message);
+  }
 }
 
 // Función para eliminar archivos core.<numero>
@@ -310,130 +297,138 @@ fs.watch(dirToWatchccc, (eventType, filename) => {
   }
 });
 
-function purgeSession() {
-let prekey = []
-let directorio = fs.existsSync("./MysticSession") ? readdirSync("./MysticSession") : []
-let filesFolderPreKeys = directorio.filter(file => {
-return file.startsWith('pre-key-') /*|| file.startsWith('session-') || file.startsWith('sender-') || file.startsWith('app-') */
-})
-prekey = [...prekey, ...filesFolderPreKeys]
-console.log(`[CleanUp] pre-keys encontrados en MysticSession: ${filesFolderPreKeys.length}`);
-filesFolderPreKeys.forEach(files => {
-unlinkSync(`./MysticSession/${files}`)
-})
-} 
-
-function purgeSessionSB() {
-try {
-let listaDirectorios = fs.existsSync("./jadibts/") ? readdirSync("./jadibts/") : [];
-let SBprekey = []
-listaDirectorios.forEach(directorio => {
-if (statSync(`./jadibts/${directorio}`).isDirectory()) {
-let DSBPreKeys = readdirSync(`./jadibts/${directorio}`).filter(fileInDir => {
-return fileInDir.startsWith('pre-key-') /*|| fileInDir.startsWith('app-') || fileInDir.startsWith('session-')*/
-})
-SBprekey = [...SBprekey, ...DSBPreKeys]
-console.log(`[CleanUp] pre-keys encontrados en jadibts/${directorio}: ${DSBPreKeys.length}`);
-DSBPreKeys.forEach(fileInDir => {
-unlinkSync(`./jadibts/${directorio}/${fileInDir}`)
-})
+async function purgeSession() {
+  try {
+    const directorio = await readdir("./MysticSession");
+    const prekeyFiles = directorio.filter(file =>
+      file.startsWith('pre-key-') ||
+      file.startsWith('sender-key-') ||
+      file.startsWith('app-state-sync-key-')
+    );
+    console.log(`[CleanUp] claves encontradas en MysticSession: ${prekeyFiles.length}`);
+    await Promise.all(prekeyFiles.map(file => unlink(`./MysticSession/${file}`)));
+  } catch (err) {
+    console.error('[❌] Error al limpiar MysticSession:', err.message);
+  }
 }
-})
-if (SBprekey.length === 0) return; //console.log(chalk.cyanBright(`=> No hay archivos por eliminar.`))
-} catch (err) {
-console.log(chalk.bold.red(`[ ℹ️ ] Algo salio mal durante la eliminación, archivos no eliminados`))
-}}
 
-
-function purgeOldFiles() {
+async function purgeOldFiles() {
   const dir = './MysticSession/';
   const oneHourAgo = Date.now() - (60 * 60 * 1000);
-
-  if (!fs.existsSync(dir)) return;
-
-  const files = readdirSync(dir);
-  let eliminados = 0;
-
-  files.forEach(file => {
-    const filePath = path.join(dir, file);
-    const stats = statSync(filePath);
-
-    if (stats.isFile() && stats.mtimeMs < oneHourAgo && file !== 'creds.json') {
+  try {
+    const files = await readdir(dir);
+    let eliminados = 0;
+    await Promise.all(files.map(async file => {
+      const filePath = `${dir}${file}`;
       try {
-        unlinkSync(filePath);
-        eliminados++;
+        // Chequea si el archivo sigue existiendo antes de hacer stat
+        const stats = await stat(filePath).catch(() => null);
+        if (!stats || !stats.isFile()) return;
+
+        if (stats.mtimeMs < oneHourAgo && file !== 'creds.json') {
+          await unlink(filePath);
+          eliminados++;
+        }
       } catch (err) {
         console.log(chalk.red(`[ERROR] No se pudo eliminar: ${file}`));
       }
+    }));
+    if (eliminados > 0) {
+      console.log(chalk.cyanBright(`🧹 Se eliminaron ${eliminados} archivo(s) antiguo(s) en MysticSession`));
+    } else {
+      console.log(chalk.cyanBright(`🧹 No se encontraron archivos antiguos para eliminar en MysticSession`));
     }
-  });
-
-  if (eliminados > 0) {
-    console.log(chalk.cyanBright(`🧹 Se eliminaron ${eliminados} archivo(s) antiguo(s) en MysticSession`));
-  } else {
-    console.log(chalk.cyanBright(`🧹 No se encontraron archivos antiguos para eliminar en MysticSession`));
+  } catch (err) {
+    console.error('[❌] Error en purgeOldFiles:', err.message);
   }
 }
 
 
-async function connectionUpdate(update) {
-  
 
-  const {connection, lastDisconnect, isNewLogin} = update;
+async function purgeSessionSB() {
+  try {
+    const listaDirectorios = await readdir("./jadibts/");
+    for (const directorio of listaDirectorios) {
+      const dirPath = `./jadibts/${directorio}`;
+      const stats = await stat(dirPath);
+      if (stats.isDirectory()) {
+        const DSBPreKeys = (await readdir(dirPath)).filter(file =>
+          file.startsWith('pre-key-') ||
+          file.startsWith('sender-key-') ||
+          file.startsWith('app-state-sync-key-')
+        );
+        console.log(`[CleanUp] claves encontradas en jadibts/${directorio}: ${DSBPreKeys.length}`);
+        await Promise.all(DSBPreKeys.map(file => unlink(`${dirPath}/${file}`)));
+      }
+    }
+  } catch (err) {
+    console.log(chalk.bold.red(`[ ℹ️ ] Algo salió mal durante la eliminación, archivos no eliminados`));
+  }
+}
+
+
+
+let lastQR = null; // 👈 esto fuera de la función, por ejemplo justo arriba de connectionUpdate
+
+async function connectionUpdate(update) {
+  const { connection, lastDisconnect, isNewLogin } = update;
   stopped = connection;
   if (isNewLogin) conn.isInit = true;
+
   const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
   if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
     await global.reloadHandler(true).catch(console.error);
     global.timestamp.connect = new Date;
   }
   if (global.db.data == null) loadDatabase();
-if (update.qr != 0 && update.qr != undefined || methodCodeQR) {
-if (opcion == '1' || methodCodeQR) {
-    console.log(chalk.yellow('[ ℹ️ ] Escanea el código QR.'));
- }}
+
+  
+  if ((update.qr != 0 && update.qr != undefined) || methodCodeQR) {
+    if (opcion == '1' || methodCodeQR) {
+      if (update.qr && update.qr !== lastQR) {
+        console.log(chalk.yellow('[ ℹ️ ] Escanea el código QR.'));
+        lastQR = update.qr; 
+      }
+    }
+  }
+
   if (connection == 'open') {
     console.log(chalk.yellow('[ ℹ️ ] Conectado correctamente.'));
   }
-let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-if (reason == 405) {
-await fs.unlinkSync("./MysticSession/" + "creds.json")
-console.log(chalk.bold.redBright(`[ ⚠ ] Conexión replazada, Por favor espere un momento me voy a reiniciar...\nSi aparecen error vuelve a iniciar con : npm start`)) 
-process.send('reset')}
-if (connection === 'close') {
+
+  let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
+  if (reason == 405) {
+    await fs.unlinkSync("./MysticSession/" + "creds.json");
+    console.log(chalk.bold.redBright(`[ ⚠ ] Conexión reemplazada, Por favor espere un momento me voy a reiniciar...\nSi aparecen error vuelve a iniciar con : npm start`));
+    process.send('reset');
+  }
+
+  if (connection === 'close') {
     if (reason === DisconnectReason.badSession) {
-        conn.logger.error(`[ ⚠ ] Sesión incorrecta, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
-        //process.exit();
- } else if (reason === DisconnectReason.connectionClosed) {
-    conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando en 2 segundos...`);
-    setTimeout(async () => {
-      await global.reloadHandler(true).catch(console.error);
-    }, 2000);
+      conn.logger.error(`[ ⚠ ] Sesión incorrecta, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
+    } else if (reason === DisconnectReason.connectionClosed) {
+      conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando en 2 segundos...`);
+      setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
     } else if (reason === DisconnectReason.connectionLost) {
-    conn.logger.warn(`[ ⚠ ] Conexión perdida con el servidor, reconectando en 2 segundos...`);
-    setTimeout(async () => {
-      await global.reloadHandler(true).catch(console.error);
-    }, 2000);
+      conn.logger.warn(`[ ⚠ ] Conexión perdida con el servidor, reconectando en 2 segundos...`);
+      setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
     } else if (reason === DisconnectReason.connectionReplaced) {
-        conn.logger.error(`[ ⚠ ] Conexión reemplazada, se ha abierto otra nueva sesión. Por favor, cierra la sesión actual primero.`);
-        //process.exit();
+      conn.logger.error(`[ ⚠ ] Conexión reemplazada, se ha abierto otra nueva sesión. Por favor, cierra la sesión actual primero.`);
     } else if (reason === DisconnectReason.loggedOut) {
-        conn.logger.error(`[ ⚠ ] Conexion cerrada, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
-        //process.exit();
+      conn.logger.error(`[ ⚠ ] Conexion cerrada, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
     } else if (reason === DisconnectReason.restartRequired) {
-        conn.logger.info(`[ ⚠ ] Reinicio necesario, reinicie el servidor si presenta algún problema.`);
-        await global.reloadHandler(true).catch(console.error);
-    } else if (reason === DisconnectReason.timedOut) {
-    conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando en 2 segundos...`);
-    setTimeout(async () => {
+      conn.logger.info(`[ ⚠ ] Reinicio necesario, reinicie el servidor si presenta algún problema.`);
       await global.reloadHandler(true).catch(console.error);
-    }, 2000);
+    } else if (reason === DisconnectReason.timedOut) {
+      conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando en 2 segundos...`);
+      setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
     } else {
-        conn.logger.warn(`[ ⚠ ] Razón de desconexión desconocida. ${reason || ''}: ${connection || ''}`);
-        await global.reloadHandler(true).catch(console.error);
+      conn.logger.warn(`[ ⚠ ] Razón de desconexión desconocida. ${reason || ''}: ${connection || ''}`);
+      await global.reloadHandler(true).catch(console.error);
     }
+  }
 }
-}
+
 
 process.on('uncaughtException', console.error);
 
@@ -613,16 +608,18 @@ async function _quickTest() {
   global.support = {ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find};
   Object.freeze(global.support);
 }
-setInterval(async () => {
-  if (stopped === 'close' || !conn || !conn?.user) return;
-  await clearTmp();
+setInterval(() => {
+  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
+  clearTmp();
 }, 180000);
-setInterval(async () => {
-  if (stopped === 'close' || !conn || !conn?.user) return;
-  await purgeSessionSB();
-  await purgeOldFiles();
-  await purgeSession();
+
+setInterval(() => {
+  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
+  purgeSessionSB();
+  purgeOldFiles();
+  purgeSession();
 }, 1000 * 60 * 60);
+
 
 setInterval(async () => {
   if (stopped === 'close' || !conn || !conn?.user) return;
