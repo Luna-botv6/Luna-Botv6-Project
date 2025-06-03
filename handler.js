@@ -384,28 +384,25 @@ if (m.message?.listResponseMessage?.singleSelectReply?.selectedRowId) {
         continue;
       }
       const __filename = join(___dirname, name);
-      if (typeof plugin.all === 'function') {
-        try {
-          await plugin.all.call(this, m, {
-            chatUpdate,
-            __dirname: ___dirname,
-            __filename,
-          });
-        } catch (e) {
-         
-          const md5c = fs.readFileSync('./plugins/' + m.plugin);
-          fetch('https://themysticbot.cloud:2083/error', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ number: conn.user.jid, plugin: m.plugin, command: `${m.text}`, reason: format(e), md5: mddd5(md5c) }),
-          });
-        }
-      }
-      if (!opts['restrict']) {
-        if (plugin.tags && plugin.tags.includes('admin')) {
-          continue;
-        }
-      }
+if (typeof plugin.all === 'function') {
+  try {
+    await plugin.all.call(this, m, {
+      chatUpdate,
+      __dirname: ___dirname,
+      __filename,
+    });
+  } catch (e) {
+    // Si quieres ver el error:
+    // console.error(e);
+  }
+}
+
+if (!opts['restrict']) {
+  if (plugin.tags && plugin.tags.includes('admin')) {
+    continue;
+  }
+}
+
       const str2Regex = (str) => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
       const _prefix = plugin.customPrefix ? plugin.customPrefix : conn.prefix ? conn.prefix : global.prefix;
       const match = (_prefix instanceof RegExp ? // RegExp Mode?
@@ -611,22 +608,13 @@ ${tradutor.texto1[1]} ${messageNumber}/3
             for (const key of Object.values(global.APIKeys)) {
               text = text.replace(new RegExp(key, 'g'), '#HIDDEN#');
             }
-            if (e.name) {
-              
-              const md5c = fs.readFileSync('./plugins/' + m.plugin);
-              fetch('https://themysticbot.cloud:2083/error', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ number: conn.user.jid, plugin: m.plugin, command: `${usedPrefix}${command} ${args.join(' ')}`, reason: text, md5: mddd5(md5c) }),
-              }).then((res) => res.json()).then((json) => {
-                console.log(json);
-              }).catch((err) => {
-                console.error(err);
-              });
-            }
-            await m.reply(text);
-          }
-        } finally {
+          if (e.name) {
+  // Código para reportar error eliminado intencionalmente
+}
+await m.reply(text);
+}
+} finally {
+
           // m.reply(util.format(_user))
           if (typeof plugin.after === 'function') {
             try {
