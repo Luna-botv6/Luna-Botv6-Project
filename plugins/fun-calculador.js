@@ -1,136 +1,87 @@
-const handler = async (m, { conn, command, text, usedPrefix }) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(./src/languages/${idioma}.json))
-  const tradutor = _translate.plugins.fun_calculador
+import fs from 'fs'
 
-  if (!text) throw ${tradutor.texto26};
-  const percentage = Math.floor(Math.random() * 101)
+const handler = async (m, { conn, command, text }) => {
+  // Carga el idioma del usuario o el predeterminado
+  const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
+  const traductor = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`)).plugins.fun_calculador
 
-  let emoji = ''
-  let description = ''
+  // Obtener JID del usuario mencionado, si no hay, usar texto plano (por si no etiqueta)
+  let mencionadoJid = (m.mentionedJid && m.mentionedJid[0]) || null
 
-  const barra = (value) => {
-    const total = 10
-    const filled = Math.floor((value / 100) * total)
-    const empty = total - filled
-    return '▰'.repeat(filled) + '▱'.repeat(empty)
+  if (!mencionadoJid && text) {
+    // Intentar que el texto sea número y armar un jid básico
+    // Solo si quieres hacerlo así, sino lanzas error
+    const posibleNumero = text.replace(/\D/g, '') // solo números
+    if (posibleNumero) mencionadoJid = `${posibleNumero}@s.whatsapp.net`
   }
 
-  const getText = (t1, t2, t3) =>
-    ${t1} *${text.toUpperCase()}* ${t2} *${percentage}%* ${command} ${emoji}\n${barra(percentage)}\n${t3}
+  if (!mencionadoJid) throw traductor.texto26 // "Etiqueta a alguien"
 
-  switch (command) {
-    case 'gay2':
-      emoji = '🏳️‍🌈'
-      description = percentage < 50
-        ? getText(...tradutor.texto1)
-        : percentage > 100
-          ? getText(...tradutor.texto2)
-          : getText(...tradutor.texto3)
-      break
-    case 'lesbiana':
-      emoji = '🏳️‍🌈'
-      description = percentage < 50
-        ? getText(...tradutor.texto4)
-        : percentage > 100
-          ? getText(...tradutor.texto5)
-          : getText(...tradutor.texto6)
-      break
-    case 'pajero':
-    case 'pajera':
-      emoji = '😏💦'
-      description = percentage < 50
-        ? getText(...tradutor.texto7)
-        : percentage > 100
-          ? getText(...tradutor.texto8)
-          : getText(...tradutor.texto9)
-      break
-    case 'puto':
-    case 'puta':
-      emoji = '🔥🥵'
-      description = percentage < 50
-        ? getText(...tradutor.texto10)
-        : percentage > 100
-          ? getText(...tradutor.texto11)
-          : getText(...tradutor.texto12)
-      break
-    case 'manco':
-    case 'manca':
-      emoji = '💩'
-      description = percentage < 50
-        ? getText(...tradutor.texto13)
-        : percentage > 100
-          ? getText(...tradutor.texto14)
-          : getText(...tradutor.texto15)
-      break
-    case 'rata':
-      emoji = '🐁'
-      description = percentage < 50
-        ? getText(...tradutor.texto16)
-        : percentage > 100
-          ? getText(...tradutor.texto17)
-          : getText(...tradutor.texto18)
-      break
-    case 'prostituto':
-    case 'prostituta':
-      emoji = '🫦👅'
-      description = percentage < 50
-        ? getText(...tradutor.texto19)
-        : percentage > 100
-          ? getText(...tradutor.texto20)
-          : getText(...tradutor.texto21)
-      break
-    default:
-      throw ${tradutor.texto22}
+  // Porcentaje aleatorio
+  const porcentaje = Math.floor(Math.random() * 101)
+
+  // Barra gráfica
+  const totalBarra = 10
+  const barraLlena = Math.floor(porcentaje / (100 / totalBarra))
+  const barra = '▰'.repeat(barraLlena) + '▱'.repeat(totalBarra - barraLlena)
+
+  // Configuración por comando
+  const configuracion = {
+    gay2: { emoji: '🏳️‍🌈', textos: [traductor.texto1, traductor.texto2, traductor.texto3] },
+    lesbiana: { emoji: '🏳️‍🌈', textos: [traductor.texto4, traductor.texto5, traductor.texto6] },
+    pajero: { emoji: '😏💦', textos: [traductor.texto7, traductor.texto8, traductor.texto9] },
+    pajera: { emoji: '😏💦', textos: [traductor.texto7, traductor.texto8, traductor.texto9] },
+    puto: { emoji: '🔥🥵', textos: [traductor.texto10, traductor.texto11, traductor.texto12] },
+    puta: { emoji: '🔥🥵', textos: [traductor.texto10, traductor.texto11, traductor.texto12] },
+    manco: { emoji: '💩', textos: [traductor.texto13, traductor.texto14, traductor.texto15] },
+    manca: { emoji: '💩', textos: [traductor.texto13, traductor.texto14, traductor.texto15] },
+    rata: { emoji: '🐁', textos: [traductor.texto16, traductor.texto17, traductor.texto18] },
+    prostituto: { emoji: '🫦👅', textos: [traductor.texto19, traductor.texto20, traductor.texto21] },
+    prostituta: { emoji: '🫦👅', textos: [traductor.texto19, traductor.texto20, traductor.texto21] }
   }
 
-  const responses = tradutor.texto23
-  const randomMessage = responses[Math.floor(Math.random() * responses.length)]
+  const datos = configuracion[command]
+  if (!datos) throw traductor.texto22
 
-  const resultadoFinal = 
+  const [textosMenor, textosMayor, textosIntermedio] = datos.textos
+  const textos = porcentaje < 50 ? textosMenor : porcentaje > 100 ? textosMayor : textosIntermedio
+
+  // Nombre para mostrar (solo número corto)
+  const nombreMostrar = `@${mencionadoJid.split('@')[0]}`
+
+  const descripcion = `${textos[0]} *${nombreMostrar}* ${textos[1]} *${porcentaje}%* ${command} ${datos.emoji}\n${barra}\n${textos[2]}`
+
+  const mensajeAleatorio = traductor.texto23[Math.floor(Math.random() * traductor.texto23.length)]
+
+  const resultadoFinal = `
 ┏━━━━━━━━━━━━━━━┓
-┃  💫 *${tradutor.texto24}* 💫
+┃  💫 *${traductor.texto24}* 💫
 ┗━━━━━━━━━━━━━━━┛
 
-${description}
+${descripcion}
 
-🗯️ *${randomMessage}*
+🗯️ *${mensajeAleatorio}*
 
 ┏━━━━━━━━━━━━━━━┓
-┃ 🔮 *${tradutor.texto24}* 🔮
-┗━━━━━━━━━━━━━━━┛.trim()
+┃ 🔮 *${traductor.texto24}* 🔮
+┗━━━━━━━━━━━━━━━┛
+`.trim()
 
-  const animacionCarga = [
-   "🟥⬛⬛⬛⬛⬛⬛⬛⬛⬛ 10%",
-  "🟥🟧⬛⬛⬛⬛⬛⬛⬛⬛ 30%",
-  "🟥🟧🟨🟩⬛⬛⬛⬛⬛⬛ 50%",
-  "🟥🟧🟨🟩🟦🟦⬛⬛⬛⬛ 80%",
-  "🟥🟧🟨🟩🟦🟪🟫⬜⬜⬜ 100%"
-  ]
+  // Mensaje "calculando..."
+  await conn.sendMessage(m.chat, { text: '⌛ *Calculando...* ⌛' }, { quoted: m })
 
-  const { key } = await conn.sendMessage(m.chat, {
-    text: animacionCarga[0],
-    mentions: conn.parseMention(resultadoFinal)
-  }, { quoted: m })
+  // Esperar 3 segundos
+  await new Promise(resolve => setTimeout(resolve, 3000))
 
-  for (let i = 1; i < animacionCarga.length; i++) {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    await conn.sendMessage(m.chat, {
-      text: animacionCarga[i],
-      edit: key
-    })
-  }
-
+  // Enviar resultado final mencionando al usuario
   await conn.sendMessage(m.chat, {
     text: resultadoFinal,
-    edit: key,
-    mentions: conn.parseMention(resultadoFinal)
-  })
+    mentions: [mencionadoJid]
+  }, { quoted: m })
 }
 
 handler.help = ['gay2', 'lesbiana', 'pajero', 'pajera', 'puto', 'puta', 'manco', 'manca', 'rata', 'prostituta', 'prostituto'].map(v => v + ' @tag | nombre')
 handler.tags = ['calculator']
-handler.command = /^(gay2|lesbiana|pajero|pajera|puto|puta|manco|manca|rata|prostituta|prostituto)$/i
+handler.command = /^(gay2|lesbiana|pajero|pajera|puto|puta|manco|manca|rata|prostituto|prostituta)$/i
 
 export default handler
