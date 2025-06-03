@@ -1,84 +1,349 @@
-# Luna-Botv6-Project 🌙🤖
+# 🌙 Luna-Bot V6 - WhatsApp Bot
 
-**Luna** es un bot avanzado y personalizable para WhatsApp 📱, diseñado para ofrecerte una experiencia completa y versátil. Combina herramientas útiles 🛠️, entretenimiento 🎉, funciones de moderación 🛡️ y comandos inteligentes ⚙️, todo dentro de una interfaz intuitiva y adaptable a tus necesidades.
+<div align="center">
+  <img src="https://i.imgur.com/your-logo.png" alt="Luna Bot Logo" width="200"/>
+  
+  [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+  [![Baileys](https://img.shields.io/badge/Baileys-Latest-blue.svg)](https://github.com/WhiskeySockets/Baileys)
+  [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+  [![Contributors](https://img.shields.io/github/contributors/your-username/Luna-Botv6)](https://github.com/your-username/Luna-Botv6/graphs/contributors)
+  [![Stars](https://img.shields.io/github/stars/your-username/Luna-Botv6)](https://github.com/your-username/Luna-Botv6/stargazers)
+  
+  **Luna Bot es un bot avanzado y altamente personalizable para WhatsApp, diseñado para ofrecerte una experiencia completa con herramientas útiles, entretenimiento, moderación y comandos inteligentes.**
+</div>
 
+---
 
-Requisitos y Características del Proyecto LunaBotV6
-LunaBotV6 es un bot de WhatsApp altamente personalizado, basado originalmente en
-TheMystic-Bot-MD y adaptado progresivamente para usar la versión moderna de Baileys utilizada
-por GataBot-MD.
-== REQUISITOS ==
-1. Node.js v18+.
-2. ffmpeg y imagemagick instalados (para funciones de stickers, audios y multimedia).
-3. Python 3 (solo si usas funciones que requieren módulos como whisper o lectura de QR).
-4. Instalación de dependencias:
- - Ejecutar `npm install` en la raíz del proyecto.
-5. Conexión estable a internet.
-6. Sistema operativo recomendado: Linux (aunque puede funcionar en Windows con ajustes).
-== CAMBIOS Y MEJORAS APLICADAS ==
-- Migración completa del bot a @whiskeysockets/baileys.
-- Implementación del sistema de autenticación moderno con `useSingleFileAuthState`.
-- Eliminación del uso de `qr_database.json`. Ahora el QR se muestra en consola
-(`printQRInTerminal: true`).
-- Nueva estructura de base de datos distribuida (cada módulo tiene su propio archivo JSON en la
-carpeta `database/`).
-- Separación de los datos persistentes (AFK, niveles, economía, funciones, etc.) de la carpeta de
-sesión `MysticSession`.
-- Implementación del sistema de experiencia centralizada usando `lib/exp.js`, que acumula la EXP
-de múltiples comandos como `minar`, `cazar`, etc.
-- Incorporación de un sistema de auto-limpieza de archivos TPM (Temporales).
-- Limpieza automática de archivos de claves (key de cifrado) usada por Baileys.
- - Esto ocurre cada hora.
- - Durante ese proceso, el bot puede tardar unos segundos en responder mientras genera nuevas
-claves.
- - Después de este breve retardo, el bot vuelve a operar con normalidad.
-- Personalización del menú visual (`menus-menu.js`) 
+## 📋 Tabla de Contenidos
 
-== NOTAS ADICIONALES ==
-- El bot soporta comandos divididos en plugins temáticos (juegos, herramientas, administración,
-multimedia, etc.).
-- Compatible con grupos y usuarios individuales.
-- El proyecto sigue una filosofía modular: todos los cambios están orientados a facilitar
-mantenibilidad, escalabilidad y estabilidad.
-== UBICACIÓN DE ARCHIVOS CLAVE ==
-- Archivos nuevos: `afkDB.js,ahorcado.js,antispamDB.js,canvas.js,exp.js,levelling.js,menu.js,minar.js,minardiamantes.js,ppt.js,slot.js,stats.js,tictactoe-db.js`
-- Archivos principales: `main.js`, `handler.js`, `config.js`, `index.js`
-- Carpeta de base de datos modular: `database/`
-- Carpeta de sesión: `MysticSession` (solo contiene sesión activa, no datos persistentes)
+- [🌟 Características](#-características)
+- [📦 Instalación](#-instalación)
+- [⚙️ Configuración](#️-configuración)
+- [🚀 Uso](#-uso)
+- [📁 Estructura del Proyecto](#-estructura-del-proyecto)
+- [🔧 Requisitos del Sistema](#-requisitos-del-sistema)
+- [🌐 Despliegue](#-despliegue)
+- [🤝 Contribuir](#-contribuir)
+- [📞 Soporte](#-soporte)
+- [📄 Licencia](#-licencia)
 
-IMPORTANTE:
+---
 
-1. Edita el archivo 'config.js' y coloca tu número en la sección correspondiente.
-2. En la carpeta 'plugins/antispam.js', añade también tu número.
+## 🌟 Características
 
-LunaBot cuenta con un sistema antispam personalizado. Si no agregas tu número, el bot podría bloquearte automáticamente.
+### 🎮 **Entretenimiento**
+- Sistema de juegos completo (ahorcado, piedra/papel/tijera, tic-tac-toe)
+- Máquina tragamonedas con sistema de recompensas
+- Comandos de diversión y memes
+- Sistema de niveles y experiencia
 
-[!IMPORTANT]  
-> Luna-Botv6 es un proyecto basado en el código de Mystic Bot-md. Aunque se han modificado varias lógicas, se conservarán algunas marcas de agua de Mystic Bot como muestra de respeto y reconocimiento al trabajo de Bruno Sobrino.
+### 🛠️ **Herramientas Útiles**
+- Descarga de contenido multimedia (YouTube, TikTok, Instagram)
+- Generación y lectura de códigos QR
+- Convertidor de stickers y multimedia
+- Traductor multiidioma
+- Información del clima
 
-[!EXTRA]  
-> Luna-Botv6 es un proyecto en constante desarrollo basado en Mystic Bot-md. Aunque no está al 100% terminado, se están implementando mejoras y ajustes para optimizar su funcionamiento y ofrecer una mejor experiencia a los usuarios. El bot incluye nuevas funcionalidades y ajustes en la lógica para hacerlo más eficiente y versátil.
+### 🛡️ **Moderación Avanzada**
+- Sistema antispam inteligente
+- Control de enlaces y contenido
+- Gestión automática de grupos
+- Sistema de advertencias
+- Filtros personalizables
 
-NOTA:
+### 💎 **Economía Virtual**
+- Sistema de minería de diamantes
+- Economía interna con monedas virtuales
+- Tienda de objetos y mejoras
+- Sistema bancario integrado
 
-Todas las actualizaciones, nuevos comandos y funciones de LunaBot se anunciarán exclusivamente desde la página oficial en WhatsApp.
+### 🤖 **Funciones Inteligentes**
+- IA integrada para conversaciones
+- Respuestas automáticas personalizables
+- Sistema AFK (Away From Keyboard)
+- Comandos de información y estadísticas
 
-Únete aquí para estar al tanto de todo:  
-https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y
+---
 
-## Despliegue en BoxMineWorld
+## 📦 Instalación
 
-<a href="https://boxmineworld.com">
-  <img width="180px" src="https://boxmineworld.com/img/Logo.png"/>
-</a>
+### 🐧 **Linux (Recomendado)**
 
-<details>
- <summary><b>:paperclip: Enlaces Importantes</b></summary>
+```bash
+# Clonar el repositorio
+git clone https://github.com/your-username/Luna-Botv6.git
+cd Luna-Botv6
 
-- **Sitio Web:** [boxmineworld.com](https://boxmineworld.com)
-- **Área de Clientes:** [dash.boxmineworld.com](https://dash.boxmineworld.com)
-- **Panel de Control:** [panel.boxmineworld.com](https://panel.boxmineworld.com)
-- **Documentación:** [docs.boxmineworld.com](https://docs.boxmineworld.com)
-- **Comunidad de Discord:** [¡Únete aquí!](https://discord.gg/84qsr4v)
+# Instalar dependencias del sistema
+sudo apt update
+sudo apt install nodejs npm python3 ffmpeg imagemagick
 
-</details>
+# Instalar dependencias del proyecto
+npm install
+
+# Configurar el bot
+cp config.example.js config.js
+nano config.js
+```
+
+### 🪟 **Windows**
+
+```powershell
+# Clonar el repositorio
+git clone https://github.com/your-username/Luna-Botv6.git
+cd Luna-Botv6
+
+# Instalar dependencias (requiere chocolatey)
+choco install nodejs python3 ffmpeg imagemagick
+
+# Instalar dependencias del proyecto
+npm install
+
+# Configurar el bot
+copy config.example.js config.js
+notepad config.js
+```
+
+### 🍎 **macOS**
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/your-username/Luna-Botv6.git
+cd Luna-Botv6
+
+# Instalar dependencias (requiere Homebrew)
+brew install node python3 ffmpeg imagemagick
+
+# Instalar dependencias del proyecto
+npm install
+
+# Configurar el bot
+cp config.example.js config.js
+nano config.js
+```
+
+---
+
+## ⚙️ Configuración
+
+### 📝 **Configuración Básica**
+
+Edita el archivo `config.js` con tus datos:
+
+```javascript
+global.owner = [
+  ['5493483466763', 'Tu Nombre', true],
+  ['5493483466763']
+]
+
+global.mods = ['5493483466763']
+global.prems = ['5493483466763']
+
+global.packname = 'Luna Bot'
+global.author = 'Tu Nombre'
+global.wm = 'Luna Bot - WhatsApp Bot'
+
+// Configuración de la base de datos
+global.db = './database/database.json'
+
+// APIs (opcional)
+global.APIs = {
+  nrtm: 'https://nurutomo.herokuapp.com',
+  xteam: 'https://api.xteam.xyz',
+  // Agrega más APIs según necesites
+}
+```
+
+### 🔐 **Configuración de Seguridad**
+
+> **⚠️ IMPORTANTE:** Asegúrate de agregar tu número en las siguientes ubicaciones para evitar ser bloqueado por el sistema antispam:
+
+1. **config.js** - En la sección `global.owner`
+2. **plugins/antispam.js** - En el array de números permitidos
+
+---
+
+## 🚀 Uso
+
+### 🖥️ **Iniciar el Bot**
+
+```bash
+# Iniciar normalmente
+npm start
+
+# Iniciar con PM2 (recomendado para producción)
+npm install -g pm2
+pm2 start main.js --name "LunaBot"
+
+# Ver logs con PM2
+pm2 logs LunaBot
+```
+
+### 📱 **Conexión a WhatsApp**
+
+1. Ejecuta el bot con `npm start`
+2. Escanea el código QR que aparece en la terminal con WhatsApp Web
+3. ¡El bot estará listo para usar!
+
+### 📋 **Comandos Principales**
+
+| Comando | Descripción | Ejemplo |
+|---------|-------------|---------|
+| `.menu` | Muestra el menú principal | `.menu` |
+| `.help` | Ayuda sobre comandos | `.help play` |
+| `.ping` | Verifica la latencia | `.ping` |
+| `.info` | Información del bot | `.info` |
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+Luna-Botv6/
+├── 📁 database/          # Base de datos modular
+│   ├── afkDB.json
+│   ├── levelling.json
+│   └── ...
+├── 📁 lib/               # Librerías principales
+│   ├── exp.js           # Sistema de experiencia
+│   ├── levelling.js     # Sistema de niveles
+│   └── ...
+├── 📁 plugins/          # Comandos del bot
+│   ├── game-*.js        # Juegos
+│   ├── tools-*.js       # Herramientas
+│   ├── admin-*.js       # Administración
+│   └── ...
+├── 📁 MysticSession/    # Sesión de WhatsApp
+├── 📄 main.js           # Archivo principal
+├── 📄 handler.js        # Manejador de eventos
+├── 📄 config.js         # Configuración
+└── 📄 package.json      # Dependencias
+```
+
+---
+
+## 🔧 Requisitos del Sistema
+
+### 📋 **Requisitos Mínimos**
+
+| Componente | Versión | Descripción |
+|------------|---------|-------------|
+| **Node.js** | v18+ | Motor de JavaScript |
+| **NPM** | v8+ | Gestor de paquetes |
+| **Python** | v3.8+ | Para módulos específicos |
+| **FFmpeg** | Latest | Procesamiento multimedia |
+| **ImageMagick** | Latest | Manipulación de imágenes |
+| **RAM** | 512MB | Memoria mínima |
+| **Almacenamiento** | 3GB | Espacio libre |
+
+### 🌐 **Requisitos de Red**
+
+- Conexión estable a internet
+- Puerto 80/443 abierto (para webhooks)
+- Latencia baja para mejor rendimiento
+
+---
+
+## 🌐 Despliegue
+
+### ☁️ **Despliegue en la Nube**
+
+#### 🔷 **BoxMineWorld (Recomendado)**
+
+<div align="center">
+  <a href="https://boxmineworld.com">
+    <img width="200px" src="https://boxmineworld.com/img/Logo.png" alt="BoxMineWorld"/>
+  </a>
+</div>
+
+**Enlaces Importantes:**
+- 🌐 **Sitio Web:** [boxmineworld.com](https://boxmineworld.com)
+- 👤 **Panel de Cliente:** [dash.boxmineworld.com](https://dash.boxmineworld.com)
+- ⚙️ **Panel de Control:** [panel.boxmineworld.com](https://panel.boxmineworld.com)
+- 📚 **Documentación:** [docs.boxmineworld.com](https://docs.boxmineworld.com)
+- 💬 **Discord:** [Únete aquí](https://discord.gg/84qsr4v)
+
+#### 🔷 **Otras Plataformas**
+
+- **Heroku:** [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+- **Railway:** [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app)
+- **Render:** Compatible con configuración manual
+
+---
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Sigue estos pasos:
+
+1. 🍴 Fork el proyecto
+2. 🌿 Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. 📝 Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. 📤 Push a la rama (`git push origin feature/AmazingFeature`)
+5. 🔄 Abre un Pull Request
+
+### 📋 **Guías de Contribución**
+
+- Sigue las convenciones de código existentes
+- Documenta los nuevos comandos
+- Prueba tu código antes de enviarlo
+- Respeta la estructura modular del proyecto
+
+---
+
+## 📞 Soporte
+
+### 💬 **Canal Oficial de WhatsApp**
+
+**Únete para recibir actualizaciones y soporte:**
+
+[![WhatsApp Channel](https://img.shields.io/badge/WhatsApp-Channel-25D366?style=for-the-badge&logo=whatsapp)](https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y)
+
+### 🐛 **Reportar Bugs**
+
+- 📝 [Crear Issue](https://github.com/your-username/Luna-Botv6/issues/new?template=bug_report.md)
+- 💡 [Solicitar Feature](https://github.com/your-username/Luna-Botv6/issues/new?template=feature_request.md)
+
+### 📧 **Contacto**
+
+- **Email:** support@yourdomain.com
+- **Telegram:** [@YourTelegram](https://t.me/YourTelegram)
+
+---
+
+## 🙏 Reconocimientos
+
+Este proyecto está basado en el excelente trabajo de:
+
+- **[Mystic-Bot-MD](https://github.com/BrunoSobrino/TheMystic-Bot-MD)** por [Bruno Sobrino](https://github.com/BrunoSobrino)
+- **[GataBot-MD](https://github.com/GataNina-Li/GataBot-MD)** por [Gata Dios](https://github.com/GataNina-Li)
+- **[Baileys](https://github.com/WhiskeySockets/Baileys)** por WhiskeySockets
+
+Un agradecimiento especial a todos los colaboradores y la comunidad que hace posible este proyecto.
+
+---
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+---
+
+## ⭐ ¿Te gusta el proyecto?
+
+Si Luna Bot te ha sido útil, considera:
+
+- ⭐ Darle una estrella al repositorio
+- 🍴 Fork el proyecto
+- 📢 Compartirlo con otros
+- ☕ [Apoyar al desarrollador]
+
+---
+
+<div align="center">
+  
+  **🌙 Hecho con ❤️ para la comunidad de WhatsApp**
+  
+  [![GitHub](https://img.shields.io/badge/GitHub-Luna--Bot-black?style=flat-square&logo=github)](https://github.com/your-username/Luna-Botv6)
+  [![WhatsApp](https://img.shields.io/badge/WhatsApp-Channel-25D366?style=flat-square&logo=whatsapp)](https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y)
+  
+</div>
