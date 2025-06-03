@@ -55,6 +55,7 @@ ${tradutor.texto1[10]}
 ╭───── • ◆ •  ─────────────╮
 ├🎭 _${usedPrefix}menuanimes_
 ├🌐 _${usedPrefix}lang_
+├🔊 _${usedPrefix}menuaudios_
 ╰───── • ◆ • ──────────────╯
 
 ${tradutor.texto1[11]}
@@ -355,6 +356,7 @@ ${tradutor.texto1[26]}
 ├✅ _${usedPrefix}verificar_
 ├🕵️ _${usedPrefix}robar *<cant> <@tag>*_
 ├🚓 _${usedPrefix}crime_
+├🛒 _${usedPrefix}cambiar_
 ├💸 _${usedPrefix}transfer *<tipo> <cant> <@tag>*_
 ├❌ _${usedPrefix}unreg *<sn>*_
 ╰───── • ◆ • ────────────╯
