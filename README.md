@@ -305,8 +305,8 @@ Luna-Botv6/
 
 ### 📧 **Contacto**
 
-- **Email:** support@yourdomain.com
-- **Telegram:** [@YourTelegram](https://t.me/YourTelegram)
+- **Email:** lunabotv6@gmail.com
+- **Telegram:** 
 
 ---
 
