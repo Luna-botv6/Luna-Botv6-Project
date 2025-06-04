@@ -1,76 +1,83 @@
+// mentionListener.js
 import axios from 'axios';
 import fs from 'fs';
 
-const handler = async (m, {conn}) => {
+export default function mentionListener(conn) {
+  conn.ev.on('messages.upsert', async (m) => {
     try {
-        const botJid = conn.user.jid;
-        const isTagged = m.mentionedJid && m.mentionedJid.includes(botJid);
+      const msg = m.messages[0];
+      if (!msg || !msg.message) return;
 
-        if (!isTagged) return; // Solo responder si el bot es mencionado
+      const botJid = conn.user.jid;
+      const mentionedJids =
+        msg.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
 
-        // Extraer texto sin la mención
-        let inputText = m.text.replace(new RegExp(`@${botJid.split('@')[0]}`, 'g'), '').trim();
+      if (!mentionedJids.includes(botJid)) return; // 💡 Solo si mencionan al bot
 
-        // Si no hay texto, usar saludo por defecto
-        if (!inputText) inputText = "Hola, ¿cómo estás?";
+      // Extraer texto
+      const text =
+        msg.message.conversation ||
+        msg.message.extendedTextMessage?.text ||
+        '';
+      const inputText = text
+        .replace(new RegExp(`@${botJid.split('@')[0]}`, 'g'), '')
+        .trim() || 'Hola, ¿cómo estás?';
 
-        // Leer idioma usuario (puedes adaptarlo si quieres)
-        let idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje;
+      // Idioma (si tienes base de datos de idiomas)
+      let idioma =
+        global.db?.data?.users?.[msg.key.participant || msg.key.remoteJid]
+          ?.language || global.defaultLenguaje;
+      let tradutor;
+      try {
+        const _translate = JSON.parse(
+          fs.readFileSync(`./src/languages/${idioma}.json`)
+        );
+        tradutor = _translate?.plugins?.herramientas?.chatgpt;
+      } catch {
+        tradutor = null;
+      }
 
-        let tradutor;
-        try {
-            const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
-            tradutor = _translate?.plugins?.herramientas?.chatgpt;
-        } catch {
-            tradutor = null;
-        }
+      const texts = tradutor || {
+        texto1: ['❌ *Ingresa un texto*\n\n📌 Ejemplo: ', '', 'Hola, ¿cómo estás?'],
+        texto3: 'Actúa como ChatGPT, la IA conversacional desarrollada por OpenAI. Responde de manera útil y amigable.',
+        texto4: '❌ Error. Vuelva a intentarlo.'
+      };
 
-        const texts = tradutor || {
-            texto1: ['❌ *Ingresa un texto*\n\n📌 Ejemplo: ', '', 'Hola, ¿cómo estás?'],
-            texto3: 'Actúa como ChatGPT, la IA conversacional desarrollada por OpenAI. Responde de manera útil y amigable.',
-            texto4: '❌ Error. Vuelva a intentarlo.'
-        };
+      // Llamada a la API Ryzen
+      const apiUrl = 'https://api.ryzendesu.vip/api/ai/chatgpt';
+      const url = `${apiUrl}?text=${encodeURIComponent(inputText)}`;
 
-        conn.sendPresenceUpdate('composing', m.chat);
+      const result = await axios.get(url, {
+        timeout: 10000,
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WhatsApp-Bot/1.0)' }
+      });
 
-        const prompt = texts.texto3;
+      let response = result.data.response || result.data.result;
+      if (!response) {
+        await conn.sendMessage(
+          msg.key.remoteJid,
+          { text: '❌ *La API Ryzen no devolvió una respuesta válida.*' },
+          { quoted: msg }
+        );
+        return;
+      }
 
-        // API Ryzen
-        const apiUrl = 'https://api.ryzendesu.vip/api/ai/chatgpt';
-        const url = `${apiUrl}?text=${encodeURIComponent(inputText)}`;
+      if (response.length > 4000) {
+        response =
+          response.substring(0, 3950) + '\n\n_[Respuesta truncada]_';
+      }
 
-        const result = await axios.get(url, {
-            timeout: 10000,
-            headers: {'User-Agent': 'Mozilla/5.0 (compatible; WhatsApp-Bot/1.0)'}
-        });
-
-        let response = result.data.response || result.data.result;
-
-        if (!response) {
-            m.reply('❌ *La API Ryzen no devolvió una respuesta válida.*');
-            return;
-        }
-
-        if (response.length > 4000) {
-            response = response.substring(0, 3950) + '\n\n_[Respuesta truncada]_';
-        }
-
-        // Responder mencionando al usuario
-        m.reply(`🌙 *Luna-Botv6*\n\n${response}`, null, { mentions: [m.sender] });
+      await conn.sendMessage(
+        msg.key.remoteJid,
+        { text: `🌙 *Luna-Botv6*\n\n${response}` },
+        { quoted: msg }
+      );
 
     } catch (error) {
-        console.error('Error en handler Ryzen:', error);
-        m.reply('❌ Error interno. Inténtalo nuevamente.');
+      console.error('❌ Error en mentionListener:', error);
     }
-};
-
-handler.customPrefix = /@/; // Detecta menciones
-handler.command = new RegExp(); // Sin comando
-handler.rowner = false;
-handler.register = false;
-
-export default handler;
-
+  });
+}
 
 
 
