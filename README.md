@@ -71,7 +71,7 @@
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/your-username/Luna-Botv6.git
+git clone https://github.com/Luna-botv6/Luna-Botv6-Project
 cd Luna-Botv6
 
 # Instalar dependencias del sistema
@@ -90,7 +90,7 @@ nano config.js
 
 ```powershell
 # Clonar el repositorio
-git clone https://github.com/your-username/Luna-Botv6.git
+git clone https://github.com/Luna-botv6/Luna-Botv6-Project
 cd Luna-Botv6
 
 # Instalar dependencias (requiere chocolatey)
@@ -108,7 +108,7 @@ notepad config.js
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/your-username/Luna-Botv6.git
+git clone https://github.com/Luna-botv6/Luna-Botv6-Project
 cd Luna-Botv6
 
 # Instalar dependencias (requiere Homebrew)
