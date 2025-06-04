@@ -618,7 +618,7 @@ setInterval(() => {
   purgeSessionSB();
   purgeOldFiles();
   purgeSession();
-}, 1000 * 60 * 60);
+}, 1000 * 60 * 60 * 6);
 
 
 setInterval(async () => {
