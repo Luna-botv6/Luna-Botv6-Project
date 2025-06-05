@@ -20,7 +20,7 @@ export async function before(m, { isCommand, conn }) {
 
   const sender = m.sender
   const senderNum = sender.split('@')[0]
-  const isOwner = global.owner.some(([num]) => senderNum === num)
+ const isOwner = global.owner.some(([num]) => senderNum === num) || global.lidOwners.includes(senderNum)
   const now = Date.now()
   const isLargo = m.text.length > MESSAGE_LENGTH_LIMIT
 
@@ -85,3 +85,6 @@ export async function before(m, { isCommand, conn }) {
   antispam[sender] = data
   saveAntiSpam(antispam)
 }
+
+ 
+      
