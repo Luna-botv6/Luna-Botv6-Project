@@ -1,39 +1,74 @@
 import axios from 'axios';
+import fs from 'fs';
 
-let previousCommitSHA = '';
-let previousUpdatedAt = '';
-let previousCommitUser = ''; 
-const owner = 'Ehl villano';
-const repo = 'LUNA-BOTV5';
-const handler = async (m, {conn, text, usedPrefix, command}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.owner_actualizacion
+let lastCommitSHA = '';
 
- conn.sendMessage(m.chat, {text: tradutor.texto1}, {quoted: m});  
-try {
-  async function checkRepoUpdates() {
-    try {
-      const response = await axios.get(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`);
-      const {sha, commit: {message}, html_url, author: { login } } = response.data[0];
+const owner = 'Luna-botv6';
+const repo = 'Luna-Botv6-Project';
+const branch = 'main'; // Asegúrate de usar la rama principal
 
-      if (sha !== previousCommitSHA || message !== previousUpdatedAt) {
-        previousCommitSHA = sha;
-        previousUpdatedAt = message;
-        previousCommitUser = login
-        conn.sendMessage(m.chat, {text: `${tradutor.texto2[0]} ${html_url}\n${tradutor.texto2[1]} ${message}\n${tradutor.texto2[2]} ${login}`}, {quoted: m});
-      }
-    } catch (error) {
-      console.error(error)
-      m.reply(tradutor.texto3);
+const handler = async (m, { conn }) => {
+  try {
+    await conn.sendMessage(m.chat, { text: '🔍 Buscando actualizaciones en el repositorio...' }, { quoted: m });
+
+    const { data: commits } = await axios.get(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`);
+    const latestCommit = commits[0];
+    const { sha, commit: { message }, author } = latestCommit;
+    const login = author?.login || 'Desconocido';
+
+    if (sha === lastCommitSHA) {
+      return conn.sendMessage(m.chat, { text: '✅ No hay nuevas actualizaciones desde la última revisión.' }, { quoted: m });
     }
+
+    lastCommitSHA = sha;
+
+    const { data: commitDetails } = await axios.get(`https://api.github.com/repos/${owner}/${repo}/commits/${sha}`);
+    const files = commitDetails.files || [];
+
+    let filesChanged = files.map(f => `- ${f.filename} (${f.status})`).join('\n');
+    if (!filesChanged) filesChanged = 'No se encontraron archivos modificados.';
+
+    // Comparar el primer archivo modificado con el local
+    let comparisonText = '';
+    if (files.length > 0) {
+      const filePath = files[0].filename;
+
+      // Obtener contenido remoto
+      const rawURL = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`;
+      const { data: remoteContent } = await axios.get(rawURL);
+
+      // Leer archivo local
+      let localContent = '';
+      try {
+        localContent = fs.readFileSync(filePath, 'utf8');
+      } catch {
+        localContent = '(No existe localmente)';
+      }
+
+      // Comparar
+      if (remoteContent === localContent) {
+        comparisonText = `✅ El archivo "${filePath}" está actualizado localmente.`;
+      } else {
+        comparisonText = `⚠️ El archivo "${filePath}" es diferente localmente.`;
+      }
+    }
+
+    const text = `📢 Nueva actualización detectada:\n\n` +
+      `🔹 Autor: ${login}\n` +
+      `🔹 Mensaje: ${message}\n` +
+      `🔹 Archivos cambiados:\n${filesChanged}\n\n` +
+      `${comparisonText}\n\n` +
+      `💡 Si tienes la función de auto-actualización activa, **reinicia el bot** para que los cambios se apliquen.`;
+
+    await conn.sendMessage(m.chat, { text }, { quoted: m });
+
+  } catch (error) {
+    console.error(error);
+    await conn.sendMessage(m.chat, { text: '❌ Error al consultar el repositorio o comparar archivos. Intenta más tarde.' }, { quoted: m });
   }
-  setInterval(checkRepoUpdates, 6000);
-} catch (e) {
-m.reply(e)
-}
 };
-handler.command = /^(actualizacion|actualizaciones)/i;
+
+handler.command = /^(actualizacion|actualizaciones)$/i;
 handler.rowner = true;
+
 export default handler;
