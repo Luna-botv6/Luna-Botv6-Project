@@ -278,11 +278,12 @@ if (m.isBaileys) return;
           expired: 0,
           language: 'es',
         }
-        for (const chatss in chats) {
+      for (const chatss in chats) {
           if (chat[chatss] === undefined || !chat.hasOwnProperty(chatss)) {
           }
         }
       }
+
       const settings = global.db.data.settings[this.user.jid];
       if (typeof settings !== 'object') global.db.data.settings[this.user.jid] = {};
       if (settings) {
@@ -339,11 +340,18 @@ if (m.message?.templateButtonReplyMessage?.selectedId) {
 if (m.message?.listResponseMessage?.singleSelectReply?.selectedRowId) {
   m.text = m.message.listResponseMessage.singleSelectReply.selectedRowId;
 }
+const isROwner = [
+  conn.decodeJid(global.conn.user.id),
+  ...global.owner.map(([number]) => number),
+  ...global.lidOwners
+]
+.map((v) => v.replace(/[^0-9]/g, ''))
+.some((n) => [`${n}@s.whatsapp.net`, `${n}@lid`].includes(m.sender));
 
-    const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([number]) => number)].map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
-    const isOwner = isROwner || m.fromMe;
-    const isMods = isOwner || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
-    const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].premiumTime > 0; // || global.db.data.users[m.sender].premium = 'true'
+const isOwner = isROwner || m.fromMe;
+const isMods = isOwner || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
+const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].premiumTime > 0; // || global.db.data.users[m.sender].premium = 'true'
+
 
     if (opts['queque'] && m.text && !(isMods || isPrems)) {
       const queque = this.msgqueque; const time = 1000 * 5;

@@ -15,10 +15,15 @@ global.isBaileysFail = false
 
 global.defaultLenguaje = 'es';
 
+global.lidOwners = [
+  "5215661493504",
+  "5212293196672"
+];
+
 global.owner = [
   ['5493483466763', '👑 Ehl villano 👑', true],
   ['50259727165', 'MOD-DECO', true],
-  ['5217773461176', 'MOD-killerQueen', true],
+  ['5217773461176', 'MOD-ALEXA', true],
 ];
 
 global.suittag = ['5493483466763'];
@@ -33,11 +38,11 @@ global.neoxr = {
 };
 
 global.packname = 'Sticker';
-global.author = 'Luna-Botv5';
-global.wm = 'Luna-Botv5';
-global.titulowm = 'Luna-Botv5';
-global.titulowm2 = `Luna-Botv5`
-global.igfg = 'Luna-Botv5';
+global.author = 'Luna-Botv6';
+global.wm = 'Luna-Botv6';
+global.titulowm = 'Luna-Botv6';
+global.titulowm2 = `Luna-Botv6`
+global.igfg = 'Luna-Botv6';
 global.wait = '*_[ ⏳ ] Cargando..._*';
 
 global.imagen1 = fs.readFileSync('./src/assets/images/menu/languages/es/menu.png');
@@ -58,8 +63,8 @@ global.año = d.toLocaleDateString('es', {year: 'numeric'});
 global.tiempo = d.toLocaleString('en-US', {hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true});
 //* ****************************
 global.wm2 = `${dia} ${fecha}\nLuna-Botv5`;
-global.gt = 'Luna-Botv5';
-global.mysticbot = 'Luna-Botv5';
+global.gt = 'Luna-Botv6';
+global.mysticbot = 'Luna-Botv6';
 global.channel = '';
 global.md = '';
 global.mysticbot = '';
