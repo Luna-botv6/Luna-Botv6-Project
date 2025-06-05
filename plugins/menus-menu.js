@@ -403,6 +403,8 @@ ${tradutor.texto1[28]}
 ├ _${usedPrefix}setprefix *<prefijo>*_ 🏷️
 ├ _${usedPrefix}resetprefix_ 🔄
 ├ _${usedPrefix}autoadmin_ 👨‍💻
+├ _${usedPrefix}darmod *<@tag*_ ✅
+├ _${usedPrefix}quitarmod *<@tag*_ 🗑️
 ├ _${usedPrefix}grouplist_ 📝
 ├ _${usedPrefix}leavegc_ 🚪
 ├ _${usedPrefix}cajafuerte_ 🔒
