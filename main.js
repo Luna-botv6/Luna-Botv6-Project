@@ -10,7 +10,7 @@ import { readdirSync, statSync, unlinkSync, existsSync, readFileSync, watch } fr
 import yargs from 'yargs';
 import fs from 'fs';
 import { readdir, unlink, stat } from 'fs/promises';
-import { spawn } from 'child_process';
+import { spawn, fork } from 'child_process';
 import lodash from 'lodash';
 import chalk from 'chalk';
 import syntaxerror from 'syntax-error';
@@ -234,12 +234,13 @@ rl.close()
 }}
 }
 
-conn.isInit = false;
-conn.well = false;
+//conn.isInit = false;
+//conn.well = false;
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);
-purgeSession();
-purgeSessionSB();
-purgeOldFiles();
+runCleaner();
+//purgeSession();
+//purgeSessionSB();
+//purgeOldFiles();
 
 
 if (!opts['test']) {
@@ -299,74 +300,12 @@ fs.watch(dirToWatchccc, (eventType, filename) => {
   }
 });
 
-async function purgeSession() {
-  try {
-    const directorio = await readdir("./MysticSession");
-    const prekeyFiles = directorio.filter(file =>
-      file.startsWith('pre-key-') ||
-      file.startsWith('sender-key-') ||
-      file.startsWith('app-state-sync-key-')
-    );
-    console.log(`[CleanUp] claves encontradas en MysticSession: ${prekeyFiles.length}`);
-    await Promise.all(prekeyFiles.map(file => unlink(`./MysticSession/${file}`)));
-  } catch (err) {
-    console.error('[❌] Error al limpiar MysticSession:', err.message);
-  }
+function runCleaner() {
+  const cleaner = fork('./lib/cleaner.js');
+  cleaner.on('message', msg => console.log('[cleaner]', msg));
+  cleaner.on('exit', code => console.log(`[cleaner] terminó con código ${code}`));
 }
 
-async function purgeOldFiles() {
-  const dir = './MysticSession/';
-  const oneHourAgo = Date.now() - (60 * 60 * 1000);
-  try {
-    const files = await readdir(dir);
-    let eliminados = 0;
-    await Promise.all(files.map(async file => {
-      const filePath = `${dir}${file}`;
-      try {
-        // Chequea si el archivo sigue existiendo antes de hacer stat
-        const stats = await stat(filePath).catch(() => null);
-        if (!stats || !stats.isFile()) return;
-
-        if (stats.mtimeMs < oneHourAgo && file !== 'creds.json') {
-          await unlink(filePath);
-          eliminados++;
-        }
-      } catch (err) {
-        console.log(chalk.red(`[ERROR] No se pudo eliminar: ${file}`));
-      }
-    }));
-    if (eliminados > 0) {
-      console.log(chalk.cyanBright(`🧹 Se eliminaron ${eliminados} archivo(s) antiguo(s) en MysticSession`));
-    } else {
-      console.log(chalk.cyanBright(`🧹 No se encontraron archivos antiguos para eliminar en MysticSession`));
-    }
-  } catch (err) {
-    console.error('[❌] Error en purgeOldFiles:', err.message);
-  }
-}
-
-
-
-async function purgeSessionSB() {
-  try {
-    const listaDirectorios = await readdir("./jadibts/");
-    for (const directorio of listaDirectorios) {
-      const dirPath = `./jadibts/${directorio}`;
-      const stats = await stat(dirPath);
-      if (stats.isDirectory()) {
-        const DSBPreKeys = (await readdir(dirPath)).filter(file =>
-          file.startsWith('pre-key-') ||
-          file.startsWith('sender-key-') ||
-          file.startsWith('app-state-sync-key-')
-        );
-        console.log(`[CleanUp] claves encontradas en jadibts/${directorio}: ${DSBPreKeys.length}`);
-        await Promise.all(DSBPreKeys.map(file => unlink(`${dirPath}/${file}`)));
-      }
-    }
-  } catch (err) {
-    console.log(chalk.bold.red(`[ ℹ️ ] Algo salió mal durante la eliminación, archivos no eliminados`));
-  }
-}
 
 
 
@@ -617,9 +556,7 @@ setInterval(() => {
 
 setInterval(() => {
   if (stopped === 'close' || !global.conn || !global.conn?.user) return;
-  purgeSessionSB();
-  purgeOldFiles();
-  purgeSession();
+  runCleaner();
 }, 1000 * 60 * 60 * 6);
 
 
