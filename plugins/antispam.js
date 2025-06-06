@@ -7,7 +7,7 @@ const MESSAGE_LENGTH_LIMIT = 4000
 global.antispamActivo = true
 
 const frasesOwnerSpam = [
-  '🤖 *Jajaja casi te bloqueo...* Te salvaste por ser *owner*, si no ya estarías en la lista negra. Te estoy vigilando... 👀🔥',
+  '🤖 *Jajaja casi te bloqueo...* Te salvaste por ser *owner*, si no ya estarías en la lista negra. Te estoy vigilando... �👀🔥',
   '⚠️ ¡Cuidado, humano poderoso! Si no fueras el jefe ya estarías frito...',
   '😏 ¿Spameando, eh? Menos mal que sos el dueñ@... si no te daba ban directo.',
   '😂 ¡Otro mensaje más y te bloqueo por accidente! Mentira... ¿o no?',
@@ -20,7 +20,7 @@ export async function before(m, { isCommand, conn }) {
 
   const sender = m.sender
   const senderNum = sender.split('@')[0]
- const isOwner = global.owner.some(([num]) => senderNum === num) || global.lidOwners.includes(senderNum)
+  const isOwner = global.owner.some(([num]) => senderNum === num) || global.lidOwners.includes(senderNum)
   const now = Date.now()
   const isLargo = m.text.length > MESSAGE_LENGTH_LIMIT
 
@@ -50,34 +50,47 @@ export async function before(m, { isCommand, conn }) {
   if (data.count > SPAM_THRESHOLD || isLargo) {
     data.warns += 1
 
-    if (data.warns >= 3) { // Bloquea después de 3 advertencias
+    if (data.warns >= 3) { // Bloquea y banea después de 3 advertencias
       const [ownerJid] = global.owner[0]
       const ownerFullJid = `${ownerJid}@s.whatsapp.net`
 
+      // Aplicar BAN al usuario (similar a banuser.js)
+      const users = global.db.data.users
+      if (!users[sender]) {
+        users[sender] = {}
+      }
+      users[sender].banned = true
+
+      // Notificar al owner
       await conn.sendMessage(ownerFullJid, {
-        text: `🚨 *Anti-Spam Activado*\n\nEl usuario *@${senderNum}* fue bloqueado por spam.\nID: ${sender}`,
+        text: `🚨 *Anti-Spam Activado*\n\nEl usuario *@${senderNum}* fue bloqueado y baneado por spam.\nID: ${sender}\n\n⚠️ El usuario ya no podrá usar comandos del bot.`,
         mentions: [sender]
       })
 
+      // Notificar al usuario
       await conn.sendMessage(sender, {
-        text: `⚠️ Has sido *bloqueado* por enviar muchos comandos o mensajes largos.\n\nSi crees que fue un error, contacta con el owner:\n📱 wa.me/${ownerJid}`
+        text: `⛔ Has sido *bloqueado y baneado* por enviar muchos comandos o mensajes largos.\n\n❌ Ya no podrás usar los comandos del bot.\n\nSi crees que fue un error, contacta con el owner:\n📱 wa.me/${ownerJid}`
       })
 
+      // Bloquear al usuario
       await conn.updateBlockStatus(sender, 'block')
 
+      // Guardar en la base de datos de baneados (registro adicional)
       global.db.data.baneados = global.db.data.baneados || {}
       global.db.data.baneados[sender] = {
-        motivo: 'spam',
+        motivo: 'spam automatico',
         fecha: Date.now(),
-        bloqueadoPor: 'antispam'
+        bloqueadoPor: 'antispam',
+        advertencias: data.warns
       }
 
+      // Limpiar datos del antispam para este usuario
       delete antispam[sender]
       saveAntiSpam(antispam)
       return !0
     } else {
       await conn.sendMessage(sender, {
-        text: `🚨 *Advertencia de spam*\nEstás enviando demasiados comandos o mensajes sospechosos. Si continúas, serás bloqueado.`
+        text: `🚨 *Advertencia ${data.warns}/3 de spam*\n\nEstás enviando demasiados comandos o mensajes sospechosos.\n\n⚠️ Si recibes 3 advertencias serás bloqueado y baneado permanentemente.`
       })
     }
   }
@@ -85,6 +98,3 @@ export async function before(m, { isCommand, conn }) {
   antispam[sender] = data
   saveAntiSpam(antispam)
 }
-
- 
-      
