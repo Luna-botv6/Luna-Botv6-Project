@@ -56,6 +56,7 @@ ${tradutor.texto1[10]}
 ├🎭 _${usedPrefix}menuanimes_
 ├🌐 _${usedPrefix}lang_
 ├🔊 _${usedPrefix}menuaudios_
+├🎶 _${usedPrefix}efectosaudio_
 ╰───── • ◆ • ──────────────╯
 
 ${tradutor.texto1[11]}
