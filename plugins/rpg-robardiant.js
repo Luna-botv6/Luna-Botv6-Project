@@ -36,31 +36,56 @@ const handler = async (m, { conn, command }) => {
 
   if (now < lastTime + cooldownTime) {
     const timeLeft = msToTime(lastTime + cooldownTime - now)
-    return m.reply(` Debes esperar ${timeLeft} para volver a robar diamantes.`)
+    return m.reply(` Debes esperar ${timeLeft} para volver a robar diamantes.`)
   }
 
   let who
   if (m.isGroup) who = m.mentionedJid?.[0] || m.quoted?.sender || false
   else who = m.chat
 
-  if (!who) return m.reply(' Etiqueta a alguien para robarle diamantes.')
+  if (!who) return m.reply(' Etiqueta a alguien para robarle diamantes.')
 
   // Verificar protección activa (arreglado)
   const proteccion = tieneProteccion(who)
   if (proteccion.activa) {
-    return m.reply(` @${who.split`@`[0]} está protegido y no puedes robarle diamantes.`, null, { mentions: [who] })
+    return m.reply(` @${who.split`@`[0]} está protegido y no puedes robarle diamantes.`, null, { mentions: [who] })
   }
 
   const targetDiamonds = getMoney(who)
   const toRob = Math.floor(Math.random() * maxRob)
 
   if (targetDiamonds < toRob) {
-    if (targetDiamonds === 0) return m.reply(` No se puede robar, el usuario no tiene diamantes.`)
+    if (targetDiamonds === 0) return m.reply(` No se puede robar, el usuario no tiene diamantes.`)
     await addMoney(userId, targetDiamonds)
     await removeMoney(who, targetDiamonds)
     cooldowns[userId] = now
     setCooldowns(cooldowns)
-    return m.reply(` Robaste ${targetDiamonds} diamantes de un pobre `)
+    
+    m.reply(` Robaste ${targetDiamonds} diamantes de un pobre `)
+    
+    // Verificar y mostrar mensaje AFK después del robo (evitar duplicados)
+    if (m.afkUsers && m.afkUsers.length > 0) {
+      const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
+      const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+      const tradutor = _translate.plugins.afk__afk
+      
+      const processedAfkUsers = new Set()
+      
+      for (const afkUser of m.afkUsers) {
+        if (!processedAfkUsers.has(afkUser.jid)) {
+          processedAfkUsers.add(afkUser.jid)
+          const reason = afkUser.reason || ''
+          setTimeout(() => {
+            m.reply(`${tradutor.texto1[0]}
+
+*— ${tradutor.texto1[1]}*      
+*— ${reason ? `${tradutor.texto1[2]}` + reason : `${tradutor.texto1[3]}`}*
+*— ${tradutor.texto1[4]} ${(new Date - afkUser.lastseen).toTimeString()}*`)
+          }, 1000)
+        }
+      }
+    }
+    return
   }
 
   await addMoney(userId, toRob)
@@ -68,7 +93,30 @@ const handler = async (m, { conn, command }) => {
   cooldowns[userId] = now
   setCooldowns(cooldowns)
 
-  return m.reply(` Robaste ${toRob} diamantes a @${who.split`@`[0]} `, null, { mentions: [who] })
+  m.reply(` Robaste ${toRob} diamantes a @${who.split`@`[0]} `, null, { mentions: [who] })
+
+  // Verificar y mostrar mensaje AFK después del robo (evitar duplicados)
+  if (m.afkUsers && m.afkUsers.length > 0) {
+    const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
+    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+    const tradutor = _translate.plugins.afk__afk
+    
+    const processedAfkUsers = new Set()
+    
+    for (const afkUser of m.afkUsers) {
+      if (!processedAfkUsers.has(afkUser.jid)) {
+        processedAfkUsers.add(afkUser.jid)
+        const reason = afkUser.reason || ''
+        setTimeout(() => {
+          m.reply(`${tradutor.texto1[0]}
+
+*— ${tradutor.texto1[1]}*      
+*— ${reason ? `${tradutor.texto1[2]}` + reason : `${tradutor.texto1[3]}`}*
+*— ${tradutor.texto1[4]} ${(new Date - afkUser.lastseen).toTimeString()}*`)
+        }, 1000)
+      }
+    }
+  }
 }
 
 handler.help = ['robardiamantes']

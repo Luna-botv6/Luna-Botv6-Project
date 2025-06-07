@@ -87,7 +87,30 @@ const handler = async (m, { conn }) => {
     ? `💸 Le robaste *${robAmount} exp* a un pobre 😢 @${target.split`@`[0]}`
     : `💰 Le robaste *${robAmount} exp* a @${target.split`@`[0]}`
 
-  return m.reply(msg, null, { mentions: [target] })
+  m.reply(msg, null, { mentions: [target] })
+
+  // Verificar y mostrar mensaje AFK después del robo (evitar duplicados)
+  if (m.afkUsers && m.afkUsers.length > 0) {
+    const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
+    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+    const tradutor = _translate.plugins.afk__afk
+    
+    const processedAfkUsers = new Set()
+    
+    for (const afkUser of m.afkUsers) {
+      if (!processedAfkUsers.has(afkUser.jid)) {
+        processedAfkUsers.add(afkUser.jid)
+        const reason = afkUser.reason || ''
+        setTimeout(() => {
+          m.reply(`${tradutor.texto1[0]}
+
+*—◉ ${tradutor.texto1[1]}*      
+*—◉ ${reason ? `${tradutor.texto1[2]}` + reason : `${tradutor.texto1[3]}`}*
+*—◉ ${tradutor.texto1[4]} ${(new Date - afkUser.lastseen).toTimeString()}*`)
+        }, 1000)
+      }
+    }
+  }
 }
 
 handler.help = ['rob']
