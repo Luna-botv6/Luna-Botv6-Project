@@ -104,9 +104,9 @@ if (m.isBaileys) return;
       if (user) {
         
         const dick = {
-          afk: -1,
+        //  afk: -1,
           wait: 0,
-          afkReason: '',
+        //  afkReason: '',
           banned: false,
           BannedReason: '',
           Banneduser: false,
