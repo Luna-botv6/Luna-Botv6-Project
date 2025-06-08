@@ -26,34 +26,59 @@ ${tradutor.texto2}
   const expActual = await slot.getExp(m.sender);
   if (expActual < apuesta) throw tradutor.texto5;
 
-  const emojis = ['', '', ''];
+  // Emojis para el slot
+  const emojis = ['🍎', '🍌', '🍇', '🍊', '🍓', '💎'];
+  
+  // Generar posiciones aleatorias para cada columna
   let a = Math.floor(Math.random() * emojis.length);
   let b = Math.floor(Math.random() * emojis.length);
   let c = Math.floor(Math.random() * emojis.length);
 
+  // Crear las tres filas del slot
   const x = [], y = [], z = [];
   for (let i = 0; i < 3; i++) {
-    x[i] = emojis[a]; a = (a + 1) % emojis.length;
-    y[i] = emojis[b]; b = (b + 1) % emojis.length;
-    z[i] = emojis[c]; c = (c + 1) % emojis.length;
+    x[i] = emojis[a];
+    y[i] = emojis[b];
+    z[i] = emojis[c];
+    a = (a + 1) % emojis.length;
+    b = (b + 1) % emojis.length;
+    c = (c + 1) % emojis.length;
   }
 
+  // Verificar el resultado basado en la fila del medio (índice 1)
   let resultado;
-  if (a === b && b === c) {
-    await slot.addExp(m.sender, apuesta);
-    resultado = `${tradutor.texto6} +${apuesta} XP`;
-  } else if (a === b || a === c || b === c) {
-    await slot.addExp(m.sender, 10);
-    resultado = tradutor.texto7;
+  const centerA = x[1];
+  const centerB = y[1];
+  const centerC = z[1];
+
+  if (centerA === centerB && centerB === centerC) {
+    // Tres iguales - Gran premio
+    const premio = apuesta * 2;
+    await slot.addExp(m.sender, premio);
+    resultado = `🎉 ${tradutor.texto6} +${premio} XP`;
+  } else if (centerA === centerB || centerA === centerC || centerB === centerC) {
+    // Dos iguales - Premio menor
+    const premio = Math.floor(apuesta * 0.5);
+    await slot.addExp(m.sender, premio);
+    resultado = `🎊 ${tradutor.texto7} +${premio} XP`;
   } else {
+    // Sin coincidencias - Pierde
     await slot.removeExp(m.sender, apuesta);
-    resultado = `${tradutor.texto8} -${apuesta} XP`;
+    resultado = `😞 ${tradutor.texto8} -${apuesta} XP`;
   }
 
   await slot.setCooldown(m.sender);
 
+  // Mostrar el resultado con mejor formato
+  const slotDisplay = `
+┌─────────────┐
+│ ${x[0]} │ ${y[0]} │ ${z[0]} │
+│ ${x[1]} │ ${y[1]} │ ${z[1]} │ ←
+│ ${x[2]} │ ${y[2]} │ ${z[2]} │
+└─────────────┘`;
+
   await m.reply(
-    ` | *SLOTS*\n\n${x[0]} : ${y[0]} : ${z[0]}\n${x[1]} : ${y[1]} : ${z[1]}\n${x[2]} : ${y[2]} : ${z[2]}\n\n | ${resultado}`
+    `🎰 *SLOT MACHINE* 🎰\n${slotDisplay}\n\n${resultado}`
   );
 };
 
@@ -64,14 +89,26 @@ handler.command = ['slot'];
 export default handler;
 
 async function tiempoRestante(user) {
-  const db = JSON.parse(await fs.promises.readFile('./database/slot.json', 'utf8'));
-  const last = db[user]?.lastPlay || 0;
-  const ms = 10000 - (Date.now() - last);
-  return msToTime(ms);
+  try {
+    const db = JSON.parse(await fs.promises.readFile('./database/slot.json', 'utf8'));
+    const last = db[user]?.lastPlay || 0;
+    const ms = 10000 - (Date.now() - last);
+    return msToTime(ms > 0 ? ms : 0);
+  } catch (error) {
+    // Si no existe el archivo o hay error, retornar 0
+    return msToTime(0);
+  }
 }
 
 function msToTime(duration) {
+  if (duration <= 0) return "0 s";
+  
   let seconds = Math.floor((duration / 1000) % 60);
   let minutes = Math.floor((duration / (1000 * 60)) % 60);
-  return `${minutes} m ${seconds} s`;
+  
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  } else {
+    return `${seconds}s`;
+  }
 }
