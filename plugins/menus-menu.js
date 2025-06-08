@@ -98,7 +98,6 @@ ${tradutor.texto1[13]}
 ├🎶 _${usedPrefix}cancion_
 ├🧭 _${usedPrefix}pista_
 ├🔤 _${usedPrefix}sopadeletras_
-├🗺️ _${usedPrefix}glx (RPG Mundo)_
 ├🎰 _${usedPrefix}ruleta 🎰(RPG)_
 ├ ⌨️${usedPrefix}ahorcado_ 
 ├ 🎮${usedPrefix}tictactoe_
@@ -338,6 +337,8 @@ ${tradutor.texto1[26]}
 ├🧰 _${usedPrefix}cofre_
 ├🥸 _${usedPrefix}robard (robar diamantes)_
 ├💰 _${usedPrefix}balance_
+├🔮 _${usedPrefix}loteria_
+├🎱 _${usedPrefix}quini6_
 ├🎁 _${usedPrefix}claim_
 ├❤️ _${usedPrefix}heal_
 ├🏆 _${usedPrefix}lb_
@@ -360,6 +361,8 @@ ${tradutor.texto1[26]}
 ├🛒 _${usedPrefix}cambiar_
 ├💸 _${usedPrefix}transfer *<tipo> <cant> <@tag>*_
 ├❌ _${usedPrefix}unreg *<sn>*_
+├🔧 _${usedPrefix}comprarhack *<cant>*_
+├💥 _${usedPrefix}romperprote *<@tag>*_
 ╰───── • ◆ • ────────────╯
 
     
