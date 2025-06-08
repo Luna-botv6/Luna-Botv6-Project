@@ -15,6 +15,9 @@ let lotteryData = {
   winners: []
 }
 
+// Variable para guardar el timeout de la lotería activa
+let lotteryTimeout = null
+
 // Cargar datos de lotería
 function loadLotteryData() {
   if (!fs.existsSync(lotteryDir)) fs.mkdirSync(lotteryDir)
@@ -166,7 +169,6 @@ const handler = async (m, { conn, command, usedPrefix }) => {
   switch(command) {
     case 'loteria':
     case 'startlottery':
-      // Iniciar lotería
       if (lotteryData.active) {
         return m.reply('🎰 *Ya hay una lotería activa!* \n\n' +
           `⏰ Tiempo restante: ${getTimeRemaining()}\n` +
@@ -174,6 +176,9 @@ const handler = async (m, { conn, command, usedPrefix }) => {
           `💎 Premio acumulado: ${lotteryData.prizePool} diamantes\n\n` +
           'Usa *' + usedPrefix + 'linfo* para más detalles')
       }
+
+      // Cancelar timeout si existía una lotería previa
+      if (lotteryTimeout) clearTimeout(lotteryTimeout)
 
       // Limpiar datos antes de iniciar nueva lotería (por seguridad)
       resetLotteryData()
@@ -190,9 +195,10 @@ const handler = async (m, { conn, command, usedPrefix }) => {
       
       saveLotteryData()
       
-      // Programar el final de la lotería
-      setTimeout(() => {
+      // Programar el final de la lotería y guardar el timeout
+      lotteryTimeout = setTimeout(() => {
         endLottery(conn, m.chat)
+        lotteryTimeout = null // limpiar referencia
       }, 30 * 60 * 1000)
 
       return m.reply('🎰 *¡NUEVA LOTERÍA INICIADA!* 🎰\n\n' +
@@ -209,30 +215,22 @@ const handler = async (m, { conn, command, usedPrefix }) => {
 
     case 'ticket':
     case 'buyticket':
-      // Comprar ticket
       if (!lotteryData.active) {
         return m.reply('❌ No hay ninguna lotería activa. Usa *' + usedPrefix + 'loteria* para iniciar una.')
       }
 
-      // Verificar si ya está registrado
       if (lotteryData.participants.some(p => p.id === userId)) {
         return m.reply('⚠️ Ya tienes un ticket para esta lotería!')
       }
 
       const userStats = getUserStats(userId)
       
-      // Verificar si tiene suficientes diamantes
       if (userStats.money < lotteryData.ticketPrice) {
         return m.reply(`❌ No tienes suficientes diamantes! Necesitas ${lotteryData.ticketPrice} 💎 pero solo tienes ${userStats.money} 💎`)
       }
 
-      // Cobrar el ticket
       removeMoney(userId, lotteryData.ticketPrice)
-      
-      // Agregar al premio acumulado
       lotteryData.prizePool += lotteryData.ticketPrice
-      
-      // Agregar participante
       lotteryData.participants.push({
         id: userId,
         username: username,
@@ -251,7 +249,6 @@ const handler = async (m, { conn, command, usedPrefix }) => {
 
     case 'linfo':
     case 'lotteryinfo':
-      // Información de la lotería
       if (!lotteryData.active) {
         return m.reply('❌ No hay ninguna lotería activa.')
       }
@@ -274,15 +271,17 @@ const handler = async (m, { conn, command, usedPrefix }) => {
         `• *${usedPrefix}ticket* - Comprar ticket\n` +
         `• *${usedPrefix}loteria* - Iniciar nueva lotería`)
 
+    case 'reinicarloteria':  // nuevo comando para reiniciar lotería manualmente
     case 'cleanlottery':
-      // Comando manual para limpiar lotería (solo para administradores o debugging)
+      if (lotteryTimeout) clearTimeout(lotteryTimeout)
+      lotteryTimeout = null
       resetLotteryData()
-      return m.reply('🧹 *Datos de lotería limpiados manualmente*\n\nYa puedes iniciar una nueva lotería.')
+      return m.reply('🧹 *Lotería reiniciada manualmente.* Ahora puedes iniciar una nueva lotería.')
   }
 }
 
-handler.help = ['loteria', 'ticket', 'linfo', 'cleanlottery']
+handler.help = ['loteria', 'ticket', 'linfo', 'cleanlottery', 'reinicarloteria']
 handler.tags = ['game']
-handler.command = /^(loteria|startlottery|ticket|buyticket|linfo|lotteryinfo|cleanlottery)$/i
+handler.command = /^(loteria|startlottery|ticket|buyticket|linfo|lotteryinfo|cleanlottery|reinicarloteria)$/i
 
 export default handler
