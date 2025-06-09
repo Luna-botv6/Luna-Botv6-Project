@@ -1,4 +1,4 @@
-import { getUserStats } from '../lib/stats.js' // tu función para stats
+import { getUserStats } from '../lib/stats.js'
 
 async function handler(m, { conn }) {
   // Si mencionan a alguien, toma ese id, si no, usa el que manda el mensaje
@@ -21,6 +21,9 @@ async function handler(m, { conn }) {
                `✨ *Nivel:* ${stats.level || 0}\n` +
                `⚡ *Experiencia:* ${stats.exp || 0}\n` +
                `💎 *Diamantes:* ${stats.money || 0}\n` +
+               `🪙 *Mysticcoins:* ${stats.mysticcoins || 0}\n` +
+               `🌙 *Luna Coins:* ${stats.lunaCoins || 0}\n` +
+               `🛠️ *Hack Tools:* ${stats.hackTools || 0}\n` +
                `🔰 *Rol:* ${stats.role || 'Ninguno'}\n` +
                `📦 *Límite:* ${stats.limit || 0}`
 
@@ -31,4 +34,5 @@ async function handler(m, { conn }) {
 handler.help = ['verexp', 'stats']
 handler.tags = ['xp', 'rpg']
 handler.command = ['verexp', 'estadisticas', 'stats']
+
 export default handler
