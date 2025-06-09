@@ -413,6 +413,7 @@ ${tradutor.texto1[28]}
 ├ _${usedPrefix}quitardiamantes *<@tag*_ 💎
 ├ _${usedPrefix}addexp *<@tag*_ 🌟
 ├ _${usedPrefix}removeexp *<@tag*_ 🌟
+├ _${usedPrefix}quitarlimit *<@tag*_ 📊
 ├ _${usedPrefix}grouplist_ 📝
 ├ _${usedPrefix}leavegc_ 🚪
 ├ _${usedPrefix}cajafuerte_ 🔒
