@@ -36,19 +36,45 @@ const handler = async (m, { conn, args }) => {
     return conn.sendMessage(m.chat, { text: `❌ No tienes suficientes: ${falta.join(' y ')}` }, { quoted: m })
   }
 
-  // Descontar diamantes y exp
-  spendMoney(userId, prote.costoDiamantes)
-  spendExp(userId, prote.costoExp)
+  // DEBUG: Mostrar stats antes de la compra
+  console.log('ANTES - Money:', user.money, 'Exp:', user.exp, 'Mysticcoins:', user.mysticcoins)
 
-  // Sumar mysticcoins directo y guardar
-  user.mysticcoins = (user.mysticcoins || 0) + prote.gananciaMysticcoins
-  setUserStats(userId, user)
+  try {
+    // Descontar diamantes y exp
+    spendMoney(userId, prote.costoDiamantes)
+    spendExp(userId, prote.costoExp)
 
-  // Activar protección
-  await activarProteccion(m, conn, horas.toString())
+    // Obtener stats actualizados después de los gastos
+    const userDespuesGasto = getUserStats(userId)
+    console.log('DESPUÉS GASTO - Money:', userDespuesGasto.money, 'Exp:', userDespuesGasto.exp)
 
-  // Confirmar compra y ganancia
-  await conn.sendMessage(m.chat, { text: `✅ Protección comprada por ${horas} horas.\nHas ganado ${prote.gananciaMysticcoins} mysticcoins.` }, { quoted: m })
+    // Sumar mysticcoins
+    userDespuesGasto.mysticcoins = (userDespuesGasto.mysticcoins || 0) + prote.gananciaMysticcoins
+    setUserStats(userId, userDespuesGasto)
+
+    // Verificar que se guardaron los cambios
+    const userFinal = getUserStats(userId)
+    console.log('FINAL - Money:', userFinal.money, 'Exp:', userFinal.exp, 'Mysticcoins:', userFinal.mysticcoins)
+
+    // Activar protección
+    await activarProteccion(m, conn, horas.toString())
+
+    // Confirmar compra y ganancia con stats actuales
+    await conn.sendMessage(m.chat, { 
+      text: `✅ Protección comprada por ${horas} horas.
+💎 Diamantes gastados: ${prote.costoDiamantes}
+✨ Exp gastada: ${prote.costoExp}
+🪙 Mysticcoins ganados: ${prote.gananciaMysticcoins}
+
+💰 Diamantes restantes: ${userFinal.money}
+⭐ Exp restante: ${userFinal.exp}
+🪙 Mysticcoins totales: ${userFinal.mysticcoins}` 
+    }, { quoted: m })
+
+  } catch (error) {
+    console.error('Error en compra protección:', error)
+    await conn.sendMessage(m.chat, { text: '❌ Error al procesar la compra. Intenta nuevamente.' }, { quoted: m })
+  }
 }
 
 handler.help = ['comprarprote <horas>']
