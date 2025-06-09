@@ -409,6 +409,10 @@ ${tradutor.texto1[28]}
 ├ _${usedPrefix}autoadmin_ 👨‍💻
 ├ _${usedPrefix}darmod *<@tag*_ ✅
 ├ _${usedPrefix}quitarmod *<@tag*_ 🗑️
+├ _${usedPrefix}addd *<@tag*_ 💎
+├ _${usedPrefix}quitardiamantes *<@tag*_ 💎
+├ _${usedPrefix}addexp *<@tag*_ 🌟
+├ _${usedPrefix}removeexp *<@tag*_ 🌟
 ├ _${usedPrefix}grouplist_ 📝
 ├ _${usedPrefix}leavegc_ 🚪
 ├ _${usedPrefix}cajafuerte_ 🔒
