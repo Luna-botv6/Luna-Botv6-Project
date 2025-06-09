@@ -1,4 +1,5 @@
 import * as slot from '../lib/slot.js'
+import * as stats from '../lib/stats.js' // Importar stats.js
 import fs from 'fs'
 
 const handler = async (m, { args, usedPrefix, command }) => {
@@ -23,7 +24,8 @@ ${tradutor.texto2}
     throw `${tradutor.texto3[0]} ${timeRestante} ${tradutor.texto3[1]}`;
   }
 
-  const expActual = await slot.getExp(m.sender);
+  // CAMBIO: Usar stats.js en lugar de slot.js para manejar EXP
+  const expActual = stats.getExp(m.sender);
   if (expActual < apuesta) throw tradutor.texto5;
 
   // Emojis para el slot
@@ -54,16 +56,16 @@ ${tradutor.texto2}
   if (centerA === centerB && centerB === centerC) {
     // Tres iguales - Gran premio
     const premio = apuesta * 2;
-    await slot.addExp(m.sender, premio);
+    stats.addExp(m.sender, premio); // CAMBIO: usar stats.addExp
     resultado = `🎉 ${tradutor.texto6} +${premio} XP`;
   } else if (centerA === centerB || centerA === centerC || centerB === centerC) {
     // Dos iguales - Premio menor
     const premio = Math.floor(apuesta * 0.5);
-    await slot.addExp(m.sender, premio);
+    stats.addExp(m.sender, premio); // CAMBIO: usar stats.addExp
     resultado = `🎊 ${tradutor.texto7} +${premio} XP`;
   } else {
     // Sin coincidencias - Pierde
-    await slot.removeExp(m.sender, apuesta);
+    stats.removeExp(m.sender, apuesta); // CAMBIO: usar stats.removeExp
     resultado = `😞 ${tradutor.texto8} -${apuesta} XP`;
   }
 
