@@ -59,15 +59,15 @@ if (m.isBaileys) return;
   const chat = m.key?.remoteJid || '';
 
   m.text =
-    m.message?.conversation ||
-    m.message?.extendedTextMessage?.text ||
-    m.message?.imageMessage?.caption ||
-    m.message?.videoMessage?.caption ||
-    m.message?.buttonsResponseMessage?.selectedButtonId ||
-    m.message?.templateButtonReplyMessage?.selectedId ||
-    m.message?.listResponseMessage?.singleSelectReply?.selectedRowId || '';
+  m.message?.conversation ||
+  m.message?.extendedTextMessage?.text ||
+  m.message?.imageMessage?.caption ||
+  m.message?.videoMessage?.caption ||
+  m.message?.buttonsResponseMessage?.selectedButtonId ||
+  m.message?.templateButtonReplyMessage?.selectedId ||
+  m.message?.listResponseMessage?.singleSelectReply?.selectedRowId || '';
 
-  if (!m.text) return;
+  if (!m.text && !m.message?.audioMessage && !m.message?.stickerMessage && !m.message?.imageMessage && !m.message?.videoMessage && !m.message?.documentMessage) return;
 
 
   if (!m) {
