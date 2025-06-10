@@ -490,19 +490,28 @@ ${tradutor.texto1[1]} ${messageNumber}/3
             m.limit = m.limit || plugin.limit || false;
           }
         } catch (e) {
-          m.error = e;
-          logError(e, m?.plugin || 'handler');
-          if (e) {
-            let text = format(e);
-            for (const key of Object.values(global.APIKeys)) {
-              text = text.replace(new RegExp(key, 'g'), '#HIDDEN#');
-            }
-          if (e.name) {
-  // Código para reportar error eliminado intencionalmente
-}
-await m.reply(text);
-}
+
+  m.error = e;
+
+  logError(e, m?.plugin || 'handler');
+
+  if (e) {
+
+    let text = format(e);
+
+    for (const key of Object.values(global.APIkeys)) {
+
+      text = text.replace(new RegExp(key, 'g'), '#HIDDEN#');
+
+    }
+
+    await m.reply(text);
+
+  }
+
 } finally {
+
+  // resto del código del finally... 
 
           // m.reply(util.format(_user))
           if (typeof plugin.after === 'function') {
@@ -589,69 +598,149 @@ try {
 
 
 export async function participantsUpdate({ id, participants, action }) {
-  const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.handler.participantsUpdate
+  // Validaciones iniciales más robustas
+  if (!id || !participants || !action) {
+    return;
+  }
 
-  const m = mconn
   if (opts['self']) return;
-  if (global.db.data == null) await loadDatabase();
+  
+  // Asegurar que la base de datos esté cargada
+  if (global.db.data == null) await global.loadDatabase();
+  
+  // Obtener conexión de manera más segura
+  const conn = global.conn || mconn?.conn;
+  if (!conn) {
+    return;
+  }
+
+  // ✅ CARGAR TRADUCCIONES
+  const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
+  let tradutor;
+  try {
+    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+    tradutor = _translate.handler.participantsUpdate || {};
+  } catch (e) {
+    // Valores por defecto en caso de error
+    tradutor = {
+      texto1: 'Welcome, @user!',
+      texto2: 'Bye, @user!',
+      texto3: '@user is now Admin',
+      texto4: '@user is no longer Admin'
+    };
+  }
+
   const chat = global.db.data.chats[id] || {};
   const botTt = global.db.data.settings[mconn?.conn?.user?.jid] || {};
+  
+  // 🗑️ COMENTADO: Mensaje de debug eliminado
+  // console.log('📊 Debug participantsUpdate:', {
+  //   id: id,
+  //   action: action,
+  //   participants: participants,
+  //   chatDetect: chat.detect,
+  //   chatBanned: chat?.isBanned,
+  //   shouldDetect: chat.detect !== false && !chat?.isBanned
+  // });
+
   let text = '';
+  
   switch (action) {
     case 'add':
     case 'remove':
       if (chat.welcome && !chat?.isBanned) {
-        const groupMetadata = await m?.conn?.groupMetadata(id) || (conn?.chats[id] || {}).metadata;
+        const groupMetadata = await conn?.groupMetadata(id) || (conn?.chats[id] || {}).metadata;
         for (const user of participants) {
-         let pp = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/185984ba06daeb2e6f8c453ad8bd47701dc28a03/IMG-20250519-WA0115.jpg';
+          let pp = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/185984ba06daeb2e6f8c453ad8bd47701dc28a03/IMG-20250519-WA0115.jpg';
 
           try {
-            pp = await m?.conn?.profilePictureUrl(user, 'image');
+            pp = await conn?.profilePictureUrl(user, 'image');
           } catch (e) {
+            // Usar imagen por defecto
           } finally {
-            const apii = await mconn?.conn?.getFile(pp);
+            const apii = await conn?.getFile(pp);
             const antiArab = JSON.parse(fs.readFileSync('./src/antiArab.json'));
             const userPrefix = antiArab.some((prefix) => user.startsWith(prefix));
-            const botTt2 = groupMetadata?.participants?.find((u) => m?.conn?.decodeJid(u.id) == m?.conn?.user?.jid) || {};
+            const botTt2 = groupMetadata?.participants?.find((u) => conn?.decodeJid(u.id) == conn?.user?.jid) || {};
             const isBotAdminNn = botTt2?.admin === 'admin' || false;
-            text = (action === 'add' ? (chat.sWelcome || tradutor.texto1 || conn.welcome || 'Welcome, @user!').replace('@subject', await m?.conn?.getName(id)).replace('@desc', groupMetadata?.desc?.toString() || '*𝚂𝙸𝙽 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝙲𝙸𝙾𝙽*').replace('@user', '@' + user.split('@')[0]) :
-                  (chat.sBye || tradutor.texto2 || conn.bye || 'Bye, @user!')).replace('@user', '@' + user.split('@')[0])
-
-// Si es necesario, puedes exportar el valor
-
+            
+            text = (action === 'add' ? 
+              (chat.sWelcome || tradutor.texto1 || conn.welcome || 'Welcome, @user!')
+                .replace('@subject', await conn?.getName(id) || 'Group')
+                .replace('@desc', groupMetadata?.desc?.toString() || '*𝚂𝙸𝙽 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝙲𝙸𝙾𝙽*')
+                .replace('@user', '@' + user.split('@')[0]) :
+              (chat.sBye || tradutor.texto2 || conn.bye || 'Bye, @user!')
+                .replace('@user', '@' + user.split('@')[0])
+            );
 
             if (userPrefix && chat.antiArab && botTt.restrict && isBotAdminNn && action === 'add') {
-              const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
+              const responseb = await conn.groupParticipantsUpdate(id, [user], 'remove');
               if (responseb[0].status === '404') return;
-              const fkontak2 = { 'key': { 'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo' }, 'message': { 'contactMessage': { 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` } }, 'participant': '0@s.whatsapp.net' };
-              await m?.conn?.sendMessage(id, { text: `*[❗] @${user.split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ᴏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ ϙᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [user] }, { quoted: fkontak2 });
+              const fkontak2 = { 
+                'key': { 
+                  'participants': '0@s.whatsapp.net', 
+                  'remoteJid': 'status@broadcast', 
+                  'fromMe': false, 
+                  'id': 'Halo' 
+                }, 
+                'message': { 
+                  'contactMessage': { 
+                    'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` 
+                  } 
+                }, 
+                'participant': '0@s.whatsapp.net' 
+              };
+              await conn?.sendMessage(id, { 
+                text: `*[❗] @${user.split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ᴏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ ϙᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, 
+                mentions: [user] 
+              }, { quoted: fkontak2 });
               return;
             }
-            await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [user] });
+            await conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [user] });
           }
         }
       }
       break;
+
     case 'promote':
     case 'daradmin':
     case 'darpoder':
       text = (chat.sPromote || tradutor.texto3 || conn?.spromote || '@user ```is now Admin```');
+      break;
+
     case 'demote':
     case 'quitarpoder':
     case 'quitaradmin':
-      if (!text) {
-        text = (chat?.sDemote || tradutor.texto4 || conn?.sdemote || '@user ```is no longer Admin```');
-      }
-      text = text.replace('@user', '@' + participants[0].split('@')[0]);
-      if (chat.detect && !chat?.isBanned) {
-        mconn?.conn?.sendMessage(id, { text, mentions: mconn?.conn?.parseMention(text) });
-      }
+      text = (chat?.sDemote || tradutor.texto4 || conn?.sdemote || '@user ```is no longer Admin```');
       break;
   }
-}
 
+  // Para promote/demote, reemplazar @user y enviar mensaje
+  if (['promote', 'daradmin', 'darpoder', 'demote', 'quitarpoder', 'quitaradmin'].includes(action)) {
+    text = text.replace('@user', '@' + participants[0].split('@')[0]);
+    
+    // Detectar por defecto, solo omitir si está explícitamente deshabilitado
+    const shouldDetect = chat.detect !== false && !chat?.isBanned;
+
+    if (shouldDetect) {
+      try {
+        // 📝 VERSIÓN MINIMALISTA: Solo acción y usuario
+        console.log(`✅ ${action === 'promote' ? 'Promovido' : 'Degradado'}: @${participants[0].split('@')[0]}`);
+        await conn.sendMessage(id, { 
+          text, 
+          mentions: conn.parseMention(text) 
+        });
+      } catch (error) {
+        // Solo mostrar errores críticos
+        console.log(`❌ Error enviando mensaje de ${action}:`, error.message);
+      }
+    }
+    // 🗑️ COMENTADO: Mensaje de debug eliminado
+    // else {
+    //   console.log(`🔇 Detección deshabilitada para ${id} - detect: ${chat.detect}, banned: ${chat?.isBanned}`);
+    // }
+  }
+}
 /**
  * Handle groups update
  * @param {import("baileys").BaileysEventMap<unknown>['groups.update']} groupsUpdate
