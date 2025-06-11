@@ -10,6 +10,7 @@ import mddd5 from 'md5';
 import ws from 'ws';
 import { setConfig } from './lib/funcConfig.js'
 import { setOwnerFunction } from './lib/owner-funciones.js'
+import { addExp, getUserStats, setUserStats } from './lib/stats.js'
 const recentMessages = new Set()
 function isDuplicate(id) {
   if (recentMessages.has(id)) return true
@@ -104,9 +105,9 @@ if (m.isBaileys) return;
       if (user) {
         
         const dick = {
-          afk: -1,
+        //  afk: -1,
           wait: 0,
-          afkReason: '',
+        //  afkReason: '',
           banned: false,
           BannedReason: '',
           Banneduser: false,
@@ -116,134 +117,14 @@ if (m.isBaileys) return;
           sewa: false,
           skill: '',
           language: 'es',
-          gameglx: {},
+       //   gameglx: {},
         }
       for (const dicks in dick) {
         if (user[dicks] === undefined || !user.hasOwnProperty(dicks)) {
         }
       }}
-      const akinator = global.db.data.users[m.sender].akinator;
-      if (typeof akinator !== 'object') {
-        global.db.data.users[m.sender].akinator = {};
-      }
-      if (akinator) {
-        const akiSettings = {
-          sesi: false,
-          server: null,
-          frontaddr: null,
-          session: null,
-          signature: null,
-          question: null,
-          progression: null,
-          step: null,
-          soal: null,
-        };
-        for (const aki in akiSettings) {
-          if (akinator[aki] === undefined || !akinator.hasOwnProperty(aki)) {
-            akinator[aki] = akiSettings[aki] ?? {};
-          }
-        }
-      }
-      let gameglx = global.db.data.users[m.sender].gameglx
-      if (typeof gameglx !== 'object') {
-        global.db.data.users[m.sender].gameglx = {}
-      }
-      if (gameglx) {
-        const gameGalaxy = { // i want to assign dick instead gameGalaxy
-          status: false,
-          notificacao: {
-            recebidas: []
-          },
-          perfil: {
-            xp: 112,
-            nivel: {
-              nome: 'Iniciante',
-              id: 0,
-              proximoNivel: 1
-            },
-            poder: 500,
-            minerando: false,
-            nome: null,
-            username: null,
-            id: null, // Id do Jogador
-            idioma: 'pt-br',
-            casa: {
-              id: null, // id do grupo ou seja do planeta casa
-              planeta: null,
-              idpelonome: 'terra',
-              colonia: {
-                id: 1,
-                nome: null,
-                habitante: false,
-                posicao: {
-                  x: 0,
-                  y: 0,
-                }
-              }
-            },
-            carteira: {
-              currency: 'BRL',
-              saldo: 1500,
-            },
-            localizacao: {
-              status: false,
-              nomeplaneta: null,  // id do grupo...
-              id: null,
-              idpelonome: null,
-              viajando: false,
-              posicao: {
-                x: 0,
-                y: 0,
-              }
-            },
-            nave: {
-              status: false,
-              id: null,
-              nome: null,
-              velocidade: null,
-              poder: null,
-              valor: null,
-            },
-            bolsa: {
-              itens: {
-                madeira: 1,
-                ferro: 1,
-                diamante: 1,
-                esmeralda: 2,
-                carvao: 1,
-                ouro: 1,
-                quartzo: 1
-              },
-              naves: {
-                status: false,
-                compradas: []
-              }
-            },
-            ataque: {
-              data: {
-                hora: 0,
-                contagem: 0 
-              },
-              sendoAtacado: {
-                status: false,
-                atacante: null,
-              },
-              forcaAtaque: {
-                ataque: 10
-              }
-            },
-            defesa: {
-              forca: 200,
-              ataque: 30
-            }
-          }
-        }
-        for (const game in gameGalaxy) {
-          if (gameglx[game] === undefined || !gameglx.hasOwnProperty(game)) {
-          }
-        }
-      }
-
+      
+      
 
       const chat = global.db.data.chats[m.chat];
       if (typeof chat !== 'object') {
@@ -278,11 +159,12 @@ if (m.isBaileys) return;
           expired: 0,
           language: 'es',
         }
-        for (const chatss in chats) {
+      for (const chatss in chats) {
           if (chat[chatss] === undefined || !chat.hasOwnProperty(chatss)) {
           }
         }
       }
+
       const settings = global.db.data.settings[this.user.jid];
       if (typeof settings !== 'object') global.db.data.settings[this.user.jid] = {};
       if (settings) {
@@ -339,11 +221,18 @@ if (m.message?.templateButtonReplyMessage?.selectedId) {
 if (m.message?.listResponseMessage?.singleSelectReply?.selectedRowId) {
   m.text = m.message.listResponseMessage.singleSelectReply.selectedRowId;
 }
+const isROwner = [
+  conn.decodeJid(global.conn.user.id),
+  ...global.owner.map(([number]) => number),
+  ...global.lidOwners
+]
+.map((v) => v.replace(/[^0-9]/g, ''))
+.some((n) => [`${n}@s.whatsapp.net`, `${n}@lid`].includes(m.sender));
 
-    const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([number]) => number)].map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
-    const isOwner = isROwner || m.fromMe;
-    const isMods = isOwner || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
-    const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].premiumTime > 0; // || global.db.data.users[m.sender].premium = 'true'
+const isOwner = isROwner || m.fromMe;
+const isMods = isOwner || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
+const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].premiumTime > 0; // || global.db.data.users[m.sender].premium = 'true'
+
 
     if (opts['queque'] && m.text && !(isMods || isPrems)) {
       const queque = this.msgqueque; const time = 1000 * 5;
@@ -384,28 +273,25 @@ if (m.message?.listResponseMessage?.singleSelectReply?.selectedRowId) {
         continue;
       }
       const __filename = join(___dirname, name);
-      if (typeof plugin.all === 'function') {
-        try {
-          await plugin.all.call(this, m, {
-            chatUpdate,
-            __dirname: ___dirname,
-            __filename,
-          });
-        } catch (e) {
-         
-          const md5c = fs.readFileSync('./plugins/' + m.plugin);
-          fetch('https://themysticbot.cloud:2083/error', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ number: conn.user.jid, plugin: m.plugin, command: `${m.text}`, reason: format(e), md5: mddd5(md5c) }),
-          });
-        }
-      }
-      if (!opts['restrict']) {
-        if (plugin.tags && plugin.tags.includes('admin')) {
-          continue;
-        }
-      }
+if (typeof plugin.all === 'function') {
+  try {
+    await plugin.all.call(this, m, {
+      chatUpdate,
+      __dirname: ___dirname,
+      __filename,
+    });
+  } catch (e) {
+    // Si quieres ver el error:
+    // console.error(e);
+  }
+}
+
+if (!opts['restrict']) {
+  if (plugin.tags && plugin.tags.includes('admin')) {
+    continue;
+  }
+}
+
       const str2Regex = (str) => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
       const _prefix = plugin.customPrefix ? plugin.customPrefix : conn.prefix ? conn.prefix : global.prefix;
       const match = (_prefix instanceof RegExp ? // RegExp Mode?
@@ -611,22 +497,13 @@ ${tradutor.texto1[1]} ${messageNumber}/3
             for (const key of Object.values(global.APIKeys)) {
               text = text.replace(new RegExp(key, 'g'), '#HIDDEN#');
             }
-            if (e.name) {
-              
-              const md5c = fs.readFileSync('./plugins/' + m.plugin);
-              fetch('https://themysticbot.cloud:2083/error', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ number: conn.user.jid, plugin: m.plugin, command: `${usedPrefix}${command} ${args.join(' ')}`, reason: text, md5: mddd5(md5c) }),
-              }).then((res) => res.json()).then((json) => {
-                console.log(json);
-              }).catch((err) => {
-                console.error(err);
-              });
-            }
-            await m.reply(text);
-          }
-        } finally {
+          if (e.name) {
+  // Código para reportar error eliminado intencionalmente
+}
+await m.reply(text);
+}
+} finally {
+
           // m.reply(util.format(_user))
           if (typeof plugin.after === 'function') {
             try {
@@ -651,48 +528,54 @@ ${tradutor.texto1[1]} ${messageNumber}/3
         this.msgqueque.splice(quequeIndex, 1);
       }
     }
-    let user; const stats = global.db.data.stats;
-    if (m) {
-      if (m.sender && (user = global.db.data.users[m.sender])) {
-        user.exp += m.exp;
-        user.limit -= m.limit * 1;
-      }
+ let user;
+const stats = global.db.data.stats ?? {}
 
-      let stat;
-      if (m.plugin) {
-        const now = +new Date;
-        if (m.plugin in stats) {
-          stat = stats[m.plugin];
-          if (!isNumber(stat.total)) {
-            stat.total = 1;
-          }
-          if (!isNumber(stat.success)) {
-            stat.success = m.error != null ? 0 : 1;
-          }
-          if (!isNumber(stat.last)) {
-            stat.last = now;
-          }
-          if (!isNumber(stat.lastSuccess)) {
-            stat.lastSuccess = m.error != null ? 0 : now;
-          }
-        } else {
-          stat = stats[m.plugin] = {
-            total: 1,
-            success: m.error != null ? 0 : 1,
-            last: now,
-            lastSuccess: m.error != null ? 0 : now,
-          };
-        }
-        stat.total += 1;
-        stat.last = now;
-        if (m.error == null) {
-          stat.success += 1;
-          stat.lastSuccess = now;
-        }
-      }
+if (m) {
+  if (m.sender) {
+    user = getUserStats(m.sender)
+
+    // Sumar experiencia con tu función
+    if (m.exp) {
+      addExp(m.sender, m.exp)
     }
 
-    try {
+    // Actualizar límite manualmente y guardar
+    if (typeof m.limit === 'number') {
+      user.limit = (user.limit ?? 10) - m.limit
+      setUserStats(m.sender, user)
+    }
+  }
+
+  if (m.plugin) {
+    const now = Date.now()
+    if (!(m.plugin in stats)) {
+      stats[m.plugin] = {
+        total: 0,
+        success: 0,
+        last: 0,
+        lastSuccess: 0,
+      }
+    }
+    const stat = stats[m.plugin]
+
+    if (typeof stat.total !== 'number') stat.total = 0
+    if (typeof stat.success !== 'number') stat.success = 0
+    if (typeof stat.last !== 'number') stat.last = 0
+    if (typeof stat.lastSuccess !== 'number') stat.lastSuccess = 0
+
+    stat.total += 1
+    stat.last = now
+    if (m.error == null) {
+      stat.success += 1
+      stat.lastSuccess = now
+    }
+
+    global.db.data.stats = stats
+  }
+}
+
+try {
       if (!opts['noprint']) await (await import(`./src/libraries/print.js`)).default(m, this);
     } catch (e) {
       console.log(m, m.quoted, e);

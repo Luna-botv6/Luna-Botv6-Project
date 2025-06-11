@@ -9,7 +9,7 @@ import chalk from 'chalk';
 import fs from 'fs';
 import './config.js'; //max update 2025
 
-const { PHONENUMBER_MCC } = await import('@whiskeysockets/baileys');
+import { PHONENUMBER_MCC } from '@whiskeysockets/baileys';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(__dirname);
 const { say } = cfonts;
@@ -25,7 +25,7 @@ say('Iniciando...', {
   gradient: ['yellow', 'cyan'],
 });
 
-say('Luna-botv5', {
+say('Luna-botv6', {
   font: 'block',
   align: 'center',
   gradient: ['blue', 'magenta'],
