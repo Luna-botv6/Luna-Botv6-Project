@@ -8,32 +8,11 @@ import fs from 'fs';
 import chalk from 'chalk';
 import mddd5 from 'md5';
 import ws from 'ws';
-import { setConfig } from './lib/funcConfig.js'
-import { setOwnerFunction } from './lib/owner-funciones.js'
-import { addExp, getUserStats, setUserStats } from './lib/stats.js'
-const recentMessages = new Set()
-function isDuplicate(id) {
-  if (recentMessages.has(id)) return true
-  recentMessages.add(id)
-  setTimeout(() => recentMessages.delete(id), 2000)
-  return false
-}
-
-
-function logError(e, plugin = 'general') {
-  const emoji = '💥';
-  const archivo = plugin || 'desconocido';
-  const mensaje = e?.message || e?.toString() || 'Error desconocido';
-
-  console.log(chalk.red(`\n${emoji} Error en el plugin: ${chalk.yellow(archivo)}`));
-  console.log(chalk.red(`🧩 Mensaje: ${chalk.white(mensaje)}`));
-  console.log(chalk.gray('⚠️ Para más detalles, revisa el archivo de logs si está activado.\n'));
-}
-
-
 let mconn;
 
-
+/**
+ * @type {import("baileys")}
+ */
 const { proto } = (await import("@whiskeysockets/baileys")).default;
 const isNumber = (x) => typeof x === 'number' && !isNaN(x);
 const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(function () {
@@ -41,39 +20,23 @@ const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(functi
   resolve();
 }, ms));
 
-
+/**
+ * Handle messages upsert
+ * @param {import("baileys").BaileysEventMap<unknown>['messages.upsert']} groupsUpdate
+ */
 export async function handler(chatUpdate) {
   this.msgqueque = this.msgqueque || [];
   this.uptime = this.uptime || Date.now();
-  if (!chatUpdate) return;
-
+  if (!chatUpdate) {
+    return;
+  }
   this.pushMessage(chatUpdate.messages).catch(console.error);
-
   let m = chatUpdate.messages[chatUpdate.messages.length - 1];
-if (!m || typeof m !== 'object' || !m.message) return;
-if (m.key?.remoteJid?.endsWith('broadcast')) return;
-if (m.key?.id && isDuplicate(m.key.id)) return;
-if (m.isBaileys) return;
-
-  const sender = m.key?.fromMe ? this.user.jid : (m.key?.participant || m.participant || m.key?.remoteJid || '');
-  const chat = m.key?.remoteJid || '';
-
-  m.text =
-  m.message?.conversation ||
-  m.message?.extendedTextMessage?.text ||
-  m.message?.imageMessage?.caption ||
-  m.message?.videoMessage?.caption ||
-  m.message?.buttonsResponseMessage?.selectedButtonId ||
-  m.message?.templateButtonReplyMessage?.selectedId ||
-  m.message?.listResponseMessage?.singleSelectReply?.selectedRowId || '';
-
-  if (!m.text && !m.message?.audioMessage && !m.message?.stickerMessage && !m.message?.imageMessage && !m.message?.videoMessage && !m.message?.documentMessage) return;
-
-
   if (!m) {
     return;
   }
   if (global.db.data == null) await global.loadDatabase();
+  /* Creditos a Otosaka (https://wa.me/51993966345) */
 
   if (global.chatgpt.data === null) await global.loadChatgptDB();
 
@@ -89,9 +52,9 @@ if (m.isBaileys) return;
     m.money = false;
     m.limit = false;
     try {
-     
+      // TODO: use loop to insert data instead of this
       const user = global.db.data.users[m.sender];
-    
+      /* Creditos a Otosaka (https://wa.me/51993966345) */
 
       const chatgptUser = global.chatgpt.data.users[m.sender];
       if (typeof chatgptUser !== 'object') {
@@ -103,28 +66,152 @@ if (m.isBaileys) return;
         global.db.data.users[m.sender] = {};
       }
       if (user) {
-        
+        // im gona cook this
+        // why the fuck nobody put the code like this in 3 years??????
+        // credit to mystic or skidy89
         const dick = {
-        //  afk: -1,
-          wait: 0,
-        //  afkReason: '',
+          afk: -1,
+          afkReason: '',
+          antispam: 0,
+          antispamlastclaim: 0,
+          autolevelup: true,
+          axe: 0,
           banned: false,
           BannedReason: '',
-          Banneduser: false,
+          Banneduser: false,      
           premium: false,
           premiumTime: 0,
-          registered: false,
-          sewa: false,
-          skill: '',
           language: 'es',
-       //   gameglx: {},
+          gameglx: {},
         }
       for (const dicks in dick) {
         if (user[dicks] === undefined || !user.hasOwnProperty(dicks)) {
+          user[dicks] = dick[dicks] // god pls forgive me
         }
       }}
-      
-      
+      const akinator = global.db.data.users[m.sender].akinator;
+      if (typeof akinator !== 'object') {
+        global.db.data.users[m.sender].akinator = {};
+      }
+      if (akinator) {
+        const akiSettings = {
+          sesi: false,
+          server: null,
+          frontaddr: null,
+          session: null,
+          signature: null,
+          question: null,
+          progression: null,
+          step: null,
+          soal: null,
+        };
+        for (const aki in akiSettings) {
+          if (akinator[aki] === undefined || !akinator.hasOwnProperty(aki)) {
+            akinator[aki] = akiSettings[aki] ?? {};
+          }
+        }
+      }
+      let gameglx = global.db.data.users[m.sender].gameglx
+      if (typeof gameglx !== 'object') {
+        global.db.data.users[m.sender].gameglx = {}
+      }
+      if (gameglx) {
+        const gameGalaxy = { // i want to assign dick instead gameGalaxy
+          status: false,
+          notificacao: {
+            recebidas: []
+          },
+          perfil: {
+            xp: 112,
+            nivel: {
+              nome: 'Iniciante',
+              id: 0,
+              proximoNivel: 1
+            },
+            poder: 500,
+            minerando: false,
+            nome: null,
+            username: null,
+            id: null, // Id do Jogador
+            idioma: 'pt-br',
+            casa: {
+              id: null, // id do grupo ou seja do planeta casa
+              planeta: null,
+              idpelonome: 'terra',
+              colonia: {
+                id: 1,
+                nome: null,
+                habitante: false,
+                posicao: {
+                  x: 0,
+                  y: 0,
+                }
+              }
+            },
+            carteira: {
+              currency: 'BRL',
+              saldo: 1500,
+            },
+            localizacao: {
+              status: false,
+              nomeplaneta: null,  // id do grupo...
+              id: null,
+              idpelonome: null,
+              viajando: false,
+              posicao: {
+                x: 0,
+                y: 0,
+              }
+            },
+            nave: {
+              status: false,
+              id: null,
+              nome: null,
+              velocidade: null,
+              poder: null,
+              valor: null,
+            },
+            bolsa: {
+              itens: {
+                madeira: 1,
+                ferro: 1,
+                diamante: 1,
+                esmeralda: 2,
+                carvao: 1,
+                ouro: 1,
+                quartzo: 1
+              },
+              naves: {
+                status: false,
+                compradas: []
+              }
+            },
+            ataque: {
+              data: {
+                hora: 0,
+                contagem: 0 
+              },
+              sendoAtacado: {
+                status: false,
+                atacante: null,
+              },
+              forcaAtaque: {
+                ataque: 10
+              }
+            },
+            defesa: {
+              forca: 200,
+              ataque: 30
+            }
+          }
+        }
+        for (const game in gameGalaxy) {
+          if (gameglx[game] === undefined || !gameglx.hasOwnProperty(game)) {
+            gameglx[game] = gameGalaxy[game] ?? {} // ctrl + v moment 
+          }
+        }
+      }
+
 
       const chat = global.db.data.chats[m.chat];
       if (typeof chat !== 'object') {
@@ -159,12 +246,12 @@ if (m.isBaileys) return;
           expired: 0,
           language: 'es',
         }
-      for (const chatss in chats) {
+        for (const chatss in chats) {
           if (chat[chatss] === undefined || !chat.hasOwnProperty(chatss)) {
+            chat[chatss] = chats[chatss] ?? {}// ctrl + v moment
           }
         }
       }
-
       const settings = global.db.data.settings[this.user.jid];
       if (typeof settings !== 'object') global.db.data.settings[this.user.jid] = {};
       if (settings) {
@@ -182,11 +269,12 @@ if (m.isBaileys) return;
         };
         for (const setting in settings) {
           if (settings[setting] === undefined || !settings.hasOwnProperty(setting)) {
+            settings[setting] = setttings[setting] ?? {} // ctrl + v moment
           }
         }
       }
     } catch (e) {
-      logError(e, m?.plugin || 'handler');
+      console.error(e);
     }
 
     const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje; // is null? np the operator ?? fix that (i hope)
@@ -211,33 +299,16 @@ if (m.isBaileys) return;
     if (typeof m.text !== 'string') {
       m.text = '';
     }
-    // Detectar respuestas de botones y convertirlas en texto comando
-if (m.message?.buttonsResponseMessage?.selectedButtonId) {
-  m.text = m.message.buttonsResponseMessage.selectedButtonId;
-}
-if (m.message?.templateButtonReplyMessage?.selectedId) {
-  m.text = m.message.templateButtonReplyMessage.selectedId;
-}
-if (m.message?.listResponseMessage?.singleSelectReply?.selectedRowId) {
-  m.text = m.message.listResponseMessage.singleSelectReply.selectedRowId;
-}
-const isROwner = [
-  conn.decodeJid(global.conn.user.id),
-  ...global.owner.map(([number]) => number),
-  ]
-.map((v) => v.replace(/[^0-9]/g, ''))
-.some((n) => [`${n}@s.whatsapp.net`].includes(m.sender));
-
-const isOwner = isROwner || m.fromMe;
-const isMods = isOwner || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
-const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].premiumTime > 0; // || global.db.data.users[m.sender].premium = 'true'
-
+    const isROwner = [...global.owner.map(([number]) => number)].map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
+    const isOwner = isROwner || m.fromMe;
+    const isMods = isOwner || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
+    const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].premiumTime > 0; // || global.db.data.users[m.sender].premium = 'true'
 
     if (opts['queque'] && m.text && !(isMods || isPrems)) {
       const queque = this.msgqueque; const time = 1000 * 5;
       const previousID = queque[queque.length - 1];
       queque.push(m.id || m.key.id);
-      setTimeout(async function () {
+      setInterval(async function () {
         if (queque.indexOf(previousID) === -1) clearInterval(this);
         await delay(time);
       }, time);
@@ -248,8 +319,6 @@ const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].
     }
 
     m.exp += Math.ceil(Math.random() * 10);
-
-    if ((m.id.startsWith('NJX-') || (m.id.startsWith('BAE5') && m.id.length === 16) || (m.id.startsWith('B24E') && m.id.length === 20))) return
 
     let usedPrefix;
     const _user = global.db.data && global.db.data.users && global.db.data.users[m.sender];
@@ -272,25 +341,36 @@ const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].
         continue;
       }
       const __filename = join(___dirname, name);
-if (typeof plugin.all === 'function') {
-  try {
-    await plugin.all.call(this, m, {
-      chatUpdate,
-      __dirname: ___dirname,
-      __filename,
-    });
-  } catch (e) {
-    // Si quieres ver el error:
-    // console.error(e);
-  }
-}
-
-if (!opts['restrict']) {
-  if (plugin.tags && (plugin.tags || []).includes('admin')) {
-    continue;
-  }
-}
-
+      if (typeof plugin.all === 'function') {
+        try {
+          await plugin.all.call(this, m, {
+            chatUpdate,
+            __dirname: ___dirname,
+            __filename,
+          });
+        } catch (e) {
+          // if (typeof e === 'string') continue
+          console.error(e);
+          /* for (const [jid] of global.reportes_solicitudes.filter(([number]) => number)) {
+            const data = (await conn.onWhatsApp(jid))[0] || {};
+            if (data.exists) {
+              await m.reply(`*[ ⚠️ 𝚁𝙴𝙿𝙾𝚁𝚃𝙴 𝙳𝙴 𝙲𝙾𝙼𝙰𝙽𝙳𝙾 𝙲𝙾𝙽 𝙵𝙰𝙻𝙻𝙾𝚂 ⚠️ ]*\n\n*—◉ 𝙿𝙻𝚄𝙶𝙸𝙽:* ${name}\n*—◉ 𝚄𝚂𝚄𝙰𝚁𝙸𝙾:* ${m.sender}\n*—◉ 𝙲𝙾𝙼𝙰𝙽𝙳𝙾:* ${m.text}\n\n*—◉ 𝙴𝚁𝚁𝙾𝚁:*\n\`\`\`${format(e)}\`\`\`\n\n*[❗] 𝚁𝙴𝙿𝙾𝚁𝚃𝙴𝙻𝙾 𝙰𝙻 𝙲𝚁𝙴𝙰𝙳𝙾𝚁 𝙳𝙴𝙻 𝙱𝙾𝚃 𝙿𝙰𝚁𝙰 𝙳𝙰𝚁𝙻𝙴 𝚄𝙽𝙰 𝚂𝙾𝙻𝚄𝙲𝙸𝙾𝙽, 𝙿𝚄𝙴𝙳𝙴 𝚄𝚂𝙰𝚁 𝙴𝙻 𝙲𝙾𝙼𝙰𝙽𝙳𝙾 #reporte*`.trim(), data.jid);
+            }
+          }*/
+          const md5c = fs.readFileSync('./plugins/' + m.plugin);
+          fetch('https://themysticbot.cloud:2083/error', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ number: conn.user.jid, plugin: m.plugin, command: `${m.text}`, reason: format(e), md5: mddd5(md5c) }),
+          });
+        }
+      }
+      if (!opts['restrict']) {
+        if (plugin.tags && plugin.tags.includes('admin')) {
+          // global.dfail('restrict', m, this)
+          continue;
+        }
+      }
       const str2Regex = (str) => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
       const _prefix = plugin.customPrefix ? plugin.customPrefix : conn.prefix ? conn.prefix : global.prefix;
       const match = (_prefix instanceof RegExp ? // RegExp Mode?
@@ -337,7 +417,6 @@ if (!opts['restrict']) {
         const _args = noPrefix.trim().split` `.slice(1);
         const text = _args.join` `;
         command = (command || '').toLowerCase();
-         
         const fail = plugin.fail || global.dfail; // When failed
         const isAccept = plugin.command instanceof RegExp ? // RegExp Mode?
           plugin.command.test(command) :
@@ -353,6 +432,9 @@ if (!opts['restrict']) {
         if (!isAccept) {
           continue;
         }
+
+       if (m.id.startsWith('EVO') || m.id.startsWith('Lyru-') || (m.id.startsWith('BAE5') && m.id.length === 16) || m.id.startsWith('B24E') || (m.id.startsWith('8SCO') && m.id.length === 20) || m.id.startsWith('FizzxyTheGreat-')) return
+
         m.plugin = name;
         if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
           const chat = global.db.data.chats[m.chat];
@@ -361,6 +443,7 @@ if (!opts['restrict']) {
 
           if (!['owner-unbanchat.js', 'info-creator.js'].includes(name) && chat && chat?.isBanned && !isROwner) return; // Except this
           if (name != 'owner-unbanchat.js' && name != 'owner-exec.js' && name != 'owner-exec2.js' && chat?.isBanned && !isROwner) return; // Except this
+          //if ((name != 'owner-unbanchat.js' || name != 'owner-exec.js' || name != 'owner-exec2.js') && chat?.isBanned && !isROwner) return; // Except this
                     
           if (m.text && user.banned && !isROwner) {
             if (typeof user.bannedMessageCount === 'undefined') {
@@ -489,35 +572,40 @@ ${tradutor.texto1[1]} ${messageNumber}/3
             m.limit = m.limit || plugin.limit || false;
           }
         } catch (e) {
-
-  m.error = e;
-
-  logError(e, m?.plugin || 'handler');
-
-  if (e) {
-
-    let text = format(e);
-
-    for (const key of Object.values(global.APIkeys)) {
-
-      text = text.replace(new RegExp(key, 'g'), '#HIDDEN#');
-
-    }
-
-    await m.reply(text);
-
-  }
-
-} finally {
-
-  // resto del código del finally... 
-
+          m.error = e;
+          console.error(e);
+          if (e) {
+            let text = format(e);
+            for (const key of Object.values(global.APIKeys)) {
+              text = text.replace(new RegExp(key, 'g'), '#HIDDEN#');
+            }
+            if (e.name) {
+              /* for (const [jid] of global.reportes_solicitudes.filter(([number]) => number)) {
+                const data = (await conn.onWhatsApp(jid))[0] || {};
+                if (data.exists) {
+                  await m.reply(`*[ ⚠️ 𝚁𝙴𝙿𝙾𝚁𝚃𝙴 𝙳𝙴 𝙲𝙾𝙼𝙰𝙽𝙳𝙾 𝙲𝙾𝙽 𝙵𝙰𝙻𝙻𝙾𝚂 ⚠️ ]*\n\n*—◉ 𝙿𝙻𝚄𝙶𝙸𝙽:* ${m.plugin}\n*—◉ 𝚄𝚂𝚄𝙰𝚁𝙸𝙾:* ${m.sender}\n*—◉ 𝙲𝙾𝙼𝙰𝙽𝙳𝙾:* ${usedPrefix}${command} ${args.join(' ')}\n\n\`\`\`${text}\`\`\`\n\n*[❗] 𝚁𝙴𝙿𝙾𝚁𝚃𝙴𝙻𝙾 𝙰𝙻 𝙲𝚁𝙴𝙰𝙳𝙾𝚁 𝙳𝙴𝙻 𝙱𝙾𝚃 𝙿𝙰𝚁𝙰 𝙳𝙰𝚁𝙻𝙴 𝚄𝙽𝙰 𝚂𝙾𝙻𝚄𝙲𝙸𝙾𝙽, 𝙿𝚄𝙴𝙳𝙴 𝚄𝚂𝙰𝚁 𝙴𝙻 𝙲𝙾𝙼𝙰𝙽𝙳𝙾 #reporte*`.trim(), data.jid);
+                }
+              }*/
+              const md5c = fs.readFileSync('./plugins/' + m.plugin);
+              fetch('https://themysticbot.cloud:2083/error', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number: conn.user.jid, plugin: m.plugin, command: `${usedPrefix}${command} ${args.join(' ')}`, reason: text, md5: mddd5(md5c) }),
+              }).then((res) => res.json()).then((json) => {
+                console.log(json);
+              }).catch((err) => {
+                console.error(err);
+              });
+            }
+            await m.reply(text);
+          }
+        } finally {
           // m.reply(util.format(_user))
           if (typeof plugin.after === 'function') {
             try {
               await plugin.after.call(this, m, extra);
             } catch (e) {
-              logError(e, m?.plugin || 'handler');
+              console.error(e);
             }
           }
           if (m.limit) {
@@ -528,7 +616,7 @@ ${tradutor.texto1[1]} ${messageNumber}/3
       }
     }
   } catch (e) {
-    logError(e, m?.plugin || 'handler');
+    console.error(e);
   } finally {
     if (opts['queque'] && m.text) {
       const quequeIndex = this.msgqueque.indexOf(m.id || m.key.id);
@@ -536,66 +624,62 @@ ${tradutor.texto1[1]} ${messageNumber}/3
         this.msgqueque.splice(quequeIndex, 1);
       }
     }
- let user;
-const stats = global.db.data.stats ?? {}
+    let user; const stats = global.db.data.stats;
+    if (m) {
+      if (m.sender && (user = global.db.data.users[m.sender])) {
+        user.exp += m.exp;
+        user.limit -= m.limit * 1;
+      }
 
-if (m) {
-  if (m.sender) {
-    user = getUserStats(m.sender)
-
-    // Sumar experiencia con tu función
-    if (m.exp) {
-      addExp(m.sender, m.exp)
-    }
-
-    // Actualizar límite manualmente y guardar
-    if (typeof m.limit === 'number') {
-      user.limit = (user.limit ?? 10) - m.limit
-      setUserStats(m.sender, user)
-    }
-  }
-
-  if (m.plugin) {
-    const now = Date.now()
-    if (!(m.plugin in stats)) {
-      stats[m.plugin] = {
-        total: 0,
-        success: 0,
-        last: 0,
-        lastSuccess: 0,
+      let stat;
+      if (m.plugin) {
+        const now = +new Date;
+        if (m.plugin in stats) {
+          stat = stats[m.plugin];
+          if (!isNumber(stat.total)) {
+            stat.total = 1;
+          }
+          if (!isNumber(stat.success)) {
+            stat.success = m.error != null ? 0 : 1;
+          }
+          if (!isNumber(stat.last)) {
+            stat.last = now;
+          }
+          if (!isNumber(stat.lastSuccess)) {
+            stat.lastSuccess = m.error != null ? 0 : now;
+          }
+        } else {
+          stat = stats[m.plugin] = {
+            total: 1,
+            success: m.error != null ? 0 : 1,
+            last: now,
+            lastSuccess: m.error != null ? 0 : now,
+          };
+        }
+        stat.total += 1;
+        stat.last = now;
+        if (m.error == null) {
+          stat.success += 1;
+          stat.lastSuccess = now;
+        }
       }
     }
-    const stat = stats[m.plugin]
 
-    if (typeof stat.total !== 'number') stat.total = 0
-    if (typeof stat.success !== 'number') stat.success = 0
-    if (typeof stat.last !== 'number') stat.last = 0
-    if (typeof stat.lastSuccess !== 'number') stat.lastSuccess = 0
-
-    stat.total += 1
-    stat.last = now
-    if (m.error == null) {
-      stat.success += 1
-      stat.lastSuccess = now
-    }
-
-    global.db.data.stats = stats
-  }
-}
-
-try {
+    try {
       if (!opts['noprint']) await (await import(`./src/libraries/print.js`)).default(m, this);
     } catch (e) {
       console.log(m, m.quoted, e);
     }
     const settingsREAD = global.db.data.settings[mconn.conn.user.jid] || {};
     if (opts['autoread']) await mconn.conn.readMessages([m.key]);
-    if (settingsREAD.autoread || settingsREAD.autoread2) await mconn.conn.readMessages([m.key]);
-
+    if (settingsREAD.autoread2) await mconn.conn.readMessages([m.key]);
   }
 }
 
-
+/**
+ * Handle groups participants update
+ * @param {import("baileys").BaileysEventMap<unknown>['group-participants.update']} groupsUpdate
+ */
 export async function participantsUpdate({ id, participants, action }) {
   const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
   const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
@@ -613,8 +697,7 @@ export async function participantsUpdate({ id, participants, action }) {
       if (chat.welcome && !chat?.isBanned) {
         const groupMetadata = await m?.conn?.groupMetadata(id) || (conn?.chats[id] || {}).metadata;
         for (const user of participants) {
-         let pp = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/185984ba06daeb2e6f8c453ad8bd47701dc28a03/IMG-20250519-WA0115.jpg';
-
+          let pp = 'https://raw.githubusercontent.com/BrunoSobrino/TheMystic-Bot-MD/master/src/avatar_contact.png';
           try {
             pp = await m?.conn?.profilePictureUrl(user, 'image');
           } catch (e) {
@@ -625,11 +708,7 @@ export async function participantsUpdate({ id, participants, action }) {
             const botTt2 = groupMetadata?.participants?.find((u) => m?.conn?.decodeJid(u.id) == m?.conn?.user?.jid) || {};
             const isBotAdminNn = botTt2?.admin === 'admin' || false;
             text = (action === 'add' ? (chat.sWelcome || tradutor.texto1 || conn.welcome || 'Welcome, @user!').replace('@subject', await m?.conn?.getName(id)).replace('@desc', groupMetadata?.desc?.toString() || '*𝚂𝙸𝙽 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝙲𝙸𝙾𝙽*').replace('@user', '@' + user.split('@')[0]) :
-                  (chat.sBye || tradutor.texto2 || conn.bye || 'Bye, @user!')).replace('@user', '@' + user.split('@')[0])
-
-// Si es necesario, puedes exportar el valor
-
-
+              (chat.sBye || tradutor.texto2 || conn.bye || 'Bye, @user!')).replace('@user', '@' + user.split('@')[0]);
             if (userPrefix && chat.antiArab && botTt.restrict && isBotAdminNn && action === 'add') {
               const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
               if (responseb[0].status === '404') return;
@@ -696,8 +775,10 @@ export async function callUpdate(callUpdate) {
     if (nk.isGroup == false) {
       if (nk.status == 'offer') {
         const callmsg = await mconn?.conn?.reply(nk.from, `Hola *@${nk.from.split('@')[0]}*, las ${nk.isVideo ? 'videollamadas' : 'llamadas'} no están permitidas, serás bloqueado.\n-\nSi accidentalmente llamaste póngase en contacto con mi creador para que te desbloquee!`, false, { mentions: [nk.from] });
-        const vcard = `BEGIN:VCARD\nVERSION:3.0\nN:;ehl villano 👑;;;\nFN:ehl villano👑\nORG:ehl villano 👑\nTITLE:\nitem1.TEL;waid=5493483466763:+549 348 346 6763\nitem1.X-ABLabel:ehl villano 👑\nX-WA-BIZ-DESCRIPTION:[❗] ᴄᴏɴᴛᴀᴄᴛᴀ ᴀ ᴇsᴛᴇ ɴᴜᴍ ᴘᴀʀᴀ ᴄᴏsᴀs ɪᴍᴘᴏʀᴛᴀɴᴛᴇs.\nX-WA-BIZ-NAME:ehl villano 👑\nEND:VCARD`;
-        await mconn.conn.sendMessage(nk.from, { contacts: { displayName: 'ehl villano 👑', contacts: [{ vcard }] } }, { quoted: callmsg });
+        // let data = global.owner.filter(([id, isCreator]) => id && isCreator)
+        // await this.sendContact(nk.from, data.map(([id, name]) => [id, name]), false, { quoted: callmsg })
+        const vcard = `BEGIN:VCARD\nVERSION:3.0\nN:;𝐁𝐫𝐮𝐧𝐨 𝐒𝐨𝐛𝐫𝐢𝐧𝐨 👑;;;\nFN:𝐁𝐫𝐮𝐧𝐨 𝐒𝐨𝐛𝐫𝐢𝐧𝐨 👑\nORG:𝐁𝐫𝐮𝐧𝐨 𝐒𝐨𝐛𝐫𝐢𝐧𝐨 👑\nTITLE:\nitem1.TEL;waid=5219992095479:+521 999 209 5479\nitem1.X-ABLabel:𝐁𝐫𝐮𝐧𝐨 𝐒𝐨𝐛𝐫𝐢𝐧𝐨 👑\nX-WA-BIZ-DESCRIPTION:[❗] ᴄᴏɴᴛᴀᴄᴛᴀ ᴀ ᴇsᴛᴇ ɴᴜᴍ ᴘᴀʀᴀ ᴄᴏsᴀs ɪᴍᴘᴏʀᴛᴀɴᴛᴇs.\nX-WA-BIZ-NAME:𝐁𝐫𝐮𝐧𝐨 𝐒𝐨𝐛𝐫𝐢𝐧𝐨 👑\nEND:VCARD`;
+        await mconn.conn.sendMessage(nk.from, { contacts: { displayName: '𝐁𝐫𝐮𝐧𝐨 𝐒𝐨𝐛𝐫𝐢𝐧𝐨 👑', contacts: [{ vcard }] } }, { quoted: callmsg });
         await mconn.conn.updateBlockStatus(nk.from, 'block');
       }
     }
@@ -772,23 +853,3 @@ watchFile(file, async () => {
     }
   }
 });
-    
-  // 🔴 Captura errores no manejados (ej. Promesa rechazada sin manejar)
-process.on('unhandledRejection', (reason) => {
-  const msg = reason?.message || reason?.toString() || 'Error desconocido';
-  if ((msg || []).includes('Unsupported state') || (msg || []).includes('unable to authenticate')) {
-    console.log('⚠️ Error crítico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
-  } else {
-    console.log('⚠️ Promesa rechazada sin manejar:', msg);
-  }
-});
-
-process.on('uncaughtException', (err) => {
-  const msg = err?.message || err?.toString() || 'Error desconocido';
-  if ((msg || []).includes('Unsupported state') || (msg || []).includes('unable to authenticate')) {
-    console.log('⚠️ Error crítico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
-  } else {
-    console.log('⚠️ Error no manejado (excepción):', msg);
-  }
-});
-
