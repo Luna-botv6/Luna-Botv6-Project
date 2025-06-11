@@ -15,10 +15,6 @@ global.isBaileysFail = false
 
 global.defaultLenguaje = 'es';
 
-global.lidOwners = [
-  "5215661493504",
-  "5212293196672"
-];
 
 global.owner = [
   ['5493483466763', '👑 Ehl villano 👑', true],
