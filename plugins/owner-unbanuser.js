@@ -28,6 +28,6 @@ const handler = async (m, { conn, text }) => {
 handler.help = ['unbanuser'];
 handler.tags = ['owner'];
 handler.command = /^unbanuser$/i;
-handler.rowner = true;
+handler.owner = true; // Cambiado de rowner a owner
 
 export default handler;
