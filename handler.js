@@ -237,7 +237,7 @@ const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].
       const queque = this.msgqueque; const time = 1000 * 5;
       const previousID = queque[queque.length - 1];
       queque.push(m.id || m.key.id);
-      setInterval(async function () {
+      setTimeout(async function () {
         if (queque.indexOf(previousID) === -1) clearInterval(this);
         await delay(time);
       }, time);
@@ -286,7 +286,7 @@ if (typeof plugin.all === 'function') {
 }
 
 if (!opts['restrict']) {
-  if (plugin.tags && plugin.tags.includes('admin')) {
+  if (plugin.tags && (plugin.tags || []).includes('admin')) {
     continue;
   }
 }
@@ -776,7 +776,7 @@ watchFile(file, async () => {
   // 🔴 Captura errores no manejados (ej. Promesa rechazada sin manejar)
 process.on('unhandledRejection', (reason) => {
   const msg = reason?.message || reason?.toString() || 'Error desconocido';
-  if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
+  if ((msg || []).includes('Unsupported state') || (msg || []).includes('unable to authenticate')) {
     console.log('⚠️ Error crítico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
   } else {
     console.log('⚠️ Promesa rechazada sin manejar:', msg);
@@ -785,7 +785,7 @@ process.on('unhandledRejection', (reason) => {
 
 process.on('uncaughtException', (err) => {
   const msg = err?.message || err?.toString() || 'Error desconocido';
-  if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
+  if ((msg || []).includes('Unsupported state') || (msg || []).includes('unable to authenticate')) {
     console.log('⚠️ Error crítico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
   } else {
     console.log('⚠️ Error no manejado (excepción):', msg);
