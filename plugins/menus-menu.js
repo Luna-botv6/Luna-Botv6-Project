@@ -360,6 +360,7 @@ ${tradutor.texto1[26]}
 ├🛒 _${usedPrefix}cambiar_
 ├💸 _${usedPrefix}transfer *<tipo> <cant> <@tag>*_
 ├❌ _${usedPrefix}unreg *<sn>*_
+├🛡️ _${usedPrefix}verprotes_
 ╰───── • ◆ • ────────────╯
 
     
