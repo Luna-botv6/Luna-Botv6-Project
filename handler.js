@@ -15,7 +15,7 @@ const recentMessages = new Set()
 function isDuplicate(id) {
   if (recentMessages.has(id)) return true
   recentMessages.add(id)
-  setTimeout(() => recentMessages.delete(id), 2000)
+  setTimeout(() => recentMessages.delete(id), 500)
   return false
 }
 
@@ -227,7 +227,7 @@ const isROwner = [
   ...global.lidOwners
 ]
 .map((v) => v.replace(/[^0-9]/g, ''))
-.some((n) => [`${n}@s.whatsapp.net`, `${n}@lid`].includes(m.sender));
+.some((n) => [`${n}@s.whatsapp.net`].includes(conn.decodeJid(m.sender)));
 
 const isOwner = isROwner || m.fromMe;
 const isMods = isOwner || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
@@ -626,10 +626,10 @@ export async function participantsUpdate({ id, participants, action }) {
               const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
               if (responseb[0].status === '404') return;
               const fkontak2 = { 'key': { 'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo' }, 'message': { 'contactMessage': { 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` } }, 'participant': '0@s.whatsapp.net' };
-              await m?.conn?.sendMessage(id, { text: `*[❗] @${user.split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ᴏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ ϙᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [user] }, { quoted: fkontak2 });
+              await m?.conn?.sendMessage(id, { text: `*[❗] @${conn.decodeJid(user).split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ᴏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ ϙᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [conn.decodeJid(user)] }, { quoted: fkontak2 });
               return;
             }
-            await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [user] });
+            await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [conn.decodeJid(user)] });
           }
         }
       }
@@ -721,7 +721,7 @@ ${tradutor.texto1[2]} ${time}
 ${tradutor.texto1[3]} ${date}\n
 ${tradutor.texto1[4]}
 ${tradutor.texto1[5]}`.trim();
-    await mconn.conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [participant] }, { quoted: msg })
+    await mconn.conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [conn.decodeJid(participant)] }, { quoted: msg })
     mconn.conn.copyNForward(msg.chat, msg).catch(e => console.log(e, msg))
   } catch (e) {
     console.error(e)
