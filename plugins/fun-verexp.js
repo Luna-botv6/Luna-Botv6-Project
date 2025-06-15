@@ -1,4 +1,4 @@
-import { getUserStats } from '../lib/stats.js' // tu función para stats
+import { getUserStats } from '../lib/stats.js'
 
 async function handler(m, { conn }) {
   // Si mencionan a alguien, toma ese id, si no, usa el que manda el mensaje
@@ -16,16 +16,33 @@ async function handler(m, { conn }) {
   // Obtener estadísticas del usuario
   const stats = getUserStats(userId)
 
+  // Calcular experiencia para siguiente nivel (fórmula simple basada en nivel)
+  const expForNextLevel = (stats.level + 1) * 1000 - stats.exp
+  
   // Construir el texto con el nombre real visible
   const text = `📊 *Estadísticas de ${name}*\n\n` +
-               `✨ *Nivel:* ${stats.level || 0}\n` +
-               `⚡ *Experiencia:* ${stats.exp || 0}\n` +
-               `💎 *Diamantes:* ${stats.money || 0}\n` +
-               `🔰 *Rol:* ${stats.role || 'Ninguno'}\n` +
-               `📦 *Límite:* ${stats.limit || 0}`
+               `✨ *Nivel:* ${stats.level}\n` +
+               `⚡ *Experiencia:* ${stats.exp}\n` +
+               `📈 *Para siguiente nivel:* ${expForNextLevel} exp\n` +
+               `💎 *Diamantes:* ${stats.money}\n` +
+               `🌙 *Luna Coins:* ${stats.lunaCoins}\n` +
+               `🔮 *Mystic Coins:* ${stats.mysticcoins}\n` +
+               `🔰 *Rol:* ${stats.role}\n` +
+               `📦 *Límite:* ${stats.limit}\n` +
+               `🎮 *Uniones:* ${stats.joincount}`
 
   // Enviar respuesta con la mención para que WhatsApp lo transforme en clickeable
   await m.reply(text, null, { mentions: [userId] })
+}
+
+// Función para formatear números grandes
+function formatNumber(num) {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M'
+  } else if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K'
+  }
+  return num.toString()
 }
 
 handler.help = ['verexp', 'stats']
