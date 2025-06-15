@@ -1,46 +1,71 @@
 import fs from 'fs'
 import { getUserStats, setUserStats, addExp, addMoney } from '../lib/stats.js'
+import { getLastCofreTime, setLastCofreTime, initCofreUser } from '../lib/cofre.js'
 
 const handler = async (m, { isPrems, conn }) => {
   const stats = getUserStats(m.sender)
-
-  const idioma = stats.language || global.defaultLenguaje
+  const idioma = stats.language || global.defaultLenguaje || 'es'
   const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
   const tradutor = _translate.plugins.rpg_cofre
 
-  const now = Date.now()
+  const userId = m.sender
+  
+  // Inicializar usuario en el sistema de cofre si no existe
+  initCofreUser(userId)
+
+  // Recompensas fijas
+  const baseRewards = {
+    exp: 7500,
+    money: 3000, // Diamantes
+    mysticcoins: 10
+  }
+
+  // Recompensas premium (el doble)
+  const premiumRewards = {
+    exp: 15000,
+    money: 6000,
+    mysticcoins: 20
+  }
+
+  // Verificar si es premium
+  const isPremium = stats.premiumTime && stats.premiumTime > Date.now()
+
+  // Seleccionar recompensas según el estado premium
+  const recompensas = isPremium ? premiumRewards : baseRewards
+
+  // Manejo del cooldown usando el archivo separado
+  const lastCofre = getLastCofreTime(userId)
   const cooldown = 86400000 // 24 horas
-  const lastClaim = stats.lastcofre || 0
-  const remaining = cooldown - (now - lastClaim)
+  const now = Date.now()
+  const remaining = cooldown - (now - lastCofre)
+  
+  if (remaining > 0) {
+    throw `${tradutor.texto1[0]} ${msToTime(remaining)} ${tradutor.texto1[1]}`
+  }
 
-  if (remaining > 0) throw `${tradutor.texto1[0]} *${msToTime(remaining)}* ${tradutor.texto1[1]}`
+  // Aplicar recompensas usando las funciones de stats.js
+  addExp(userId, recompensas.exp)
+  addMoney(userId, recompensas.money)
+  
+  // Para mysticcoins, lo agregamos directamente al usuario y guardamos
+  const updatedUser = getUserStats(userId)
+  updatedUser.mysticcoins = (updatedUser.mysticcoins || 0) + recompensas.mysticcoins
+  setUserStats(userId, updatedUser)
 
-  // Recompensas aleatorias
-  const dia = Math.floor(Math.random() * 30)
-  const tok = Math.floor(Math.random() * 10)
-  const mystic = Math.floor(Math.random() * 4000)
-  const expp = Math.floor(Math.random() * 5000)
-
-  // Sumar recompensas
-  stats.limit += dia
-  stats.money += mystic
-  stats.joincount += tok
-  addExp(m.sender, expp)
-
-  // Actualizar tiempo de cofre
-  stats.lastcofre = now
-  setUserStats(m.sender, stats)
+  // Actualizar el tiempo del último cofre
+  setLastCofreTime(userId, now)
 
   const img = 'https://img.freepik.com/vector-gratis/cofre-monedas-oro-piedras-preciosas-cristales-trofeo_107791-7769.jpg?w=2000'
+  
   const texto = `
 ${tradutor.texto2[0]}
 ${tradutor.texto2[1]}
 ${tradutor.texto2[2]}
-║➢ *${dia} ${tradutor.texto2[3]}
-║➢ *${tok} ${tradutor.texto2[4]}
-║➢ *${mystic} ${tradutor.texto2[5]}
-║➢ *${expp} ${tradutor.texto2[6]}
-${tradutor.texto2[7]}`
+║➢ *${recompensas.exp}* ⭐ Experiencia
+║➢ *${recompensas.money}* 💎 Diamantes
+║➢ *${recompensas.mysticcoins}* 🪙 MysticCoins
+║➢ *Estado Premium:* ${isPremium ? '✅' : '❌'}
+${tradutor.texto2[7] || ''}`
 
   const fkontak = {
     key: {
@@ -70,10 +95,8 @@ function msToTime(duration) {
   let seconds = Math.floor((duration / 1000) % 60)
   let minutes = Math.floor((duration / (1000 * 60)) % 60)
   let hours = Math.floor((duration / (1000 * 60 * 60)) % 24)
-
   hours = (hours < 10) ? '0' + hours : hours
   minutes = (minutes < 10) ? '0' + minutes : minutes
   seconds = (seconds < 10) ? '0' + seconds : seconds
-
   return hours + ' Horas ' + minutes + ' Minutos'
 }
