@@ -4,12 +4,13 @@ import { activarProteccion } from '../lib/usarprote.js'
 const handler = async (m, { conn, args }) => {
   const userId = m.sender
   const user = getUserStats(userId)
-
+  
+  // Precios duplicados (x2)
   const opcionesProte = [
-    { horas: 2, costoDiamantes: 200, costoExp: 800, gananciaMysticcoins: 10 },
-    { horas: 5, costoDiamantes: 300, costoExp: 1200, gananciaMysticcoins: 20 },
-    { horas: 12, costoDiamantes: 400, costoExp: 1500, gananciaMysticcoins: 30 },
-    { horas: 24, costoDiamantes: 450, costoExp: 2000, gananciaMysticcoins: 50 }
+    { horas: 2, costoDiamantes: 400, costoExp: 1600, gananciaMysticcoins: 10 },
+    { horas: 5, costoDiamantes: 600, costoExp: 2400, gananciaMysticcoins: 20 },
+    { horas: 12, costoDiamantes: 800, costoExp: 3000, gananciaMysticcoins: 30 },
+    { horas: 24, costoDiamantes: 900, costoExp: 4000, gananciaMysticcoins: 50 }
   ]
 
   if (!args[0]) {
