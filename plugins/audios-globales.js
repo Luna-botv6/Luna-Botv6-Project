@@ -44,7 +44,7 @@ handler.all = async function (m, { conn }) {
       'buenas noches|boanoite': '01J672YMA8AS2Z8YFMHB68GBQX.mp3',
       'buenas tardes|boatarde': '01J672ZCDK26GJZQ5GDP60TZ37.mp3',
       'buenos dias|buenos días': '01J6730WRS4KJEZ281N2KJR1SV.mp3',
-      'sexo|hora de sexo': '01J673WHBVDXH4N0Q4WGBM568B.mp3',
+      'sexo|hora de sexo': 'AUD-20250531-WA0049.mp3',
       'gemidos|gemime|gime': '01J673B4CRSS9Z2CX6E4R8MZPZ.mp3',
       'audio hentai|audiohentai': '01J673BTPKK29A7CVJW9WKXE9T.mp3',
       'fiesta del admin': '01J672T4VQFK8ZSSD1G0MXMPD3.mp3',
