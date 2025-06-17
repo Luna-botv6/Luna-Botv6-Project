@@ -3,6 +3,9 @@ import { smsg } from './src/libraries/simple.js';
 import { format } from 'util';
 import { fileURLToPath } from 'url';
 import path, { join } from 'path';
+import { EventEmitter } from 'events';
+EventEmitter.defaultMaxListeners = 25;
+process.setMaxListeners(30);
 import { unwatchFile, watchFile } from 'fs';
 import fs from 'fs';
 import chalk from 'chalk';
@@ -12,13 +15,34 @@ import { setConfig } from './lib/funcConfig.js'
 import { setOwnerFunction } from './lib/owner-funciones.js'
 import { addExp, getUserStats, setUserStats } from './lib/stats.js'
 const recentMessages = new Set()
+const recentParticipantEvents = new Map();
+
+function isRecentParticipantEvent(groupId, participant, action) {
+  const key = `${groupId}-${participant}-${action}`;
+  const now = Date.now();
+  
+  if (recentParticipantEvents.has(key)) {
+    const lastTime = recentParticipantEvents.get(key);
+    if (now - lastTime < 3000) { // 3 segundos de cooldown
+      return true;
+    }
+  }
+  
+  recentParticipantEvents.set(key, now);
+  
+  // Limpiar eventos antiguos
+  setTimeout(() => {
+    recentParticipantEvents.delete(key);
+  }, 5000);
+  
+  return false;
+}
 function isDuplicate(id) {
   if (recentMessages.has(id)) return true
   recentMessages.add(id)
-  setTimeout(() => recentMessages.delete(id), 500)
+  setTimeout(() => recentMessages.delete(id), 3000)
   return false
 }
-
 
 function logError(e, plugin = 'general') {
   const emoji = '💥';
@@ -43,6 +67,7 @@ const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(functi
 
 
 export async function handler(chatUpdate) {
+  if (this.setMaxListeners) this.setMaxListeners(25);
   this.msgqueque = this.msgqueque || [];
   this.uptime = this.uptime || Date.now();
   if (!chatUpdate) return;
@@ -67,7 +92,8 @@ if (m.isBaileys) return;
     m.message?.templateButtonReplyMessage?.selectedId ||
     m.message?.listResponseMessage?.singleSelectReply?.selectedRowId || '';
 
-  if (!m.text) return;
+  if (!m.text) m.text = '';
+
 
 
   if (!m) {
@@ -126,65 +152,71 @@ if (m.isBaileys) return;
       
       
 
-      const chat = global.db.data.chats[m.chat];
-      if (typeof chat !== 'object') {
-        global.db.data.chats[m.chat] = {};
-      }
-      if (chat) {
-        
-      const chats = { // i want to assign dick instead chats
-          isBanned: false,
-          welcome: true,
-          detect: true,
-          detect2: false,
-          sWelcome: '',
-          sBye: '',
-          sPromote: '',
-          sDemote: '',
-          antidelete: false,
-          modohorny: true,
-          autosticker: false,
-          audios: true,
-          antiLink: false,
-          antiLink2: false,
-          antiviewonce: false,
-          antiToxic: false,
-          antiTraba: false,
-          antiArab: false,
-          antiArab2: false,
-          antiporno: false,
-          modoadmin: false,
-          simi: false,
-          game: true,
-          expired: 0,
-          language: 'es',
-        }
-      for (const chatss in chats) {
-          if (chat[chatss] === undefined || !chat.hasOwnProperty(chatss)) {
-          }
-        }
-      }
-
+const chat = global.db.data.chats[m.chat];
+if (typeof chat !== 'object') {
+  global.db.data.chats[m.chat] = {};
+}
+if (chat) {
+  // ✅ CÓDIGO CORREGIDO - Solo asigna si la propiedad NO EXISTE
+  const defaultChatConfig = {
+    isBanned: false,
+    welcome: true,
+    detect: true,
+    detect2: false,
+    sWelcome: '',
+    sBye: '',
+    sPromote: '',
+    sDemote: '',
+    antidelete: false,
+    modohorny: true,
+    autosticker: false,
+    audios: true,
+    antiLink: false,
+    antiLink2: false,
+    antiviewonce: false,
+    antiToxic: false,
+    antiTraba: false,
+    antiArab: false,
+    antiArab2: false,
+    antiporno: false,
+    modoadmin: false,
+    simi: false,
+    game: true,
+    expired: 0,
+    language: 'es',
+  }
+  
+  // 🔑 CLAVE: Solo asignar si la propiedad es undefined (no existe)
+  for (const configKey in defaultChatConfig) {
+    if (chat[configKey] === undefined) {
+      chat[configKey] = defaultChatConfig[configKey];
+    }
+  }
+}
       const settings = global.db.data.settings[this.user.jid];
-      if (typeof settings !== 'object') global.db.data.settings[this.user.jid] = {};
-      if (settings) {
-       const setttings = { // yk the drill 
-          self: false,
-          autoread: false,
-          autoread2: false,
-          restrict: false,
-          antiCall: false,
-          antiPrivate: false,
-          modejadibot: true,
-          antispam: false,
-          audios_bot: true,
-          modoia: false
-        };
-        for (const setting in settings) {
-          if (settings[setting] === undefined || !settings.hasOwnProperty(setting)) {
-          }
-        }
-      }
+if (typeof settings !== 'object') global.db.data.settings[this.user.jid] = {};
+if (settings) {
+  // ✅ CÓDIGO CORREGIDO - Solo asigna si la propiedad NO EXISTE
+  const defaultBotSettings = {
+    self: false,
+    autoread: false,
+    autoread2: false,
+    restrict: false,
+    antiCall: false,
+    antiPrivate: false,
+    modejadibot: true,
+    antispam: false,
+    audios_bot: true,
+    modoia: false
+  };
+  
+  // 🔑 CLAVE: Solo asignar si la propiedad es undefined (no existe)
+  for (const settingKey in defaultBotSettings) {
+    if (settings[settingKey] === undefined) {
+      settings[settingKey] = defaultBotSettings[settingKey];
+    }
+  }
+}
     } catch (e) {
       logError(e, m?.plugin || 'handler');
     }
@@ -276,6 +308,7 @@ const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].
 if (typeof plugin.all === 'function') {
   try {
     await plugin.all.call(this, m, {
+      conn: this,
       chatUpdate,
       __dirname: ___dirname,
       __filename,
@@ -285,6 +318,7 @@ if (typeof plugin.all === 'function') {
     // console.error(e);
   }
 }
+
 
 if (!opts['restrict']) {
   if (plugin.tags && plugin.tags.includes('admin')) {
@@ -404,8 +438,15 @@ ${tradutor.texto1[1]} ${messageNumber}/3
         }
         const hl = _prefix;
         const adminMode = global.db.data.chats[m.chat].modoadmin;
-        const mystica = `${plugin.botAdmin || plugin.admin || plugin.group || plugin || noPrefix || hl || m.text.slice(0, 1) == hl || plugin.command}`;
-        if (adminMode && !isOwner && !isROwner && m.isGroup && !isAdmin && mystica) return;
+        if (
+  adminMode &&
+  !isOwner &&
+  !isROwner &&
+  m.isGroup &&
+  !isAdmin &&
+  (plugin.admin || plugin.botAdmin || plugin.group || plugin.command)
+) return;
+
 
         if (plugin.rowner && plugin.owner && !(isROwner || isOwner)) { // Both Owner
           fail('owner', m, this);
@@ -485,7 +526,9 @@ ${tradutor.texto1[1]} ${messageNumber}/3
           __filename,
         };
         try {
-          await plugin.call(this, m, extra);
+  await plugin.call(this, m, extra);
+  // Delay después de cada comando
+  await new Promise(resolve => setTimeout(resolve, 1500));
           if (!isPrems) {
             m.limit = m.limit || plugin.limit || false;
           }
@@ -599,13 +642,20 @@ export async function participantsUpdate({ id, participants, action }) {
   const chat = global.db.data.chats[id] || {};
   const botTt = global.db.data.settings[mconn?.conn?.user?.jid] || {};
   let text = '';
+  
   switch (action) {
     case 'add':
     case 'remove':
       if (chat.welcome && !chat?.isBanned) {
         const groupMetadata = await m?.conn?.groupMetadata(id) || (conn?.chats[id] || {}).metadata;
         for (const user of participants) {
-         let pp = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/185984ba06daeb2e6f8c453ad8bd47701dc28a03/IMG-20250519-WA0115.jpg';
+          // *** VERIFICACIÓN ANTI-DUPLICADOS ***
+          if (isRecentParticipantEvent(id, user, action)) {
+            console.log(`🔄 Evento duplicado ignorado: ${action} para ${user.split('@')[0]} en grupo`);
+            continue;
+          }
+          
+          let pp = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/185984ba06daeb2e6f8c453ad8bd47701dc28a03/IMG-20250519-WA0115.jpg';
 
           try {
             pp = await m?.conn?.profilePictureUrl(user, 'image');
@@ -618,9 +668,6 @@ export async function participantsUpdate({ id, participants, action }) {
             const isBotAdminNn = botTt2?.admin === 'admin' || false;
             text = (action === 'add' ? (chat.sWelcome || tradutor.texto1 || conn.welcome || 'Welcome, @user!').replace('@subject', await m?.conn?.getName(id)).replace('@desc', groupMetadata?.desc?.toString() || '*𝚂𝙸𝙽 𝙳𝙴𝚂𝙲𝚁𝙸𝙿𝙲𝙸𝙾𝙽*').replace('@user', '@' + user.split('@')[0]) :
                   (chat.sBye || tradutor.texto2 || conn.bye || 'Bye, @user!')).replace('@user', '@' + user.split('@')[0])
-
-// Si es necesario, puedes exportar el valor
-
 
             if (userPrefix && chat.antiArab && botTt.restrict && isBotAdminNn && action === 'add') {
               const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
@@ -637,11 +684,21 @@ export async function participantsUpdate({ id, participants, action }) {
     case 'promote':
     case 'daradmin':
     case 'darpoder':
+      // *** VERIFICACIÓN ANTI-DUPLICADOS PARA PROMOTE ***
+      if (isRecentParticipantEvent(id, participants[0], action)) {
+        console.log(`🔄 Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]} en grupo`);
+        return;
+      }
       text = (chat.sPromote || tradutor.texto3 || conn?.spromote || '@user ```is now Admin```');
     case 'demote':
     case 'quitarpoder':
     case 'quitaradmin':
+      // *** VERIFICACIÓN ANTI-DUPLICADOS PARA DEMOTE ***
       if (!text) {
+        if (isRecentParticipantEvent(id, participants[0], action)) {
+          console.log(`🔄 Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]} en grupo`);
+          return;
+        }
         text = (chat?.sDemote || tradutor.texto4 || conn?.sdemote || '@user ```is no longer Admin```');
       }
       text = text.replace('@user', '@' + participants[0].split('@')[0]);
