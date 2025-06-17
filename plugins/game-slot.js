@@ -4,9 +4,9 @@ import fs from 'fs';
 const cooldownUsuario = 10 * 1000; // 10 segundos
 const MIN_APUESTA = 100;
 const MAX_APUESTA = 10000; // Límite máximo para prevenir apuestas excesivas
-const emojis = ['🍒', '🍋', '🍊', '🍉', '🔔', '⭐', '💎']; // Compatibles con WhatsApp
+const emojis = ['🍒', '🍋', '🍊', '🍉', '🔔', '⭐', '💎']; 
 
-// Funciones para manejar cooldown
+
 const slotFile = './database/slot.json';
 
 async function readSlot() {
