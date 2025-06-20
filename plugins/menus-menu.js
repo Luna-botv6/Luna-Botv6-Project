@@ -1,6 +1,6 @@
 import fs from 'fs';
 import fetch from 'node-fetch';
-import { getUserStats } from '../lib/stats.js';
+import { getUserStats, getRoleByLevel } from '../lib/stats.js'; // ← ACTUALIZADO: Agregado getRoleByLevel
 
 // Para configurar o idioma, na raiz do projeto altere o arquivo config.json
 // Para configurar el idioma, en la raíz del proyecto, modifique el archivo config.json.
@@ -25,7 +25,12 @@ const handler = async (m, { conn, usedPrefix, usedPrefix: _p, __dirname, text, i
     const _uptime = process.uptime() * 1000;
     const uptime = clockString(_uptime);
     const stats = getUserStats(m.sender)
-const { money, joincount, exp, level, role, premiumTime, lunaCoins, limit } = stats
+    
+    // ← ACTUALIZADO: Obtener el rol actualizado basado en el nivel actual
+    const currentRole = getRoleByLevel(stats.level)
+    
+    // ← ACTUALIZADO: Removido 'role' de la desestructuración
+    const { money, joincount, exp, level, premiumTime, lunaCoins, limit } = stats
     
     
     const rtotalreg = Object.values(global.db.data.users).filter((user) => user.registered == true).length;
@@ -43,7 +48,7 @@ ${tradutor.texto1[2]}
 
 ${tradutor.texto1[3]} ${level}
 ${tradutor.texto1[4]} ${exp}
-${tradutor.texto1[5]} ${role}
+${tradutor.texto1[5]} ${currentRole}
 ${tradutor.texto1[6]} ${money}
 ${tradutor.texto1[7]} ${limit}
 ${tradutor.texto1[8]} ${joincount}
@@ -455,61 +460,47 @@ ${tradutor.texto1[28]}
 ├ _${usedPrefix}restart_ 🔄
 ├ _${usedPrefix}update_ ⚡
 ├ _${usedPrefix}banlist_ 🚫
-├ _${usedPrefix}addprem *<@tag> <time>*_ ⏰
 ├ _${usedPrefix}addprem2 *<@tag> <time>*_ ⏳
-├ _${usedPrefix}addprem3 *<@tag> <time>*_ ⏲️
-├ _${usedPrefix}addprem4 *<@tag> <time>*_ 🕒
-├ _${usedPrefix}delprem *<@tag>*_ 🗑️
-├ _${usedPrefix}listcmd_ 📜
-├ _${usedPrefix}setppbot *<reply to img>*_ 📷
-├ _${usedPrefix}addcmd *<txt>*_ ➕
-├ _${usedPrefix}delcmd_ ❌
-├ _${usedPrefix}saveimage_ 💾
-├ _${usedPrefix}viewimage_ 👁️
-╰───── • ◆ • ─────╯`
-    let pp
-    // Nuevas Imágenes del menu para otros idiomas
-    if (idioma == 'es') {
-      pp = global.imagen1
-    } else if (idioma == 'pt-br') {
-      pp = global.imagen2
-    } else if (idioma == 'fr') {
-      pp = global.imagen3
-    }else if (idioma == 'en') {
-      pp = global.imagen4
-    } else if (idioma == 'ru') {
-      pp = global.imagen5
+├ _${usedPrefix}addprem3 *<@tag> <time>*_ 🎯
+├ _${usedPrefix}addprem4 *<@tag> <time>*_ 💫
+├ _${usedPrefix}delprem *<@tag>*_ ❌
+├ _${usedPrefix}listcmd_ 📋
+├ _${usedPrefix}setppbot *<responder a img>*_ 🖼️
+├ _${usedPrefix}addcmd *<txt> <responder a sticker/img/vid/aud/txt>*_ ➕
+├ _${usedPrefix}delcmd *<responder a sticker/img/vid/aud/txt>*_ 🗑️
+├ _${usedPrefix}saveimage *<responder a img>*_ 💾
+├ _${usedPrefix}viewimage *<txt>*_ 👁️
+╰───── • ◆ • ─────╯`.trim();
+if (m.isGroup) {
+      const fkontak2 = {'key': {'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo'}, 'message': {'contactMessage': {'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`}}, 'participant': '0@s.whatsapp.net'};
+      conn.sendMessage(m.chat, {
+        video: {url: videoPath}, 
+        gifPlayback: true,
+        caption: str.trim(), 
+        mentions: [...str.matchAll(/@([0-9]{5,16}|0)/g)].map((v) => v[1] + '@s.whatsapp.net')
+      }, {quoted: fkontak2});
     } else {
-      pp = global.imagen1 // Imagen por defecto (Español/Spanish)
+      const fkontak2 = {'key': {'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo'}, 'message': {'contactMessage': {'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`}}, 'participant': '0@s.whatsapp.net'};
+      conn.sendMessage(m.chat, {
+        video: {url: videoPath}, 
+        gifPlayback: true,
+        caption: str.trim(), 
+        mentions: [...str.matchAll(/@([0-9]{5,16}|0)/g)].map((v) => v[1] + '@s.whatsapp.net')
+      }, {quoted: fkontak2});
     }
-
-
-
-    if (m.isGroup) {
-      // await conn.sendFile(m.chat, vn, './src/assets/audio/01J673Y3TGCFF1D548242AX68Q.mp3', null, m, true, { type: 'audioMessage', ptt: true})
-      await conn.sendMessage(m.chat, { video: fs.readFileSync(videoPath), caption: str.trim(), gifPlayback: true, mentions: [...str.matchAll(/@([0-9]{5,16}|0)/g)].map((v) => v[1] + '@s.whatsapp.net') }, { quoted: m });
-    } else {
-      //await conn.sendFile(m.chat, vn, './src/assets/audio/01J673Y3TGCFF1D548242AX68Q.mp3', null, m, true, { type: 'audioMessage', ptt: true})
-      const fkontak = { key: { participants:"0@s.whatsapp.net", "remoteJid": "status@broadcast", "fromMe": false, "id": "Halo" }, "message": { " contactMessage": { "vcard": `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` }}, "participant": "0@s.whatsapp.net" }
-      await conn.sendMessage(m.chat, { video: fs.readFileSync(videoPath), caption: str.trim(), gifPlayback: true, mentions: [...str.matchAll(/@([0-9]{5,16}|0)/g)].map((v) => v[1] + '@s.whatsapp.net') }, { quoted: fkontak });
-    }
-  } catch {
-    const datas = global
-    const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-    const tradutor = _translate.plugins.menu_menu
-    
+  } catch (e) {
     conn.reply(m.chat, tradutor.texto1[29], m);
-
   }
 };
-handler.command = /^(menu|help|comandos|commands|cmd|cmds)$/i;
+handler.command = /^(menu|menú|memu|memú|help|info|comandos|allmenu|2help|menu1.2|ayuda|commands|commandss|cmd)$/i;
 handler.exp = 50;
 handler.fail = null;
 export default handler;
+
 function clockString(ms) {
   const h = isNaN(ms) ? '--' : Math.floor(ms / 3600000);
   const m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60;
   const s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60;
   return [h, m, s].map((v) => v.toString().padStart(2, 0)).join(':');
-      }
+}
+    
