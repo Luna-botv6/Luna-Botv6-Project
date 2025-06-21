@@ -357,6 +357,7 @@ ${tradutor.texto1[26]}
 ├💰 _${usedPrefix}juegolimit_
 ├🏁 _${usedPrefix}carreraautos_
 ├🛒 _${usedPrefix}buy_
+├💣 _${usedPrefix}buscaminas_
 ├✨ _${usedPrefix}verexp *<@tag>*_
 ├🛍️ _${usedPrefix}buyall_
 ├✅ _${usedPrefix}verificar_
