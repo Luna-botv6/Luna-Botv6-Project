@@ -233,7 +233,7 @@ Luna-Botv6/
 | **Python** | v3.8+ | Para módulos específicos |
 | **FFmpeg** | Latest | Procesamiento multimedia |
 | **ImageMagick** | Latest | Manipulación de imágenes |
-| **RAM** | 512MB | Memoria mínima |
+| **RAM** | 700MB | Memoria mínima |
 | **Almacenamiento** | 3GB | Espacio libre |
 
 ### 🌐 **Requisitos de Red**
