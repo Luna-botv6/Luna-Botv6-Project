@@ -14,6 +14,10 @@ import ws from 'ws';
 import { setConfig } from './lib/funcConfig.js'
 import { setOwnerFunction } from './lib/owner-funciones.js'
 import { addExp, getUserStats, setUserStats } from './lib/stats.js'
+// 🔄 Cache para JIDs especiales como LID
+const lidToJidCache = global.lidToJidCache || (global.lidToJidCache = new Map());
+const lidToNameCache = global.lidToNameCache || (global.lidToNameCache = new Map());
+
 const recentMessages = new Set()
 const recentParticipantEvents = new Map();
 
@@ -253,15 +257,16 @@ if (m.message?.templateButtonReplyMessage?.selectedId) {
 if (m.message?.listResponseMessage?.singleSelectReply?.selectedRowId) {
   m.text = m.message.listResponseMessage.singleSelectReply.selectedRowId;
 }
-const isROwner = [
-  conn.decodeJid(global.conn.user.id),
-  ...global.owner.map(([number]) => number),
-  ...global.lidOwners
-]
-.map((v) => v.replace(/[^0-9]/g, ''))
-.some((n) => [`${n}@s.whatsapp.net`].includes(conn.decodeJid(m.sender)));
+// ✅ Soporte para dueños con @lid y @s.whatsapp.net
+const senderJid = conn.decodeJid(m.sender || '');
+const senderNum = senderJid.replace(/[^0-9]/g, '');
 
+const ownerNums = global.owner.map(([num]) => num);
+const lidNums = global.lidOwners || [];
+
+const isROwner = ownerNums.includes(senderNum) || lidNums.includes(senderNum);
 const isOwner = isROwner || m.fromMe;
+
 const isMods = isOwner || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
 const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].premiumTime > 0; // || global.db.data.users[m.sender].premium = 'true'
 
@@ -701,10 +706,16 @@ export async function participantsUpdate({ id, participants, action }) {
         }
         text = (chat?.sDemote || tradutor.texto4 || conn?.sdemote || '@user ```is no longer Admin```');
       }
-      text = text.replace('@user', '@' + participants[0].split('@')[0]);
-      if (chat.detect && !chat?.isBanned) {
-        mconn?.conn?.sendMessage(id, { text, mentions: mconn?.conn?.parseMention(text) });
-      }
+     let userId = m?.conn?.decodeJid(participants[0]) || participants[0]
+let tag = '@' + userId.split('@')[0]
+
+text = text.replace(/@user/g, tag)
+
+if (chat.detect && !chat?.isBanned) {
+  mconn?.conn?.sendMessage(id, { text, mentions: [userId] });
+}
+
+
       break;
   }
 }

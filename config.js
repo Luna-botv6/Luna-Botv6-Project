@@ -16,7 +16,7 @@ global.isBaileysFail = false
 global.defaultLenguaje = 'es';
 
 global.lidOwners = [
-  "5215661493504",
+  "128213531545849",
   "5212293196672",
   "5219994092751",
   "5217421108292"
@@ -103,6 +103,13 @@ global.flaaa = [
 //* ************************
 
 const file = fileURLToPath(import.meta.url);
+// 🔐 Asegura que si el número del owner está como jid LID, se agregue a global.lidOwners
+for (const [num] of global.owner) {
+  if (!global.lidOwners.includes(num)) {
+    global.lidOwners.push(num);
+  }
+}
+
 watchFile(file, () => {
   unwatchFile(file);
   console.log(chalk.redBright('Update \'config.js\''));
