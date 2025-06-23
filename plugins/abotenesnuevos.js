@@ -306,7 +306,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 }
 
 // Configuración del plugin
-handler.command = /^(listbutton|lb|buttontest|bt|menubot)$/i
+handler.command = /^(listbutton|buttontest|bt|menubot)$/i
 handler.help = ['listbutton', 'buttontest', 'menubot']
 handler.tags = ['test', 'menu']
 handler.exp = 0
