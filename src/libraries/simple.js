@@ -1200,16 +1200,15 @@ let msg = generateWAMessageFromContent(jid, {
       enumerable: true,
     },
     parseMention: {
-      /**
-             * Parses string into mentionedJid(s)
-             * @param {String} text
-             * @return {Array<String>}
-             */
-      value(text = '') {
-        return [...text.matchAll(/@([0-9]{5,16}|0)/g)].map((v) => v[1] + '@s.whatsapp.net');
-      },
-      enumerable: true,
-    },
+  value(text = '') {
+    return [...text.matchAll(/@([0-9]{5,20})/g)].map((v) => {
+      const num = v[1].replace(/[^0-9]/g, '');
+      return num + '@s.whatsapp.net';
+    });
+  },
+  enumerable: true,
+},
+
     getName: {
       /**
              * Get name from jid
