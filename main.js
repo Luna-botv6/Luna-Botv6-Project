@@ -27,6 +27,7 @@ import NodeCache from 'node-cache';
 import { restaurarConfiguraciones } from './lib/funcConfig.js';
 import { getOwnerFunction } from './lib/owner-funciones.js';
 import mentionListener from './plugins/game-ialuna.js';
+import { isCleanerEnabled } from './lib/cleaner-config.js';
 
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
@@ -56,7 +57,6 @@ global.API = (name, path = '/', query = {}, apikeyqueryname) => (name in global.
 global.timestamp = { start: new Date };
 global.videoList = [];
 global.videoListXXX = [];
-
 const __dirname = global.__dirname(import.meta.url);
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());
 global.prefix = new RegExp('^[' + (opts['prefix'] || '*/i!#$%+£¢€¥^°=¶∆×÷π√✓©®:;?&.\\-.@').replace(/[|\\{}()[\]^$+*?.\-\^]/g, '\\$&') + ']');
@@ -237,7 +237,8 @@ rl.close()
 //conn.isInit = false;
 //conn.well = false;
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);
-runCleaner();
+if (isCleanerEnabled()) runCleaner();
+
 //purgeSession();
 //purgeSessionSB();
 //purgeOldFiles();
@@ -556,7 +557,7 @@ setInterval(() => {
 
 setInterval(() => {
   if (stopped === 'close' || !global.conn || !global.conn?.user) return;
-  runCleaner();
+  if (isCleanerEnabled()) runCleaner();
 }, 1000 * 60 * 60 * 6);
 
 
