@@ -8,7 +8,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const tradutor = _translate.plugins.owner_resetuser
 
     // Cooldown para evitar spam (5 minutos)
-    const cooldownTime = 300000 // 5 minutos en lugar de 30 segundos
+    const cooldownTime = 300000 // 5 minutos
     const lastUsed = global.db.data.users[m.sender].lastResetUser || 0
     const now = Date.now()
     
@@ -21,48 +21,126 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         }, { quoted: m })
     }
 
-    const numberPattern = /\d+/g
     let user = ''
     let userNumber = ''
+    let originalMention = ''
 
-    // Obtener usuario del texto o mensaje citado
-    const numberMatches = text?.match(numberPattern)
-    if (numberMatches) {
-        const number = numberMatches.join('')
-        if (number.length >= 10) { // Validar que sea un número válido
-            user = number + '@s.whatsapp.net'
-            userNumber = number
-        } else {
-            return conn.sendMessage(m.chat, { 
-                text: `❌ *Número inválido.* Usa: ${usedPrefix}${command} <número>` 
-            }, { quoted: m })
+    // ✅ SOLUCIÓN: Procesar menciones correctamente
+    if (m.mentionedJid && m.mentionedJid.length > 0) {
+        // Usar la primera mención
+        const mentionedUser = m.mentionedJid[0]
+        user = conn.decodeJid(mentionedUser)
+        
+        // Si es LID, convertir a formato @s.whatsapp.net
+        if (user.includes('@lid')) {
+            // Buscar en el cache LID -> JID
+            const lidToJidCache = global.lidToJidCache || new Map()
+            const realJid = lidToJidCache.get(user)
+            
+            if (realJid) {
+                user = realJid
+            } else {
+                // Si no está en cache, extraer número del LID
+                const lidNumber = user.split('@')[0]
+                user = lidNumber + '@s.whatsapp.net'
+            }
         }
-    } else if (m.quoted && m.quoted.sender) {
-        const quotedNumberMatches = m.quoted.sender.match(numberPattern)
-        if (quotedNumberMatches) {
-            const number = quotedNumberMatches.join('')
-            user = number + '@s.whatsapp.net'
-            userNumber = number
-        } else {
-            return conn.sendMessage(m.chat, { 
-                text: tradutor.texto1 || `❌ *Error:* Cita un mensaje del usuario o proporciona su número.` 
-            }, { quoted: m })
+        
+        userNumber = user.split('@')[0]
+        originalMention = mentionedUser // Guardar mención original para mostrar
+    } 
+    // Fallback: buscar números en el texto
+    else if (text) {
+        const numberPattern = /\d+/g
+        const numberMatches = text.match(numberPattern)
+        if (numberMatches) {
+            const number = numberMatches.join('')
+            if (number.length >= 10) {
+                user = number + '@s.whatsapp.net'
+                userNumber = number
+                originalMention = user
+            } else {
+                return conn.sendMessage(m.chat, { 
+                    text: `❌ *Número inválido.* Usa: ${usedPrefix}${command} <número>` 
+                }, { quoted: m })
+            }
         }
-    } else {
+    }
+    // Fallback: mensaje citado
+    else if (m.quoted && m.quoted.sender) {
+        user = conn.decodeJid(m.quoted.sender)
+        
+        // Si es LID, convertir igual que arriba
+        if (user.includes('@lid')) {
+            const lidToJidCache = global.lidToJidCache || new Map()
+            const realJid = lidToJidCache.get(user)
+            
+            if (realJid) {
+                user = realJid
+            } else {
+                const lidNumber = user.split('@')[0]
+                user = lidNumber + '@s.whatsapp.net'
+            }
+        }
+        
+        userNumber = user.split('@')[0]
+        originalMention = m.quoted.sender
+    } 
+    else {
         return conn.sendMessage(m.chat, { 
-            text: tradutor.texto2 || `📋 *Uso:* ${usedPrefix}${command} <número>\n*Ejemplo:* ${usedPrefix}${command} 1234567890` 
+            text: tradutor.texto2 || `📋 *Uso:* ${usedPrefix}${command} <@usuario>\n*Ejemplo:* ${usedPrefix}${command} @usuario` 
         }, { quoted: m })
     }
 
-    // Verificar si el usuario existe en la base de datos
-    const currentStats = getUserStats(user)
+    console.log(`[DEBUG] User procesado: ${user}`) // Debug
+
+    // ✅ Verificar si el usuario existe en CUALQUIER formato
+    let currentStats = getUserStats(user)
+    
+    // Si no encuentra con @s.whatsapp.net, buscar otras variantes
     if (!currentStats || (currentStats.exp === 0 && currentStats.level === 0 && currentStats.money === 0)) {
-        return conn.sendMessage(m.chat, { 
-            text: tradutor.texto3?.[0] 
-                ? `${tradutor.texto3[0]} @${userNumber} ${tradutor.texto3[1]}` 
-                : `❌ El usuario @${userNumber} no tiene datos registrados.`,
-            mentions: [user] 
-        }, { quoted: m })
+        // Buscar en la base de datos global también
+        const globalUser = global.db.data.users[user]
+        
+        // Si no existe en ningún formato, buscar por número sin @
+        if (!globalUser) {
+            const possibleJids = [
+                userNumber + '@s.whatsapp.net',
+                userNumber + '@c.us',
+                userNumber + '@lid'
+            ]
+            
+            let found = false
+            for (const jid of possibleJids) {
+                const testStats = getUserStats(jid)
+                if (testStats && (testStats.exp > 0 || testStats.level > 0 || testStats.money > 0)) {
+                    user = jid
+                    currentStats = testStats
+                    found = true
+                    break
+                }
+            }
+            
+            if (!found) {
+                return conn.sendMessage(m.chat, { 
+                    text: tradutor.texto3?.[0] 
+                        ? `${tradutor.texto3[0]} @${userNumber} ${tradutor.texto3[1]}` 
+                        : `❌ El usuario @${userNumber} no tiene datos registrados.`,
+                    mentions: [originalMention] 
+                }, { quoted: m })
+            }
+        } else {
+            // Existe en global.db pero no en stats, crear stats
+            currentStats = {
+                exp: globalUser.exp || 0,
+                level: globalUser.level || 0,
+                money: globalUser.money || 0,
+                mysticcoins: globalUser.mysticcoins || 0,
+                lunaCoins: globalUser.lunaCoins || 0,
+                role: globalUser.role || '🧰 Novato',
+                limit: globalUser.limit || 10
+            }
+        }
     }
 
     // Confirmar acción antes de proceder
@@ -75,10 +153,10 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
               `• Monedas místicas: ${currentStats.mysticcoins}\n` +
               `• Luna Coins: ${currentStats.lunaCoins}\n\n` +
               `*Responde con "sí" para confirmar o "no" para cancelar.*`,
-        mentions: [user]
+        mentions: [originalMention]
     }, { quoted: m })
 
-    // Esperar confirmación con timeout más largo
+    // Esperar confirmación
     const confirmation = await waitForUserResponse(conn, m.chat, m.sender, 30000)
     
     if (!confirmation || !['sí', 'si', 'yes', 'confirmar'].includes(confirmation.toLowerCase())) {
@@ -88,34 +166,33 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     try {
-        // Guardar datos anteriores para mostrar lo que se perdió
+        // Guardar datos anteriores
         const previousStats = {
             exp: currentStats.exp,
             level: currentStats.level,
             money: currentStats.money,
-            joincount: currentStats.joincount,
-            premiumTime: currentStats.premiumTime,
+            joincount: currentStats.joincount || 0,
+            premiumTime: currentStats.premiumTime || 0,
             mysticcoins: currentStats.mysticcoins,
             lunaCoins: currentStats.lunaCoins,
             role: currentStats.role,
             limit: currentStats.limit
         }
 
-        // Crear backup para posible restauración (válido por 24 horas)
+        // Crear backup
         const backupData = {
             userId: user,
             userNumber: userNumber,
             previousStats: previousStats,
             resetBy: m.sender,
             resetDate: now,
-            expiresAt: now + (24 * 60 * 60 * 1000) // 24 horas
+            expiresAt: now + (24 * 60 * 60 * 1000)
         }
 
-        // Guardar backup en base de datos global
         if (!global.db.data.backups) global.db.data.backups = {}
         global.db.data.backups[user] = backupData
 
-        // Resetear datos del usuario usando stats.js
+        // Resetear datos
         const resetData = {
             exp: 0,
             level: 0,
@@ -130,7 +207,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
         setUserStats(user, resetData)
 
-        // También limpiar datos del sistema global si existen
+        // También limpiar datos del sistema global
         if (global.db.data.users[user]) {
             const essentialData = {
                 language: global.db.data.users[user].language || global.defaultLenguaje,
@@ -144,16 +221,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         // Actualizar cooldown
         global.db.data.users[m.sender].lastResetUser = now
 
-        // Calcular pérdidas
-        const losses = {
-            exp: previousStats.exp - 0,
-            level: previousStats.level - 0,
-            money: previousStats.money - 0,
-            mysticcoins: previousStats.mysticcoins - 0,
-            lunaCoins: previousStats.lunaCoins - 0
-        }
-
-        // Mensaje de éxito detallado
+        // Mensaje de éxito
         const successMessage = tradutor.texto4?.[0] 
             ? `${tradutor.texto4[0]} @${userNumber} ${tradutor.texto4[1]}\n\n` 
             : `✅ *Datos reseteados exitosamente para @${userNumber}*\n\n`
@@ -164,15 +232,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
             `• Nivel: ${previousStats.level}\n` +
             `• Dinero: ${previousStats.money.toLocaleString()}\n` +
             `• Monedas místicas: ${previousStats.mysticcoins.toLocaleString()}\n` +
-            `• Luna Coins: ${previousStats.lunaCoins.toLocaleString()}\n` +
-            `• Rol: ${previousStats.role}\n\n` +
-            
-            `💥 *PÉRDIDAS TOTALES:*\n` +
-            `• Experiencia perdida: -${losses.exp.toLocaleString()}\n` +
-            `• Niveles perdidos: -${losses.level}\n` +
-            `• Dinero perdido: -${losses.money.toLocaleString()}\n` +
-            `• Monedas místicas perdidas: -${losses.mysticcoins.toLocaleString()}\n` +
-            `• Luna Coins perdidas: -${losses.lunaCoins.toLocaleString()}\n\n` +
+            `• Luna Coins: ${previousStats.lunaCoins.toLocaleString()}\n\n` +
             
             `🆕 *DATOS ACTUALES:*\n` +
             `• Experiencia: 0\n` +
@@ -183,11 +243,10 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
             `• Rol: 🧰 Novato`
 
         await conn.sendMessage(m.chat, { 
-            text: successMessage + statsMessage + `\n\n🔄 *RESTAURACIÓN DISPONIBLE:*\n• Usa \`${usedPrefix}restoreuser @${userNumber}\` para restaurar datos\n• Backup válido por 24 horas\n• Solo el owner puede restaurar`,
-            mentions: [user] 
+            text: successMessage + statsMessage + `\n\n🔄 *RESTAURACIÓN DISPONIBLE:*\n• Usa \`${usedPrefix}restoreuser @${userNumber}\` para restaurar\n• Backup válido por 24 horas`,
+            mentions: [originalMention] 
         }, { quoted: m })
 
-        // Log de la acción para auditoría
         console.log(`[RESET USER] ${m.sender} reseteó los datos de ${user} - ${new Date().toISOString()}`)
 
     } catch (error) {
@@ -203,7 +262,6 @@ const waitForUserResponse = async (conn, chatId, senderId, timeout = 30000) => {
     return new Promise((resolve) => {
         const responseHandler = (update) => {
             try {
-                // Verificar si es el mensaje correcto
                 if (update.messages && update.messages.length > 0) {
                     const message = update.messages[0]
                     if (message.key.remoteJid === chatId && 
@@ -224,7 +282,6 @@ const waitForUserResponse = async (conn, chatId, senderId, timeout = 30000) => {
 
         conn.ev.on('messages.upsert', responseHandler)
         
-        // Timeout para evitar esperas infinitas
         setTimeout(() => {
             conn.ev.off('messages.upsert', responseHandler)
             resolve(null)
