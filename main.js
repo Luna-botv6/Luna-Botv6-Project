@@ -28,6 +28,7 @@ import { restaurarConfiguraciones } from './lib/funcConfig.js';
 import { getOwnerFunction } from './lib/owner-funciones.js';
 import mentionListener from './plugins/game-ialuna.js';
 import { isCleanerEnabled } from './lib/cleaner-config.js';
+import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.js';
 
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
@@ -37,8 +38,6 @@ protoType();
 serialize();
 
 const msgRetryCounterMap = new Map();
-const msgRetryCounterCache = new NodeCache({ stdTTL: 0, checkperiod: 0 });
-const userDevicesCache = new NodeCache({ stdTTL: 0, checkperiod: 0 });
 
 global.__filename = function filename(pathURL = import.meta.url, rmPrefix = platform !== 'win32') {
   return rmPrefix ? /file:\/\/\//.test(pathURL) ? fileURLToPath(pathURL) : pathURL : pathToFileURL(pathURL).toString();
@@ -62,7 +61,6 @@ global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse()
 global.prefix = new RegExp('^[' + (opts['prefix'] || '*/i!#$%+£¢€¥^°=¶∆×÷π√✓©®:;?&.\\-.@').replace(/[|\\{}()[\]^$+*?.\-\^]/g, '\\$&') + ']');
 global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile(`${opts._[0] ? opts._[0] + '_' : ''}database.json`));
 
-
 global.loadDatabase = async function loadDatabase() {
   if (global.db.READ) {
     return new Promise((resolve) => setInterval(async function() {
@@ -83,6 +81,11 @@ global.loadDatabase = async function loadDatabase() {
     msgs: {},
     sticker: {},
     settings: {},
+    privacy: {
+      dataRetentionDays: privacyConfig.dataRetention.days,
+      lastCleanup: Date.now(),
+      userConsent: {}
+    },
     ...(global.db.data || {}),
   };
   global.db.chain = chain(global.db.data);
@@ -116,7 +119,6 @@ loadChatgptDB();
 
 /* ------------------------------------------------*/
 
-
 const {state, saveCreds} = await useMultiFileAuthState(global.authFile);
 const { version } = await fetchLatestBaileysVersion();
 let phoneNumber = global.botnumber || process.argv.find(arg => /^\+\d+$/.test(arg));
@@ -143,11 +145,11 @@ try {
     } while (!['1', '2'].includes(opcion) || fs.existsSync(`./${authFile}/creds.json`));
   }
 } catch (error) {
-  console.error('[❌] Error al seleccionar opción:', error);
+  secureLogger.error('Error al seleccionar opción:', error);
 }
 
-
 console.info = () => {} // https://github.com/skidy89/baileys actualmente no muestra logs molestos en la consola
+
 const connectionOptions = {
     logger: Pino({ level: 'silent' }),
     printQRInTerminal: opcion === '1' || methodCodeQR,
@@ -158,37 +160,64 @@ const connectionOptions = {
         keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: 'fatal' }).child({ level: 'fatal' })),
     },
     waWebSocketUrl: 'wss://web.whatsapp.com/ws/chat?ED=CAIICA',
-    markOnlineOnConnect: true,
-    generateHighQualityLinkPreview: true,
-   getMessage: async (key) => {
-  try {
-    let jid = jidNormalizedUser(key.remoteJid);
-    let msg = await store.loadMessage(jid, key.id);
-    return msg?.message || "";
-  } catch (e) {
-    console.error('[❌] Error en getMessage:', e);
-    return '';
-  }
-},
+    markOnlineOnConnect: false, // Mejor privacidad
+    generateHighQualityLinkPreview: false, // Evitar cargar previews automáticamente
+    
+    getMessage: async (key) => {
+        try {
+            let jid = jidNormalizedUser(key.remoteJid);
+            let msg = await store.loadMessage(jid, key.id);
+            
+            // No almacenar contenido sensible
+            if (msg?.message) {
+                const sanitizedMsg = { ...msg.message };
+                // Remover metadatos sensibles
+                delete sanitizedMsg.deviceSentMessage;
+                delete sanitizedMsg.senderKeyDistributionMessage;
+                return sanitizedMsg;
+            }
+            return msg?.message || "";
+        } catch (e) {
+            secureLogger.error('Error en getMessage:', e);
+            return '';
+        }
+    },
 
-patchMessageBeforeSending: async (message) => {
-  try {
-    global.conn.uploadPreKeysToServerIfRequired();
-    return message;
-  } catch (e) {
-    console.error('[❌] Error en patchMessageBeforeSending:', e);
-    return message;
-  }
-},
+    patchMessageBeforeSending: async (message) => {
+        try {
+            global.conn.uploadPreKeysToServerIfRequired();
+            return message;
+        } catch (e) {
+            secureLogger.error('Error en patchMessageBeforeSending:', e);
+            return message;
+        }
+    },
 
-    msgRetryCounterCache: msgRetryCounterCache,
-    userDevicesCache: userDevicesCache,
-    //msgRetryCounterMap,
+    msgRetryCounterCache: new NodeCache({ 
+        stdTTL: 300, // 5 minutos
+        checkperiod: 60,
+        useClones: false 
+    }),
+    userDevicesCache: new NodeCache({ 
+        stdTTL: 3600, // 1 hora
+        checkperiod: 300,
+        useClones: false 
+    }),
+    
     defaultQueryTimeoutMs: undefined,
-    cachedGroupMetadata: (jid) => global.conn.chats[jid] ?? {},
+    cachedGroupMetadata: (jid) => {
+        const chat = global.conn.chats[jid];
+        if (chat) {
+            // Retornar solo metadatos necesarios
+            return {
+                id: chat.id,
+                subject: chat.subject,
+                participants: chat.participants?.length || 0
+            };
+        }
+        return {};
+    },
     version,
-
-    //userDeviceCache: msgRetryCounterCache <=== quien fue el pendejo?????
 };
 
 global.conn = makeWASocket(connectionOptions);
@@ -229,20 +258,13 @@ rl.close()
             let codigo = await conn.requestPairingCode(numeroTelefono)
             codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo
             console.log(chalk.yellow('[ ℹ️ ] introduce el código de emparejamiento en WhatsApp.'));
-            console.log(chalk.black(chalk.bgGreen(`Su código de emparejamiento: `)), chalk.black(chalk.white(codigo)))
+            console.log(chalk.black(chalk.bgGreen(`Su código de emparejamiento: `)), chalk.black(chalk.white('[CODIGO_OCULTO]')))
         }, 3000)
 }}
 }
 
-//conn.isInit = false;
-//conn.well = false;
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 if (isCleanerEnabled()) runCleaner();
-
-//purgeSession();
-//purgeSessionSB();
-//purgeOldFiles();
-
 
 if (!opts['test']) {
   if (global.db) {
@@ -255,24 +277,35 @@ if (!opts['test']) {
 
 if (opts['server']) (await import('./server.js')).default(global.conn, PORT);
 
-
-
 async function clearTmp() {
-  const tmp = [join('./src/tmp')];
+  const tmp = [join('./src/tmp'), join('./temp')];
   try {
     for (const dirname of tmp) {
+      if (!existsSync(dirname)) continue;
+      
       const files = await readdir(dirname);
       await Promise.all(files.map(async file => {
         const filePath = join(dirname, file);
         const stats = await stat(filePath);
-        if (stats.isFile() && (Date.now() - stats.mtimeMs >= 1000 * 60 * 3)) {
+        
+        // Reducir tiempo de retención a 30 minutos
+        if (stats.isFile() && (Date.now() - stats.mtimeMs >= 1000 * 60 * 30)) {
           await unlink(filePath);
+          secureLogger.info(`Archivo temporal eliminado: ${file}`);
         }
       }));
     }
   } catch (err) {
-    console.error('[❌] Error en clearTmp:', err.message);
+    secureLogger.error('Error en clearTmp:', err.message);
   }
+}
+
+// Limpieza automática de datos antiguos
+if (privacyConfig.dataRetention.enabled) {
+    setInterval(() => {
+        if (stopped === 'close' || !global.conn || !global.conn?.user) return;
+        cleanOldUserData();
+    }, 1000 * 60 * 60 * 24); // Cada 24 horas
 }
 
 // Función para eliminar archivos core.<numero>
@@ -283,9 +316,9 @@ function deleteCoreFiles(filePath) {
   if (coreFilePattern.test(filename)) {
     fs.unlink(filePath, (err) => {
       if (err) {
-        console.error(`Error eliminando el archivo ${filePath}:`, err);
+        secureLogger.error(`Error eliminando el archivo ${filePath}:`, err);
       } else {
-        console.log(`Archivo eliminado: ${filePath}`);
+        secureLogger.info(`Archivo eliminado: ${filePath}`);
       }
     });
   }
@@ -307,9 +340,6 @@ function runCleaner() {
   cleaner.on('exit', code => console.log(`[cleaner] terminó con código ${code}`));
 }
 
-
-
-
 let lastQR = null; // 👈 esto fuera de la función, por ejemplo justo arriba de connectionUpdate
 
 async function connectionUpdate(update) {
@@ -324,7 +354,6 @@ async function connectionUpdate(update) {
   }
   if (global.db.data == null) loadDatabase();
 
-  
   if ((update.qr != 0 && update.qr != undefined) || methodCodeQR) {
     if (opcion == '1' || methodCodeQR) {
       if (update.qr && update.qr !== lastQR) {
@@ -335,7 +364,7 @@ async function connectionUpdate(update) {
   }
 
   if (connection == 'open') {
-    console.log(chalk.yellow('[ ℹ️ ] Conectado correctamente.'));
+    secureLogger.info('Conectado correctamente.');
   }
 
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
@@ -371,7 +400,6 @@ async function connectionUpdate(update) {
   }
 }
 
-
 process.on('uncaughtException', console.error);
 
 let isInit = true;
@@ -380,7 +408,6 @@ let handler = await import('./handler.js');
 global.reloadHandler = async function(restatConn) {
   
   try {
-   
     const Handler = await import(`./handler.js?update=${Date.now()}`).catch(console.error);
     if (Object.keys(Handler || {}).length) handler = Handler;
   } catch (e) {
@@ -405,6 +432,7 @@ global.reloadHandler = async function(restatConn) {
     conn.ev.off('connection.update', conn.connectionUpdate);
     conn.ev.off('creds.update', conn.credsUpdate);
   }
+
 // Carga las configuraciones
 const funcionesOwner = getOwnerFunction();
 
@@ -433,6 +461,7 @@ conn.ev.on('messages.upsert', async ({ messages }) => {
     return;
   }
 });
+
   // Para cambiar estos mensajes, solo los archivos en la carpeta de language, 
   // busque la clave "handler" dentro del json y cámbiela si es necesario
   conn.welcome = '👋 ¡Bienvenido/a!\n@user';
@@ -464,7 +493,7 @@ conn.ev.on('messages.upsert', async (msg) => {
   try {
     await conn.handler(msg);
   } catch (err) {
-    console.error('[❗️ERROR en handler de mensajes]:', err);
+    secureLogger.error('ERROR en handler de mensajes:', err);
   }
 });
 conn.ev.on('group-participants.update', conn.participantsUpdate);
@@ -476,8 +505,6 @@ conn.ev.on('creds.update', conn.credsUpdate);
 isInit = false;
 return true;
 };
-
-
 
 const pluginFolder = global.__dirname(join(__dirname, './plugins/index'));
 const pluginFilter = (filename) => /\.js$/.test(filename);
@@ -526,6 +553,7 @@ global.reload = async (_ev, filename) => {
 Object.freeze(global.reload);
 watch(pluginFolder, global.reload);
 await global.reloadHandler();
+
 async function _quickTest() {
   const test = await Promise.all([
     spawn('ffmpeg'),
@@ -550,16 +578,17 @@ async function _quickTest() {
   global.support = {ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find};
   Object.freeze(global.support);
 }
+
 setInterval(() => {
   if (stopped === 'close' || !global.conn || !global.conn?.user) return;
   clearTmp();
-}, 180000);
+  if (privacyConfig.dataRetention.enabled) cleanOldUserData();
+}, 1000 * 60 * 60 * 2); // Cada 2 horas
 
 setInterval(() => {
   if (stopped === 'close' || !global.conn || !global.conn?.user) return;
   if (isCleanerEnabled()) runCleaner();
 }, 1000 * 60 * 60 * 6);
-
 
 setInterval(async () => {
   if (stopped === 'close' || !conn || !conn?.user) return;
@@ -568,6 +597,7 @@ setInterval(async () => {
   const bio = `• Activo: ${uptime} | TheMystic-Bot-MD`;
   await conn?.updateProfileStatus(bio).catch((_) => _);
 }, 60000);
+
 function clockString(ms) {
   const d = isNaN(ms) ? '--' : Math.floor(ms / 86400000);
   const h = isNaN(ms) ? '--' : Math.floor(ms / 3600000) % 24;
@@ -575,14 +605,14 @@ function clockString(ms) {
   const s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60;
   return [d, 'd ️', h, 'h ', m, 'm ', s, 's '].map((v) => v.toString().padStart(2, 0)).join('');
 }
+
 _quickTest().catch(console.error);
     process.on('uncaughtException', (err) => {
-  console.log('🚨 Error inesperado no capturado');
-  console.log('📄 Mensaje:', err?.message || err);
+  secureLogger.error('🚨 Error inesperado no capturado');
+  secureLogger.error('📄 Mensaje:', err?.message || err);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.log('⚠️ Promesa rechazada sin manejar');
-  console.log('📄 Razón:', reason);
+  secureLogger.warn('⚠️ Promesa rechazada sin manejar');
+  secureLogger.warn('📄 Razón:', reason);
 });
-

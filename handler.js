@@ -4,8 +4,8 @@ import { format } from 'util';
 import { fileURLToPath } from 'url';
 import path, { join } from 'path';
 import { EventEmitter } from 'events';
-EventEmitter.defaultMaxListeners = 25;
-process.setMaxListeners(30);
+EventEmitter.defaultMaxListeners = 50;
+process.setMaxListeners(50);
 import { unwatchFile, watchFile } from 'fs';
 import fs from 'fs';
 import chalk from 'chalk';
@@ -27,7 +27,7 @@ function isRecentParticipantEvent(groupId, participant, action) {
   
   if (recentParticipantEvents.has(key)) {
     const lastTime = recentParticipantEvents.get(key);
-    if (now - lastTime < 3000) { // 3 segundos de cooldown
+    if (now - lastTime < 5000) { // 5 segundos de cooldown - AUMENTADO
       return true;
     }
   }
@@ -423,9 +423,9 @@ ${tradutor.texto1[1]} ${messageNumber}/3
             return;
           }
 
-          if (botSpam.antispam && m.text && user && user.lastCommandTime && (Date.now() - user.lastCommandTime) < 5000 && !isROwner) {
-            if (user.commandCount === 2) {
-              const remainingTime = Math.ceil((user.lastCommandTime + 5000 - Date.now()) / 1000);
+          if (botSpam.antispam && m.text && user && user.lastCommandTime && (Date.now() - user.lastCommandTime) < 10000 && !isROwner) {
+  if (user.commandCount >= 2) {
+    const remainingTime = Math.ceil((user.lastCommandTime + 10000 - Date.now()) / 1000);
               if (remainingTime > 0) {
                 const messageText = `*[ ℹ️ ] Espera* _${remainingTime} segundos_ *antes de utilizar otro comando.*`;
                 m.reply(messageText);
@@ -532,8 +532,8 @@ ${tradutor.texto1[1]} ${messageNumber}/3
         };
         try {
   await plugin.call(this, m, extra);
-  // Delay después de cada comando
-  await new Promise(resolve => setTimeout(resolve, 1500));
+  // Delay después de cada comando - AUMENTADO para evitar baneo
+  await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 3000)); // 3-5 segundos aleatorios
           if (!isPrems) {
             m.limit = m.limit || plugin.limit || false;
           }
@@ -629,8 +629,14 @@ try {
       console.log(m, m.quoted, e);
     }
     const settingsREAD = global.db.data.settings[mconn.conn.user.jid] || {};
-    if (opts['autoread']) await mconn.conn.readMessages([m.key]);
-    if (settingsREAD.autoread || settingsREAD.autoread2) await mconn.conn.readMessages([m.key]);
+    if (opts['autoread']) {
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  await mconn.conn.readMessages([m.key]);
+}
+if (settingsREAD.autoread || settingsREAD.autoread2) {
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  await mconn.conn.readMessages([m.key]);
+}
 
   }
 }
@@ -682,6 +688,8 @@ export async function participantsUpdate({ id, participants, action }) {
               return;
             }
             await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [conn.decodeJid(user)] });
+              // Delay para evitar spam en eventos de grupo
+await new Promise(resolve => setTimeout(resolve, 2000));
           }
         }
       }

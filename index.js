@@ -50,54 +50,57 @@ try {
   console.warn(chalk.yellowBright('⚠ No se pudieron aplicar permisos a src/tmp:'), err.message);
 }
 
-// Limpieza automática de archivos temporales cada minuto
+// Limpieza automática mejorada
 function limpiarArchivosTMP() {
+  console.log(chalk.cyan.bold('🧹 Iniciando limpieza en carpeta tmp/ y archivo core'));
+  
+  let totalEliminados = 0;
+  let archivosTmp = 0;
+  let archivoCore = false;
+
+  // Limpiar carpeta tmp
   const tmpPath = join(__dirname, 'src/tmp');
   if (fs.existsSync(tmpPath)) {
     const archivos = fs.readdirSync(tmpPath);
-    let eliminados = 0;
-
     for (const archivo of archivos) {
       const rutaCompleta = join(tmpPath, archivo);
       try {
         fs.rmSync(rutaCompleta, { recursive: true, force: true });
-        eliminados++;
+        archivosTmp++;
+        totalEliminados++;
       } catch (err) {
         console.error(chalk.red(`✖ Error eliminando ${archivo}:`), err.message);
       }
     }
-
-    const fechaHora = new Date().toLocaleString('es-MX', {
-      timeZone: 'America/Mexico_City',
-      hour12: false,
-      weekday: 'short',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-
-    console.log(chalk.cyanBright('\n╭────────────── INFO ──────────────╮'));
-    console.log(chalk.greenBright(`│ ✅ Eliminados ${eliminados.toString().padStart(2, '0')} archivo(s) temporales          │`));
-    console.log(chalk.greenBright(`│ 🕒 Hora: ${fechaHora.padEnd(30)}│`));
-    console.log(chalk.cyanBright('╰──────────────────────────────────╯'));
-
-    say('LIMPIEZA', {
-      font: 'chrome',
-      align: 'center',
-      colors: ['cyan', 'magenta'],
-    });
-
-    say('COMPLETA', {
-      font: 'chrome',
-      align: 'center',
-      colors: ['yellow', 'green'],
-    });
-
-    process.stdout.write('\x07'); // beep al terminar limpieza
   }
+
+  // Limpiar archivo core de la raíz
+  const coreFile = join(__dirname, 'core');
+  if (fs.existsSync(coreFile)) {
+    try {
+      fs.rmSync(coreFile, { recursive: true, force: true });
+      archivoCore = true;
+      totalEliminados++;
+    } catch (err) {
+      console.error(chalk.red('✖ Error eliminando archivo core:'), err.message);
+    }
+  }
+
+  // Mensaje de finalización después de 3 segundos
+  setTimeout(() => {
+    if (totalEliminados > 0) {
+      let mensaje = chalk.cyan.bold('✨ Limpieza completada: ');
+      if (archivosTmp > 0) {
+        mensaje += chalk.red(`${archivosTmp} archivos tmp/`);
+      }
+      if (archivoCore) {
+        mensaje += archivosTmp > 0 ? chalk.red(' + archivo core') : chalk.red('archivo core');
+      }
+      console.log(mensaje);
+    } else {
+      console.log(chalk.cyan.bold('✨ Limpieza completada: No había archivos para eliminar'));
+    }
+  }, 3000);
 }
 
 // Ejecutar limpieza cada 15 minutos
@@ -212,5 +215,3 @@ async function start(file) {
 }
 
 start('main.js');
-
-
