@@ -204,24 +204,29 @@ pm2 logs LunaBot
 
 ```
 Luna-Botv6/
-├── 📁 database/          # Base de datos modular
+├── 📁 database/          # Base de datos guarda stats.js
 │   ├── afkDB.json
 │   ├── levelling.json
 │   └── ...
 ├── 📁 lib/               # Librerías principales
 │   ├── exp.js           # Sistema de experiencia
 │   ├── levelling.js     # Sistema de niveles
-│   └── ...
+│   └── stats.js         # sistema de guardado de exp,money etc
+
 ├── 📁 plugins/          # Comandos del bot
 │   ├── game-*.js        # Juegos
 │   ├── tools-*.js       # Herramientas
 │   ├── admin-*.js       # Administración
 │   └── ...
 ├── 📁 MysticSession/    # Sesión de WhatsApp
-├── 📄 main.js           # Archivo principal
-├── 📄 handler.js        # Manejador de eventos
-├── 📄 config.js         # Configuración
-└── 📄 package.json      # Dependencias
+├── 📄 creds.json           # Archivo principal
+├── 📄 pre-key        # claves 
+├── 📄 sender-key         # claves 
+└── 📄 session    # claves
+
+├── 📁 src/
+├──📁 libraries/prints.js   # logs 
+
 ```
 
 ---
