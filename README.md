@@ -1,7 +1,7 @@
 # 🌙 Luna-Bot V6 - WhatsApp Bot
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/ruta/a/tu/imagen.png" alt="Luna Bot Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-20250519-WA0115.jpg" alt="Luna Bot Logo" width="200"/>
   
   [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
   [![Baileys](https://img.shields.io/badge/Baileys-Latest-blue.svg)](https://github.com/WhiskeySockets/Baileys)
