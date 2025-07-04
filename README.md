@@ -2,15 +2,10 @@
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-20250519-WA0115.jpg" alt="Luna Bot Logo" width="400" style="border-radius: 25px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); animation: pulse 2s infinite; border: 4px solid linear-gradient(45deg, #FFD700, #FFA500);"/>
-</div>
-  [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-  [![Baileys](https://img.shields.io/badge/Baileys-Latest-blue.svg)](https://github.com/WhiskeySockets/Baileys)
-  [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-  [![Contributors](https://img.shields.io/github/contributors/your-username/Luna-Botv6)](https://github.com/your-username/Luna-Botv6/graphs/contributors)
-  [![Stars](https://img.shields.io/github/stars/your-username/Luna-Botv6)](https://github.com/your-username/Luna-Botv6/stargazers)
   
   **Luna Bot es un bot avanzado y altamente personalizable para WhatsApp, diseñado para ofrecerte una experiencia completa con herramientas útiles, entretenimiento, moderación y comandos inteligentes.**
 </div>
+  
 
 ---
 
