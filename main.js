@@ -28,6 +28,7 @@ import { restaurarConfiguraciones } from './lib/funcConfig.js';
 import { getOwnerFunction } from './lib/owner-funciones.js';
 import mentionListener from './plugins/game-ialuna.js';
 import { isCleanerEnabled } from './lib/cleaner-config.js';
+import { startAutoCleanService } from './auto-cleaner.js';
 import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.js';
 
 const { chain } = lodash;
@@ -265,6 +266,9 @@ rl.close()
 
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 if (isCleanerEnabled()) runCleaner();
+// Inicializar servicio de limpieza automática
+
+startAutoCleanService();
 
 if (!opts['test']) {
   if (global.db) {
