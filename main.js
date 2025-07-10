@@ -130,56 +130,74 @@ const MethodMobile = process.argv.includes("mobile")
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
 
-//Código adaptado para la compatibilidad de ser bot con el código de 8 digitos. Hecho por: https://github.com/GataNina-Li
-let opcion; // solo se declara una vez
+let opcion = '1'; // Valor por defecto
 
-opcion = '1';
+// Mejorar la lógica de selección de método
 try {
   if (methodCodeQR) {
     opcion = '1';
-  } else if (!methodCode && !fs.existsSync(`./${authFile}/creds.json`)) {
+    console.log(chalk.yellow('[ ℹ️ ] Modo QR seleccionado desde argumentos'));
+  } else if (methodCode && phoneNumber) {
+    opcion = '2';
+    console.log(chalk.yellow('[ ℹ️ ] Modo código seleccionado desde argumentos'));
+  } else if (!fs.existsSync(`./${global.authFile}/creds.json`)) {
+    console.log(chalk.cyan('[ ℹ️ ] No se encontró sesión existente'));
     do {
-      opcion = await question('[ ℹ️ ] Seleccione una opción:\n1. Con código QR\n2. Con código de texto de 8 dígitos\n---> ');
+      opcion = await question(chalk.bgBlack(chalk.bold.yellowBright('[ ℹ️ ] Seleccione una opción:\n1. Con código QR\n2. Con código de texto de 8 dígitos\n---> ')));
       if (!/^[1-2]$/.test(opcion)) {
-        console.log('[ ❗ ] Por favor, seleccione solo 1 o 2.\n');
+        console.log(chalk.red('[ ❗ ] Por favor, seleccione solo 1 o 2.\n'));
       }
-    } while (!['1', '2'].includes(opcion) || fs.existsSync(`./${authFile}/creds.json`));
+    } while (!['1', '2'].includes(opcion));
+  } else {
+    console.log(chalk.green('[ ℹ️ ] Sesión existente encontrada'));
   }
 } catch (error) {
-  secureLogger.error('Error al seleccionar opción:', error);
+  console.error(chalk.red('[ ❗ ] Error al seleccionar opción:'), error);
+  opcion = '1'; // Fallback a QR
 }
 
 console.info = () => {} // https://github.com/skidy89/baileys actualmente no muestra logs molestos en la consola
 
 const connectionOptions = {
     logger: Pino({ level: 'silent' }),
-    printQRInTerminal: opcion === '1' || methodCodeQR,
-    mobile: MethodMobile,
-    browser: opcion === '1' ? ['TheMystic-Bot-MD', 'Safari', '2.0.0'] : methodCodeQR ? ['TheMystic-Bot-MD', 'Safari', '2.0.0'] : ['Ubuntu', 'Chrome', '20.0.04'],
+    printQRInTerminal: opcion === '1',
+
+    // 🔧 CORREGIDO: mobile debe estar desactivado para pairing con código
+    mobile: opcion === '2' ? false : MethodMobile,
+
+    // 🔧 CORREGIDO: Browser limpio (sin "Pairing")
+    browser: opcion === '1' 
+        ? ['TheMystic-Bot-MD', 'Safari', '2.0.0'] 
+        : ['TheMystic-Bot-MD', 'Chrome', '2.0.0'],
+
     auth: {
         creds: state.creds,
-        keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: 'fatal' }).child({ level: 'fatal' })),
+        keys: makeCacheableSignalKeyStore(
+            state.keys,
+            Pino({ level: 'fatal' }).child({ level: 'fatal' })
+        ),
     },
-    waWebSocketUrl: 'wss://web.whatsapp.com/ws/chat?ED=CAIICA',
-    markOnlineOnConnect: false, // Mejor privacidad
-    generateHighQualityLinkPreview: false, // Evitar cargar previews automáticamente
-    
+
+    // 🔧 CORREGIDO: no se debe tocar waWebSocketUrl (se mantiene estándar)
+    markOnlineOnConnect: false,
+    generateHighQualityLinkPreview: false,
+
+    // ✅ Configuración específica para pairing
+    qrTimeout: 40000,
+    connectTimeoutMs: 60000,
+    defaultQueryTimeoutMs: 60000,
+    keepAliveIntervalMs: 30000,
+    syncFullHistory: false,
+    fireInitQueries: true,
+    emitOwnEvents: true,
+
     getMessage: async (key) => {
         try {
             let jid = jidNormalizedUser(key.remoteJid);
             let msg = await store.loadMessage(jid, key.id);
-            
-            // No almacenar contenido sensible
-            if (msg?.message) {
-                const sanitizedMsg = { ...msg.message };
-                // Remover metadatos sensibles
-                delete sanitizedMsg.deviceSentMessage;
-                delete sanitizedMsg.senderKeyDistributionMessage;
-                return sanitizedMsg;
-            }
             return msg?.message || "";
         } catch (e) {
-            secureLogger.error('Error en getMessage:', e);
+            secureLogger?.error?.('Error en getMessage:', e);
             return '';
         }
     },
@@ -189,27 +207,25 @@ const connectionOptions = {
             global.conn.uploadPreKeysToServerIfRequired();
             return message;
         } catch (e) {
-            secureLogger.error('Error en patchMessageBeforeSending:', e);
+            secureLogger?.error?.('Error en patchMessageBeforeSending:', e);
             return message;
         }
     },
 
     msgRetryCounterCache: new NodeCache({ 
-        stdTTL: 300, // 5 minutos
+        stdTTL: 300,
         checkperiod: 60,
         useClones: false 
     }),
     userDevicesCache: new NodeCache({ 
-        stdTTL: 3600, // 1 hora
+        stdTTL: 3600,
         checkperiod: 300,
         useClones: false 
     }),
-    
-    defaultQueryTimeoutMs: undefined,
+
     cachedGroupMetadata: (jid) => {
         const chat = global.conn.chats[jid];
         if (chat) {
-            // Retornar solo metadatos necesarios
             return {
                 id: chat.id,
                 subject: chat.subject,
@@ -230,40 +246,152 @@ if (ownerConfig.auread) global.opts['autoread'] = true
 if (ownerConfig.modogrupos) global.conn.modogrupos = true
 conn.ev.on('connection.update', connectionUpdate);
 
-if (!fs.existsSync(`./${authFile}/creds.json`)) {
-if (opcion === '2' || methodCode) {
-opcion = '2'
-if (!conn.authState.creds.registered) {  
-if (MethodMobile) throw new Error('No se puede usar un código de emparejamiento con la API móvil')
+conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 
-let numeroTelefono
-if (!!phoneNumber) {
-numeroTelefono = phoneNumber.replace(/[^0-9]/g, '')
-if (!Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
-console.log(chalk.bgBlack(chalk.bold.redBright("Comience con el código de país de su número de WhatsApp.\nEjemplo: +5219992095479\n")))
-process.exit(0)
-}} else {
-while (true) {
-numeroTelefono = await question(chalk.bgBlack(chalk.bold.yellowBright('Por favor, escriba su número de WhatsApp.\nEjemplo: +5219992095479\n')))
-numeroTelefono = numeroTelefono.replace(/[^0-9]/g, '')
+if (!fs.existsSync(`./${global.authFile}/creds.json`)) {
+    if (opcion === '2') {
+        console.log(chalk.yellow('[ ℹ️ ] Modo código de 8 dígitos seleccionado'));
+        
+        if (MethodMobile) {
+            console.log(chalk.red('[ ❗ ] No se puede usar código de emparejamiento con API móvil'));
+            process.exit(1);
+        }
 
-if (numeroTelefono.match(/^\d+$/) && Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
-break 
-} else {
-console.log(chalk.bgBlack(chalk.bold.redBright("Por favor, escriba su número de WhatsApp.\nEjemplo: +5219992095479.\n")))
-}}
-rl.close()  
-} 
+        let numeroTelefono;
+        
+        if (phoneNumber) {
+            // Usar número de teléfono proporcionado
+            numeroTelefono = phoneNumber.replace(/[^0-9]/g, '');
+            console.log(chalk.green('[ ℹ️ ] Usando número proporcionado:'), phoneNumber);
+            
+            // Validar formato
+            if (!numeroTelefono.match(/^\d+$/) || !Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
+                console.log(chalk.red('[ ❗ ] Número de teléfono inválido:'), phoneNumber);
+                console.log(chalk.yellow('[ ℹ️ ] Formato correcto: +5493483511079'));
+                process.exit(1);
+            }
+        } else {
+            // Solicitar número de teléfono
+            while (true) {
+                numeroTelefono = await question(chalk.bgBlack(chalk.bold.yellowBright('[ ℹ️ ] Escriba su número de WhatsApp (incluya código de país):\nEjemplo: +5493483511079\n---> ')));
+                numeroTelefono = numeroTelefono.replace(/[^0-9]/g, '');
 
+                if (numeroTelefono.match(/^\d+$/) && Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
+                    break;
+                } else {
+                    console.log(chalk.red('[ ❗ ] Número inválido. Use formato: +5493483511079'));
+                }
+            }
+        }
+
+        // Cerrar readline después de obtener el número
+        if (!phoneNumber) {
+            rl.close();
+        }
+
+        // Configurar el número antes de crear la conexión
+        global.conn.phoneNumber = numeroTelefono;
+        
+        // ✅ SOLUCIÓN: Usar setTimeout en lugar de conn.ev.once
         setTimeout(async () => {
-            let codigo = await conn.requestPairingCode(numeroTelefono)
-            codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo
-            console.log(chalk.yellow('[ ℹ️ ] introduce el código de emparejamiento en WhatsApp.'));
-            console.log(chalk.black(chalk.bgGreen(`Su código de emparejamiento: `)), chalk.black(chalk.white('[CODIGO_OCULTO]')))
-        }, 3000)
-}}
+            try {
+                console.log(chalk.yellow('[ ℹ️ ] Solicitando código de emparejamiento...'));
+                
+                // Solicitar código con retry logic
+                let codigo;
+                let intentos = 0;
+                const maxIntentos = 3;
+                
+                while (intentos < maxIntentos) {
+                    try {
+                        codigo = await global.conn.requestPairingCode(numeroTelefono);
+                        break;
+                    } catch (error) {
+                        intentos++;
+                        console.log(chalk.red(`[ ❗ ] Intento ${intentos} fallido:`, error.message));
+                        
+                        if (intentos < maxIntentos) {
+                            console.log(chalk.yellow(`[ ℹ️ ] Reintentando en 3 segundos...`));
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                        } else {
+                            throw error;
+                        }
+                    }
+                }
+                
+                if (codigo) {
+                    codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo;
+                    
+                    console.log(chalk.green('════════════════════════════════'));
+                    console.log(chalk.green.bold('🔐 CÓDIGO DE EMPAREJAMIENTO:'));
+                    console.log(chalk.yellow.bold('   ' + codigo));
+                    console.log(chalk.green('════════════════════════════════'));
+                    console.log(chalk.cyan('[ ℹ️ ] Pasos para vincular:'));
+                    console.log(chalk.cyan('1. Abre WhatsApp en tu teléfono'));
+                    console.log(chalk.cyan('2. Ve a Configuración > Dispositivos vinculados'));
+                    console.log(chalk.cyan('3. Toca "Vincular dispositivo"'));
+                    console.log(chalk.cyan('4. Selecciona "Vincular con número de teléfono"'));
+                    console.log(chalk.cyan('5. Ingresa el código de arriba'));
+                    console.log(chalk.cyan('6. IMPORTANTE: Tienes 20 segundos para ingresar el código'));
+                    console.log(chalk.green('════════════════════════════════'));
+                    
+                    // Renovar código cada 20 segundos
+                    const intervaloCodigo = setInterval(async () => {
+                        if (global.conn?.user) {
+                            clearInterval(intervaloCodigo);
+                            return;
+                        }
+                        
+                        try {
+                            console.log(chalk.yellow('[ ℹ️ ] Renovando código de emparejamiento...'));
+                            const nuevoCodigo = await global.conn.requestPairingCode(numeroTelefono);
+                            const codigoFormateado = nuevoCodigo?.match(/.{1,4}/g)?.join("-") || nuevoCodigo;
+                            
+                            console.log(chalk.green('════════════════════════════════'));
+                            console.log(chalk.green.bold('🔐 NUEVO CÓDIGO DE EMPAREJAMIENTO:'));
+                            console.log(chalk.yellow.bold('   ' + codigoFormateado));
+                            console.log(chalk.green('════════════════════════════════'));
+                            
+                        } catch (error) {
+                            console.log(chalk.red('[ ❗ ] Error al renovar código:', error.message));
+                            
+                            if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+                                console.log(chalk.yellow('[ ℹ️ ] Esperando debido a límite de velocidad...'));
+                                clearInterval(intervaloCodigo);
+                                setTimeout(() => {
+                                    console.log(chalk.yellow('[ ℹ️ ] Reintentando conexión...'));
+                                    process.exit(1);
+                                }, 60000);
+                            }
+                        }
+                    }, 20000);
+                    
+                    // Timeout para limpiar el intervalo después de 5 minutos
+                    setTimeout(() => {
+                        if (!global.conn?.user) {
+                            clearInterval(intervaloCodigo);
+                            console.log(chalk.red('[ ❗ ] Tiempo de vinculación agotado. Reinicia el bot.'));
+                        }
+                    }, 300000);
+                }
+                
+            } catch (error) {
+                console.error(chalk.red('[ ❗ ] Error al solicitar código de emparejamiento:'), error.message);
+                
+                if (error.message.includes('Unauthorized') || error.message.includes('401')) {
+                    console.log(chalk.red('[ ❗ ] Error de autorización. Elimina la carpeta de sesión y vuelve a intentar.'));
+                    process.exit(1);
+                } else if (error.message.includes('rate limit') || error.message.includes('429')) {
+                    console.log(chalk.yellow('[ ⚠ ] Límite de velocidad alcanzado. Espera 1 minuto antes de reintentar.'));
+                    setTimeout(() => process.exit(1), 60000);
+                } else {
+                    console.log(chalk.yellow('[ ℹ️ ] Reintentando en 10 segundos...'));
+                    setTimeout(() => process.exit(1), 10000);
+                }
+            }
+        }, 5000); // Esperar 5 segundos para que la conexión se establezca
+    }
 }
-
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 if (isCleanerEnabled()) runCleaner();
 // Inicializar servicio de limpieza automática
@@ -344,10 +472,11 @@ function runCleaner() {
   cleaner.on('exit', code => console.log(`[cleaner] terminó con código ${code}`));
 }
 
-let lastQR = null; // 👈 esto fuera de la función, por ejemplo justo arriba de connectionUpdate
+let lastQR = null;
+let codigoSolicitado = false;
 
 async function connectionUpdate(update) {
-  const { connection, lastDisconnect, isNewLogin } = update;
+  const { connection, lastDisconnect, isNewLogin, qr } = update;
   stopped = connection;
   if (isNewLogin) conn.isInit = true;
 
@@ -358,17 +487,23 @@ async function connectionUpdate(update) {
   }
   if (global.db.data == null) loadDatabase();
 
-  if ((update.qr != 0 && update.qr != undefined) || methodCodeQR) {
-    if (opcion == '1' || methodCodeQR) {
-      if (update.qr && update.qr !== lastQR) {
-        console.log(chalk.yellow('[ ℹ️ ] Escanea el código QR.'));
-        lastQR = update.qr; 
-      }
+  // Manejar QR solo si se seleccionó opción 1
+  if (opcion === '1' && qr) {
+    if (qr !== lastQR) {
+      console.log(chalk.yellow('[ ℹ️ ] Escanea el código QR.'));
+      lastQR = qr;
     }
   }
 
-  if (connection == 'open') {
-    secureLogger.info('Conectado correctamente.');
+  // Manejar estados de conexión
+  if (connection === 'open') {
+    console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
+    console.log(chalk.green('[ ℹ️ ] Bot iniciado exitosamente'));
+    codigoSolicitado = false;
+  } else if (connection === 'connecting') {
+    console.log(chalk.yellow('[ ℹ️ ] Conectando a WhatsApp...'));
+  } else if (connection === 'close') {
+    console.log(chalk.red('[ ❌ ] Conexión cerrada'));
   }
 
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
