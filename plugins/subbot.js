@@ -50,15 +50,18 @@ async function executeCustomCommand(command, sock, m, args) {
     const file = join(dir, `${command}.js`)
     if (!existsSync(file)) return false
 
-    const code = readFileSync(file, 'utf-8')
-    const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor
-    const run = new AsyncFunction('sock', 'm', 'args', code)
+    const { default: handler } = await import(`file://${file}`)
+    if (typeof handler !== 'function') {
+      throw new Error(`El archivo ${command}.js no exporta una función por defecto.`)
+    }
 
-    await run(sock, m, args)
+    await handler(sock, m, args)
     return true
   } catch (e) {
-    console.error(`Error en comando personalizado "${command}":`, e)
-    await sock.sendMessage(m.chat, { text: '❌ Error ejecutando el comando.' }, { quoted: m })
+    console.error(`❌ Error en comando personalizado "${command}":`, e)
+    await sock.sendMessage(m.chat, {
+      text: `❌ Error ejecutando el comando personalizado:\n${e.message}`
+    }, { quoted: m })
     return true
   }
 }
