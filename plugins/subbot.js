@@ -50,18 +50,39 @@ async function executeCustomCommand(command, sock, m, args) {
     const file = join(dir, `${command}.js`)
     if (!existsSync(file)) return false
 
-    const { default: handler } = await import(`file://${file}`)
+    // Verificar que sock existe y tiene sendMessage
+    if (!sock || typeof sock.sendMessage !== 'function') {
+      console.error('❌ sock no válido en executeCustomCommand:', sock)
+      return false
+    }
+
+    console.log(`🔧 Ejecutando comando personalizado: ${command}`)
+    console.log(`📁 Archivo: ${file}`)
+    
+    // Importar el comando con timestamp para evitar caché
+    const commandModule = await import(`file://${file}?t=${Date.now()}`)
+    const handler = commandModule.default
+    
     if (typeof handler !== 'function') {
       throw new Error(`El archivo ${command}.js no exporta una función por defecto.`)
     }
 
+    // Ejecutar el comando con los parámetros correctos
     await handler(sock, m, args)
     return true
   } catch (e) {
     console.error(`❌ Error en comando personalizado "${command}":`, e)
-    await sock.sendMessage(m.chat, {
-      text: `❌ Error ejecutando el comando personalizado:\n${e.message}`
-    }, { quoted: m })
+    
+    // Verificar si sock está disponible para enviar el mensaje de error
+    if (sock && typeof sock.sendMessage === 'function') {
+      try {
+        await sock.sendMessage(m.chat, {
+          text: `❌ Error ejecutando el comando personalizado:\n${e.message}`
+        }, { quoted: m })
+      } catch (sendError) {
+        console.error('❌ Error enviando mensaje de error:', sendError)
+      }
+    }
     return true
   }
 }
@@ -81,14 +102,27 @@ async function processSubBotMessage(sock, rawMessage) {
     const m = {
       chat: msg.key.remoteJid,
       sender: msg.key.participant || msg.key.remoteJid,
-      text, args, command: cmd,
+      text, 
+      args, 
+      command: cmd,
       isGroup: msg.key.remoteJid.endsWith('@g.us'),
       key: msg.key,
       message: msg.message,
       quoted: msg.message.extendedTextMessage?.contextInfo?.quotedMessage
     }
 
-    if (SUBBOT_COMMANDS[cmd]) return SUBBOT_COMMANDS[cmd].handler(sock, m)
+    // Verificar que sock existe antes de procesar
+    if (!sock || typeof sock.sendMessage !== 'function') {
+      console.error('❌ sock no válido en processSubBotMessage:', sock)
+      return
+    }
+
+    // Ejecutar comandos internos
+    if (SUBBOT_COMMANDS[cmd]) {
+      return await SUBBOT_COMMANDS[cmd].handler(sock, m)
+    }
+    
+    // Ejecutar comandos personalizados
     const found = await executeCustomCommand(cmd, sock, m, args)
     if (!found) {
       await sock.sendMessage(m.chat, {
@@ -152,20 +186,31 @@ async function createSubBot(jid, conn, m, useCode = false) {
       if (connection === 'open') {
         subbotConnections.set(jid, sock)
         activeSockets.delete(jid)
-        sock.ev.on('messages.upsert', (update) => processSubBotMessage(sock, update))
-        await conn.sendMessage(m.chat, { text: '✅ SubBot conectado.' }, { quoted: m })
+        
+        // Configurar el procesamiento de mensajes
+        sock.ev.on('messages.upsert', (update) => {
+          // Verificar que sock sigue siendo válido
+          if (sock && typeof sock.sendMessage === 'function') {
+            processSubBotMessage(sock, update)
+          }
+        })
+        
+        await conn.sendMessage(m.chat, { text: '✅ SubBot conectado exitosamente.' }, { quoted: m })
+        console.log(`✅ SubBot conectado para ${jid}`)
       }
 
       if (connection === 'close') {
         activeSockets.delete(jid)
         subbotConnections.delete(jid)
         const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut
+        
         if (shouldReconnect) {
-          console.log('Reconectando...')
+          console.log(`🔄 Reconectando SubBot para ${jid}...`)
           setTimeout(() => createSubBot(jid, conn, m, useCode), 3000)
         } else {
           if (existsSync(sessionPath)) rmSync(sessionPath, { recursive: true, force: true })
           await conn.sendMessage(m.chat, { text: '❌ SubBot desconectado.' }, { quoted: m })
+          console.log(`❌ SubBot desconectado para ${jid}`)
         }
       }
     })
@@ -186,18 +231,23 @@ async function handler(m, { conn, args, command }) {
         return conn.reply(m.chat, '⚠️ Ya tienes un SubBot activo. Usa /stopbot primero.', m)
       }
       const useCode = args.includes('--code')
+      await conn.reply(m.chat, '🤖 Iniciando SubBot...', m)
       setImmediate(() => createSubBot(jid, conn, m, useCode))
       break
 
     case 'stopbot':
       const sock = activeSockets.get(jid) || subbotConnections.get(jid)
       if (!sock) return conn.reply(m.chat, '⚠️ No tienes un SubBot activo.', m)
+      
+      // Limpiar eventos
       sock.ev.removeAllListeners()
-      sock.ws?.close()
+      if (sock.ws) sock.ws.close()
+      
       activeSockets.delete(jid)
       subbotConnections.delete(jid)
+      
       if (existsSync(sessionPath)) rmSync(sessionPath, { recursive: true, force: true })
-      conn.reply(m.chat, '✅ SubBot detenido.', m)
+      conn.reply(m.chat, '✅ SubBot detenido correctamente.', m)
       break
 
     case 'listbots':
@@ -208,16 +258,19 @@ async function handler(m, { conn, args, command }) {
       break
 
     case 'bcbot':
-      if (!args.length) return conn.reply(m.chat, '⚠️ Proporciona un mensaje.', m)
+      if (!args.length) return conn.reply(m.chat, '⚠️ Proporciona un mensaje para broadcast.', m)
       const msg = args.join(' ')
       let sent = 0
+      
       for (const [jid, sock] of subbotConnections) {
         try {
-          await sock.sendMessage(sock.user.id, { text: `📢 *Mensaje del Bot Principal:*\n\n${msg}` })
-          sent++
-          await delay(1000)
+          if (sock && typeof sock.sendMessage === 'function') {
+            await sock.sendMessage(sock.user.id, { text: `📢 *Mensaje del Bot Principal:*\n\n${msg}` })
+            sent++
+            await delay(1000)
+          }
         } catch (e) {
-          console.error(`Error enviando a ${jid}:`, e)
+          console.error(`Error enviando broadcast a ${jid}:`, e)
         }
       }
       conn.reply(m.chat, `📤 Mensaje enviado a ${sent} SubBots.`, m)
@@ -226,10 +279,19 @@ async function handler(m, { conn, args, command }) {
     case 'createcmd':
       if (args.length < 2) return conn.reply(m.chat, '⚠️ Uso: /createcmd <nombre> <código>', m)
       const [cmdName, ...cmdBody] = args
-      if (!/^[a-zA-Z0-9_]+$/.test(cmdName)) return conn.reply(m.chat, '❌ Nombre inválido.', m)
+      
+      if (!/^[a-zA-Z0-9_]+$/.test(cmdName)) {
+        return conn.reply(m.chat, '❌ Nombre de comando inválido. Solo letras, números y guiones bajos.', m)
+      }
+      
       const dir = join(process.cwd(), 'subbot-commands')
-      if (!existsSync(dir)) mkdirSync(dir)
-      writeFileSync(join(dir, `${cmdName}.js`), cmdBody.join(' '))
+      if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
+      
+      const commandContent = `export default async function handler(sock, m, args) {
+  ${cmdBody.join(' ')}
+}`
+      
+      writeFileSync(join(dir, `${cmdName}.js`), commandContent)
       conn.reply(m.chat, `✅ Comando "${cmdName}" creado correctamente.`, m)
       break
   }
