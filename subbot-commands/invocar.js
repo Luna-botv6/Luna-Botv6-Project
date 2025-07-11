@@ -1,4 +1,4 @@
-(async () => {
+export default async function handler(sock, m, args) {
   // Si no envían mensaje, avisar uso correcto
   if (!args.length) {
     await sock.sendMessage(m.chat, { text: '*Usa:* /invocar <mensaje>' }, { quoted: m });
@@ -47,4 +47,4 @@
       text: '*Error al obtener la lista de participantes del grupo*' 
     }, { quoted: m });
   }
-})();
+}
