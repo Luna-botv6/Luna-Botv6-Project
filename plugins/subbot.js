@@ -18,16 +18,6 @@ const SUBBOT_COMMANDS = {
     }
   },
 
-  menu: {
-    handler: async (sock, m) => {
-      const commands = Object.keys(SUBBOT_COMMANDS).map(cmd => `• /${cmd}`).join('\n')
-      const customCommands = await getCustomCommands()
-      const customList = customCommands.length > 0 ? customCommands.map(cmd => `• /${cmd}`).join('\n') : 'No hay comandos personalizados'
-      const menu = `🤖 *MENÚ SUBBOT*\n\n📋 *Comandos Básicos:*\n${commands}\n\n🎯 *Comandos Personalizados:*\n${customList}\n\n📊 *Estado:* Activo\n⚡ *Prefijo:* / . ! #`
-      await sock.sendMessage(m.chat, { text: menu }, { quoted: m })
-    }
-  },
-
   info: {
     handler: async (sock, m) => {
       const info = `📱 *INFORMACIÓN DEL SUBBOT*\n\n🆔 *ID:* ${sock.user.id}\n📞 *Número:* wa.me/${sock.user.id.replace(/[^0-9]/g, '')}\n⏰ *Tiempo activo:* ${formatUptime(Date.now() - sock.uptime)}\n🔄 *Versión:* 2.0\n🎯 *Tipo:* SubBot Independiente`
@@ -99,7 +89,7 @@ async function processSubBotMessage(sock, rawMessage) {
     const found = await executeCustomCommand(cmd, sock, m, args)
     if (!found) {
       await sock.sendMessage(m.chat, {
-        text: `❓ Comando "${cmd}" no encontrado.\n\nUsa ${prefix}menu para ver los disponibles.`
+        text: `❓ Comando "${cmd}" no encontrado.`
       }, { quoted: msg })
     }
 
@@ -160,7 +150,7 @@ async function createSubBot(jid, conn, m, useCode = false) {
         subbotConnections.set(jid, sock)
         activeSockets.delete(jid)
         sock.ev.on('messages.upsert', (update) => processSubBotMessage(sock, update))
-        await conn.sendMessage(m.chat, { text: '✅ SubBot conectado. Prueba /menu' }, { quoted: m })
+        await conn.sendMessage(m.chat, { text: '✅ SubBot conectado.' }, { quoted: m })
       }
 
       if (connection === 'close') {
@@ -246,4 +236,3 @@ handler.command = /^(jadibot|stopbot|listbots|bcbot|createcmd)$/i
 handler.private = true
 
 export default handler
-
