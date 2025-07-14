@@ -127,9 +127,9 @@ nano config.js
 Abre el archivo config.js y reemplaza estas líneas con tus datos reales:
 
 ```js
-global.owner = ['5491122334455@s.whatsapp.net']
-global.mods = ['5491122334455@s.whatsapp.net']
-global.lid = '12345678901234@lid'
+global.owner = ['5491122334455']
+global.mods = ['5491122334455']
+global.lid = ['12345678901234@']
 ```
 
 Para obtener tu LID: envíale al bot el comando `/miid`. Si te responde con `@s.whatsapp.net`, crea un grupo temporal, añade el bot, y vuelve a usar `/miid` hasta que te devuelva un ID con `@lid`.
