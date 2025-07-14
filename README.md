@@ -99,6 +99,60 @@ copy config.example.js config.js
 notepad config.js
 ```
 
+# 📱 1. Instala Termux desde la Play Store:
+# https://play.google.com/store/apps/details?id=com.termux
+
+# 🛠️ 2. Abre Termux y actualiza todos los paquetes básicos:
+pkg update && pkg upgrade -y
+
+# 🧱 3. Instala Node.js, Git, Python y herramientas necesarias:
+pkg install nodejs git python make clang pkg-config -y
+
+# 📦 4. Clona el repositorio oficial del bot:
+git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
+
+# 📁 5. Entra en la carpeta del proyecto:
+cd Luna-Botv6-Project
+
+# 📂 6. Instala las dependencias del proyecto:
+npm install
+
+# 🚫 7. Elimina puppeteer (no es compatible con Termux):
+npm uninstall puppeteer
+
+# 🔧 8. Instala herramientas adicionales y dependencias específicas:
+pkg install libvips ffmpeg imagemagick -y
+npm install fs-extra
+npm install wa-sticker-formatter --force --legacy-peer-deps
+
+# 📝 9. Configura tu número como propietario del bot:
+# Detén el bot si está corriendo (Ctrl + C = Volumen Abajo + C)
+# Luego abre el archivo config.js con nano:
+nano config.js
+
+# ─────────────────────────────────────────────
+# Dentro del editor nano, buscá estas líneas:
+
+# global.owner = ['tu_numero@s.whatsapp.net']
+# global.mods = ['tu_numero@s.whatsapp.net']
+# global.lid = '00000000000000@lid'
+
+# Reemplazalas por tus datos reales, por ejemplo:
+# global.owner = ['5491122334455']
+# global.mods = ['5491122334455']
+# global.lid = ['12345678901234']
+
+# 🔍 Para obtener tu lid:
+# - Escribile al bot: /miid
+# - Si te da un número con @lid, usalo.
+# - Si no, creá un grupo, añadí el bot y repetí /miid.
+
+# 💾 Guardá con:  Volumen Abajo + O → Enter
+# 🧾 Salí con:    Volumen Abajo + X
+
+# ✅ 10. Iniciá el bot con:
+npm start
+
 ### 🍎 **macOS**
 
 ```bash
