@@ -1,270 +1,49 @@
-import fetch from 'node-fetch';
-import yts from 'yt-search';
 import { ogmp3 } from '../src/libraries/youtubedl.js';
+import yts from 'yt-search';
 import fs from 'fs';
 
-// ===== CONFIGURACIÓN SEGURA PARA WHATSAPP =====
-const SECURITY_CONFIG = {
-  // Límites de tasa para evitar spam
-  MIN_DELAY_BETWEEN_REQUESTS: 5000,    // 5 segundos mínimo entre descargas
-  API_TIMEOUT: 20000,                  // 20 segundos timeout
-  MAX_FILE_SIZE_MB: 15,                // Límite de 15MB (WhatsApp limit ~16MB)
-  MAX_DURATION_MINUTES: 10,            // Máximo 10 minutos de duración
-  
-  // Seguridad y privacidad
-  REMOVE_SENSITIVE_DATA: true,         // Limpiar metadatos sensibles
-  LOG_MINIMAL: true,                   // Logs mínimos por privacidad
-  VALIDATE_CONTENT: true,              // Validar contenido antes de enviar
-};
-
-// Control de tasa de requests por usuario
+// Control de rate limiting por usuario mejorado
 const userRequestTimes = new Map();
+const COOLDOWN_TIME = 5000; // 5 segundos de cooldown
 
-// Función de delay seguro
-const secureDelay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Validación de URL segura
-function isValidYouTubeUrl(url) {
-  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/)[\w-]+/;
-  return youtubeRegex.test(url);
-}
-
-// Control de rate limiting por usuario
+// Control de rate limiting mejorado
 function checkRateLimit(userId) {
   const now = Date.now();
   const lastRequest = userRequestTimes.get(userId) || 0;
   const timeDiff = now - lastRequest;
   
-  if (timeDiff < SECURITY_CONFIG.MIN_DELAY_BETWEEN_REQUESTS) {
-    const remainingTime = Math.ceil((SECURITY_CONFIG.MIN_DELAY_BETWEEN_REQUESTS - timeDiff) / 1000);
+  if (timeDiff < COOLDOWN_TIME) {
+    const remainingTime = Math.ceil((COOLDOWN_TIME - timeDiff) / 1000);
     return { allowed: false, waitTime: remainingTime };
   }
   
+  // Solo actualizamos el tiempo si la solicitud es permitida
   userRequestTimes.set(userId, now);
   return { allowed: true, waitTime: 0 };
 }
 
-// Función de descarga segura usando solo ogmp3
-async function secureDownload(videoUrl, quality = '320', type = 'audio') {
-  try {
-    // Timeout de seguridad
-    const downloadPromise = ogmp3.download(videoUrl, quality, type);
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Timeout de seguridad alcanzado')), SECURITY_CONFIG.API_TIMEOUT)
-    );
-    
-    const result = await Promise.race([downloadPromise, timeoutPromise]);
-    
-    if (!result) {
-      throw new Error('No se recibió respuesta del servidor');
-    }
-    
-    if (!result.result) {
-      throw new Error('Respuesta sin campo result');
-    }
-    
-    if (!result.result.download) {
-      throw new Error('URL de descarga no disponible');
-    }
-    
-    return result.result.download;
-    
-  } catch (error) {
-    throw new Error(`Descarga falló: ${error.message}`);
-  }
-}
-
-// Validación de contenido
-function validateVideoContent(video) {
-  if (!video) {
-    throw new Error('Video no encontrado');
-  }
-  
-  // Validar duración
-  if (video.duration?.seconds > (SECURITY_CONFIG.MAX_DURATION_MINUTES * 60)) {
-    throw new Error(`El video es demasiado largo. Máximo permitido: ${SECURITY_CONFIG.MAX_DURATION_MINUTES} minutos`);
-  }
-  
-  // Validar que tenga información básica
-  if (!video.title || !video.url) {
-    throw new Error('Información del video incompleta');
-  }
-  
-  // Validar URL
-  if (!isValidYouTubeUrl(video.url)) {
-    throw new Error('URL de YouTube inválida');
-  }
-  
-  return true;
-}
-
-// Limpiar datos sensibles del video info
-function sanitizeVideoInfo(video) {
-  if (!SECURITY_CONFIG.REMOVE_SENSITIVE_DATA) return video;
-  
-  return {
-    title: video.title?.replace(/[<>:"\/\\|?*]/g, '') || 'Video',
-    url: video.url,
-    duration: video.duration,
-    views: video.views,
-    ago: video.ago,
-    author: {
-      name: video.author?.name?.replace(/[<>:"\/\\|?*]/g, '') || 'Desconocido'
-    },
-    thumbnail: video.thumbnail,
-    videoId: video.videoId
-  };
-}
-
-let handler = async (m, { conn, args, text, usedPrefix, command }) => {
-  try {
-    // ===== VALIDACIONES DE SEGURIDAD =====
-    const datas = global;
-    const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
-    const tradutor = _translate.plugins.descargas_play;
-
-    if (!text) {
-      throw `${tradutor.texto1[0]} ${usedPrefix + command} ${tradutor.texto1[1]}`;
-    }
-
-    // Control de rate limiting
-    const rateLimitCheck = checkRateLimit(m.sender);
-    if (!rateLimitCheck.allowed) {
-      return conn.reply(m.chat, 
-        `⏰ *Límite de velocidad*\n\nPor favor espera *${rateLimitCheck.waitTime} segundos* antes de hacer otra solicitud.\n\n_Esto ayuda a mantener el servicio estable para todos._`, 
-        m
-      );
-    }
-
-    // ===== BÚSQUEDA SEGURA =====
-    const searchQuery = args.join(' ').trim();
-    if (searchQuery.length < 2 || searchQuery.length > 100) {
-      throw 'La búsqueda debe tener entre 2 y 100 caracteres';
-    }
-
-    const yt_play = await search(searchQuery);
-    const video = yt_play[0];
-    
-    // Validar contenido
-    validateVideoContent(video);
-    const safeVideo = sanitizeVideoInfo(video);
-
-    // ===== MODO SELECCIÓN (comando 'play') =====
-    if (command === 'play') {
-      const texto1 = `*🎵 Música Encontrada*\n\n● *Título:* ${safeVideo.title}\n● *Publicado:* ${safeVideo.ago}\n● *Duración:* ${secondString(safeVideo.duration.seconds)}\n● *Vistas:* ${MilesNumber(safeVideo.views)}\n● *Autor:* ${safeVideo.author.name}\n\n*¿En qué formato deseas descargar?* 🤔\n\n_⚡ Descarga optimizada y segura_`.trim();
-
-      return await conn.sendButton(
-        m.chat,
-        texto1,
-        'LunaBot V6 - Descargas Seguras',
-        safeVideo.thumbnail,
-        [
-          ['🎵 Descargar Audio', `${usedPrefix}ytmp3 ${safeVideo.url}`],
-          ['🎬 Descargar Video', `${usedPrefix}ytmp4 ${safeVideo.url}`]
-        ],
-        null,
-        null,
-        m
-      );
-    }
-
-    // ===== INFORMACIÓN PREVIA =====
-    let additionalText = command === 'ytmp3' ? 'audio' : 'vídeo';
-    const texto1 = `*◉ Descarga Segura de YouTube*\n\n● *Título:* ${safeVideo.title}\n● *Publicado:* ${safeVideo.ago}\n● *Duración:* ${secondString(safeVideo.duration.seconds)}\n● *Vistas:* ${MilesNumber(safeVideo.views)}\n● *Autor:* ${safeVideo.author.name}\n\n> *_🔒 Procesando ${additionalText} de forma segura．．．_*`.trim();
-
-    await conn.sendMessage(m.chat, { 
-      image: { url: safeVideo.thumbnail }, 
-      caption: texto1 
-    }, { quoted: m });
-
-    // Delay de seguridad
-    await secureDelay(1000);
-
-    // ===== DESCARGA DE AUDIO =====
-    if (command === 'ytmp3') {
-      try {
-        const audioUrl = await secureDownload(safeVideo.url, '320', 'audio');
-        
-        await conn.sendMessage(m.chat, { 
-          audio: { url: audioUrl }, 
-          mimetype: 'audio/mpeg',
-          fileName: `${safeVideo.title.substring(0, 50)}.mp3`
-        }, { quoted: m });
-        
-      } catch (error) {
-        await conn.reply(m.chat, 
-          `❌ *Error al procesar audio*\n\n_${error.message}_\n\n*Sugerencias:*\n• Intenta con un video diferente\n• Verifica que el enlace sea válido\n• Espera unos minutos y vuelve a intentar\n\n_Servicio optimizado para WhatsApp_`, 
-          m
-        );
-      }
-    }
-
-    // ===== DESCARGA DE VIDEO =====
-    if (command === 'ytmp4') {
-      try {
-        const videoUrl = await secureDownload(safeVideo.url, '720', 'video');
-        
-        await conn.sendMessage(m.chat, { 
-          video: { url: videoUrl }, 
-          fileName: `${safeVideo.title.substring(0, 50)}.mp4`, 
-          mimetype: 'video/mp4', 
-          caption: `🎬 ${safeVideo.title}`
-        }, { quoted: m });
-        
-        // Log de éxito (mínimo)
-        if (SECURITY_CONFIG.LOG_MINIMAL) {
-          console.log('✅ Video enviado exitosamente');
-        }
-        
-      } catch (error) {
-        await conn.reply(m.chat, 
-          `❌ *Error al procesar video*\n\n_No se pudo descargar el video en este momento._\n\n*Sugerencias:*\n• Intenta con un video más corto\n• Verifica que el enlace funcione\n• Espera unos minutos y vuelve a intentar\n\n_El servicio está optimizado para tu seguridad._`, 
-          m
-        );
-      }
-    }
-
-  } catch (error) {
-    // Manejo de errores seguro
-    const errorMessage = typeof error === 'string' ? error : 'Error interno del sistema';
-    await conn.reply(m.chat, 
-      `⚠️ *Error*\n\n${errorMessage}\n\n_Por favor intenta nuevamente._`, 
-      m
-    );
-    
-    if (SECURITY_CONFIG.LOG_MINIMAL) {
-      console.log('❌ Error en handler:', errorMessage);
-    }
-  }
-};
-
-handler.command = ['play', 'ytmp3', 'ytmp4'];
-
-export default handler;
-
-// ===== FUNCIONES AUXILIARES SEGURAS =====
-
-async function search(query, options = {}) {
+// Función para buscar videos
+async function searchVideo(query, options = {}) {
   try {
     const search = await yts.search({ 
-      query: query.substring(0, 100), // Limitar longitud de búsqueda
+      query: query.substring(0, 100),
       hl: 'es', 
       gl: 'ES', 
       ...options 
     });
     
     if (!search.videos || search.videos.length === 0) {
-      throw new Error('No se encontraron resultados');
+      throw new Error('No se encontraron resultados para tu búsqueda');
     }
     
     return search.videos;
   } catch (error) {
-    throw new Error('Error en la búsqueda: ' + error.message);
+    throw new Error('No pude encontrar videos con ese término. Intenta con palabras diferentes.');
   }
 }
 
-function MilesNumber(number) {
+// Función para formatear números
+function formatNumber(number) {
   if (!number) return '0';
   const exp = /(\d)(?=(\d{3})+(?!\d))/g;
   const rep = '$1.';
@@ -273,7 +52,8 @@ function MilesNumber(number) {
   return arr[1] ? arr.join('.') : arr[0];
 }
 
-function secondString(seconds) {
+// Función para formatear duración
+function formatDuration(seconds) {
   if (!seconds || seconds < 0) return '0 segundos';
   
   seconds = Number(seconds);
@@ -281,11 +61,191 @@ function secondString(seconds) {
   const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
   
-  const hDisplay = h > 0 ? h + (h == 1 ? ' hora' : ' horas') : '';
-  const mDisplay = m > 0 ? m + (m == 1 ? ' minuto' : ' minutos') : '';
-  const sDisplay = s > 0 ? s + (s == 1 ? ' segundo' : ' segundos') : '';
+  const hDisplay = h > 0 ? h + 'h ' : '';
+  const mDisplay = m > 0 ? m + 'm ' : '';
+  const sDisplay = s > 0 ? s + 's' : '';
   
-  if (h > 0) return `${hDisplay}${m > 0 ? ', ' + mDisplay : ''}`;
-  if (m > 0) return `${mDisplay}${s > 0 ? ', ' + sDisplay : ''}`;
-  return sDisplay || '0 segundos';
+  return (hDisplay + mDisplay + sDisplay).trim() || '0s';
 }
+
+// Limpiar título para WhatsApp
+function sanitizeTitle(title) {
+  return title?.replace(/[<>:"\/\\|?*]/g, '').substring(0, 50) || 'Video';
+}
+
+let handler = async (m, { conn, args, text, usedPrefix, command }) => {
+  try {
+    // Cargar idioma
+    const datas = global;
+    const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+    const tradutor = _translate.plugins.descargas_play;
+
+    // Validar texto
+    if (!text) {
+      throw `${tradutor.texto1[0]} ${usedPrefix + command} ${tradutor.texto1[1]}`;
+    }
+
+    // Control de rate limiting mejorado
+    const rateLimitCheck = checkRateLimit(m.sender);
+    if (!rateLimitCheck.allowed) {
+      return conn.reply(m.chat, 
+        `⏰ *¡Tranquilo!*\n\nPor favor espera *${rateLimitCheck.waitTime} segundos* antes de hacer otra descarga.\n\n_Esto ayuda a mantener el servicio funcionando bien para todos_ 😊`, 
+        m
+      );
+    }
+
+    const searchQuery = args.join(' ').trim();
+    
+    // Si es una URL directa
+    if (ogmp3.isUrl(searchQuery)) {
+      await processDirectUrl(conn, m, searchQuery, command, usedPrefix);
+    } else {
+      // Si es una búsqueda
+      await processSearch(conn, m, searchQuery, command, usedPrefix);
+    }
+
+  } catch (error) {
+    const errorMessage = typeof error === 'string' ? error : 'Ups, algo salió mal. Por favor intenta de nuevo en unos momentos.';
+    await conn.reply(m.chat, `🤖 *Oops!*\n\n${errorMessage}\n\n_Si el problema persiste, intenta con otro video o búsqueda diferente._`, m);
+    console.log('❌ Error en handler:', errorMessage);
+  }
+};
+
+// Procesar URL directa
+async function processDirectUrl(conn, m, url, command, usedPrefix) {
+  const videoId = ogmp3.youtube(url);
+  if (!videoId) {
+    throw 'Esta URL no es válida. Por favor comparte un enlace de YouTube correcto.';
+  }
+
+  try {
+    // Obtener información del video
+    const searchResults = await yts.search({ query: `https://youtu.be/${videoId}` });
+    const video = searchResults.videos[0];
+
+    if (command === 'play') {
+      // Mostrar opciones de descarga
+      const texto = `*🎵 Video Encontrado*\n\n● *Título:* ${sanitizeTitle(video?.title || 'Desconocido')}\n● *Duración:* ${formatDuration(video?.duration?.seconds)}\n● *Vistas:* ${formatNumber(video?.views)}\n● *Autor:* ${video?.author?.name || 'Desconocido'}\n\n*¿En qué formato deseas descargar?*`;
+
+      return await conn.sendButton(
+        m.chat,
+        texto,
+        'Descarga YouTube',
+        video?.thumbnail || `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+        [
+          ['🎵 Audio MP3', `${usedPrefix}ytmp3 ${url}`],
+          ['🎬 Video MP4', `${usedPrefix}ytmp4 ${url}`]
+        ],
+        null,
+        null,
+        m
+      );
+    }
+
+    // Descargar directamente
+    await downloadContent(conn, m, url, command, video);
+  } catch (error) {
+    throw 'No pude obtener información de este video. Verifica que el enlace sea correcto y que el video esté disponible.';
+  }
+}
+
+// Procesar búsqueda
+async function processSearch(conn, m, query, command, usedPrefix) {
+  const results = await searchVideo(query);
+  const video = results[0];
+
+  if (command === 'play') {
+    // Mostrar opciones de descarga
+    const texto = `*🎵 Música Encontrada*\n\n● *Título:* ${sanitizeTitle(video.title)}\n● *Publicado:* ${video.ago}\n● *Duración:* ${formatDuration(video.duration.seconds)}\n● *Vistas:* ${formatNumber(video.views)}\n● *Autor:* ${video.author.name}\n\n*¿En qué formato deseas descargar?*`;
+
+    return await conn.sendButton(
+      m.chat,
+      texto,
+      'Descarga YouTube',
+      video.thumbnail,
+      [
+        ['🎵 Audio MP3', `${usedPrefix}ytmp3 ${video.url}`],
+        ['🎬 Video MP4', `${usedPrefix}ytmp4 ${video.url}`]
+      ],
+      null,
+      null,
+      m
+    );
+  }
+
+  // Descargar directamente
+  await downloadContent(conn, m, video.url, command, video);
+}
+
+// Descargar contenido
+async function downloadContent(conn, m, url, command, videoInfo) {
+  try {
+    // Determinar tipo de descarga
+    const isAudio = command === 'ytmp3';
+    const type = isAudio ? 'audio' : 'video';
+    const format = isAudio ? '320' : '720';
+
+    // Enviar mensaje de procesamiento más amigable
+    const processingMsg = `*✨ Preparando tu descarga*\n\n● *Título:* ${sanitizeTitle(videoInfo?.title || 'Procesando...')}\n● *Tipo:* ${type.toUpperCase()}\n● *Calidad:* ${format}${isAudio ? 'kbps' : 'p'}\n\n> *_🔄 Descargando ${type}... esto puede tomar unos momentos_*`;
+
+    await conn.sendMessage(m.chat, { 
+      image: { url: videoInfo?.thumbnail || `https://i.ytimg.com/vi/${ogmp3.youtube(url)}/maxresdefault.jpg` }, 
+      caption: processingMsg 
+    }, { quoted: m });
+
+    // Realizar descarga con ogmp3
+    const result = await ogmp3.download(url, format, type);
+
+    if (!result.status) {
+      throw result.error || 'Error en la descarga';
+    }
+
+    // Enviar archivo
+    if (isAudio) {
+      await conn.sendMessage(m.chat, { 
+        audio: { url: result.result.download }, 
+        mimetype: 'audio/mpeg',
+        fileName: `${sanitizeTitle(result.result.title)}.mp3`
+      }, { quoted: m });
+    } else {
+      await conn.sendMessage(m.chat, { 
+        video: { url: result.result.download }, 
+        fileName: `${sanitizeTitle(result.result.title)}.mp4`, 
+        mimetype: 'video/mp4', 
+        caption: `🎬 ${sanitizeTitle(result.result.title)}`
+      }, { quoted: m });
+    }
+
+    console.log('✅ Descarga completada exitosamente');
+
+  } catch (error) {
+    // Mensajes de error más amigables
+    let friendlyError = 'No pude descargar este contenido en este momento.';
+    
+    if (error.toString().includes('age')) {
+      friendlyError = 'Este video tiene restricciones de edad y no se puede descargar.';
+    } else if (error.toString().includes('private')) {
+      friendlyError = 'Este video es privado y no se puede descargar.';
+    } else if (error.toString().includes('unavailable')) {
+      friendlyError = 'Este video no está disponible en tu región.';
+    } else if (error.toString().includes('copyright')) {
+      friendlyError = 'Este video tiene restricciones de derechos de autor.';
+    } else if (error.toString().includes('network')) {
+      friendlyError = 'Hay problemas de conexión. Intenta de nuevo en unos momentos.';
+    } else if (error.toString().includes('timeout')) {
+      friendlyError = 'La descarga tardó demasiado. Intenta con un video más corto.';
+    }
+
+    const errorMsg = `😅 *¡Ups! Algo salió mal*\n\n${friendlyError}\n\n*💡 Sugerencias:*\n• Intenta con otro video\n• Verifica que el enlace funcione\n• Espera un momento y vuelve a intentar\n\n_Si el problema persiste, el video podría tener restricciones._`;
+    
+    await conn.reply(m.chat, errorMsg, m);
+    console.log('❌ Error en descarga:', error);
+  }
+}
+
+handler.help = ['play', 'ytmp3', 'ytmp4'];
+handler.tags = ['downloader'];
+handler.command = ['play', 'ytmp3', 'ytmp4'];
+
+export default handler;
