@@ -20,7 +20,7 @@
     "@sefinek/google-tts-api": "*",
     "@shineiichijo/marika": "^2.0.6",
     "@vitalets/google-translate-api": "^8.0.0",
-    "@whiskeysockets/baileys": "github:Itsukichann/Baileys",
+    "@whiskeysockets/baileys": "github:EdderBot02/bail",
     "api-dylux": "latest",
     "aptoide-scraper": "github:DIEGO-OFC/dv-aptoide-scraper",
     "awesome-phonenumber": "^2.68.0",

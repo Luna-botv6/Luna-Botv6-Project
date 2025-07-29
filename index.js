@@ -9,7 +9,8 @@ import chalk from 'chalk';
 import fs from 'fs';
 import './config.js'; //max update 2025
 
-import { PHONENUMBER_MCC } from '@whiskeysockets/baileys';
+import baileys from '@whiskeysockets/baileys';
+const { PHONENUMBER_MCC } = baileys;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(__dirname);
 const { say } = cfonts;

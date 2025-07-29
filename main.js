@@ -72,9 +72,6 @@ function clearSessionAndRestart() {
         fs.rmSync(`./${global.authFile}`, { recursive: true, force: true });
     }
     
-    if (fs.existsSync('./MysticPairing')) {
-        fs.rmSync('./MysticPairing', { recursive: true, force: true });
-    }
     
     console.log(chalk.yellow('[ ℹ️ ] Carpetas de sesión eliminadas'));
     console.log(chalk.yellow('[ ℹ️ ] Reiniciando bot en 3 segundos...'));
@@ -82,13 +79,7 @@ function clearSessionAndRestart() {
         process.exit(1);
     }, 3000);
 }
-function clearPairingSession() {
-    const pairingFolder = './MysticPairing';
-    if (fs.existsSync(pairingFolder)) {
-        fs.rmSync(pairingFolder, { recursive: true, force: true });
-        console.log(chalk.yellow('[ ℹ️ ] Sesión de pairing eliminada'));
-    }
-}
+
 global.videoList = [];
 global.videoListXXX = [];
 const __dirname = global.__dirname(import.meta.url);
@@ -155,7 +146,7 @@ loadChatgptDB();
 /* ------------------------------------------------*/
 
 let opcion = '1';
-const authFolder = opcion === '2' ? 'MysticPairing' : global.authFile;
+const authFolder = global.authFile;
 const {state, saveCreds} = await useMultiFileAuthState(authFolder);
 const { version } = await fetchLatestBaileysVersion();
 let phoneNumber = global.botnumber || process.argv.find(arg => /^\+\d+$/.test(arg));
@@ -298,7 +289,6 @@ conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 if (!fs.existsSync(`./${authFolder}/creds.json`)) {
     if (opcion === '2') {
         console.log(chalk.yellow('[ ℹ️ ] Modo código de 8 dígitos seleccionado'));
-        clearPairingSession();
         
         if (MethodMobile) {
             console.log(chalk.red('[ ❗ ] No se puede usar código de emparejamiento con API móvil'));
