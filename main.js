@@ -22,21 +22,7 @@ import { isJidBroadcast } from '@whiskeysockets/baileys';
 import { makeWASocket, protoType, serialize } from './src/libraries/simple.js';
 import { Low, JSONFile } from 'lowdb';
 import store from './src/libraries/store.js';
-const baileys = await import("@whiskeysockets/baileys");
-const {DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, jidNormalizedUser } = baileys;
-
-// Importación segura de PHONENUMBER_MCC
-let PHONENUMBER_MCC = {};
-try {
-  PHONENUMBER_MCC = baileys.PHONENUMBER_MCC || baileys.default?.PHONENUMBER_MCC || {};
-} catch (error) {
-  console.warn('⚠ No se pudo importar PHONENUMBER_MCC de Baileys, usando validación básica');
-}
-
-// Códigos de país como fallback
-const FALLBACK_COUNTRY_CODES = {
-  '1': 'US/CA', '7': 'RU/KZ', '20': 'EG', '27': 'ZA', '30': 'GR', '31': 'NL', '32': 'BE', '33': 'FR', '34': 'ES', '36': 'HU', '39': 'IT', '40': 'RO', '41': 'CH', '43': 'AT', '44': 'GB', '45': 'DK', '46': 'SE', '47': 'NO', '48': 'PL', '49': 'DE', '51': 'PE', '52': 'MX', '53': 'CU', '54': 'AR', '55': 'BR', '56': 'CL', '57': 'CO', '58': 'VE', '60': 'MY', '61': 'AU', '62': 'ID', '63': 'PH', '64': 'NZ', '65': 'SG', '66': 'TH', '81': 'JP', '82': 'KR', '84': 'VN', '86': 'CN', '90': 'TR', '91': 'IN', '92': 'PK', '93': 'AF', '94': 'LK', '95': 'MM', '98': 'IR', '212': 'MA', '213': 'DZ', '216': 'TN', '218': 'LY', '220': 'GM', '221': 'SN', '222': 'MR', '223': 'ML', '224': 'GN', '225': 'CI', '226': 'BF', '227': 'NE', '228': 'TG', '229': 'BJ', '230': 'MU', '231': 'LR', '232': 'SL', '233': 'GH', '234': 'NG', '235': 'TD', '236': 'CF', '237': 'CM', '238': 'CV', '239': 'ST', '240': 'GQ', '241': 'GA', '242': 'CG', '243': 'CD', '244': 'AO', '245': 'GW', '246': 'IO', '247': 'AC', '248': 'SC', '249': 'SD', '250': 'RW', '251': 'ET', '252': 'SO', '253': 'DJ', '254': 'KE', '255': 'TZ', '256': 'UG', '257': 'BI', '258': 'MZ', '260': 'ZM', '261': 'MG', '262': 'RE', '263': 'ZW', '264': 'NA', '265': 'MW', '266': 'LS', '267': 'BW', '268': 'SZ', '269': 'KM', '290': 'SH', '291': 'ER', '297': 'AW', '298': 'FO', '299': 'GL', '350': 'GI', '351': 'PT', '352': 'LU', '353': 'IE', '354': 'IS', '355': 'AL', '356': 'MT', '357': 'CY', '358': 'FI', '359': 'BG', '370': 'LT', '371': 'LV', '372': 'EE', '373': 'MD', '374': 'AM', '375': 'BY', '376': 'AD', '377': 'MC', '378': 'SM', '380': 'UA', '381': 'RS', '382': 'ME', '383': 'XK', '385': 'HR', '386': 'SI', '387': 'BA', '389': 'MK', '420': 'CZ', '421': 'SK', '423': 'LI', '500': 'FK', '501': 'BZ', '502': 'GT', '503': 'SV', '504': 'HN', '505': 'NI', '506': 'CR', '507': 'PA', '508': 'PM', '509': 'HT', '590': 'GP', '591': 'BO', '592': 'GY', '593': 'EC', '594': 'GF', '595': 'PY', '596': 'MQ', '597': 'SR', '598': 'UY', '599': 'CW', '670': 'TL', '672': 'NF', '673': 'BN', '674': 'NR', '675': 'PG', '676': 'TO', '677': 'SB', '678': 'VU', '679': 'FJ', '680': 'PW', '681': 'WF', '682': 'CK', '683': 'NU', '684': 'AS', '685': 'WS', '686': 'KI', '687': 'NC', '688': 'TV', '689': 'PF', '690': 'TK', '691': 'FM', '692': 'MH', '850': 'KP', '852': 'HK', '853': 'MO', '855': 'KH', '856': 'LA', '880': 'BD', '886': 'TW', '960': 'MV', '961': 'LB', '962': 'JO', '963': 'SY', '964': 'IQ', '965': 'KW', '966': 'SA', '967': 'YE', '968': 'OM', '970': 'PS', '971': 'AE', '972': 'IL', '973': 'BH', '974': 'QA', '975': 'BT', '976': 'MN', '977': 'NP', '992': 'TJ', '993': 'TM', '994': 'AZ', '995': 'GE', '996': 'KG', '998': 'UZ'
-};
+const { DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, jidNormalizedUser, PHONENUMBER_MCC } = await import("@whiskeysockets/baileys");
 import readline from 'readline';
 import NodeCache from 'node-cache';
 import { restaurarConfiguraciones } from './lib/funcConfig.js';
@@ -86,6 +72,9 @@ function clearSessionAndRestart() {
         fs.rmSync(`./${global.authFile}`, { recursive: true, force: true });
     }
     
+    if (fs.existsSync('./MysticPairing')) {
+        fs.rmSync('./MysticPairing', { recursive: true, force: true });
+    }
     
     console.log(chalk.yellow('[ ℹ️ ] Carpetas de sesión eliminadas'));
     console.log(chalk.yellow('[ ℹ️ ] Reiniciando bot en 3 segundos...'));
@@ -93,7 +82,13 @@ function clearSessionAndRestart() {
         process.exit(1);
     }, 3000);
 }
-
+function clearPairingSession() {
+    const pairingFolder = './MysticPairing';
+    if (fs.existsSync(pairingFolder)) {
+        fs.rmSync(pairingFolder, { recursive: true, force: true });
+        console.log(chalk.yellow('[ ℹ️ ] Sesión de pairing eliminada'));
+    }
+}
 global.videoList = [];
 global.videoListXXX = [];
 const __dirname = global.__dirname(import.meta.url);
@@ -160,7 +155,7 @@ loadChatgptDB();
 /* ------------------------------------------------*/
 
 let opcion = '1';
-const authFolder = global.authFile;
+const authFolder = opcion === '2' ? 'MysticPairing' : global.authFile;
 const {state, saveCreds} = await useMultiFileAuthState(authFolder);
 const { version } = await fetchLatestBaileysVersion();
 let phoneNumber = global.botnumber || process.argv.find(arg => /^\+\d+$/.test(arg));
@@ -303,6 +298,7 @@ conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 if (!fs.existsSync(`./${authFolder}/creds.json`)) {
     if (opcion === '2') {
         console.log(chalk.yellow('[ ℹ️ ] Modo código de 8 dígitos seleccionado'));
+        clearPairingSession();
         
         if (MethodMobile) {
             console.log(chalk.red('[ ❗ ] No se puede usar código de emparejamiento con API móvil'));
@@ -315,28 +311,22 @@ if (!fs.existsSync(`./${authFolder}/creds.json`)) {
             numeroTelefono = phoneNumber.replace(/[^0-9]/g, '');
             console.log(chalk.green('[ ℹ️ ] Usando número proporcionado:'), phoneNumber);
             
-            // Usar PHONENUMBER_MCC si está disponible, sino usar el fallback
-const codigosPais = Object.keys(PHONENUMBER_MCC).length > 0 ? PHONENUMBER_MCC : FALLBACK_COUNTRY_CODES;
-
-if (!numeroTelefono.match(/^\d+$/) || !Object.keys(codigosPais).some(v => numeroTelefono.startsWith(v))) {
-    console.log(chalk.red('[ ❗ ] Número de teléfono inválido:'), phoneNumber);
-    console.log(chalk.yellow('[ ℹ️ ] Formato correcto: +5493483511079'));
-    process.exit(1);
-}
+            if (!numeroTelefono.match(/^\d+$/) || !Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
+                console.log(chalk.red('[ ❗ ] Número de teléfono inválido:'), phoneNumber);
+                console.log(chalk.yellow('[ ℹ️ ] Formato correcto: +5493483511079'));
+                process.exit(1);
+            }
         } else {
             while (true) {
                 numeroTelefono = await question(chalk.bgBlack(chalk.bold.yellowBright('[ ℹ️ ] Escriba su número de WhatsApp (incluya código de país):\nEjemplo: +5493483511079\n---> ')));
                await conn.requestPairingCode(numeroTelefono)
 
 
-                // Usar PHONENUMBER_MCC si está disponible, sino usar el fallback
-const codigosPais = Object.keys(PHONENUMBER_MCC).length > 0 ? PHONENUMBER_MCC : FALLBACK_COUNTRY_CODES;
-
-if (numeroTelefono.match(/^\d+$/) && Object.keys(codigosPais).some(v => numeroTelefono.startsWith(v))) {
-    break;
-} else {
-    console.log(chalk.red('[ ❗ ] Número inválido. Use formato: +5493483511079'));
-}
+                if (numeroTelefono.match(/^\d+$/) && Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
+                    break;
+                } else {
+                    console.log(chalk.red('[ ❗ ] Número inválido. Use formato: +5493483511079'));
+                }
             }
         }
 
@@ -357,82 +347,91 @@ if (numeroTelefono.match(/^\d+$/) && Object.keys(codigosPais).some(v => numeroTe
         
         setTimeout(async () => {
             try {
-                console.log(chalk.yellow('[ ℹ️ ] Solicitando código de emparejamiento...'));
+                console.log(chalk.yellow('[ ℹ️ ] Preparando solicitud de código de emparejamiento...'));
+                
+                // Esperar a que la conexión esté lista
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 let codigo;
                 let intentos = 0;
                 const maxIntentos = 3;
                 
-               while (intentos < maxIntentos) {
+                while (intentos < maxIntentos && !global.conn?.user) {
                     try {
+                        intentos++;
+                        console.log(chalk.yellow(`[ ℹ️ ] Solicitando código de emparejamiento... (Intento ${intentos}/${maxIntentos})`));
                         
-                        if (intentos > 0) {
-                            await new Promise(resolve => setTimeout(resolve, 5000));
-                        }
-                        
-                        if (!global.conn.authState.creds.registered) {
-  codigo = await global.conn.requestPairingCode(numeroTelefono);
-} else {
-  console.log(chalk.red('[ ❗ ] Ya estás registrado. No se solicitará nuevo código.'));
-  return;
-}
-
+                        // Solicitar código sin verificación previa de registro
+                        codigo = await global.conn.requestPairingCode(numeroTelefono);
                         
                         if (codigo) {
+                            codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo;
+                            
+                            console.log(chalk.green('════════════════════════════════'));
+                            console.log(chalk.green.bold('🔐 CÓDIGO DE EMPAREJAMIENTO:'));
+                            console.log(chalk.yellow.bold('   ' + codigo));
+                            console.log(chalk.green('════════════════════════════════'));
+                            console.log(chalk.cyan('[ ℹ️ ] Pasos para vincular:'));
+                            console.log(chalk.cyan('1. Abre WhatsApp en tu teléfono'));
+                            console.log(chalk.cyan('2. Ve a Configuración > Dispositivos vinculados'));
+                            console.log(chalk.cyan('3. Toca "Vincular dispositivo"'));
+                            console.log(chalk.cyan('4. Selecciona "Vincular con número de teléfono"'));
+                            console.log(chalk.cyan('5. Ingresa el código de arriba'));
+                            console.log(chalk.red.bold(`6. IMPORTANTE: Tienes ${Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000)} segundos restantes`));
+                            console.log(chalk.green('════════════════════════════════'));
+                            
+                            // Salir del bucle ya que obtuvimos el código
                             break;
                         }
-                    } catch (error) {
-                        intentos++;
-                        console.log(chalk.red(`[ ❗ ] Intento ${intentos} fallido:`, error.message));
                         
-                        if (intentos < maxIntentos) {
-                            console.log(chalk.yellow(`[ ℹ️ ] Reintentando en 5 segundos...`));
-                            await new Promise(resolve => setTimeout(resolve, 5000));
-                        } else {
-                            throw error;
+                    } catch (error) {
+                        console.log(chalk.red(`[ ❗ ] Error en intento ${intentos}:`, error.message));
+                        
+                        if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+                            console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad alcanzado. Esperando...'));
+                            await new Promise(resolve => setTimeout(resolve, 10000));
+                        } else if (intentos < maxIntentos) {
+                            console.log(chalk.yellow(`[ ℹ️ ] Reintentando en 3 segundos...`));
+                            await new Promise(resolve => setTimeout(resolve, 3000));
                         }
                     }
                 }
                 
-                if (codigo) {
-                    codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo;
-                    
-                    console.log(chalk.green('════════════════════════════════'));
-                    console.log(chalk.green.bold('🔐 CÓDIGO DE EMPAREJAMIENTO:'));
-                    console.log(chalk.yellow.bold('   ' + codigo));
-                    console.log(chalk.green('════════════════════════════════'));
-                    console.log(chalk.cyan('[ ℹ️ ] Pasos para vincular:'));
-                    console.log(chalk.cyan('1. Abre WhatsApp en tu teléfono'));
-                    console.log(chalk.cyan('2. Ve a Configuración > Dispositivos vinculados'));
-                    console.log(chalk.cyan('3. Toca "Vincular dispositivo"'));
-                    console.log(chalk.cyan('4. Selecciona "Vincular con número de teléfono"'));
-                    console.log(chalk.cyan('5. Ingresa el código de arriba'));
-                    console.log(chalk.red.bold(`6. IMPORTANTE: Tienes ${Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000)} segundos restantes`));
-                    console.log(chalk.green('════════════════════════════════'));
-                    
-                    const intervaloCodigo = setInterval(async () => {
-                        if (global.conn?.user) {
-                            clearInterval(intervaloCodigo);
-                            if (pairingTimeout) {
-                                clearTimeout(pairingTimeout);
-                                pairingTimeout = null;
-                            }
-                            return;
+                if (!codigo) {
+                    console.log(chalk.red('[ ❗ ] No se pudo obtener el código después de varios intentos'));
+                    clearSessionAndRestart();
+                    return;
+                }
+                
+                // Configurar renovación del código (solo si es necesario)
+                let codigoRenovado = false;
+                const intervaloCodigo = setInterval(async () => {
+                    // Si ya se conectó, limpiar intervalo
+                    if (global.conn?.user) {
+                        clearInterval(intervaloCodigo);
+                        if (pairingTimeout) {
+                            clearTimeout(pairingTimeout);
+                            pairingTimeout = null;
                         }
-                        
-                        
-                        if (!pairingTimeout) {
-                            clearInterval(intervaloCodigo);
-                            return;
-                        }
-                        
+                        console.log(chalk.green('[ ✅ ] ¡Dispositivo vinculado exitosamente!'));
+                        return;
+                    }
+                    
+                    // Si se acabó el tiempo, salir
+                    if (!pairingTimeout) {
+                        clearInterval(intervaloCodigo);
+                        return;
+                    }
+                    
+                    const tiempoRestante = Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000);
+                    if (tiempoRestante <= 0) {
+                        clearInterval(intervaloCodigo);
+                        return;
+                    }
+                    
+                    // Solo renovar si han pasado más de 30 segundos y no se ha vinculado
+                    if (!codigoRenovado && tiempoRestante < 90) {
                         try {
-                            const tiempoRestante = Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000);
-                            if (tiempoRestante <= 0) {
-                                clearInterval(intervaloCodigo);
-                                return;
-                            }
-                            
                             console.log(chalk.yellow(`[ ℹ️ ] Renovando código... (${tiempoRestante}s restantes)`));
                             const nuevoCodigo = await global.conn.requestPairingCode(numeroTelefono);
                             const codigoFormateado = nuevoCodigo?.match(/.{1,4}/g)?.join("-") || nuevoCodigo;
@@ -443,33 +442,41 @@ if (numeroTelefono.match(/^\d+$/) && Object.keys(codigosPais).some(v => numeroTe
                             console.log(chalk.red.bold(`⏰ Tiempo restante: ${tiempoRestante} segundos`));
                             console.log(chalk.green('════════════════════════════════'));
                             
+                            codigoRenovado = true; // Marcar como renovado para evitar múltiples renovaciones
+                            
                         } catch (error) {
                             console.log(chalk.red('[ ❗ ] Error al renovar código:', error.message));
-                            clearInterval(intervaloCodigo);
                             
                             if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
-                                console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad alcanzado. Reiniciando...'));
-                                clearSessionAndRestart();
+                                console.log(chalk.yellow('[ ⚠️ ] Límite de velocidad alcanzado. Continuando con código actual...'));
                             }
                         }
-                    }, 20000);
-                }
+                    }
+                }, 15000); // Verificar cada 15 segundos en lugar de 20
                 
             } catch (error) {
-                console.error(chalk.red('[ ❗ ] Error al solicitar código de emparejamiento:'), error.message);
+                console.error(chalk.red('[ ❗ ] Error crítico al solicitar código de emparejamiento:'), error.message);
                 
+                // Limpiar timeout si existe
+                if (pairingTimeout) {
+                    clearTimeout(pairingTimeout);
+                    pairingTimeout = null;
+                }
                 
-               if (!error.message.includes('rate limit')) {
-                    console.log(chalk.yellow('[ ℹ️ ] Intentando limpiar sesión y reintentar...'));
+                // Si es un error de rate limit, limpiar y reiniciar
+                if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+                    console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad detectado. Reiniciando proceso...'));
+                    clearSessionAndRestart();
+                } else {
+                    // Para otros errores, limpiar sesión e intentar de nuevo
+                    console.log(chalk.yellow('[ ℹ️ ] Error inesperado. Limpiando sesión...'));
                     clearPairingSession();
                     setTimeout(() => {
                         process.exit(1);
-                    }, 25000);
-                } else {
-                    clearSessionAndRestart();
+                    }, 3000);
                 }
             }
-        }, 3000);
+        }, 5000); // Aumentar el delay inicial a 5 segundos
     }
 }
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);

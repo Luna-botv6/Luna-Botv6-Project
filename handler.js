@@ -14,7 +14,6 @@ import ws from 'ws';
 import { setConfig } from './lib/funcConfig.js'
 import { setOwnerFunction } from './lib/owner-funciones.js'
 import { addExp, getUserStats, setUserStats } from './lib/stats.js'
-
 // 🔄 Cache para JIDs especiales como LID
 const lidToJidCache = global.lidToJidCache || (global.lidToJidCache = new Map());
 const lidToNameCache = global.lidToNameCache || (global.lidToNameCache = new Map());
@@ -293,175 +292,13 @@ const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].
     let usedPrefix;
     const _user = global.db.data && global.db.data.users && global.db.data.users[m.sender];
 
-// 🔧 SOLUCIÓN FORZADA: DETECCIÓN ADMIN CON VERIFICACIÓN MANUAL
-let groupMetadata = {};
-let participants = [];
-let user = {};
-let bot = {};
-let isAdmin = false;
-let isRAdmin = false;
-let isBotAdmin = false;
-
-const mostrarLogsAdmin = false;
-
-if (m.isGroup) {
-  try {
-    if (mostrarLogsAdmin) console.log(`🔍 Verificando admin para: ${m.sender.split('@')[0]} en grupo`);
-    
-    groupMetadata = conn.chats[m.chat]?.metadata;
-    
-    if (!groupMetadata || !groupMetadata.participants || groupMetadata.participants.length === 0) {
-      if (mostrarLogsAdmin) console.log('🔄 Obteniendo metadatos frescos...');
-      groupMetadata = await this.groupMetadata(m.chat);
-      if (conn.chats[m.chat]) conn.chats[m.chat].metadata = groupMetadata;
-    }
-    
-    participants = groupMetadata.participants || [];
-    if (mostrarLogsAdmin) console.log(`👥 Participantes encontrados: ${participants.length}`);
-    
-    const senderNumber = m.sender.split('@')[0];
-    if (mostrarLogsAdmin) console.log(`🔍 Buscando número: ${senderNumber}`);
-    
-    if (mostrarLogsAdmin) console.log('🔥 Iniciando verificación manual de permisos de admin...');
-    
-    try {
-      if (mostrarLogsAdmin) console.log('📋 Test 1: Intentando obtener código de invitación...');
-      const inviteCode = await conn.groupInviteCode(m.chat);
-      if (inviteCode) {
-        if (mostrarLogsAdmin) console.log('✅ Test 1 PASADO: Bot puede obtener código de invitación');
-        if (mostrarLogsAdmin) console.log('👤 Test 2: Verificando si el usuario tiene permisos de admin...');
-        
-        const testUserAdminPermissions = async () => {
-          try {
-            const testMeta = await conn.groupMetadata(m.chat);
-            for (const participant of testMeta.participants) {
-              if (mostrarLogsAdmin) console.log(`🔍 Verificando: ${participant.id} con admin: ${participant.admin || 'none'}`);
-              const participantNumber = participant.id.split('@')[0];
-              
-              if (
-                participant.id === m.sender || 
-                participantNumber === senderNumber ||
-                conn.decodeJid(participant.id) === m.sender ||
-                conn.decodeJid(participant.id).split('@')[0] === senderNumber
-              ) {
-                if (mostrarLogsAdmin) console.log(`✅ MATCH ENCONTRADO: ${participant.id} -> admin: ${participant.admin || 'none'}`);
-                
-                if (participant.admin === 'admin' || participant.admin === 'superadmin') {
-                  return { found: true, admin: participant.admin, participant };
-                } else {
-                  return { found: true, admin: null, participant };
-                }
-              }
-            }
-            return { found: false, admin: null, participant: null };
-          } catch (e) {
-            if (mostrarLogsAdmin) console.log('❌ Error en test de permisos:', e.message);
-            return { found: false, admin: null, participant: null };
-          }
-        };
-        
-        const userTest = await testUserAdminPermissions();
-        if (userTest.found) {
-          user = userTest.participant;
-          if (userTest.admin) {
-            isRAdmin = userTest.admin === 'superadmin';
-            isAdmin = userTest.admin === 'admin' || isRAdmin;
-            if (mostrarLogsAdmin) console.log(`🛡️ ADMIN CONFIRMADO: ${userTest.admin} (isAdmin: ${isAdmin})`);
-          } else {
-            if (mostrarLogsAdmin) console.log(`👤 Usuario encontrado pero NO es admin`);
-          }
-        } else {
-          if (mostrarLogsAdmin) console.log(`❌ Usuario no encontrado en verificación manual`);
-          if (mostrarLogsAdmin) console.log('🔥 ÚLTIMO RECURSO: Verificación por lista manual...');
-          
-          if (global.lidToJidCache) {
-            for (const [lid, realJid] of global.lidToJidCache.entries()) {
-              if (realJid === m.sender || realJid.split('@')[0] === senderNumber) {
-                if (mostrarLogsAdmin) console.log(`🔍 Encontrado en cache: ${lid} -> ${realJid}`);
-                const lidParticipant = participants.find(p => p.id === lid);
-                if (lidParticipant && lidParticipant.admin) {
-                  user = lidParticipant;
-                  isRAdmin = lidParticipant.admin === 'superadmin';
-                  isAdmin = lidParticipant.admin === 'admin' || isRAdmin;
-                  if (mostrarLogsAdmin) console.log(`✅ ADMIN POR CACHE: ${lidParticipant.admin}`);
-                  break;
-                }
-              }
-            }
-          }
-          if (!user.id) {
-            if (mostrarLogsAdmin) console.log('⚠️ Creando entrada temporal - Usuario puede escribir así que está en el grupo');
-            user = { id: m.sender, admin: null };
-          }
-        }
-      } else {
-        if (mostrarLogsAdmin) console.log('❌ Test 1 FALLADO: No se pudo obtener código de invitación');
-      }
-    } catch (adminTestError) {
-      if (mostrarLogsAdmin) console.log('❌ Error en test de admin:', adminTestError.message);
-      if (mostrarLogsAdmin) console.log('🔄 Fallback: Búsqueda básica...');
-      
-      user = participants.find(p => {
-        const pNumber = p.id.split('@')[0];
-        return (
-          p.id === m.sender || 
-          pNumber === senderNumber ||
-          conn.decodeJid(p.id) === m.sender ||
-          conn.decodeJid(p.id).split('@')[0] === senderNumber
-        );
-      }) || { id: m.sender, admin: null };
-      
-      if (user && user.admin) {
-        isRAdmin = user.admin === 'superadmin';
-        isAdmin = user.admin === 'admin' || isRAdmin;
-        if (mostrarLogsAdmin) console.log(`🛡️ FALLBACK ADMIN: ${user.admin}`);
-      }
-    }
-    
-    const botNumber = this.user.jid.split('@')[0];
-    bot = participants.find(p => {
-      const pNumber = p.id.split('@')[0];
-      return (
-        p.id === this.user.jid || 
-        pNumber === botNumber ||
-        conn.decodeJid(p.id) === this.user.jid ||
-        conn.decodeJid(p.id).split('@')[0] === botNumber
-      );
-    }) || {};
-    
-    if (bot && bot.admin) {
-      isBotAdmin = bot.admin === 'admin' || bot.admin === 'superadmin';
-      if (mostrarLogsAdmin) console.log(`🤖 Bot admin: ${isBotAdmin}`);
-    }
-    
-    if (mostrarLogsAdmin) {
-      console.log('📊 REPORTE FINAL:');
-      console.log(`   Usuario: ${m.sender.split('@')[0]}`);
-      console.log(`   Encontrado: ${user.id ? 'SÍ' : 'NO'}`);
-      console.log(`   Admin: ${user.admin || 'none'}`);
-      console.log(`   isAdmin: ${isAdmin}`);
-      console.log(`   isRAdmin: ${isRAdmin}`);
-    }
-
-  } catch (error) {
-    if (mostrarLogsAdmin) console.log('❌ Error general en detección de admin:', error.message);
-    groupMetadata = {};
-    participants = [];
-    user = { id: m.sender, admin: null };
-    bot = {};
-    isAdmin = false;
-    isRAdmin = false;
-    isBotAdmin = false;
-  }
-} else {
-  groupMetadata = {};
-  participants = [];
-  user = {};
-  bot = {};
-  isAdmin = false;
-  isRAdmin = false;
-  isBotAdmin = false;
-}
+    const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch((_) => null)) : {}) || {};
+    const participants = (m.isGroup ? groupMetadata.participants : []) || [];
+    const user = (m.isGroup ? participants.find((u) => conn.decodeJid(u.id) === m.sender) : {}) || {}; // User Data
+    const bot = (m.isGroup ? participants.find((u) => conn.decodeJid(u.id) == this.user.jid) : {}) || {}; // Your Data
+    const isRAdmin = user?.admin == 'superadmin' || false;
+    const isAdmin = isRAdmin || user?.admin == 'admin' || false; // Is User Admin?
+    const isBotAdmin = bot?.admin || false; // Are you Admin?
 
     const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins');
     for (const name in global.plugins) {
