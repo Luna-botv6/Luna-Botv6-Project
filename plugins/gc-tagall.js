@@ -1,101 +1,28 @@
-function normalizeJid(jid) {
-  return jid.includes('@') ? jid : jid + '@s.whatsapp.net';
-}
 
-let handler = async (m, { isOwner, conn, participants, args, command }) => {
-  const senderNumber = m.sender.split('@')[0];
-  const groupMetadata = await conn.groupMetadata(m.chat);
-  const allParticipants = groupMetadata.participants || [];
 
-  const user = allParticipants.find(p =>
-    p.id === m.sender ||
-    p.id.split('@')[0] === senderNumber ||
-    conn.decodeJid(p.id) === m.sender
-  ) || { id: m.sender, admin: null };
+const handler = async (m, {isOwner, isAdmin, conn, text, participants, args, command, usedPrefix}) => {
+  const datas = global
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const tradutor = _translate.plugins.gc_tagall
 
-  const isAdmin = user.admin === 'admin' || user.admin === 'superadmin' || isOwner;
-  const isRAdmin = user.admin === 'superadmin';
-
-  const botNumber = conn.user.jid.split('@')[0];
-  const bot = allParticipants.find(p =>
-    p.id === conn.user.jid ||
-    p.id.split('@')[0] === botNumber ||
-    conn.decodeJid(p.id) === conn.user.jid
-  ) || {};
-
-  const isBotAdmin = bot.admin === 'admin' || bot.admin === 'superadmin';
-
-  if (!isAdmin) {
-    return m.reply('❌ Solo los administradores pueden usar este comando.');
+  if (usedPrefix == 'a' || usedPrefix == 'A') return;
+  if (!(isAdmin || isOwner)) {
+    global.dfail('admin', m, conn);
+    throw false;
   }
-
-  if (!isBotAdmin) {
-    return m.reply('⚠️ El bot necesita ser administrador para ejecutar esta función.');
+  const pesan = args.join` `;
+  const oi = `${tradutor.texto1[0]} ${pesan}`;
+  let teks = `${tradutor.texto1[1]}  ${oi}\n\n${tradutor.texto1[2]}\n`;
+  for (const mem of participants) {
+    teks += `┣➥ @${mem.id.split('@')[0]}\n`;
   }
-
-  const wm = global.wm || 'LunaBot';
-  const vs = global.vs || '6.0';
-  const lenguajeGB = global.lenguajeGB || {
-    smstagaa: () => '📢 Mención General',
-    smsAddB5: () => '🔔 Atentos todos:',
-  };
-
-  const groupName = await conn.getName(m.chat);
-
-  if (['tagall', 'invocar', 'todos', 'invocacion', 'invocación'].includes(command.toLowerCase())) {
-    let mensaje = args.join(' ') || '';
-    let texto = `╭───『 *${lenguajeGB.smstagaa()}* 』───⬣
-│
-│ ${lenguajeGB.smsAddB5()}
-│ ✦ ${mensaje}
-│
-│ 👥 *Miembros del grupo: ${allParticipants.length}*
-│`;
-
-    for (let mem of allParticipants) {
-      texto += `│ ⊹ @${mem.id.split('@')[0]}\n`;
-    }
-
-    texto += `│\n│ © ${wm}\n╰───────〔 v${vs} 〕───────⬣`;
-
-    const mentions = allParticipants.map(p => normalizeJid(p.id));
-    await conn.sendMessage(m.chat, { text: texto, mentions });
-  }
-
-  if (command.toLowerCase() === 'contador') {
-    let memberData = allParticipants.map(mem => {
-      let userId = normalizeJid(mem.id);
-      let userData = global.db.data.users[userId] || {};
-      let msgCount = userData.mensaje?.[m.chat] || 0;
-      return { id: userId, messages: msgCount };
-    });
-
-    memberData.sort((a, b) => b.messages - a.messages);
-
-    let activos = memberData.filter(mem => mem.messages > 0).length;
-    let inactivos = memberData.length - activos;
-
-    let texto = `╭───『 *📊 Estadísticas de Actividad* 』───⬣
-│
-│ 🏷️ *Grupo:* ${groupName}
-│ 👥 *Miembros:* ${allParticipants.length}
-│ ✅ *Activos:* ${activos}
-│ ❌ *Inactivos:* ${inactivos}
-│`;
-
-    for (let mem of memberData) {
-      texto += `│ ⊹ @${mem.id.split('@')[0]} ┊ ${mem.messages} mensajes\n`;
-    }
-
-    texto += `│\n│ © ${wm}\n╰───────〔 v${vs} 〕───────⬣`;
-
-    const mentions = memberData.map(u => u.id);
-    await conn.sendMessage(m.chat, { text: texto, mentions }, { quoted: m });
-  }
+  teks += `*└* Luna-Botv5- 𝐁𝐨𝐭\n\n*▌│█║▌║▌║║▌║▌║▌║█*`;
+  conn.sendMessage(m.chat, {text: teks, mentions: participants.map((a) => a.id)} );
 };
-
-handler.command = /^(tagall|invocar|invocacion|todos|invocación|contador)$/i;
+handler.help = ['tagall <mesaje>', 'invocar <mesaje>'];
+handler.tags = ['group'];
+handler.command = /^(tagall|invocar|invocacion|todos|invocación)$/i;
+handler.admin = true;
 handler.group = true;
-
 export default handler;
-
