@@ -5,11 +5,19 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
+    "start": "node --expose-gc index.js",
     "qr": "node index.js qr",
     "code": "node index.js code",
     "eslint": "eslint .",
     "eslintfix": "eslint --fix ."
+  },
+  "homepage": "https://github.com/Luna-botv6/Luna-Botv6-Project",
+  "author": {
+    "name": "Luna-botv6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Luna-botv6/Luna-Botv6-Project.git"
   },
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
