@@ -6,7 +6,7 @@ import fs from 'fs';
 const userRequestTimes = new Map();
 const COOLDOWN_TIME = 5000; // 5 segundos de cooldown
 
-// Control de rate limiting mejorado
+// Control de rate limiting CORREGIDO
 function checkRateLimit(userId) {
   const now = Date.now();
   const lastRequest = userRequestTimes.get(userId) || 0;
@@ -17,9 +17,13 @@ function checkRateLimit(userId) {
     return { allowed: false, waitTime: remainingTime };
   }
   
-  // Solo actualizamos el tiempo si la solicitud es permitida
-  userRequestTimes.set(userId, now);
+  // MOVIDO: Solo actualizamos el tiempo cuando la solicitud es procesada exitosamente
   return { allowed: true, waitTime: 0 };
+}
+
+// Función para actualizar el tiempo de la última solicitud
+function updateLastRequestTime(userId) {
+  userRequestTimes.set(userId, Date.now());
 }
 
 // Función para buscar videos
@@ -94,6 +98,9 @@ let handler = async (m, { conn, args, text, usedPrefix, command }) => {
         m
       );
     }
+
+    // IMPORTANTE: Actualizamos el tiempo SOLO cuando comenzamos a procesar la solicitud
+    updateLastRequestTime(m.sender);
 
     const searchQuery = args.join(' ').trim();
     
