@@ -4,26 +4,23 @@ import fs from 'fs';
 
 // Control de rate limiting por usuario mejorado
 const userRequestTimes = new Map();
-const COOLDOWN_TIME = 5000; // 5 segundos de cooldown
+const COOLDOWN_TIME = 3000; // 3 segundos de cooldown entre solicitudes múltiples
 
-// Control de rate limiting CORREGIDO
+// Control de rate limiting CORREGIDO - Solo para detectar spam real
 function checkRateLimit(userId) {
   const now = Date.now();
   const lastRequest = userRequestTimes.get(userId) || 0;
   const timeDiff = now - lastRequest;
   
-  if (timeDiff < COOLDOWN_TIME) {
+  // Solo bloquear si la solicitud anterior fue hace MUY poco tiempo (spam real)
+  if (timeDiff < COOLDOWN_TIME && lastRequest > 0) {
     const remainingTime = Math.ceil((COOLDOWN_TIME - timeDiff) / 1000);
     return { allowed: false, waitTime: remainingTime };
   }
   
-  // MOVIDO: Solo actualizamos el tiempo cuando la solicitud es procesada exitosamente
+  // Actualizar el tiempo inmediatamente cuando se detecta una nueva solicitud
+  userRequestTimes.set(userId, now);
   return { allowed: true, waitTime: 0 };
-}
-
-// Función para actualizar el tiempo de la última solicitud
-function updateLastRequestTime(userId) {
-  userRequestTimes.set(userId, Date.now());
 }
 
 // Función para buscar videos
@@ -90,17 +87,14 @@ let handler = async (m, { conn, args, text, usedPrefix, command }) => {
       throw `${tradutor.texto1[0]} ${usedPrefix + command} ${tradutor.texto1[1]}`;
     }
 
-    // Control de rate limiting mejorado
+    // Control de rate limiting mejorado - Solo para spam real
     const rateLimitCheck = checkRateLimit(m.sender);
     if (!rateLimitCheck.allowed) {
       return conn.reply(m.chat, 
-        `⏰ *¡Tranquilo!*\n\nPor favor espera *${rateLimitCheck.waitTime} segundos* antes de hacer otra descarga.\n\n_Esto ayuda a mantener el servicio funcionando bien para todos_ 😊`, 
+        `⏰ *¡Tranquilo!*\n\nDetecté que enviaste comandos muy rápido. Por favor espera *${rateLimitCheck.waitTime} segundos* antes de hacer otra solicitud.\n\n_Esto evita el spam y mantiene el servicio funcionando bien para todos_ 😊`, 
         m
       );
     }
-
-    // IMPORTANTE: Actualizamos el tiempo SOLO cuando comenzamos a procesar la solicitud
-    updateLastRequestTime(m.sender);
 
     const searchQuery = args.join(' ').trim();
     
