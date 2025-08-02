@@ -1,3 +1,4 @@
+import { updateLastCommand } from './logBans.js';
 import { generateWAMessageFromContent } from "@whiskeysockets/baileys";
 import { smsg } from './src/libraries/simple.js';
 import { format } from 'util';
@@ -393,7 +394,7 @@ if (!opts['restrict']) {
         if (!isAccept) {
           continue;
         }
-        m.plugin = name;
+        m.plugin = name;  updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender });
         if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
           const chat = global.db.data.chats[m.chat];
           const user = global.db.data.users[m.sender];
