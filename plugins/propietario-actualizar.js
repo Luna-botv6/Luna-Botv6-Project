@@ -21,7 +21,7 @@ const handler = async (m, { conn, text }) => {
   }
 
   try {
-    
+    // Verificar si se solicita forzar la actualización
     const forceUpdate = text && text.includes('--force');
     
     if (forceUpdate) {
@@ -90,6 +90,9 @@ const handler = async (m, { conn, text }) => {
                 line.includes('node_modules/') ||
                 line.includes('database/') ||
                 line.includes('qr_database.json') ||
+                line.includes('copia-niveles.js') ||
+                line.includes('database.json') ||
+                line.includes('package-lock.json') ||
                 /_database\.json$/.test(line)) {
               return null;
             }
