@@ -23,11 +23,24 @@ const handler = async (m, { conn, text }) => {
   try {
     // Verificar si se solicita forzar la actualización
     const forceUpdate = text && text.includes('--force');
+    const commitChanges = text && text.includes('--commit');
     
     if (forceUpdate) {
       await conn.reply(m.chat, '⚠️ Forzando actualización... Se perderán los cambios locales.', m);
       execSync('git reset --hard HEAD');
       execSync('git clean -fd');
+    }
+    
+    // Si se solicita hacer commit de los cambios locales
+    if (commitChanges) {
+      try {
+        await conn.reply(m.chat, '💾 Guardando cambios locales...', m);
+        execSync('git add .');
+        execSync('git commit -m "Guardar cambios locales antes de actualizar"');
+        await conn.reply(m.chat, '✅ Cambios locales guardados correctamente.', m);
+      } catch (commitError) {
+        await conn.reply(m.chat, '⚠️ No hay cambios para guardar o ya están guardados.', m);
+      }
     }
     
     // Verificar si hay actualizaciones disponibles
@@ -101,8 +114,17 @@ const handler = async (m, { conn, text }) => {
           .filter(Boolean);
         
         if (conflictedFiles.length > 0) {
-          const errorMessage = `❌ Error: Hay archivos modificados que impiden la actualización:\n\n${conflictedFiles.join('\n')}\n\n💡 Usa \`.gitpull --force\` para forzar la actualización (esto eliminará los cambios locales).`;
+          const errorMessage = `❌ Error: Hay archivos modificados que impiden la actualización:\n\n${conflictedFiles.join('\n')}\n\n💡 **Opciones disponibles:**\n• \`.gitpull --force\` - Forzar actualización (elimina cambios locales)\n• \`.gitpull --commit\` - Guardar cambios locales y luego actualizar`;
           await conn.reply(m.chat, errorMessage, m);  
+        } else {
+          // Si no hay archivos conflictivos después del filtro, intentar la actualización de nuevo
+          try {
+            const stdout = execSync('git pull origin main');
+            const messager = '✅ Actualización completada:\n```\n' + stdout.toString() + '\n```';
+            conn.reply(m.chat, messager, m);
+          } catch (pullError) {
+            await conn.reply(m.chat, '❌ Error inesperado durante la actualización.', m);
+          }
         }
       }
     } catch (statusError) {
