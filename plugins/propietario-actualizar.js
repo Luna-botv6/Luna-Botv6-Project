@@ -58,67 +58,19 @@ const handler = async (m, { conn, text }) => {
       }
     }
     
-    // Si no es forzado, intentar merge preservando archivos locales
-    if (!forceUpdate) {
-      try {
-        // Guardar archivos no rastreados
-        execSync('git add -A');
-        execSync('git stash push -m "Auto-stash before update"');
-        
-        // Realizar el pull
-        const stdout = execSync('git pull origin main --no-edit');
-        let messager = stdout.toString();
-        
-        // Recuperar archivos guardados
-        try {
-          execSync('git stash pop');
-        } catch (stashError) {
-          // Si hay conflictos en el stash, mantener ambas versiones
-          console.log('Stash pop with conflicts, keeping both versions');
-        }
-        
-        
-        try {
-          const diffOutput = execSync(`git diff --name-only ${localCommit} HEAD`).toString().trim();
-          const updatedFiles = diffOutput.split('\n').filter(file => file.trim() !== '');
-          
-          if (updatedFiles.length > 0) {
-            const fileList = updatedFiles.map(file => `*→ ${file}*`).join('\n');
-            messager = `🔄 Bot actualizado exitosamente!\n\n📁 *Archivos actualizados:*\n${fileList}\n\n✅ Se actualizaron ${updatedFiles.length} archivos`;
-          }
-        } catch (diffError) {
-          console.log('Error getting diff:', diffError.message);
-        }
-        
-        if (messager.includes('Already up to date.')) {
-          messager = '✅ El bot ya está actualizado.';
-        } else if (!messager.includes('Bot actualizado exitosamente!')) {
-          messager = '🔄 Bot actualizado exitosamente!\n```\n' + stdout.toString() + '\n```';
-        }
-        
-        conn.reply(m.chat, messager, m);
-        return;
-        
-      } catch (mergeError) {
-        
-        console.log('Merge failed, showing conflicted files');
-      }
+    // Realizar el pull
+    const stdout = execSync('git pull origin main');
+    let messager = stdout.toString();
+    
+    if (messager.includes('Already up to date.')) {
+      messager = '✅ El bot ya está actualizado.';
+    } else if (messager.includes('Updating') || messager.includes('Fast-forward')) {
+      messager = '🔄 Bot actualizado exitosamente!\n```\n' + stdout.toString() + '\n```';
     } else {
-      
-      const stdout = execSync('git pull origin main');
-      let messager = stdout.toString();
-      
-      if (messager.includes('Already up to date.')) {
-        messager = '✅ El bot ya está actualizado.';
-      } else if (messager.includes('Updating') || messager.includes('Fast-forward')) {
-        messager = '🔄 Bot actualizado exitosamente!\n```\n' + stdout.toString() + '\n```';
-      } else {
-        messager = '✅ Actualización completada:\n```\n' + stdout.toString() + '\n```';
-      }
-      
-      conn.reply(m.chat, messager, m);
-      return;
+      messager = '✅ Actualización completada:\n```\n' + stdout.toString() + '\n```';
     }
+    
+    conn.reply(m.chat, messager, m);
     
   } catch (error) {      
     try {    
@@ -142,43 +94,8 @@ const handler = async (m, { conn, text }) => {
           .filter(Boolean);
         
         if (conflictedFiles.length > 0) {
-          // Intentar actualización selectiva
-          try {
-            await conn.reply(m.chat, '🔄 Detectados archivos modificados. Intentando actualización inteligente...', m);
-            
-            // Hacer stash de cambios locales
-            execSync('git stash push -m "Auto-stash for smart update"');
-            
-            // Hacer pull
-            execSync('git pull origin main --no-edit');
-            
-            
-            try {
-              execSync('git stash pop');
-              
-              
-              const localCommit = execSync('git rev-parse HEAD~1').toString().trim();
-              const currentCommit = execSync('git rev-parse HEAD').toString().trim();
-              const diffOutput = execSync(`git diff --name-only ${localCommit} ${currentCommit}`).toString().trim();
-              const updatedFiles = diffOutput.split('\n').filter(file => file.trim() !== '');
-              
-              if (updatedFiles.length > 0) {
-                const fileList = updatedFiles.map(file => `*→ ${file}*`).join('\n');
-                const successMessage = `✅ Actualización inteligente completada!\n\n📁 *Archivos actualizados:*\n${fileList}\n\n🔄 Se actualizaron ${updatedFiles.length} archivos sin perder datos locales`;
-                await conn.reply(m.chat, successMessage, m);
-              } else {
-                await conn.reply(m.chat, '✅ Actualización completada sin cambios detectados.', m);
-              }
-              
-            } catch (stashPopError) {
-              await conn.reply(m.chat, '⚠️ Actualización completada con algunos conflictos menores. Los archivos locales se mantuvieron seguros.', m);
-            }
-            
-          } catch (smartUpdateError) {
-          
-            const errorMessage = `❌ Error: Hay archivos modificados que impiden la actualización:\n\n${conflictedFiles.join('\n')}\n\n💡 Usa \`.gitpull --force\` para forzar la actualización (esto eliminará los cambios locales).`;
-            await conn.reply(m.chat, errorMessage, m);  
-          }
+          const errorMessage = `❌ Error: Hay archivos modificados que impiden la actualización:\n\n${conflictedFiles.join('\n')}\n\n💡 Usa \`.gitpull --force\` para forzar la actualización (esto eliminará los cambios locales).`;
+          await conn.reply(m.chat, errorMessage, m);  
         }
       }
     } catch (statusError) {
