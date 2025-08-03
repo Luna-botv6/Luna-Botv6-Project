@@ -1,78 +1,130 @@
 import axios from 'axios';
-import cheerio from 'cheerio';
-import {generateWAMessageFromContent} from "@whiskeysockets/baileys";
-import {tiktokdl} from '@bochilteam/scraper';
-
-let tiktok;
-import('@xct007/frieren-scraper')
-  .then((module) => {
-    tiktok = module.tiktok;
-  })
-  .catch((error) => {
-    console.error('No se pudo importar "@xct007/frieren-scraper".');
-  });
+import * as cheerio from 'cheerio';
 
 const handler = async (m, {conn, text, args, usedPrefix, command}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.descargas_tiktok
-
-
-  if (!text) throw `${tradutor.texto1} _${usedPrefix + command} https://vm.tiktok.com/ZM686Q4ER/_`;
-  if (!/(?:https:?\/{2})?(?:w{3}|vm|vt|t)?\.?tiktok.com\/([^\s&]+)/gi.test(text)) throw `${tradutor.texto2} _${usedPrefix + command} https://vm.tiktok.com/ZM686Q4ER/_`;
-  const texto = `${tradutor.texto3}`;
-  // let buttons = [{ buttonText: { displayText: '♫ 𝙰𝚄𝙳𝙸𝙾 ♫' }, buttonId: `${usedPrefix}tomp3` }]
+  // Validaciones básicas
+  if (!text) {
+    return conn.reply(m.chat, `*[!] Ingresa un enlace de TikTok para descargar el video.*\n\n*Ejemplo:*\n${usedPrefix + command} https://vm.tiktok.com/ZM686Q4ER/`, m);
+  }
+  
+  if (!/(?:https:?\/{2})?(?:w{3}|vm|vt|t)?\.?tiktok.com\/([^\s&]+)/gi.test(text)) {
+    return conn.reply(m.chat, `*[!] El enlace no parece ser válido de TikTok.*\n\n*Ejemplo:*\n${usedPrefix + command} https://vm.tiktok.com/ZM686Q4ER/`, m);
+  }
+  
+  // Reacción de carga
+  await conn.sendMessage(m.chat, { react: { text: '⏱️', key: m.key }});
+  
+  // Mensaje de descarga simple
+  const loadingMsg = await conn.reply(m.chat, `✅ *TIKTOK DOWNLOADER*\n\n📱 *Descargando video...*`, m);
+  
   try {
-    const aa = {quoted: m, userJid: conn.user.jid};
-    const prep = generateWAMessageFromContent(m.chat, {extendedTextMessage: {text: texto, contextInfo: {externalAdReply: {title: 'ᴛʜᴇ ᴍʏsᴛɪᴄ - ʙᴏᴛ', body: null, thumbnail: imagen1, sourceUrl: 'https://github.com/BrunoSobrino/TheMystic-Bot-MD'}, mentionedJid: [m.sender]}}}, aa);
-    await conn.relayMessage(m.chat, prep.message, {messageId: prep.key.id, mentions: [m.sender]});
-    const dataFn = await conn.getFile(`${global.MyApiRestBaseUrl}/api/tiktokv2?url=${args[0]}&apikey=${global.MyApiRestApikey}`);
-    const desc1n = `${tradutor.texto4[0]} _${usedPrefix}tomp3_ ${tradutor.texto4[1]}`;
-    await conn.sendMessage(m.chat, {video: dataFn.data, caption: desc1n}, {quoted: m});
-  } catch (ee1) {
-  try {
-    //const aa = {quoted: m, userJid: conn.user.jid};
-    //const prep = generateWAMessageFromContent(m.chat, {extendedTextMessage: {text: texto, contextInfo: {externalAdReply: {title: 'ᴛʜᴇ ᴍʏsᴛɪᴄ - ʙᴏᴛ', body: null, thumbnail: imagen1, sourceUrl: 'https://github.com/BrunoSobrino/TheMystic-Bot-MD'}, mentionedJid: [m.sender]}}}, aa);
-    //await conn.relayMessage(m.chat, prep.message, {messageId: prep.key.id, mentions: [m.sender]});
-    const dataF = await tiktok.v1(args[0]);
-    // let desc1 =  `*𝙽𝙸𝙲𝙺𝙽𝙰𝙼𝙴:* ${dataF.nickname || 'Indefinido'}`
-    const desc1 = `${tradutor.texto5[0]} _${usedPrefix}tomp3_ ${tradutor.texto5[1]}`;
-    await conn.sendMessage(m.chat, {video: {url: dataF.play}, caption: desc1}, {quoted: m});
-  } catch (e1) {
-    try {
-      const tTiktok = await tiktokdlF(args[0]);
-      // let desc2 = `🔗 *Url:* ${tTiktok.video}`
-      const desc2 = `${tradutor.texto6[0]} _${usedPrefix}tomp3_ ${tradutor.texto6[1]}`;
-      await conn.sendMessage(m.chat, {video: {url: tTiktok.video}, caption: desc2}, {quoted: m});
-    } catch (e2) {
-        try {
-          const {author: {nickname}, video, description} = await tiktokdl(args[0]);
-          const url = video.no_watermark2 || video.no_watermark || 'https://tikcdn.net' + video.no_watermark_raw || video.no_watermark_hd;
-          // let cap = `*𝙽𝙸𝙲𝙺𝙽𝙰𝙼𝙴:* ${nickname || 'Indefinido'}`
-          const cap = `${tradutor.texto8[0]} _${usedPrefix}tomp3_ ${tradutor.texto8[1]}`;
-          await conn.sendMessage(m.chat, {video: {url: url}, caption: cap}, {quoted: m});
-        } catch {
-          throw `${tradutor.texto9}`;
-        }
-      }
+    // Usar InstaTikTok API
+    const links = await fetchTikTokDownloadLinks(args[0]);
+    
+    if (!links || links.length === 0) {
+      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key }});
+      return conn.reply(m.chat, '*[❌] No se pudo obtener el video. Verifica que el enlace sea válido y público.*', m);
     }
+
+    // Obtener el mejor enlace de descarga
+    const download = getTikTokDownloadLink(links);
+    
+    if (!download) {
+      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key }});
+      return conn.reply(m.chat, '*[❌] No se encontró un enlace de descarga válido.*', m);
+    }
+
+    // Enviar el video sin marca de agua
+    const caption = `✅ *VIDEO DE TIKTOK*\n\n🎬 *Descargado exitosamente*\n🚫 *Sin marca de agua*\n📡 *Fuente:* InstaTikTok`;
+    
+    await conn.sendMessage(m.chat, {
+      video: { url: download }, 
+      caption: caption
+    }, { quoted: m });
+
+    // Reacción de éxito
+    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }});
+    
+  } catch (error) {
+    console.log('❌ Error en TikTok downloader:', error.message);
+    await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key }});
+    return conn.reply(m.chat, `*[❌] Error al descargar el video*\n\n*Posibles causas:*\n• Video privado\n• Enlace expirado\n• Servidor temporalmente fuera de servicio\n\n*Intenta con otro enlace*`, m);
   }
 };
-handler.command = /^(tiktok|ttdl|tiktokdl|tiktoknowm|tt|ttnowm|tiktokaudio)$/i;
-export default handler;
 
-async function tiktokdlF(url) {
-  if (!/tiktok/.test(url)) return `${tradutor.texto10} _${usedPrefix + command} https://vm.tiktok.com/ZM686Q4ER/_`;
-  const gettoken = await axios.get('https://tikdown.org/id');
-  const $ = cheerio.load(gettoken.data);
-  const token = $('#download-form > input[type=hidden]:nth-child(2)').attr( 'value' );
-  const param = {url: url, _token: token};
-  const {data} = await axios.request('https://tikdown.org/getAjax?', {method: 'post', data: new URLSearchParams(Object.entries(param)), headers: {'content-type': 'application/x-www-form-urlencoded; charset=UTF-8', 'user-agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36'}});
-  const getdata = cheerio.load(data.html);
-  if (data.status) {
-    return {status: true, thumbnail: getdata('img').attr('src'), video: getdata('div.download-links > div:nth-child(1) > a').attr('href'), audio: getdata('div.download-links > div:nth-child(2) > a').attr('href')};
-  } else {
-    return {status: false};
+// Función para obtener enlaces de TikTok usando InstaTikTok
+async function fetchTikTokDownloadLinks(url) {
+  const SITE_URL = 'https://instatiktok.com/';
+  const form = new URLSearchParams();
+  form.append('url', url);
+  form.append('platform', 'tiktok');
+  form.append('siteurl', SITE_URL);
+
+  try {
+    const res = await axios.post(`${SITE_URL}api`, form.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Origin': SITE_URL,
+        'Referer': SITE_URL,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      timeout: 15000
+    });
+
+    const html = res?.data?.html;
+    
+    if (!html || res?.data?.status !== 'success') {
+      throw new Error('Respuesta inválida del servidor');
+    }
+
+    const $ = cheerio.load(html);
+    const links = [];
+    
+    // Extraer todos los enlaces de descarga
+    $('a.btn[href^="http"]').each((_, el) => {
+      const link = $(el).attr('href');
+      if (link && !links.includes(link)) {
+        links.push(link);
+      }
+    });
+
+    console.log(`✅ ${links.length} enlaces encontrados para TikTok`);
+    return links;
+
+  } catch (error) {
+    console.log('❌ Error fetchTikTokDownloadLinks:', error.message);
+    throw error;
   }
 }
+
+// Función para obtener el mejor enlace de descarga para TikTok
+function getTikTokDownloadLink(links) {
+  if (!links || links.length === 0) return null;
+  
+  // Prioridad 1: Buscar enlace con 'hdplay' (alta calidad sin marca de agua)
+  const hdLink = links.find(link => /hdplay/i.test(link));
+  if (hdLink) {
+    console.log('✅ Enlace HD sin marca de agua encontrado');
+    return hdLink;
+  }
+  
+  // Prioridad 2: Buscar enlace con 'nowm' (sin marca de agua)
+  const nowmLink = links.find(link => /nowm|no.*watermark/i.test(link));
+  if (nowmLink) {
+    console.log('✅ Enlace sin marca de agua encontrado');
+    return nowmLink;
+  }
+  
+  // Prioridad 3: Primer enlace disponible
+  console.log('✅ Usando primer enlace disponible');
+  return links[0];
+}
+
+handler.help = ['tiktok', 'tt'];
+handler.tags = ['downloader'];
+handler.command = /^(tiktok|ttdl|tiktokdl|tiktoknowm|tt|ttnowm|tiktokaudio)$/i;
+handler.limit = 3;
+handler.register = true;
+
+export default handler;
