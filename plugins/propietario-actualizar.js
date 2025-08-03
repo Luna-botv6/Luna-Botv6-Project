@@ -1,6 +1,10 @@
 import { execSync } from 'child_process';
+import { rmSync } from 'fs';
+import { join } from 'path';
 
 const handler = async (m, { conn, text }) => {
+  let gitInitialized = false;
+  
   // Verificar si es un repositorio Git
   try {
     execSync('git rev-parse --git-dir', { stdio: 'ignore' });
@@ -14,6 +18,7 @@ const handler = async (m, { conn, text }) => {
       execSync('git checkout -b main');
       execSync('git reset --hard origin/main');
       await conn.reply(m.chat, '✅ Repositorio Git inicializado correctamente.', m);
+      gitInitialized = true;
     } catch (initError) {
       await conn.reply(m.chat, `❌ Error al inicializar el repositorio Git:\n${initError.message}`, m);
       return;
@@ -45,6 +50,8 @@ const handler = async (m, { conn, text }) => {
     // Comparar commits
     if (localCommit === remoteCommit && !forceUpdate) {
       await conn.reply(m.chat, '✅ El bot ya está actualizado. No hay nuevas actualizaciones disponibles.', m);
+      // Limpiar carpeta .git antes de finalizar
+      cleanupGitFolder();
       return;
     }
     
@@ -70,7 +77,11 @@ const handler = async (m, { conn, text }) => {
       messager = '✅ Actualización completada:\n```\n' + stdout.toString() + '\n```';
     }
     
-    conn.reply(m.chat, messager, m);
+    await conn.reply(m.chat, messager, m);
+    
+    // Limpiar carpeta .git después de la actualización exitosa
+    cleanupGitFolder();
+    await conn.reply(m.chat, '🧹 Limpieza completada. Carpeta .git eliminada.', m);
     
   } catch (error) {      
     try {    
@@ -106,6 +117,20 @@ const handler = async (m, { conn, text }) => {
       }
       await conn.reply(m.chat, errorMessage2, m);
     }
+    
+    // Limpiar carpeta .git incluso si hay errores
+    cleanupGitFolder();
+  }
+};
+
+// Función para limpiar la carpeta .git
+const cleanupGitFolder = () => {
+  try {
+    const gitPath = join(process.cwd(), '.git');
+    rmSync(gitPath, { recursive: true, force: true });
+    console.log('✅ Carpeta .git eliminada correctamente');
+  } catch (cleanupError) {
+    console.log('⚠️ No se pudo eliminar la carpeta .git:', cleanupError.message);
   }
 };
 
