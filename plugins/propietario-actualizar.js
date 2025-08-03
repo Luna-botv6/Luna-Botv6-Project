@@ -23,24 +23,11 @@ const handler = async (m, { conn, text }) => {
   try {
     // Verificar si se solicita forzar la actualización
     const forceUpdate = text && text.includes('--force');
-    const commitChanges = text && text.includes('--commit');
     
     if (forceUpdate) {
       await conn.reply(m.chat, '⚠️ Forzando actualización... Se perderán los cambios locales.', m);
       execSync('git reset --hard HEAD');
       execSync('git clean -fd');
-    }
-    
-    // Si se solicita hacer commit de los cambios locales
-    if (commitChanges) {
-      try {
-        await conn.reply(m.chat, '💾 Guardando cambios locales...', m);
-        execSync('git add .');
-        execSync('git commit -m "Guardar cambios locales antes de actualizar"');
-        await conn.reply(m.chat, '✅ Cambios locales guardados correctamente.', m);
-      } catch (commitError) {
-        await conn.reply(m.chat, '⚠️ No hay cambios para guardar o ya están guardados.', m);
-      }
     }
     
     // Verificar si hay actualizaciones disponibles
@@ -94,19 +81,12 @@ const handler = async (m, { conn, text }) => {
           .split('\n')
           .filter(line => line.trim() !== '')
           .map(line => {
-            // Ignorar archivos temporales, de caché, y carpetas específicas
+            // Ignorar archivos temporales y de caché
             if (line.includes('.npm/') || 
                 line.includes('.cache/') || 
                 line.includes('tmp/') || 
                 line.includes('MysticSession/') || 
-                line.includes('npm-debug.log') ||
-                line.includes('node_modules/') ||
-                line.includes('database/') ||
-                line.includes('qr_database.json') ||
-                line.includes('copia-niveles.js') ||
-                line.includes('database.json') ||
-                line.includes('package-lock.json') ||
-                /_database\.json$/.test(line)) {
+                line.includes('npm-debug.log')) {
               return null;
             }
             return '*→ ' + line.slice(3) + '*';
@@ -114,17 +94,8 @@ const handler = async (m, { conn, text }) => {
           .filter(Boolean);
         
         if (conflictedFiles.length > 0) {
-          const errorMessage = `❌ Error: Hay archivos modificados que impiden la actualización:\n\n${conflictedFiles.join('\n')}\n\n💡 **Opciones disponibles:**\n• \`.gitpull --force\` - Forzar actualización (elimina cambios locales)\n• \`.gitpull --commit\` - Guardar cambios locales y luego actualizar`;
+          const errorMessage = `❌ Error: Hay archivos modificados que impiden la actualización:\n\n${conflictedFiles.join('\n')}\n\n💡 Usa \`.gitpull --force\` para forzar la actualización (esto eliminará los cambios locales).`;
           await conn.reply(m.chat, errorMessage, m);  
-        } else {
-          // Si no hay archivos conflictivos después del filtro, intentar la actualización de nuevo
-          try {
-            const stdout = execSync('git pull origin main');
-            const messager = '✅ Actualización completada:\n```\n' + stdout.toString() + '\n```';
-            conn.reply(m.chat, messager, m);
-          } catch (pullError) {
-            await conn.reply(m.chat, '❌ Error inesperado durante la actualización.', m);
-          }
         }
       }
     } catch (statusError) {
