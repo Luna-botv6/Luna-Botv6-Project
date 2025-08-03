@@ -9,6 +9,9 @@ export default async function handler(sock, m, args) {
 │
 ├ 💘 */love* _@tag @tag_
 │   └ 💑 Descubre el amor entre dos
+│ 
+├📥 */facebook* _<enlace>_
+│   └ 🎬 descarga videos de faceboock
 │
 ├ 🎧 */play* _<nombre de canción>_
 │   └ 🔊 Descarga música de YouTube
