@@ -21,7 +21,7 @@ const handler = async (m, { conn, text }) => {
   }
 
   try {
-    // Verificar si se solicita forzar la actualización
+    
     const forceUpdate = text && text.includes('--force');
     
     if (forceUpdate) {
@@ -81,12 +81,16 @@ const handler = async (m, { conn, text }) => {
           .split('\n')
           .filter(line => line.trim() !== '')
           .map(line => {
-            // Ignorar archivos temporales y de caché
+            // Ignorar archivos temporales, de caché, y carpetas específicas
             if (line.includes('.npm/') || 
                 line.includes('.cache/') || 
                 line.includes('tmp/') || 
                 line.includes('MysticSession/') || 
-                line.includes('npm-debug.log')) {
+                line.includes('npm-debug.log') ||
+                line.includes('node_modules/') ||
+                line.includes('database/') ||
+                line.includes('qr_database.json') ||
+                /_database\.json$/.test(line)) {
               return null;
             }
             return '*→ ' + line.slice(3) + '*';
