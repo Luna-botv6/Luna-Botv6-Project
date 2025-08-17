@@ -1,7 +1,7 @@
 {
-  "name": "LunaBotV6-Lite",
+  "name": "Luna-Botv6-Project",
   "version": "1.0.0",
-  "description": "Versión Lite de LunaBotV6: WhatsApp bot optimizado",
+  "description": "Versión de LunaBotV6: WhatsApp bot",
   "main": "index.js",
   "type": "module",
   "scripts": {
