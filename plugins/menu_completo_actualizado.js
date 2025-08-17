@@ -2,9 +2,6 @@ import fs from 'fs';
 import fetch from 'node-fetch';
 import { getUserStats, getRoleByLevel } from '../lib/stats.js'; // ← ACTUALIZADO: Agregado getRoleByLevel
 
-// Para configurar o idioma, na raiz do projeto altere o arquivo config.json
-// Para configurar el idioma, en la raíz del proyecto, modifique el archivo config.json.
-// To set the language, in the root of the project, modify the config.json file.
 
 const handler = async (m, { conn, usedPrefix, usedPrefix: _p, __dirname, text, isPrems }) => {
 
@@ -14,9 +11,7 @@ const handler = async (m, { conn, usedPrefix, usedPrefix: _p, __dirname, text, i
     const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
     const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
     const tradutor = _translate.plugins.menu_menu
-    // const pp = imagen7;
-
-    // let vn = './src/assets/audio/01J673Y3TGCFF1D548242AX68Q.mp3'
+   
     const videoPath = './src/assets/images/menu/languages/es/VID-20250527-WA0006.mp4';
     const d = new Date(new Date + 3600000);
     const locale = 'es-ES';
@@ -29,7 +24,7 @@ const handler = async (m, { conn, usedPrefix, usedPrefix: _p, __dirname, text, i
     // ← ACTUALIZADO: Obtener el rol actualizado basado en el nivel actual
     const currentRole = getRoleByLevel(stats.level)
     
-    // ← ACTUALIZADO: Removido 'role' de la desestructuración
+    // ← ACTUALIZADO: Removido 'role' de la desestructuración ya que usamos currentRole
     const { money, joincount, exp, level, premiumTime, lunaCoins, limit } = stats
     
     
@@ -58,10 +53,10 @@ ${readMore}
 
 ${tradutor.texto1[10]}
 
-╭───── • ◆ •  ─────────────╮
+╭───── • ◆ •  ──────────────╮
 ├🎭 _${usedPrefix}menuanimes_
 ├🌐 _${usedPrefix}lang_
-├🔊 _${usedPrefix}menuaudios_
+├📊 _${usedPrefix}menuaudios_
 ├🎶 _${usedPrefix}efectosaudio_
 ╰───── • ◆ • ──────────────╯
 
@@ -88,20 +83,17 @@ ${tradutor.texto1[13]}
 ├📝 _${usedPrefix}fake *<txt1> <@tag> <txt2>*_
 ├✂️ _${usedPrefix}ppt *<papel / tijera / piedra>*_
 ├❤️ _${usedPrefix}love *<nombre / @tag>*_
-├🔍 _${usedPrefix}doxear *<nombre / @tag>*_
 ├❓ _${usedPrefix}pregunta *<txt>*_
 ├⚔️ _${usedPrefix}suitpvp *<@tag>*_
 ├🎰 _${usedPrefix}slot *<apuesta>*_
 ├🗑️ _${usedPrefix}delttt_
 ├🧩 _${usedPrefix}acertijo_
-├🐵 _${usedPrefix}simi *<txt>*_
 ├🏆 _${usedPrefix}top *<txt>*_
 ├🌈 _${usedPrefix}topgays_
 ├🎌 _${usedPrefix}topotakus_
 ├💑 _${usedPrefix}formarpareja_
 ├✔️ _${usedPrefix}verdad_
 ├⚠️ _${usedPrefix}reto_
-├🎶 _${usedPrefix}cancion_
 ├🧭 _${usedPrefix}pista_
 ├🔤 _${usedPrefix}sopadeletras_
 ├🗺️ _${usedPrefix}glx (RPG Mundo)_
@@ -120,29 +112,29 @@ ${tradutor.texto1[14]}
 ├👋 _${usedPrefix}disable *welcome*_
 ├🔥 _${usedPrefix}enable *modohorny*_
 ├🧊 _${usedPrefix}disable *modohorny*_
-├🔗 _${usedPrefix}enable *antilink*_
-├🔗 _${usedPrefix}disable *antilink*_
-├🔗 _${usedPrefix}enable *antilink2*_
-├🔗 _${usedPrefix}disable *antilink2*_
+├🔗 _${usedPrefix}enable *antilink( en proseso)*_
+├🔗 _${usedPrefix}disable *antilink( en proseso)*_
+├🔗 _${usedPrefix}enable *antilink( en proseso)2*_
+├🔗 _${usedPrefix}disable *antilink2( en proseso)*_
 ├🕵️ _${usedPrefix}enable *detect*_
 ├🕵️ _${usedPrefix}disable *detect*_
-├🔊 _${usedPrefix}enable *audios*_
+├📊 _${usedPrefix}enable *audios*_
 ├🔇 _${usedPrefix}disable *audios*_
-├🎭 _${usedPrefix}enable *autosticker*_
-├🎭 _${usedPrefix}disable *autosticker*_
-├👁️ _${usedPrefix}enable *antiviewonce*_
-├👁️ _${usedPrefix}disable *antiviewonce*_
+├🎭 _${usedPrefix}enable *autosticker( en proseso)*_
+├🎭 _${usedPrefix}disable *autosticker( en proseso)*_
+├👁️ _${usedPrefix}enable *antiviewonce( en proseso)*_
+├👁️ _${usedPrefix}disable *antiviewonce( en proseso)*_
 ├🤬 _${usedPrefix}enable *antitoxic*_
 ├🤐 _${usedPrefix}disable *antitoxic*_
 ├📛 _${usedPrefix}enable *antitraba*_
 ├📛 _${usedPrefix}disable *antitraba*_
-├🌍 _${usedPrefix}enable *antiarabes*_
-├🌍 _${usedPrefix}disable *antiarabes*_
+├🌐 _${usedPrefix}enable *antiarabes*_
+├🌐 _${usedPrefix}disable *antiarabes*_
 ├🛡️ _${usedPrefix}enable *modoadmin*_
 ├🛡️ _${usedPrefix}disable *modoadmin*_
-├🗑️ _${usedPrefix}enable *antidelete*_
-├🗑️ _${usedPrefix}disable *antidelete*_
-╰───── • ◆ •─────────────╯
+├🗑️ _${usedPrefix}enable *antidelete( en proseso)*_
+├🗑️ _${usedPrefix}disable *antidelete( en proseso)*_
+╰───── • ◆ •──────────────╯
 
 
 
@@ -174,31 +166,12 @@ ${tradutor.texto1[15]}
 ├🧬 _${usedPrefix}gitclone *<url>*_
 ├☁️ _${usedPrefix}gdrive *<url>*_
 ├🐦 _${usedPrefix}twitter *<url>*_
-├🔔 _${usedPrefix}ringtone *<txt>*_
+├📞 _${usedPrefix}ringtone *<txt>*_
 ├🌐 _${usedPrefix}soundcloud *<txt>*_
-├💠 _${usedPrefix}stickerpack *<url>*_
+├👠 _${usedPrefix}stickerpack *<url>*_
 ├🖼️ _${usedPrefix}wallpaper *<txt>*_
-├📲 _${usedPrefix}dapk2 *<url>*_
-├🔞 _${usedPrefix}xnxxdl *<url>*_
-├🔞 _${usedPrefix}xvideosdl *<url>*_
 ╰───── • ◆ • ─────────────╯
 
-${tradutor.texto1[16]}
-
-╭───── • ◆ • ─────────────╮
-├🐱‍💻 _${usedPrefix}githubsearch *<txt>*_
-├🎬 _${usedPrefix}pelisplus *<txt>*_
-├🔍🧩 _${usedPrefix}stickersearch *<txt>*_
-├🔍🧩 _${usedPrefix}stickersearch2 *<txt>*_
-├🔞🔍 _${usedPrefix}xnxxsearch *<txt>*_
-├🧠 _${usedPrefix}animeinfo *<txt>*_
-├🌐 _${usedPrefix}google *<txt>*_
-├📝🎶 _${usedPrefix}letra *<txt>*_
-├📦 _${usedPrefix}npmjs *<txt>*_
-├📚 _${usedPrefix}wikipedia *<txt>*_
-├🔎📺 _${usedPrefix}ytsearch *<txt>*_
-├🛒 _${usedPrefix}playstore *<txt>*_
-╰───── • ◆ • ─────────────╯
 
  ${tradutor.texto1[17]}
  
@@ -219,7 +192,7 @@ ${tradutor.texto1[16]}
 ├🖊️ _${usedPrefix}setdesc *<txt>*_
 ├📣 _${usedPrefix}invocar *<txt>*_
 ├👋 _${usedPrefix}setwelcome *<txt>*_
-├🏃 _${usedPrefix}setbye *<txt>*_
+├🚶 _${usedPrefix}setbye *<txt>*_
 ├🙈 _${usedPrefix}hidetag *<txt>*_
 ├🎵🙈 _${usedPrefix}hidetag *<audio>*_
 ├🎥🙈 _${usedPrefix}hidetag *<video>*_
@@ -227,7 +200,7 @@ ${tradutor.texto1[16]}
 ├⚠️ _${usedPrefix}warn *<@tag>*_
 ├✅ _${usedPrefix}unwarn *<@tag>*_
 ├📄 _${usedPrefix}listwarn_
-├ ⏰_${usedPrefix}recordar_
+├ ⰰ_${usedPrefix}recordar_
 ├👻 _${usedPrefix}fantasmas_
 ├🧹 _${usedPrefix}destraba_
 ├🖼️ _${usedPrefix}setpp *<img>*_
@@ -243,7 +216,7 @@ ${tradutor.texto1[18]}
 ├🎙️ _${usedPrefix}toptt *<video / audio>*_
 ├🎬 _${usedPrefix}tovideo *<sticker>*_
 ├🌐 _${usedPrefix}tourl *<video / img / audio>*_
-├🗣️🌍 _${usedPrefix}tts *<idioma> <txt>*_
+├🗣️🌐 _${usedPrefix}tts *<idioma> <txt>*_
 ├🗣️✨ _${usedPrefix}tts *<efecto> <txt>*_
 
 ╰───── • ◆ • ─────────────╯
@@ -255,7 +228,7 @@ ${tradutor.texto1[19]}
 ├🎄 _${usedPrefix}logochristmas *<txt>*_
 ├❤️ _${usedPrefix}logocorazon *<txt>*_
 ├💬📺 _${usedPrefix}ytcomment *<txt>*_
-├🔞📇 _${usedPrefix}hornycard *<@tag>*_
+├📞📇 _${usedPrefix}hornycard *<@tag>*_
 ├💘🃏 _${usedPrefix}simpcard *<@tag>*_
 ├🚨🧊 _${usedPrefix}lolice *<@tag>*_
 ├🤪 _${usedPrefix}itssostupid_
@@ -294,11 +267,11 @@ ${tradutor.texto1[21]}
 ├🚗 _${usedPrefix}wpvehiculo_
 ├🏍️ _${usedPrefix}wpmoto_
 ├☕ _${usedPrefix}coffee_
-├😝 _${usedPrefix}pentol_
+├😀 _${usedPrefix}pentol_
 ├🎨 _${usedPrefix}caricatura_
 ├🌌 _${usedPrefix}ciberespacio_
 ├🧠💻 _${usedPrefix}technology_
-├🐱‍👓 _${usedPrefix}doraemon_
+├🐱‍👤 _${usedPrefix}doraemon_
 ├💻 _${usedPrefix}hacker_
 ├🪐 _${usedPrefix}planeta_
 ├👤 _${usedPrefix}randomprofile_
@@ -317,13 +290,13 @@ ${tradutor.texto1[25]}
 ├🌤️ _${usedPrefix}clima *<país> <ciudad>*_
 ├📊 _${usedPrefix}encuesta *<txt1|txt2>*_
 ├⛔ _${usedPrefix}afk *<motivo>*_
-├📝 _${usedPrefix}ocr *<responde a img>*_
-├🔝 _${usedPrefix}hd *<responde a img>*_
+├📄 _${usedPrefix}ocr *<responde a img>*_
+├📄 _${usedPrefix}hd *<responde a img>*_
 ├🔗 _${usedPrefix}acortar *<url>*_
 ├➗ _${usedPrefix}calc *<operacion>*_
 ├🗑️ _${usedPrefix}del *<msj>*_
 ├📸 _${usedPrefix}readqr *<img>*_
-├🔲 _${usedPrefix}qrcode *<txt>*_
+├📲 _${usedPrefix}qrcode *<txt>*_
 ├📖 _${usedPrefix}readmore *<txt1|txt2>*_
 ├🖋️ _${usedPrefix}styletext *<txt>*_
 ├🌐 _${usedPrefix}traducir *<txt>*_
@@ -363,7 +336,7 @@ ${tradutor.texto1[26]}
 ├🛍️ _${usedPrefix}buyall_
 ├✅ _${usedPrefix}verificar_
 ├🕵️ _${usedPrefix}robar *<cant> <@tag>*_
-├🚓 _${usedPrefix}crime_
+├🚔 _${usedPrefix}crime_
 ├🛒 _${usedPrefix}cambiar_
 ├💸 _${usedPrefix}transfer *<tipo> <cant> <@tag>*_
 ├❌ _${usedPrefix}unreg *<sn>*_
@@ -377,7 +350,7 @@ ${tradutor.texto1[27]}
 ├ _${usedPrefix}sticker *<responder a img o video>*_ 😎
 ├ _${usedPrefix}sticker *<url>*_ 🌐
 ├ _${usedPrefix}sticker2 *<responder a img o video>*_ 🎥
-├ _${usedPrefix}sticker2 *<url>*_ 🌍
+├ _${usedPrefix}sticker2 *<url>*_ 🌐
 ├ _${usedPrefix}s *<responder a img o video>*_ 🖼️
 ├ _${usedPrefix}s *<url>*_ 🔗
 ├ _${usedPrefix}emojimix *<emoji 1>&<emoji 2>*_ 🔄
@@ -386,11 +359,11 @@ ${tradutor.texto1[27]}
 ├ _${usedPrefix}semoji *<tipo> <emoji>*_ 😊
 ├ _${usedPrefix}qc *<txt>*_ 💬
 ├ _${usedPrefix}attp *<txt>*_ 📝
-├ _${usedPrefix}attp2 *<txt>*_ ✍️
+├ _${usedPrefix}attp2 *<txt>*_ ✏️
 ├ _${usedPrefix}attp3 *<txt>*_ 📄
 ├ _${usedPrefix}ttp *<txt>*_ 📝
-├ _${usedPrefix}ttp2 *<txt>*_ 📑
-├ _${usedPrefix}ttp3 *<txt>*_ ✍️
+├ _${usedPrefix}ttp2 *<txt>*_ 🔒
+├ _${usedPrefix}ttp3 *<txt>*_ ✏️
 ├ _${usedPrefix}ttp4 *<txt>*_ 🖋️
 ├ _${usedPrefix}ttp5 *<txt>*_ 🖊️
 ├ _${usedPrefix}pat *<@tag>*_ 🤗
@@ -507,4 +480,3 @@ function clockString(ms) {
   const s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60;
   return [h, m, s].map((v) => v.toString().padStart(2, 0)).join(':');
 }
-    
