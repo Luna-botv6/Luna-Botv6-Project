@@ -20,6 +20,7 @@
 - [🌐 Despliegue](#-despliegue)
 - [🤝 Contribuir](#-contribuir)
 - [📞 Soporte](#-soporte)
+- [👨‍💻 Creador](#-creador)
 - [📄 Licencia](#-licencia)
 
 ---
@@ -66,8 +67,8 @@
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/your-username/Luna-Botv6.git
-cd Luna-Botv6
+git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
+cd Luna-Botv6-Project
 
 # Instalar dependencias del sistema
 sudo apt update
@@ -85,8 +86,8 @@ nano config.js
 
 ```powershell
 # Clonar el repositorio
-git clone https://github.com/your-username/Luna-Botv6.git
-cd Luna-Botv6
+git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
+cd Luna-Botv6-Project
 
 # Instalar dependencias (requiere chocolatey)
 choco install nodejs python3 ffmpeg imagemagick
@@ -141,14 +142,12 @@ Para guardar y salir de nano: presiona `Volumen Abajo + O`, Enter para guardar, 
 npm start
 ```
 
-
-
 ### 🍎 **macOS**
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/your-username/Luna-Botv6.git
-cd Luna-Botv6
+git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
+cd Luna-Botv6-Project
 
 # Instalar dependencias (requiere Homebrew)
 brew install node python3 ffmpeg imagemagick
@@ -171,7 +170,7 @@ Edita el archivo `config.js` con tus datos:
 
 ```javascript
 global.owner = [
-  ['5493483466763', 'Tu Nombre', true],
+  ['5493483466763', 'Germán Miño', true],
   ['5493483466763']
 ]
 global.lidOwners = [
@@ -183,8 +182,8 @@ global.mods = ['5493483466763']
 global.prems = ['5493483466763']
 
 global.packname = 'Luna Bot'
-global.author = 'Tu Nombre'
-global.wm = 'Luna Bot - WhatsApp Bot'
+global.author = 'Germán Miño'
+global.wm = 'Luna Bot V6 - Created by Germán Miño'
 
 // Configuración de la base de datos
 global.db = './database/database.json'
@@ -197,7 +196,7 @@ global.APIs = {
 }
 ```
 
-### 🔐 **Configuración de Seguridad**
+### 🔒 **Configuración de Seguridad**
 
 > **⚠️ IMPORTANTE:** Asegúrate de agregar tu número en las siguientes ubicaciones para evitar ser bloqueado por el sistema antispam:
 
@@ -242,7 +241,7 @@ pm2 logs LunaBot
 ## 📁 Estructura del Proyecto
 
 ```
-Luna-Botv6/
+Luna-Botv6-Project/
 ├── 📁 database/          # Base de datos guarda stats.js
 │   ├── afkDB.json
 │   ├── levelling.json
@@ -296,7 +295,7 @@ Luna-Botv6/
 
 ### ☁️ **Despliegue en la Nube**
 
-#### 🔷 **BoxMineWorld (Recomendado)**
+#### 📷 **BoxMineWorld (Recomendado)**
 
 <div align="center">
   <a href="https://boxmineworld.com">
@@ -311,7 +310,7 @@ Luna-Botv6/
 - 📚 **Documentación:** [docs.boxmineworld.com](https://docs.boxmineworld.com)
 - 💬 **Discord:** [Únete aquí](https://discord.gg/84qsr4v)
 
-#### 🔷 **Otras Plataformas**
+#### 📷 **Otras Plataformas**
 
 - **Heroku:** [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 - **Railway:** [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app)
@@ -327,7 +326,7 @@ Luna-Botv6/
 2. 🌿 Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
 3. 📝 Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. 📤 Push a la rama (`git push origin feature/AmazingFeature`)
-5. 🔄 Abre un Pull Request
+5. 📄 Abre un Pull Request
 
 ### 📋 **Guías de Contribución**
 
@@ -348,13 +347,27 @@ Luna-Botv6/
 
 ### 🐛 **Reportar Bugs**
 
-- 📝 [Crear Issue](https://github.com/your-username/Luna-Botv6/issues/new?template=bug_report.md)
-- 💡 [Solicitar Feature](https://github.com/your-username/Luna-Botv6/issues/new?template=feature_request.md)
+- 📝 [Crear Issue](https://github.com/Luna-botv6/Luna-Botv6-Project/issues/new?template=bug_report.md)
+- 💡 [Solicitar Feature](https://github.com/Luna-botv6/Luna-Botv6-Project/issues/new?template=feature_request.md)
 
-### 📧 **Contacto**
+---
 
-- **Email:** support@yourdomain.com
-- **Telegram:** [@YourTelegram](https://t.me/YourTelegram)
+## 👨‍💻 Creador
+
+<div align="center">
+  
+### 🌙 **Germán Miño**
+*Creador y Desarrollador Principal de Luna Bot V6*
+
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://wa.me/5493483466763)
+[![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/users/german_coto)
+[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:lunabotv6@gmail.com)
+
+**📱 WhatsApp:** `+54 9 348 346 6763`  
+**💬 Discord:** `german_coto`  
+**📧 Email:** `lunabotv6@gmail.com`
+
+</div>
 
 ---
 
@@ -383,15 +396,15 @@ Si Luna Bot te ha sido útil, considera:
 - ⭐ Darle una estrella al repositorio
 - 🍴 Fork el proyecto
 - 📢 Compartirlo con otros
-- ☕ [Apoyar al desarrollador]
+- ☕ [Apoyar al desarrollador](https://wa.me/5493483466763)
 
 ---
 
 <div align="center">
   
-  **🌙 Hecho con ❤️ para la comunidad de WhatsApp**
+  **🌙 Hecho con ❤️ por Germán Miño para la comunidad de WhatsApp**
   
-  [![GitHub](https://img.shields.io/badge/GitHub-Luna--Bot-black?style=flat-square&logo=github)](https://github.com/your-username/Luna-Botv6)
+  [![GitHub](https://img.shields.io/badge/GitHub-Luna--Bot-black?style=flat-square&logo=github)](https://github.com/Luna-botv6/Luna-Botv6-Project)
   [![WhatsApp](https://img.shields.io/badge/WhatsApp-Channel-25D366?style=flat-square&logo=whatsapp)](https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y)
   
 </div>
