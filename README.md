@@ -375,9 +375,7 @@ Luna-Botv6-Project/
 
 Este proyecto está basado en el excelente trabajo de:
 
-- **[Mystic-Bot-MD](https://github.com/BrunoSobrino/TheMystic-Bot-MD)** por [Bruno Sobrino](https://github.com/BrunoSobrino)
-- **[GataBot-MD](https://github.com/GataNina-Li/GataBot-MD)** por [Gata Dios](https://github.com/GataNina-Li)
-- **[Baileys](https://github.com/WhiskeySockets/Baileys)** por WhiskeySockets
+- **[Mystic-Bot-MD](https://github.com/BrunoSobrino/TheMystic-Bot-MD)** por [Bruno Sobrino](https://github.com/BrunoSobrino
 
 Un agradecimiento especial a todos los colaboradores y la comunidad que hace posible este proyecto.
 
