@@ -53,6 +53,7 @@ handler.all = async function (m, { conn }) {
       'uwu': '01J674A7N7KNER6GY6FCYTTZSR.mp3',
       'yamete|yamete kudasai': '01J674DR0CB7BD43HHBN1CBBC8.mp3',
       'vivan los novios': '01J674D3S12JTFDETTNF12V4W8.mp3',
+ 'gatito|gato|oiia|oia|uiia|Gato|Gatito|Oiia|Oia|Uiia': 'gatoxd.mp3',
       'A': '01J672JMF3RCG7BPJW4X2P94N2.mp3',
       'pasa pack': '01J6735MY23DV6ES9XHBP06K9R.mp3'
     };
