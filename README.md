@@ -86,6 +86,28 @@
 
 ---
 
+## ⚙️✨ Configuración de Grupos en **Luna-BotV6**
+
+💡 Control total de tu grupo con comandos fáciles de usar, diseñados para administradores:
+
+| Función | Descripción |
+|---------|-------------|
+| 🔒 **Cerrar Grupo** | Solo los admins pueden enviar mensajes. ¡Mantén el grupo seguro! |
+| 🔓 **Abrir Grupo** | Todos los miembros pueden chatear libremente. |
+| 🚫 **Anti-Link** | Bloquea enlaces no deseados automáticamente. |
+| ⚠️ **Anti-Tóxico** | Detecta y elimina mensajes inapropiados para mantener la armonía. |
+| 👋 **Bienvenida** | Saluda a los usuarios nuevos y hazlos sentir parte del grupo. |
+| 🎵 **Audios del Bot** | Activa o desactiva los audios y sonidos del bot. |
+| ❌ **Eliminar Participantes** | Expulsa miembros que rompan las reglas del grupo. |
+| ➕ **Agregar Participantes** | Invita nuevos miembros fácilmente. |
+| 👑 **Dar Admin** | Otorga permisos de administrador a un usuario. |
+| ❌👑 **Quitar Admin** | Revoca los permisos de administrador de un miembro. |
+| 📝 **Cambiar Descripción** | Modifica la descripción del grupo en segundos. |
+| 🖼️ **Cambiar Foto** | Actualiza la foto del grupo con facilidad. |
+| 💫 **¡Y mucho más!** | Nuevas funciones y comandos se agregan constantemente 😉 |
+
+---
+
 ## 📦 Instalación
 
 ### 🐧 **Linux (Recomendado)**
