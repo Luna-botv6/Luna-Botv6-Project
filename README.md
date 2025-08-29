@@ -110,21 +110,19 @@
 
 ## 🛡️ Sistema Integrado de **Luna-BotV6**
 
-¡Mantén tus grupos seguros y tu bot siempre al 100%! 🚀💎
-
 <div align="center">
 
 | 🚫 Baneo | ⚡ Anti-Duplicados | 🛑 Anti-Spam |
 |:--------:|:----------------:|:------------:|
-| ![Baneo](https://img.shields.io/badge/🚫-Baneo-FF4500?style=for-the-badge&logo=forbidden&logoColor=white) <br> Detecta usuarios baneados y muestra la razón o plugin que lo causó | ![AntiDuplicados](https://img.shields.io/badge/⚡-Anti-Duplicaciones-1E90FF?style=for-the-badge&logo=repeat&logoColor=white) <br> Evita que se envíen mensajes idénticos repetidamente | ![AntiSpam](https://img.shields.io/badge/🛑-Anti-Spam-DC143C?style=for-the-badge&logo=protection&logoColor=white) <br> Bloquea usuarios que envían mensajes masivos o molestos |
+| ![Baneo](https://img.shields.io/badge/🚫-Baneo-FF4500?style=for-the-badge&logo=forbidden&logoColor=white&labelColor=FF6347) <br> Detecta usuarios baneados y muestra la razón o plugin | ![AntiDuplicados](https://img.shields.io/badge/⚡-AntiDuplicados-1E90FF?style=for-the-badge&logo=repeat&logoColor=white&labelColor=1E90FF) <br> Evita mensajes idénticos repetidos | ![AntiSpam](https://img.shields.io/badge/🛑-Anti-Spam-DC143C?style=for-the-badge&logo=protection&logoColor=white&labelColor=DC143C) <br> Bloquea usuarios que envían spam |
 
-| 📞 Anti-Llamada | ⏱️ Control de Delay | 📱 Compatibilidad |
-|:--------------:|:-----------------:|:----------------:|
-| ![AntiLlamada](https://img.shields.io/badge/📞-Anti-Llamada-32CD32?style=for-the-badge&logo=phone&logoColor=white) <br> Evita interrupciones por llamadas al bot | ![Delay](https://img.shields.io/badge/⏱️-Delay-FFD700?style=for-the-badge&logo=timer&logoColor=black) <br> Regula la frecuencia de comandos y previene abusos | ![Compatibilidad](https://img.shields.io/badge/📱-Android_iOS-9400D3?style=for-the-badge&logo=mobile&logoColor=white) <br> Funciona perfectamente en Android y iPhone |
+| 📞 Anti-Llamada | ⏱️ Delay | 📱 Compatibilidad |
+|:--------------:|:---------:|:----------------:|
+| ![AntiLlamada](https://img.shields.io/badge/📞-Anti-Llamada-32CD32?style=for-the-badge&logo=phone&logoColor=white&labelColor=32CD32) <br> Evita interrupciones por llamadas | ![Delay](https://img.shields.io/badge/⏱️-Delay-FFD700?style=for-the-badge&logo=timer&logoColor=black&labelColor=FFD700) <br> Controla la frecuencia de comandos | ![Compatibilidad](https://img.shields.io/badge/📱-Android_iOS-9400D3?style=for-the-badge&logo=mobile&logoColor=white&labelColor=9400D3) <br> Funciona en Android y iPhone |
 
-| 🧹 Limpieza Automática | 🔌 Reconexión Inteligente | 💫 Y mucho más... |
-|:--------------------:|:-----------------------:|:----------------:|
-| ![Limpieza](https://img.shields.io/badge/🧹-Archivos-20B2AA?style=for-the-badge&logo=cleaning&logoColor=white) <br> Elimina archivos innecesarios y limpia key/pre-key automáticamente | ![Reconexión](https://img.shields.io/badge/🔌-Reconexión-FF69B4?style=for-the-badge&logo=power&logoColor=white) <br> Detecta desconexiones y reconecta el bot automáticamente | ![MuchoMas](https://img.shields.io/badge/💫-Nuevas_Funciones-000000?style=for-the-badge&logo=arcade&logoColor=white) <br> Nuevas funciones de seguridad y control se agregan constantemente 😉 |
+| 🧹 Limpieza | 🔌 Reconexión | 💫 Más funciones |
+|:-----------:|:------------:|:---------------:|
+| ![Limpieza](https://img.shields.io/badge/🧹-Archivos-20B2AA?style=for-the-badge&logo=cleaning&logoColor=white&labelColor=20B2AA) <br> Limpia archivos innecesarios automáticamente | ![Reconexión](https://img.shields.io/badge/🔌-Reconexión-FF69B4?style=for-the-badge&logo=power&logoColor=white&labelColor=FF69B4) <br> Reconecta automáticamente si se cae | ![MuchoMas](https://img.shields.io/badge/💫-Nuevas_Funciones-000000?style=for-the-badge&logo=arcade&logoColor=white&labelColor=000000) <br> Se agregan nuevas funciones constantemente 😉 |
 
 </div>
 
