@@ -108,6 +108,24 @@
 
 ---
 
+## 🛡️ Sistema Integrado de **Luna-BotV6**
+
+🔹 Mantén tus grupos seguros y tu bot funcionando al máximo con estas funciones avanzadas:
+
+| Función | Descripción |
+|---------|-------------|
+| ![Baneo](https://img.shields.io/badge/🚫-Detección_Baneo-FF4500?style=for-the-badge&logo=forbidden&logoColor=white) | Detecta usuarios baneados, mostrando la razón o el plugin que causó el baneo |
+| ![AntiDuplicados](https://img.shields.io/badge/⚡-Anti-Duplicaciones-1E90FF?style=for-the-badge&logo=repeat&logoColor=white) | Evita que mensajes idénticos se envíen repetidamente |
+| ![AntiSpam](https://img.shields.io/badge/🛑-Anti-Spam-DC143C?style=for-the-badge&logo=protection&logoColor=white) | Bloquea usuarios que envían mensajes masivos o molestos |
+| ![AntiLlamada](https://img.shields.io/badge/📞-Anti-Llamada-32CD32?style=for-the-badge&logo=phone&logoColor=white) | Evita que los usuarios llamen al bot y causen interrupciones |
+| ![Delay](https://img.shields.io/badge/⏱️-Función_Delay-FFD700?style=for-the-badge&logo=timer&logoColor=black) | Controla la frecuencia de comandos para prevenir abusos |
+| ![Compatibilidad](https://img.shields.io/badge/📱-Android_iOS-9400D3?style=for-the-badge&logo=mobile&logoColor=white) | Totalmente compatible con Android y iPhone |
+| ![Limpieza](https://img.shields.io/badge/🧹-Limpieza_Archivos-20B2AA?style=for-the-badge&logo=cleaning&logoColor=white) | Elimina archivos innecesarios y limpia key/pre-key automáticamente |
+| ![Reconexión](https://img.shields.io/badge/🔌-Reconexión_Automática-FF69B4?style=for-the-badge&logo=power&logoColor=white) | Detecta desconexiones y vuelve a conectar el bot automáticamente |
+| ![MuchoMas](https://img.shields.io/badge/💫-Y_mucho_más-000000?style=for-the-badge&logo=arcade&logoColor=white) | Nuevas funciones de seguridad y control se agregan constantemente 😉 |
+
+---
+
 ## 📦 Instalación
 
 ### 🐧 **Linux (Recomendado)**
