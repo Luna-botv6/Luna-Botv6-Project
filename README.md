@@ -61,6 +61,31 @@
 
 ---
 
+## 🎮 Juegos disponibles en **Luna-BotV6**
+
+✨ Una colección de minijuegos al estilo *retro gamer* para divertirte en tus grupos:
+
+| Juego | Descripción |
+|-------|-------------|
+| ![TicTacToe](https://img.shields.io/badge/❌⭕-TicTacToe-8A2BE2?style=for-the-badge&logo=gamepad&logoColor=white) | Clásico 3 en línea contra el bot o amigos |
+| ![Ahorcado](https://img.shields.io/badge/🔤-Ahorcado-FF4500?style=for-the-badge&logo=joystick&logoColor=white) | Adivina la palabra antes de quedarte sin intentos |
+| ![Buscaminas](https://img.shields.io/badge/💣-Buscaminas-DC143C?style=for-the-badge&logo=skull&logoColor=white) | Descubre casillas sin pisar minas 💥 |
+| ![RPG](https://img.shields.io/badge/⚔️-RPG-006400?style=for-the-badge&logo=sword&logoColor=white) | Minar recursos, robar y usar prote anti-robo |
+| ![Carreras](https://img.shields.io/badge/🏎️-Carreras-2F4F4F?style=for-the-badge&logo=fastlane&logoColor=white) | Compite en emocionantes carreras de velocidad 🏁 |
+| ![Apuestas](https://img.shields.io/badge/🎲-Apuestas-FFD700?style=for-the-badge&logo=casino&logoColor=black) | Pon a prueba tu suerte apostando 💵 |
+| ![Ruleta](https://img.shields.io/badge/🎡-Ruleta-32CD32?style=for-the-badge&logo=apachespark&logoColor=white) | Gira la ruleta y gana premios 🎯 |
+| ![Lotería](https://img.shields.io/badge/🎟️-Lotería-1E90FF?style=for-the-badge&logo=ticketmaster&logoColor=white) | Participa y prueba tu suerte en la lotería 🎫 |
+| ![Quini6](https://img.shields.io/badge/🎰-Quini6-800080?style=for-the-badge&logo=googleforms&logoColor=white) | Juega al famoso Quini 6 con tus números favoritos 🔢 |
+| ![PPT](https://img.shields.io/badge/✊🖐️✌️-PPT-FF69B4?style=for-the-badge&logo=rocketchat&logoColor=white) | Piedra, Papel o Tijera clásico 🪨📄✂️ |
+| ![BatallaNaval](https://img.shields.io/badge/🚢-Batalla_Naval-000080?style=for-the-badge&logo=ship&logoColor=white) | Hundí la flota enemiga antes que hundan la tuya ⚓ |
+| ![Sopa](https://img.shields.io/badge/🔠-Sopa_de_letras-20B2AA?style=for-the-badge&logo=matrix&logoColor=white) | Encuentra las palabras escondidas en la sopa 🔍 |
+| ![Retos](https://img.shields.io/badge/🎯-Retos-008000?style=for-the-badge&logo=target&logoColor=white) | Completa desafíos divertidos contra tus amigos 🎉 |
+| ![VeoVeo](https://img.shields.io/badge/👀-Veo_Veo-008B8B?style=for-the-badge&logo=eyeem&logoColor=white) | El tradicional juego de observación 🔎 |
+| ![Slot](https://img.shields.io/badge/🎰-Slot-A52A2A?style=for-the-badge&logo=atom&logoColor=white) | Tragamonedas con premios aleatorios 🎉 |
+| ![Mas](https://img.shields.io/badge/💫-Y_mucho_más-000000?style=for-the-badge&logo=arcade&logoColor=white) | Siempre se agregan juegos nuevos 😉 |
+
+---
+
 ## 📦 Instalación
 
 ### 🐧 **Linux (Recomendado)**
