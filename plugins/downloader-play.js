@@ -1,12 +1,13 @@
 import fetch from "node-fetch"
 import yts from 'yt-search'
-import axios from "axios"
+import youtubedl from 'youtube-dl-exec'
+import fs from 'fs'
+import path from 'path'
 
 const youtubeRegexID = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   try {
-    // Validación de entrada
     if (!text.trim()) {
       return conn.reply(m.chat, 
         `🎵 *YouTube Downloader*\n\n` +
@@ -14,7 +15,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         `💡 Ejemplo: *${usedPrefix}${command} ozuna el mar*`, m)
     }
 
-    // Búsqueda en YouTube
     let videoIdToFind = text.match(youtubeRegexID) || null
     let searchResults = await yts(videoIdToFind === null ? text : 'https://youtu.be/' + videoIdToFind[1])
 
@@ -33,7 +33,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         `💡 Intenta con otro término`, m)
     }
 
-    // Extracción de datos
     let { title, thumbnail, timestamp, views, ago, url, author } = searchResults
     
     const videoInfo = {
@@ -46,14 +45,12 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       channel: author?.name || 'Canal desconocido'
     }
 
-    // Si es comando específico de descarga directa, procesar
     if (['ytmp3', 'yta'].includes(command)) {
       return await processAudioDownload(conn, m, videoInfo)
     } else if (['ytmp4', 'ytv', 'mp4'].includes(command)) {
       return await processVideoDownload(conn, m, videoInfo)
     }
 
-    // Para comando 'play' - mostrar búsqueda completa con botones
     if (command === 'play') {
       const resultMessage = 
         `🎵 *Resultado de búsqueda*\n\n` +
@@ -65,7 +62,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         `🔗 URL: ${videoInfo.url}\n\n` +
         `🎯 Selecciona el formato de descarga:`
 
-      // Primero enviar la imagen del video si existe
       if (videoInfo.thumbnail) {
         try {
           await conn.sendMessage(m.chat, {
@@ -77,7 +73,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         }
       }
 
-      // Después enviar el mensaje con botones (sin imagen para evitar conflictos)
       return conn.sendButton(
         m.chat,
         resultMessage,
@@ -98,9 +93,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   }
 }
 
-// Función para procesar descarga de audio
 async function processAudioDownload(conn, m, videoInfo) {
-  // Mostrar información del video que se va a descargar
   const searchInfo = 
     `🎵 *Descargando Audio*\n\n` +
     `📋 *${videoInfo.title}*\n\n` +
@@ -113,20 +106,60 @@ async function processAudioDownload(conn, m, videoInfo) {
   await conn.reply(m.chat, searchInfo, m)
 
   try {
-    const audioResponse = await fetch(`https://api.vreden.my.id/api/ytmp3?url=${videoInfo.url}`)
-    const audioData = await audioResponse.json()
-    
-    if (!audioData.result?.download?.url) {
-      throw new Error('No se pudo obtener el audio')
+    try {
+      console.log('🔄 Intentando método: youtube-dl-exec')
+      
+      const tempDir = './temp'
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir)
+      }
+
+      const options = {
+        format: 'bestaudio[ext=m4a]/best[height<=480]',
+        extractAudio: true,
+        audioFormat: 'mp3',
+        audioQuality: '192K',
+        output: path.join(tempDir, `${Date.now()}_%(title)s.%(ext)s`),
+        noWarnings: true,
+        noCallHome: true,
+        addHeader: [
+          'referer:youtube.com',
+          'user-agent:Mozilla/5.0 (compatible; Googlebot/2.1)'
+        ]
+      }
+
+      await youtubedl(videoInfo.url, options)
+
+      const files = fs.readdirSync(tempDir)
+      const downloadedFile = files.find(file => 
+        file.includes(Date.now().toString().substring(0, 8)) && 
+        file.endsWith('.mp3')
+      )
+
+      if (downloadedFile) {
+        const filePath = path.join(tempDir, downloadedFile)
+        const buffer = fs.readFileSync(filePath)
+
+        await conn.sendMessage(m.chat, {
+          audio: buffer,
+          fileName: `${videoInfo.title}.mp3`,
+          mimetype: 'audio/mpeg',
+          ptt: false
+        }, { quoted: m })
+
+        fs.unlinkSync(filePath)
+        
+        return conn.reply(m.chat, 
+          `✅ *Audio descargado exitosamente*\n` +
+          `📂 ${videoInfo.title}.mp3\n` +
+          `🎯 Método usado: youtube-dl-exec`, m)
+      }
+
+    } catch (youtubedlError) {
+      console.log('❌ youtube-dl-exec falló:', youtubedlError.message)
     }
 
-    await conn.sendMessage(m.chat, { 
-      audio: { url: audioData.result.download.url }, 
-      fileName: `${audioData.result.title}.mp3`, 
-      mimetype: 'audio/mpeg' 
-    }, { quoted: m })
-
-    return conn.reply(m.chat, `✅ *Audio descargado exitosamente*\n📂 ${audioData.result.title}.mp3`, m)
+    return await fallbackAudioDownload(conn, m, videoInfo)
 
   } catch (error) {
     return conn.reply(m.chat,
@@ -137,9 +170,7 @@ async function processAudioDownload(conn, m, videoInfo) {
   }
 }
 
-// Función para procesar descarga de video
 async function processVideoDownload(conn, m, videoInfo) {
-  // Mostrar información del video que se va a descargar
   const searchInfo = 
     `🎬 *Descargando Video*\n\n` +
     `📋 *${videoInfo.title}*\n\n` +
@@ -152,18 +183,52 @@ async function processVideoDownload(conn, m, videoInfo) {
   await conn.reply(m.chat, searchInfo, m)
 
   try {
-    const videoResponse = await fetch(`https://api.neoxr.eu/api/youtube?url=${videoInfo.url}&type=video&quality=480p&apikey=GataDios`)
-    const videoData = await videoResponse.json()
-    
-    if (!videoData.data?.url) {
-      throw new Error('No se pudo obtener el video')
+    try {
+      console.log('🔄 Intentando método: youtube-dl-exec')
+      
+      const tempDir = './temp'
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir)
+      }
+
+      const options = {
+        format: 'best[height<=720]/best',
+        output: path.join(tempDir, `${Date.now()}_%(title)s.%(ext)s`),
+        noWarnings: true,
+        noCallHome: true,
+        addHeader: [
+          'referer:youtube.com',
+          'user-agent:Mozilla/5.0 (compatible; Googlebot/2.1)'
+        ]
+      }
+
+      await youtubedl(videoInfo.url, options)
+
+      const files = fs.readdirSync(tempDir)
+      const downloadedFile = files.find(file => 
+        file.includes(Date.now().toString().substring(0, 8)) && 
+        (file.endsWith('.mp4') || file.endsWith('.webm'))
+      )
+
+      if (downloadedFile) {
+        const filePath = path.join(tempDir, downloadedFile)
+        const buffer = fs.readFileSync(filePath)
+
+        await conn.sendFile(m.chat, buffer, `${videoInfo.title}.mp4`, videoInfo.title, m)
+        
+        fs.unlinkSync(filePath)
+        
+        return conn.reply(m.chat, 
+          `✅ *Video descargado exitosamente*\n` +
+          `📂 ${videoInfo.title}.mp4\n` +
+          `🎯 Método usado: youtube-dl-exec`, m)
+      }
+
+    } catch (youtubedlError) {
+      console.log('❌ youtube-dl-exec falló:', youtubedlError.message)
     }
 
-    await conn.sendFile(m.chat, videoData.data.url, `${videoData.title || videoInfo.title}.mp4`, videoInfo.title, m)
-    return conn.reply(m.chat, 
-      `✅ *Video descargado exitosamente*\n` +
-      `📂 ${videoData.title || videoInfo.title}.mp4\n` +
-      `🎯 Calidad: 480p`, m)
+    return await fallbackVideoDownload(conn, m, videoInfo)
 
   } catch (error) {
     return conn.reply(m.chat,
@@ -174,14 +239,97 @@ async function processVideoDownload(conn, m, videoInfo) {
   }
 }
 
-// Configuración del handler
+async function fallbackAudioDownload(conn, m, videoInfo) {
+  const fallbackAPIs = [
+    {
+      name: 'Vreden API',
+      url: `https://api.vreden.my.id/api/ytmp3?url=${videoInfo.url}`,
+      parser: (data) => data.result?.download?.url
+    },
+    {
+      name: 'NeoXR API',
+      url: `https://api.neoxr.eu/api/youtube?url=${videoInfo.url}&type=audio&apikey=GataDios`,
+      parser: (data) => data.data?.url
+    }
+  ]
+
+  for (const api of fallbackAPIs) {
+    try {
+      console.log(`🔄 Intentando API: ${api.name}`)
+      const response = await fetch(api.url)
+      const data = await response.json()
+      const downloadUrl = api.parser(data)
+      
+      if (downloadUrl) {
+        await conn.sendMessage(m.chat, { 
+          audio: { url: downloadUrl }, 
+          fileName: `${videoInfo.title}.mp3`, 
+          mimetype: 'audio/mpeg' 
+        }, { quoted: m })
+
+        return conn.reply(m.chat, 
+          `✅ *Audio descargado exitosamente*\n` +
+          `📂 ${videoInfo.title}.mp3\n` +
+          `🎯 Método usado: ${api.name}`, m)
+      }
+    } catch (error) {
+      console.log(`❌ ${api.name} falló:`, error.message)
+      continue
+    }
+  }
+
+  return conn.reply(m.chat,
+    `❌ *Error al descargar audio*\n\n` +
+    `⚠️ Todos los métodos fallaron\n` +
+    `💡 Intenta con otro video o más tarde`, m)
+}
+
+async function fallbackVideoDownload(conn, m, videoInfo) {
+  const fallbackAPIs = [
+    {
+      name: 'NeoXR API',
+      url: `https://api.neoxr.eu/api/youtube?url=${videoInfo.url}&type=video&quality=480p&apikey=GataDios`,
+      parser: (data) => data.data?.url
+    },
+    {
+      name: 'Vreden API',
+      url: `https://api.vreden.my.id/api/ytmp4?url=${videoInfo.url}`,
+      parser: (data) => data.result?.download?.url
+    }
+  ]
+
+  for (const api of fallbackAPIs) {
+    try {
+      console.log(`🔄 Intentando API: ${api.name}`)
+      const response = await fetch(api.url)
+      const data = await response.json()
+      const downloadUrl = api.parser(data)
+      
+      if (downloadUrl) {
+        await conn.sendFile(m.chat, downloadUrl, `${videoInfo.title}.mp4`, videoInfo.title, m)
+        return conn.reply(m.chat, 
+          `✅ *Video descargado exitosamente*\n` +
+          `📂 ${videoInfo.title}.mp4\n` +
+          `🎯 Método usado: ${api.name}`, m)
+      }
+    } catch (error) {
+      console.log(`❌ ${api.name} falló:`, error.message)
+      continue
+    }
+  }
+
+  return conn.reply(m.chat,
+    `❌ *Error al descargar video*\n\n` +
+    `⚠️ Todos los métodos fallaron\n` +
+    `💡 Intenta con otro video o más tarde`, m)
+}
+
 handler.command = handler.help = ['play', 'ytmp3', 'ytmp4', 'yta', 'ytv', 'mp4']
 handler.tags = ['downloader']
-handler.description = '🎵 Descarga audio y video de YouTube'
+handler.description = '🎵 Descarga audio y video de YouTube - Versión mejorada con youtube-dl-exec'
 
 export default handler
 
-// Función auxiliar para formatear vistas
 function formatViews(views) {
   if (!views || views === undefined) return "Sin datos"
 
