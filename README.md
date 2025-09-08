@@ -369,11 +369,11 @@ Luna-Botv6-Project/
 
 ### ☁️ **Despliegue en la Nube**
 
-#### 📷 **BoxMineWorld (Recomendado)**
+#### 🔥 **BoxMineWorld (Recomendado)**
 
 <div align="center">
   <a href="https://boxmineworld.com">
-    <img width="200px" src="https://boxmineworld.com/img/Logo.png" alt="BoxMineWorld"/>
+    <img src="https://img.shields.io/badge/BoxMineWorld-Hosting_Premium-FF6B35?style=for-the-badge&logo=server&logoColor=white" alt="BoxMineWorld"/>
   </a>
 </div>
 
@@ -449,7 +449,7 @@ Luna-Botv6-Project/
 
 Este proyecto está basado en el excelente trabajo de:
 
-- **[Mystic-Bot-MD](https://github.com/BrunoSobrino/TheMystic-Bot-MD)** por [Bruno Sobrino](https://github.com/BrunoSobrino
+- **[Mystic-Bot-MD](https://github.com/BrunoSobrino/TheMystic-Bot-MD)** por [Bruno Sobrino](https://github.com/BrunoSobrino)
 
 Un agradecimiento especial a todos los colaboradores y la comunidad que hace posible este proyecto.
 
