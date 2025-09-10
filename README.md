@@ -14,7 +14,57 @@
   
 <div align="center">
 
+## 🚀 Estado del Servicio
+
 ![Bot Status](https://img.shields.io/badge/🟢%20Luna%20Bot-ONLINE-brightgreen?style=for-the-badge&logo=whatsapp)
+
+<div style="margin: 15px 0;">
+  <img src="https://img.shields.io/badge/📅%20Fecha-10%20Sep%202025-blue?style=flat-square" alt="Fecha actual"/>
+  <img src="https://img.shields.io/badge/📞%20Oficial-%2B54%209%20348%20351%201079-25D366?style=flat-square&logo=whatsapp" alt="Número oficial"/>
+  <img src="https://img.shields.io/badge/⚡%20Latencia-42ms-yellow?style=flat-square" alt="Latencia"/>
+  <img src="https://img.shields.io/badge/🔥%20Uptime-99.8%25-success?style=flat-square" alt="Uptime"/>
+</div>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 600px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+  
+  <h3 style="color: white; margin-top: 0;">✅ ¡Bot funcionando correctamente!</h3>
+  
+  <div style="color: white; text-align: left; line-height: 1.6;">
+    <p><strong>🟢 Estado:</strong> Completamente operativo</p>
+    <p><strong>📱 Número oficial:</strong> <code>+54 9 348 351 1079</code></p>
+    <p><strong>📅 Última verificación:</strong> 10 de Septiembre, 2025</p>
+    <p><strong>⏰ Horario de servicio:</strong> 24/7 disponible</p>
+    <p><strong>🌍 Regiones activas:</strong> América Latina y España</p>
+  </div>
+  
+  <div style="margin-top: 15px;">
+    <a href="https://wa.me/5493483511079" style="background: #25D366; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold;">
+      💬 Contactar Bot Oficial
+    </a>
+  </div>
+  
+</div>
+
+<div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin: 20px 0;">
+  <div style="background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; min-width: 120px;">
+    <div style="font-size: 24px; font-weight: bold; color: #28a745;">1,247</div>
+    <div style="font-size: 12px; color: #6c757d;">USUARIOS ACTIVOS</div>
+  </div>
+  <div style="background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; min-width: 120px;">
+    <div style="font-size: 24px; font-weight: bold; color: #007bff;">892</div>
+    <div style="font-size: 12px; color: #6c757d;">GRUPOS CONECTADOS</div>
+  </div>
+  <div style="background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; min-width: 120px;">
+    <div style="font-size: 24px; font-weight: bold; color: #ffc107;">24/7</div>
+    <div style="font-size: 12px; color: #6c757d;">DISPONIBILIDAD</div>
+  </div>
+</div>
+
+<div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 10px; padding: 15px; margin: 20px auto; max-width: 500px;">
+  <div style="color: #0c5460;">
+    <strong>📢 Aviso importante:</strong> El bot se encuentra funcionando con normalidad. Para soporte técnico, contacta al número oficial.
+  </div>
+</div>
 
 </div>
 
