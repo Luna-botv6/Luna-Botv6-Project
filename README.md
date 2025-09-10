@@ -12,6 +12,11 @@
 
 </div>
   
+<div align="center">
+
+![Bot Status](https://img.shields.io/badge/🟢%20Luna%20Bot-ONLINE-brightgreen?style=for-the-badge&logo=whatsapp)
+
+</div>
 
 ---
 
