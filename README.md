@@ -491,14 +491,17 @@ Luna-Botv6-Project/
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://wa.me/5493483466763)
 [![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/users/german_coto)
 [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:lunabotv6@gmail.com)
+[![Facebook](https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/profile.php?id=61580601092491)
 
 **📱 WhatsApp:** `+54 9 348 346 6763`  
 **💬 Discord:** `german_coto`  
-**📧 Email:** `lunabotv6@gmail.com`
+**📧 Email:** `lunabotv6@gmail.com`  
+**🌐 Facebook:** [Luna-Botv6](https://www.facebook.com/profile.php?id=61580601092491)
 
 </div>
 
 ---
+
 
 ## 🙏 Reconocimientos
 
