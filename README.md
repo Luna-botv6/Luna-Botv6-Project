@@ -420,26 +420,37 @@ Luna-Botv6-Project/
 
 ---
 
-## 🌐 Despliegue
+```## Despliegue en BoxMineWorld
 
-### ☁️ **Despliegue en la Nube**
 
-#### 🔥 **BoxMineWorld (Recomendado)**
+```## Despliegue en BoxMineWorld
 
-<div align="center">
-  <a href="https://boxmineworld.com">
-    <img src="https://img.shields.io/badge/BoxMineWorld-Hosting_Premium-FF6B35?style=for-the-badge&logo=server&logoColor=white" alt="BoxMineWorld"/>
-  </a>
-</div>
+[![Logo BoxMineWorld](https://boxmineworld.com/images/Logo.png)](https://boxmineworld.com)
 
-**Enlaces Importantes:**
-- 🌐 **Sitio Web:** [boxmineworld.com](https://boxmineworld.com)
-- 👤 **Panel de Cliente:** [dash.boxmineworld.com](https://dash.boxmineworld.com)
-- ⚙️ **Panel de Control:** [panel.boxmineworld.com](https://panel.boxmineworld.com)
-- 📚 **Documentación:** [docs.boxmineworld.com](https://docs.boxmineworld.com)
-- 💬 **Discord:** [Únete aquí](https://discord.gg/84qsr4v)
+<details>
+  <summary><b>:paperclip: Enlaces Importantes</b></summary>
 
-#### 📷 **Otras Plataformas**
+- **Sitio Web:** [https://boxmineworld.com](https://boxmineworld.com)  
+- **Área de Clientes:** [https://dash.boxmineworld.com](https://dash.boxmineworld.com)  
+- **Panel de Control:** [https://panel.boxmineworld.com](https://panel.boxmineworld.com)  
+- **Documentación:** [https://docs.boxmineworld.com](https://docs.boxmineworld.com)  
+- **Comunidad de Discord:** [¡Únete aquí!](https://discord.gg/84qsr4v)
+
+</details>
+```
+[![Logo BoxMineWorld](https://boxmineworld.com/images/Logo.png)](https://boxmineworld.com)
+
+<details>
+  <summary><b>:paperclip: Enlaces Importantes</b></summary>
+
+- **Sitio Web:** [https://boxmineworld.com](https://boxmineworld.com)  
+- **Área de Clientes:** [https://dash.boxmineworld.com](https://dash.boxmineworld.com)  
+- **Panel de Control:** [https://panel.boxmineworld.com](https://panel.boxmineworld.com)  
+- **Documentación:** [https://docs.boxmineworld.com](https://docs.boxmineworld.com)  
+- **Comunidad de Discord:** [¡Únete aquí!](https://discord.gg/84qsr4v)
+
+</details>
+```
 
 - **Heroku:** [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 - **Railway:** [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app)
