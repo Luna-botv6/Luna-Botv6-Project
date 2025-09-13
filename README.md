@@ -435,24 +435,14 @@ Luna-Botv6-Project/
 
 </details>
 
-[![Logo BoxMineWorld](https://boxmineworld.com/images/Logo.png)](https://boxmineworld.com)
+---
 
-<details>
-  <summary><b>:paperclip: Enlaces Importantes</b></summary>
-
-- **Sitio Web:** [https://boxmineworld.com](https://boxmineworld.com)  
-- **Área de Clientes:** [https://dash.boxmineworld.com](https://dash.boxmineworld.com)  
-- **Panel de Control:** [https://panel.boxmineworld.com](https://panel.boxmineworld.com)  
-- **Documentación:** [https://docs.boxmineworld.com](https://docs.boxmineworld.com)  
-- **Comunidad de Discord:** [¡Únete aquí!](https://discord.gg/84qsr4v)
+- **Heroku:** [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)  
+- **Railway:** [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app)  
+- **Render:** Compatible con configuración manual  
 
 ---
 
-- **Heroku:** [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
-- **Railway:** [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app)
-- **Render:** Compatible con configuración manual
-
----
 
 ## 🤝 Contribuir
 
