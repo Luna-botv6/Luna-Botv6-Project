@@ -420,10 +420,7 @@ Luna-Botv6-Project/
 
 ---
 
-```## Despliegue en BoxMineWorld
-
-
-```## Despliegue en BoxMineWorld
+## Despliegue en BoxMineWorld
 
 [![Logo BoxMineWorld](https://boxmineworld.com/images/Logo.png)](https://boxmineworld.com)
 
@@ -450,7 +447,7 @@ Luna-Botv6-Project/
 - **Comunidad de Discord:** [¡Únete aquí!](https://discord.gg/84qsr4v)
 
 </details>
-```
+
 
 - **Heroku:** [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 - **Railway:** [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app)
