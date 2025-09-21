@@ -73,6 +73,7 @@ try{return atob(base)}catch{return null}
 }
 if(p==='fetch'){
 return async(url,opts={})=>{
+try{
 if(!url)return null;
 session.requests++;
 if(session.requests>30)return null;
@@ -87,7 +88,22 @@ const headers={
 'x-session-id':session.id,
 ...opts.headers
 };
-return fetch(url,{...opts,headers,timeout:25000});
+
+const controller=new AbortController();
+const timeoutId=setTimeout(()=>controller.abort(),25000);
+
+const response=await fetch(url,{
+...opts,
+headers,
+signal:controller.signal
+});
+
+clearTimeout(timeoutId);
+return response;
+}catch(fetchError){
+console.log("Fetch error:",fetchError.message);
+return null;
+}
 };
 }
 return null;
@@ -118,6 +134,7 @@ if(spotifyUrl){
 const fullUrl=spotifyUrl+encodeURIComponent(text);
 const response=await _0xUrls.fetch(fullUrl);
 if(response&&response.ok){
+try{
 const data=await response.json();
 if(data?.status&&data?.result){
 result={
@@ -128,6 +145,9 @@ url:data.result.url,
 thumbnail:data.result.thumbnail,
 audioUrl:data.result.audio
 };
+}
+}catch(jsonError){
+console.log("JSON parse error:",jsonError.message);
 }
 }
 }
@@ -145,6 +165,9 @@ if(!youtubeUrl)throw new Error("Service temporarily unavailable");
 
 const downloadUrl=youtubeUrl+encodeURIComponent(video.url);
 const downloadResponse=await _0xUrls.fetch(downloadUrl);
+if(!downloadResponse||!downloadResponse.ok){
+throw new Error("Error de conexión con el servicio de descarga");
+}
 const downloadData=await downloadResponse.json();
 if(!downloadData?.status)throw new Error("Error al descargar de YouTube.");
 
@@ -181,6 +204,6 @@ return _0xctx.conn.reply(_0xmsg.chat,`❌ *Error al obtener audio*\n⚠️ ${err
 
 _0x7c4a.command=_0x7c4a.help=['play'];
 _0x7c4a.tags=['downloader'];
-_0x7c4a.description='🎵 Busca y descarga música';
+_0x7c4a.description='🎵 Busca y descarga música (Spotify con fallback a YouTube)';
 
 export default _0x7c4a;
