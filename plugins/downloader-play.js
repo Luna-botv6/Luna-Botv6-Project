@@ -1,244 +1,186 @@
 import fetch from "node-fetch";
-import yts from 'yt-search';
+import yts from "yt-search";
+import fs from "fs";
+import crypto from "crypto";
 
-const youtubeRegexID = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/;
+const _0x4e7b=()=>Math.random().toString(36).substring(2,15);
+const _0x9d3a=(s,k)=>{let r='';for(let i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^k.charCodeAt(i%k.length));return btoa(r)};
+const _0x2f8e=(s,k)=>{const d=atob(s);let r='';for(let i=0;i<d.length;i++)r+=String.fromCharCode(d.charCodeAt(i)^k.charCodeAt(i%k.length));return r};
+const _0x6c5d=(arr,key)=>arr.map((c,i)=>c^(key.charCodeAt(i%key.length))).map(c=>String.fromCharCode(c)).join('');
 
-const handler = async (m, { conn, text, usedPrefix, command }) => {
-  try {
-    if (!text.trim()) {
-      return conn.reply(m.chat, 
-        `🎵 *YouTube Downloader*\n\n` +
-        `⚠️ Escribe el nombre de la música\n` +
-        `💡 Ejemplo: *${usedPrefix}${command} ozuna el mar*`, m);
-    }
-
-    let videoIdToFind = text.match(youtubeRegexID) || null;
-    let searchResults = await yts(videoIdToFind === null ? text : 'https://youtu.be/' + videoIdToFind[1]);
-
-    if (videoIdToFind) {
-      const videoId = videoIdToFind[1];  
-      searchResults = searchResults.all.find(item => item.videoId === videoId) || 
-                     searchResults.videos.find(item => item.videoId === videoId);
-    } 
-    
-    searchResults = searchResults.all?.[0] || searchResults.videos?.[0] || searchResults;  
-    
-    if (!searchResults || searchResults.length == 0) {
-      return conn.reply(m.chat,
-        `❌ *Sin resultados*\n\n` +
-        `No se encontró: *${text}*\n` +
-        `💡 Intenta con otro término`, m);
-    }
-
-    let { title, thumbnail, timestamp, views, ago, url, author } = searchResults;
-    
-    const videoInfo = {
-      title: title || 'Sin título',
-      thumbnail: thumbnail || '',
-      duration: timestamp || 'N/A',
-      views: formatViews(views) || 'N/A',
-      uploadDate: ago || 'N/A',
-      url: url || '',
-      channel: author?.name || 'Canal desconocido'
-    };
-
-    if (['ytmp3', 'yta'].includes(command)) {
-      return await processAudioDownload(conn, m, videoInfo);
-    } else if (['ytmp4', 'ytv', 'mp4'].includes(command)) {
-      return await processVideoDownload(conn, m, videoInfo);
-    }
-
-    if (command === 'play') {
-      const resultMessage = 
-        `🎵 *Resultado de búsqueda*\n\n` +
-        `📋 *${videoInfo.title}*\n\n` +
-        `📺 Canal: ${videoInfo.channel}\n` +
-        `👁️ Vistas: ${videoInfo.views}\n` +
-        `ⱕ️ Duración: ${videoInfo.duration}\n` +
-        `📅 Publicado: ${videoInfo.uploadDate}\n` +
-        `🔗 URL: ${videoInfo.url}\n\n` +
-        `🎯 Selecciona el formato de descarga:`;
-
-      if (videoInfo.thumbnail) {
-        try {
-          await conn.sendMessage(m.chat, {
-            image: { url: videoInfo.thumbnail },
-            caption: `🎵 *${videoInfo.title}*\n📺 ${videoInfo.channel}`
-          }, { quoted: m });
-        } catch (imgError) {
-          console.log('Error enviando imagen:', imgError.message);
-        }
-      }
-
-      return conn.sendButton(
-        m.chat,
-        resultMessage,
-        'YouTube Downloader',
-        null,
-        [
-          ['🎵 Audio', `${usedPrefix}ytmp3 ${videoInfo.url}`],
-          ['🎬 Video', `${usedPrefix}ytmp4 ${videoInfo.url}`]
-        ],
-        null,
-        null,
-        m
-      );
-    }
-
-  } catch (error) {
-    return conn.reply(m.chat, `❌ Error: ${error.message}`, m);
-  }
+const _0xKey=()=>{
+const base=process.env.NODE_ENV||'production';
+const pid=process.pid.toString();
+return crypto.createHash('md5').update(base+pid).digest('hex').substring(0,16);
 };
 
-async function processAudioDownload(conn, m, videoInfo) {
-  const searchInfo = 
-    `🎵 *Descargando Audio*\n\n` +
-    `📋 *${videoInfo.title}*\n\n` +
-    `📺 Canal: ${videoInfo.channel}\n` +
-    `ⱕ️ Duración: ${videoInfo.duration}\n\n` +
-    `ⳁ *Procesando descarga...*`;
+const _0xData={
+0x41:[99,111,110,102,105,103,46,106,115],
+0x42:[76,117,110,97,45,66,111,116,118,54],
+0x43:[117,116,102,45,56],
+0x44:[77,111,122,105,108,108,97,47,53,46,48],
+0x45:[97,117,100,105,111,47,109,112,101,103],
+0x46:[46,109,112,51]
+};
 
-  await conn.reply(m.chat, searchInfo, m);
-  return await fallbackAudioDownload(conn, m, videoInfo);
+const _0x1a7f=(k)=>String.fromCharCode(..._0xData[k]);
+
+const _0x5f9c={
+check:()=>{
+const s=Date.now();debugger;const t=Date.now()-s;
+if(t>100||typeof devtoolsDetector!=='undefined')process.exit(0);
+return true;
+},
+validate:()=>{
+if(!fs.existsSync(_0x1a7f(0x41)))return false;
+const content=fs.readFileSync(_0x1a7f(0x41),_0x1a7f(0x43));
+return content.includes(_0x1a7f(0x42));
+},
+integrity:()=>{
+try{
+const src=fs.readFileSync(process.argv[1]||__filename,'utf-8');
+const hash=src.split('').reduce((a,c,i)=>a+c.charCodeAt(0)*i,0);
+if(global._0xHash&&global._0xHash!==hash)process.exit(0);
+global._0xHash=hash;
+return true;
+}catch{return false}
+},
+session:()=>{
+if(!global._0xSession){
+global._0xSession={
+id:_0x4e7b(),
+key:_0xKey(),
+created:Date.now(),
+requests:0
+};
+}
+return global._0xSession;
+}
+};
+
+const _0xUrls=new Proxy({},{
+get:(t,p)=>{
+const session=_0x5f9c.session();
+if(!session)return null;
+
+if(p==='spotify'){
+const base='aHR0cHM6Ly9va2F0c3Utcm9sZXphcGlpei52ZXJjZWwuYXBwL3NlYXJjaC9zcG90aWZ5P3E9';
+try{return atob(base)}catch{return null}
+}
+if(p==='youtube'){
+const base='aHR0cHM6Ly9hcGkudnJlZGVuLndlYi5pZC9hcGkveXRtcDM/dXJsPQ==';
+try{return atob(base)}catch{return null}
+}
+if(p==='fetch'){
+return async(url,opts={})=>{
+if(!url)return null;
+session.requests++;
+if(session.requests>30)return null;
+
+const delay=Math.random()*300+150;
+await new Promise(r=>setTimeout(r,delay));
+
+const headers={
+'user-agent':_0x1a7f(0x44),
+'accept':'application/json',
+'referer':'https://github.com/Luna-botv6/Luna-Botv6-Project',
+'x-session-id':session.id,
+...opts.headers
+};
+return fetch(url,{...opts,headers,timeout:25000});
+};
+}
+return null;
+}
+});
+
+const _0x7c4a=async function(){
+const _0xmsg=arguments[0];
+const _0xctx=arguments[1];
+
+if(!_0x5f9c.check()||!_0x5f9c.validate()||!_0x5f9c.integrity())return;
+
+try{
+const{conn,text,usedPrefix,command}=_0xctx;
+const chatId=_0xmsg.chat;
+
+if(!text||!text.trim()){
+return conn.reply(chatId,`🎵 *Descargar música*\n\n⚠️ Escribe el nombre de la canción o artista\n💡 Ejemplo: *${usedPrefix}${command} con calma*`,_0xmsg);
 }
 
-async function processVideoDownload(conn, m, videoInfo) {
-  const searchInfo = 
-    `🎬 *Descargando Video*\n\n` +
-    `📋 *${videoInfo.title}*\n\n` +
-    `📺 Canal: ${videoInfo.channel}\n` +
-    `ⱕ️ Duración: ${videoInfo.duration}\n\n` +
-    `ⳁ *Procesando descarga...*`;
+await conn.reply(chatId,`🔍 *Buscando:* ${text}\n⏳ *Espera un momento...*`,_0xmsg);
 
-  await conn.reply(m.chat, searchInfo, m);
-  return await fallbackVideoDownload(conn, m, videoInfo);
+let result=null;
+
+try{
+const spotifyUrl=_0xUrls.spotify;
+if(spotifyUrl){
+const fullUrl=spotifyUrl+encodeURIComponent(text);
+const response=await _0xUrls.fetch(fullUrl);
+if(response&&response.ok){
+const data=await response.json();
+if(data?.status&&data?.result){
+result={
+title:data.result.title,
+artist:data.result.artist,
+duration:data.result.duration,
+url:data.result.url,
+thumbnail:data.result.thumbnail,
+audioUrl:data.result.audio
+};
+}
+}
+}
+}catch(error){
+console.log("Spotify error:",error.message);
 }
 
-async function fallbackAudioDownload(conn, m, videoInfo) {
-  const fallbackAPIs = [
-    {
-      name: 'Vreden API',
-      url: `https://api.vreden.my.id/api/ytmp3?url=${videoInfo.url}`,
-      parser: (data) => data.result?.download?.url
-    },
-    {
-      name: 'YouTube Video to Audio API',
-      url: `https://zylalabs.com/api/v1/extract_audio?url=${encodeURIComponent(videoInfo.url)}`,
-      parser: (data) => data?.data?.audio
-    },
-    {
-      name: 'Super Fast YouTube to MP3/MP4 Converter API',
-      url: `https://api.youtubetomp3converterapi.com/convert?url=${encodeURIComponent(videoInfo.url)}&format=mp3`,
-      parser: (data) => data?.audio
-    }
-  ];
+if(!result){
+const searchResult=await yts(text);
+const video=searchResult.videos[0];
+if(!video)throw new Error("No se encontró nada en YouTube.");
 
-  for (const api of fallbackAPIs) {
-    try {
-      console.log(`🔄 Intentando API: ${api.name}`);
-      
-      const response = await fetch(api.url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      });
-      
-      const data = await response.json();
-      const downloadUrl = api.parser(data);
-      
-      if (downloadUrl) {
-        await conn.sendMessage(m.chat, { 
-          audio: { url: downloadUrl }, 
-          fileName: `${videoInfo.title}.mp3`, 
-          mimetype: 'audio/mpeg' 
-        }, { quoted: m });
+const youtubeUrl=_0xUrls.youtube;
+if(!youtubeUrl)throw new Error("Service temporarily unavailable");
 
-        return conn.reply(m.chat, 
-          `✅ *Audio descargado exitosamente*\n` +
-          `📂 ${videoInfo.title}.mp3\n` +
-          `🎯 API: ${api.name}`, m);
-      }
-    } catch (error) {
-      console.log(`❌ ${api.name} falló:`, error.message);
-      continue;
-    }
-  }
+const downloadUrl=youtubeUrl+encodeURIComponent(video.url);
+const downloadResponse=await _0xUrls.fetch(downloadUrl);
+const downloadData=await downloadResponse.json();
+if(!downloadData?.status)throw new Error("Error al descargar de YouTube.");
 
-  return conn.reply(m.chat,
-    `❌ *Error al descargar audio*\n\n` +
-    `⚠️ Todos los métodos fallaron\n` +
-    `💡 Intenta con otro video`, m);
+result={
+title:video.title,
+artist:video.author?.name||"YouTube",
+duration:video.timestamp,
+url:video.url,
+thumbnail:video.thumbnail,
+audioUrl:downloadData.result.download_url
+};
 }
 
-async function fallbackVideoDownload(conn, m, videoInfo) {
-  const fallbackAPIs = [
-    {
-      name: 'Vreden API',
-      url: `https://api.vreden.my.id/api/ytmp4?url=${videoInfo.url}`,
-      parser: (data) => data.result?.download?.url
-    },
-    {
-      name: 'YouTube Video Retriever API',
-      url: `https://api.zylalabs.com/youtube_video_retriever/api/v1/extract_video?url=${encodeURIComponent(videoInfo.url)}`,
-      parser: (data) => data?.data?.video
-    },
-    {
-      name: 'Super Fast YouTube to MP3/MP4 Converter API',
-      url: `https://api.youtubetomp3converterapi.com/convert?url=${encodeURIComponent(videoInfo.url)}&format=mp4`,
-      parser: (data) => data?.video
-    }
-  ];
+const caption=`🎵 *${result.title||'Sin título'}*\n👤 ${result.artist||'Desconocido'}\n⏱ ${result.duration||''}\n🔗 ${result.url||''}`;
 
-  for (const api of fallbackAPIs) {
-    try {
-      console.log(`🔄 Intentando API: ${api.name}`);
-      
-      const response = await fetch(api.url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      });
-      
-      const data = await response.json();
-      const downloadUrl = api.parser(data);
-      
-      if (downloadUrl) {
-        await conn.sendFile(m.chat, downloadUrl, `${videoInfo.title}.mp4`, videoInfo.title, m);
-        return conn.reply(m.chat, 
-          `✅ *Video descargado exitosamente*\n` +
-          `📂 ${videoInfo.title}.mp4\n` +
-          `🎯 API: ${api.name}`, m);
-      }
-    } catch (error) {
-      console.log(`❌ ${api.name} falló:`, error.message);
-      continue;
-    }
-  }
-
-  return conn.reply(m.chat,
-    `❌ *Error al descargar video*\n\n` +
-    `⚠️ Todos los métodos fallaron\n` +
-    `💡 Intenta con otro video`, m);
+if(result.thumbnail){
+await conn.sendMessage(chatId,{image:{url:result.thumbnail},caption},{quoted:_0xmsg});
+}else{
+await conn.sendMessage(chatId,{text:caption},{quoted:_0xmsg});
 }
 
-handler.command = handler.help = ['play', 'ytmp3', 'ytmp4', 'yta', 'ytv', 'mp4'];
-handler.tags = ['downloader'];
-handler.description = '🎵 Descarga audio y video de YouTube';
+const cleanTitle=(result.title||'track').replace(/[\\/:*?"<>|]/g,'');
+await conn.sendMessage(chatId,{
+audio:{url:result.audioUrl},
+mimetype:_0x1a7f(0x45),
+fileName:cleanTitle+_0x1a7f(0x46)
+},{quoted:_0xmsg});
 
-export default handler;
-
-function formatViews(views) {
-  if (!views || views === undefined) return "Sin datos";
-
-  const numViews = parseInt(views);
-  
-  if (numViews >= 1_000_000_000) {
-    return `${(numViews / 1_000_000_000).toFixed(1)}B`;
-  } else if (numViews >= 1_000_000) {
-    return `${(numViews / 1_000_000).toFixed(1)}M`;
-  } else if (numViews >= 1_000) {
-    return `${(numViews / 1_000).toFixed(1)}K`;
-  }
-  
-  return numViews.toLocaleString();
+}catch(error){
+console.error("Error Play:",error.message);
+return _0xctx.conn.reply(_0xmsg.chat,`❌ *Error al obtener audio*\n⚠️ ${error.message}`,_0xmsg);
 }
+};
+
+_0x7c4a.command=_0x7c4a.help=['play'];
+_0x7c4a.tags=['downloader'];
+_0x7c4a.description='🎵 Busca y descarga música';
+
+export default _0x7c4a;
