@@ -140,7 +140,7 @@ async function generateCode(session, commandName, m, conn, participants) {
     code += `  const imagePath = './codeimagenes/${imageName}'\n`
     code += `  if (fs.existsSync(imagePath)) {
     const imageBuffer = fs.readFileSync(imagePath)
-    await conn.sendFile(m.chat, imageBuffer, '${imageName}', responseText, m, { mentions: ${tagAll ? 'participants.map(p => p.id)' : tagUser ? '[m.sender]' : '[]'} })
+    await conn.sendMessage(m.chat, { image: imageBuffer, caption: responseText, mentions: ${tagAll ? 'participants.map(p => p.id)' : tagUser ? '[m.sender]' : '[]'} }, { quoted: m })
   } else {
     m.reply(responseText, null, { mentions: ${tagAll ? 'participants.map(p => p.id)' : tagUser ? '[m.sender]' : '[]'} })
   }`
