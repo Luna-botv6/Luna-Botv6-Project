@@ -4,10 +4,6 @@ import fs from "fs";
 import crypto from "crypto";
 
 const _0x4e7b=()=>Math.random().toString(36).substring(2,15);
-const _0x9d3a=(s,k)=>{let r='';for(let i=0;i<s.length;i++)r+=String.fromCharCode(s.charCodeAt(i)^k.charCodeAt(i%k.length));return btoa(r)};
-const _0x2f8e=(s,k)=>{const d=atob(s);let r='';for(let i=0;i<d.length;i++)r+=String.fromCharCode(d.charCodeAt(i)^k.charCodeAt(i%k.length));return r};
-const _0x6c5d=(arr,key)=>arr.map((c,i)=>c^(key.charCodeAt(i%key.length))).map(c=>String.fromCharCode(c)).join('');
-
 const _0xKey=()=>{
 const base=process.env.NODE_ENV||'production';
 const pid=process.pid.toString();
@@ -32,14 +28,18 @@ if(t>100||typeof devtoolsDetector!=='undefined')process.exit(0);
 return true;
 },
 validate:()=>{
-if(!fs.existsSync(_0x1a7f(0x41)))return false;
-const content=fs.readFileSync(_0x1a7f(0x41),_0x1a7f(0x43));
-return content.includes(_0x1a7f(0x42));
+try {
+  if(!fs.existsSync(_0x1a7f(0x41)))return true;
+  const content=fs.readFileSync(_0x1a7f(0x41),_0x1a7f(0x43));
+  return content.includes(_0x1a7f(0x42)) || content.includes('Luna') || content.includes('luna');
+} catch {
+  return true;
+}
 },
 integrity:()=>{
 try{
 const src=fs.readFileSync(process.argv[1]||__filename,'utf-8');
-const hash=src.split('').reduce((a,c,i)=>a+c.charCodeAt(0)*i,0);
+const hash=src.split('').reduce((a,c,i)=>a+c.charCodeId*i,0);
 if(global._0xHash&&global._0xHash!==hash)process.exit(0);
 global._0xHash=hash;
 return true;
@@ -58,152 +58,242 @@ return global._0xSession;
 }
 };
 
-const _0xUrls=new Proxy({},{
-get:(t,p)=>{
-const session=_0x5f9c.session();
-if(!session)return null;
+const downloadApis = [
+  'aHR0cHM6Ly95dG1wMy5jby9hcGkvZG93bmxvYWQ/dXJsPQ==',
+  'aHR0cHM6Ly9hcGkudnJlZGVuLndlYi5pZC9hcGkveXRtcDM/dXJsPQ==',
+  'aHR0cHM6Ly95dG1wMzIwLmNvbS9hcGkvZG93bmxvYWQ/dXJsPQ==',
+  'aHR0cHM6Ly95dG1wMy5jYy9hcGkvZG93bmxvYWQ/dXJsPQ==',
+  'aHR0cHM6Ly95dWtvbi5jYy9hcGkveXRtcDM/dXJsPQ=='
+];
 
-if(p==='spotify'){
-const base='aHR0cHM6Ly9va2F0c3Utcm9sZXphcGlpei52ZXJjZWwuYXBwL3NlYXJjaC9zcG90aWZ5P3E9';
-try{return atob(base)}catch{return null}
-}
-if(p==='youtube'){
-const base='aHR0cHM6Ly9hcGkudnJlZGVuLndlYi5pZC9hcGkveXRtcDM/dXJsPQ==';
-try{return atob(base)}catch{return null}
-}
-if(p==='fetch'){
-return async(url,opts={})=>{
-try{
-if(!url)return null;
-session.requests++;
-if(session.requests>30)return null;
+const spotifyApis = [
+  'aHR0cHM6Ly9va2F0c3Utcm9sZXphcGlpei52ZXJjZWwuYXBwL3NlYXJjaC9zcG90aWZ5P3E9',
+  'aHR0cHM6Ly9hcGkuc3BvdGlmeWRsLmNvbS9zZWFyY2g/cT0=',
+  'aHR0cHM6Ly9zcG90aWZ5ZG93bmxvYWRlci5jb20vYXBpL3NlYXJjaD9xPQ=='
+];
 
-const delay=Math.random()*300+150;
-await new Promise(r=>setTimeout(r,delay));
-
-const headers={
-'user-agent':_0x1a7f(0x44),
-'accept':'application/json',
-'referer':'https://github.com/Luna-botv6/Luna-Botv6-Project',
-'x-session-id':session.id,
-...opts.headers
+const fetchWithTimeout = async (url, options = {}) => {
+  const session = _0x5f9c.session();
+  session.requests++;
+  
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), options.timeout || 15000);
+  
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'user-agent': _0x1a7f(0x44),
+        'accept': 'application/json',
+        'referer': 'https://github.com/Luna-botv6/Luna-Botv6-Project',
+        ...options.headers
+      },
+      ...options
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 };
 
-const controller=new AbortController();
-const timeoutId=setTimeout(()=>controller.abort(),25000);
-
-const response=await fetch(url,{
-...opts,
-headers,
-signal:controller.signal
-});
-
-clearTimeout(timeoutId);
-return response;
-}catch(fetchError){
-console.log("Fetch error:",fetchError.message);
-return null;
-}
-};
-}
-return null;
-}
-});
-
-const _0x7c4a=async function(){
-const _0xmsg=arguments[0];
-const _0xctx=arguments[1];
-
-if(!_0x5f9c.check()||!_0x5f9c.validate()||!_0x5f9c.integrity())return;
-
-try{
-const{conn,text,usedPrefix,command}=_0xctx;
-const chatId=_0xmsg.chat;
-
-if(!text||!text.trim()){
-return conn.reply(chatId,`🎵 *Descargar música*\n\n⚠️ Escribe el nombre de la canción o artista\n💡 Ejemplo: *${usedPrefix}${command} con calma*`,_0xmsg);
-}
-
-await conn.reply(chatId,`🔍 *Buscando:* ${text}\n⏳ *Espera un momento...*`,_0xmsg);
-
-let result=null;
-
-try{
-const spotifyUrl=_0xUrls.spotify;
-if(spotifyUrl){
-const fullUrl=spotifyUrl+encodeURIComponent(text);
-const response=await _0xUrls.fetch(fullUrl);
-if(response&&response.ok){
-try{
-const data=await response.json();
-if(data?.status&&data?.result){
-result={
-title:data.result.title,
-artist:data.result.artist,
-duration:data.result.duration,
-url:data.result.url,
-thumbnail:data.result.thumbnail,
-audioUrl:data.result.audio
-};
-}
-}catch(jsonError){
-console.log("JSON parse error:",jsonError.message);
-}
-}
-}
-}catch(error){
-console.log("Spotify error:",error.message);
-}
-
-if(!result){
-const searchResult=await yts(text);
-const video=searchResult.videos[0];
-if(!video)throw new Error("No se encontró nada en YouTube.");
-
-const youtubeUrl=_0xUrls.youtube;
-if(!youtubeUrl)throw new Error("Service temporarily unavailable");
-
-const downloadUrl=youtubeUrl+encodeURIComponent(video.url);
-const downloadResponse=await _0xUrls.fetch(downloadUrl);
-if(!downloadResponse||!downloadResponse.ok){
-throw new Error("Error de conexión con el servicio de descarga");
-}
-const downloadData=await downloadResponse.json();
-if(!downloadData?.status)throw new Error("Error al descargar de YouTube.");
-
-result={
-title:video.title,
-artist:video.author?.name||"YouTube",
-duration:video.timestamp,
-url:video.url,
-thumbnail:video.thumbnail,
-audioUrl:downloadData.result.download_url
-};
-}
-
-const caption=`🎵 *${result.title||'Sin título'}*\n👤 ${result.artist||'Desconocido'}\n⏱ ${result.duration||''}\n🔗 ${result.url||''}`;
-
-if(result.thumbnail){
-await conn.sendMessage(chatId,{image:{url:result.thumbnail},caption},{quoted:_0xmsg});
-}else{
-await conn.sendMessage(chatId,{text:caption},{quoted:_0xmsg});
-}
-
-const cleanTitle=(result.title||'track').replace(/[\\/:*?"<>|]/g,'');
-await conn.sendMessage(chatId,{
-audio:{url:result.audioUrl},
-mimetype:_0x1a7f(0x45),
-fileName:cleanTitle+_0x1a7f(0x46)
-},{quoted:_0xmsg});
-
-}catch(error){
-console.error("Error Play:",error.message);
-return _0xctx.conn.reply(_0xmsg.chat,`❌ *Error al obtener audio*\n⚠️ ${error.message}`,_0xmsg);
-}
+const searchSpotify = async (query) => {
+  for (const apiBase of spotifyApis) {
+    try {
+      const url = atob(apiBase) + encodeURIComponent(query);
+      const response = await fetchWithTimeout(url, { timeout: 8000 });
+      
+      if (response && response.ok) {
+        const data = await response.json();
+        if (data?.status && data?.result && data.result.audio) {
+          return {
+            title: data.result.title,
+            artist: data.result.artist,
+            duration: data.result.duration,
+            url: data.result.url,
+            thumbnail: data.result.thumbnail,
+            audioUrl: data.result.audio,
+            source: 'Spotify'
+          };
+        }
+      }
+    } catch (error) {
+      continue;
+    }
+  }
+  return null;
 };
 
-_0x7c4a.command=_0x7c4a.help=['play'];
-_0x7c4a.tags=['downloader'];
-_0x7c4a.description='🎵 Busca y descarga música (Spotify con fallback a YouTube)';
+const downloadFromYoutube = async (videoUrl) => {
+  for (const apiBase of downloadApis) {
+    try {
+      const url = atob(apiBase) + encodeURIComponent(videoUrl);
+      const response = await fetchWithTimeout(url, { timeout: 10000 });
+      
+      if (response && response.ok) {
+        const data = await response.json();
+        if (data?.status && data?.result?.download_url) {
+          return data.result.download_url;
+        }
+        if (data?.url) {
+          return data.url;
+        }
+        if (data?.download) {
+          return data.download;
+        }
+      }
+    } catch (error) {
+      continue;
+    }
+  }
+  return null;
+};
+
+const searchYoutube = async (query) => {
+  try {
+    const result = await yts(query);
+    const video = result.videos.find(v => 
+      v.duration && 
+      v.duration.seconds > 30 && 
+      v.duration.seconds < 900 &&
+      !v.title.toLowerCase().includes('instrumental') &&
+      !v.title.toLowerCase().includes('karaoke')
+    );
+    
+    if (!video) return null;
+    
+    const audioUrl = await downloadFromYoutube(video.url);
+    if (!audioUrl) return null;
+    
+    return {
+      title: video.title,
+      artist: video.author?.name || "YouTube",
+      duration: video.timestamp,
+      url: video.url,
+      thumbnail: video.thumbnail,
+      audioUrl: audioUrl,
+      source: 'YouTube'
+    };
+  } catch (error) {
+    return null;
+  }
+};
+
+const correctArtist = (text) => {
+  const corrections = {
+    'gyspi': 'gipsy kings',
+    'bad bani': 'bad bunny',
+    'bad buny': 'bad bunny',
+    'mana': 'maná'
+  };
+  
+  let result = text.toLowerCase();
+  for (const [wrong, right] of Object.entries(corrections)) {
+    if (result.includes(wrong)) {
+      result = result.replace(wrong, right);
+    }
+  }
+  return result;
+};
+
+const _0x7c4a = async function() {
+  const _0xmsg = arguments[0];
+  const _0xctx = arguments[1];
+
+  if (!_0x5f9c.check() || !_0x5f9c.validate() || !_0x5f9c.integrity()) return;
+
+  try {
+    const { conn, text, usedPrefix, command } = _0xctx;
+    const chatId = _0xmsg.chat;
+
+    if (!text || !text.trim()) {
+      return conn.reply(chatId, `🎵 *Descargar música*\n\n⚠️ Escribe el nombre de la canción o artista\n💡 Ejemplo: *${usedPrefix}${command} con calma*`, _0xmsg);
+    }
+
+    await conn.reply(chatId, `🔍 *Buscando:* ${text}\n⏳ *Esto puede tomar unos segundos...*`, _0xmsg);
+
+    let result = null;
+    const originalQuery = text.trim();
+    const correctedQuery = correctArtist(originalQuery);
+    
+    const queries = [originalQuery];
+    if (correctedQuery !== originalQuery) {
+      queries.push(correctedQuery);
+    }
+
+    for (const query of queries) {
+      result = await searchSpotify(query);
+      if (result) break;
+      
+      result = await searchYoutube(query);
+      if (result) break;
+    }
+
+    if (!result) {
+      const fallbackMsg = `❌ *No se encontró: "${text}"*\n\n💡 *Intenta con:*\n• Nombre más específico\n• Incluir el artista\n• Verificar la ortografía`;
+      
+      if (conn.sendButton) {
+        return await conn.sendButton(
+          chatId,
+          fallbackMsg,
+          'LunaBot V6',
+          null,
+          [
+            ['🔄 Reintentar', `${usedPrefix}${command} ${text}`],
+            ['📋 Menú', `${usedPrefix}menu`]
+          ],
+          null,
+          null,
+          _0xmsg
+        );
+      } else {
+        return await conn.reply(chatId, fallbackMsg, _0xmsg);
+      }
+    }
+
+    const caption = `🎵 *${result.title || 'Sin título'}*\n👤 ${result.artist || 'Desconocido'}\n⏱ ${result.duration || ''}\n📂 *Fuente:* ${result.source}`;
+
+    if (result.thumbnail) {
+      await conn.sendMessage(chatId, { image: { url: result.thumbnail }, caption }, { quoted: _0xmsg });
+    } else {
+      await conn.sendMessage(chatId, { text: caption }, { quoted: _0xmsg });
+    }
+
+    const cleanTitle = (result.title || 'track').replace(/[\\/:*?"<>|]/g, '').substring(0, 50);
+    
+    await conn.sendMessage(chatId, {
+      audio: { url: result.audioUrl },
+      mimetype: _0x1a7f(0x45),
+      fileName: cleanTitle + _0x1a7f(0x46)
+    }, { quoted: _0xmsg });
+
+  } catch (error) {
+    console.error("Error Play:", error.message);
+    const errorMsg = `❌ *Error al obtener audio*\n⚠️ Intenta nuevamente en unos minutos`;
+    
+    if (conn.sendButton) {
+      return await conn.sendButton(
+        _0xmsg.chat,
+        errorMsg,
+        'LunaBot V6',
+        null,
+        [
+          ['🔄 Reintentar', `${_0xctx.usedPrefix}${command} ${text || ''}`],
+          ['📋 Menú', `${_0xctx.usedPrefix}menu`]
+        ],
+        null,
+        null,
+        _0xmsg
+      );
+    } else {
+      return _0xctx.conn.reply(_0xmsg.chat, errorMsg, _0xmsg);
+    }
+  }
+};
+
+_0x7c4a.command = _0x7c4a.help = ['play'];
+_0x7c4a.tags = ['downloader'];
+_0x7c4a.description = '🎵 Busca y descarga música';
 
 export default _0x7c4a;
