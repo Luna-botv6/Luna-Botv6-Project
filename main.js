@@ -319,7 +319,7 @@ if (!fs.existsSync(`./${authFolder}/creds.json`)) {
         } else {
             while (true) {
                 numeroTelefono = await question(chalk.bgBlack(chalk.bold.yellowBright('[ ℹ️ ] Escriba su número de WhatsApp (incluya código de país):\nEjemplo: +5493483511079\n---> ')));
-               await conn.requestPairingCode(numeroTelefono)
+               await conn.requestPairingCode(numeroTelefono);
 
 
                 if (numeroTelefono.match(/^\d+$/) && Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
@@ -582,15 +582,30 @@ async function connectionUpdate(update) {
   }
 
   
-  if (connection === 'open') {
-    console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
-    console.log(chalk.green('[ ℹ️ ] Bot iniciado exitosamente'));
-    codigoSolicitado = false;
-  } else if (connection === 'connecting') {
-    console.log(chalk.yellow('[ ℹ️ ] Conectando a WhatsApp...'));
-  } else if (connection === 'close') {
-    console.log(chalk.red('[ ❌ ] Conexión cerrada'));
-  }
+if (connection === 'open') {
+  console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
+  console.log(chalk.green('[ ℹ️ ] Bot iniciado exitosamente'));
+  codigoSolicitado = false;
+
+  // subir pre-keys en background
+  setImmediate(async () => {
+    try {
+      if (global.conn?.uploadPreKeysToServerIfRequired) {
+        await global.conn.uploadPreKeysToServerIfRequired();
+        console.log(chalk.yellow('[ ℹ️ ] Pre-keys subidas/verificadas.'));
+      }
+    } catch (e) {
+      console.log(chalk.red('[ ❗ ] Error al subir pre-keys:'), e?.message || e);
+    }
+  });
+
+} else if (connection === 'connecting') {
+  console.log(chalk.yellow('[ ℹ️ ] Conectando a WhatsApp...'));
+
+} else if (connection === 'close') {
+  console.log(chalk.red('[ ❌ ] Conexión cerrada'));
+}
+
 
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
   if (reason == 405) {
@@ -809,18 +824,32 @@ setInterval(() => {
   if (privacyConfig.dataRetention.enabled) cleanOldUserData();
 }, 1000 * 60 * 60 * 2); // Cada 2 horas
 
+// refrescar pre-keys cada 5 minutos
+setInterval(() => {
+  if (!global.conn || !global.conn.user) return;
+  setImmediate(async () => {
+    try {
+      await global.conn.uploadPreKeysToServerIfRequired();
+    } catch (e) {
+      console.log('[⚠️] Error en refresco de pre-keys:', e?.message || e);
+    }
+  });
+}, 1000 * 60 * 5);
+
+
 setInterval(() => {
   if (stopped === 'close' || !global.conn || !global.conn?.user) return;
   if (isCleanerEnabled()) runCleaner();
 }, 1000 * 60 * 60 * 6);
 
 setInterval(async () => {
-  if (stopped === 'close' || !conn || !conn?.user) return;
+  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
   const _uptime = process.uptime() * 1000;
   const uptime = clockString(_uptime);
   const bio = `• Activo: ${uptime} | TheMystic-Bot-MD`;
-  await conn?.updateProfileStatus(bio).catch((_) => _);
+  await global.conn?.updateProfileStatus(bio).catch(() => {});
 }, 60000);
+
 
 function clockString(ms) {
   const d = isNaN(ms) ? '--' : Math.floor(ms / 86400000);

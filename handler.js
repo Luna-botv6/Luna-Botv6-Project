@@ -10,6 +10,47 @@ process.setMaxListeners(50);
 import { unwatchFile, watchFile } from 'fs';
 import fs from 'fs';
 import chalk from 'chalk';
+import { readFile } from 'fs/promises';
+const translationsCache = new Map();
+const customCommandsCache = new Map();
+
+async function loadTranslation(idioma) {
+  if (translationsCache.has(idioma)) return translationsCache.get(idioma);
+  try {
+    const data = await readFile(`./src/languages/${idioma}.json`, 'utf8');
+    const parsed = JSON.parse(data);
+    translationsCache.set(idioma, parsed);
+    return parsed;
+  } catch (e) {
+    console.error('Error cargando idioma', idioma, e?.message || e);
+    return {};
+  }
+}
+
+async function loadCustomCommandsOnce(customCommandsDir) {
+  if (!fs.existsSync(customCommandsDir)) return;
+  if (customCommandsCache.size > 0) return; 
+  const files = await fs.promises.readdir(customCommandsDir);
+  for (const file of files.filter(f => f.endsWith('.js'))) {
+    const filePath = path.join(customCommandsDir, file);
+    try {
+      const mod = await import(`file://${filePath}?t=${Date.now()}`);
+      customCommandsCache.set(file, mod.default || mod);
+    } catch (e) {
+      console.log(`Error cargando comando personalizado ${file}:`, e.message);
+    }
+  }
+}
+
+function withTimeout(promise, ms, fallback = null) {
+  let timer;
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    new Promise((resolve) => timer = setTimeout(() => resolve(fallback), ms))
+  ]);
+}
+
+
 import mddd5 from 'md5';
 import ws from 'ws';
 import { setConfig } from './lib/funcConfig.js'
@@ -216,9 +257,10 @@ if (settings) {
       logError(e, m?.plugin || 'handler');
     }
 
-    const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
-    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-    const tradutor = _translate.handler.handler
+const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
+const _translate = await loadTranslation(idioma);
+const tradutor = _translate.handler?.handler || {};
+
 
     if (opts['nyimak']) {
       return;
@@ -296,21 +338,11 @@ const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].
     
     const allPlugins = { ...global.plugins };
     
-    if (fs.existsSync(customCommandsDir)) {
-      const customFiles = fs.readdirSync(customCommandsDir).filter(file => file.endsWith('.js'));
-      
-      for (const file of customFiles) {
-        const filePath = path.join(customCommandsDir, file);
-        try {
-          const pluginModule = await import(`file://${filePath}?t=${Date.now()}`);
-          if (pluginModule.default) {
-            allPlugins[`custom-${file}`] = pluginModule.default;
-          }
-        } catch (error) {
-          console.log(`Error cargando comando personalizado ${file}:`, error.message);
-        }
-      }
-    }
+await loadCustomCommandsOnce(customCommandsDir);
+for (const [file, plugin] of customCommandsCache.entries()) {
+  allPlugins[`custom-${file}`] = plugin;
+}
+
     
     for (const name in allPlugins) {
       const plugin = allPlugins[name];
@@ -669,54 +701,67 @@ export async function participantsUpdate({ id, participants, action }) {
       if (chat.welcome && !chat?.isBanned) {
         const groupMetadata = await m?.conn?.groupMetadata(id) || (conn?.chats[id] || {}).metadata;
         for (const user of participants) {
-          if (isRecentParticipantEvent(id, user, action)) {
-            console.log(`🔄 Evento duplicado ignorado: ${action} para ${user.split('@')[0]} en grupo`);
-            continue;
-          }
-          
-          let pp = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/185984ba06daeb2e6f8c453ad8bd47701dc28a03/IMG-20250519-WA0115.jpg';
-
-          try {
-            pp = await m?.conn?.profilePictureUrl(user, 'image');
-          } catch (e) {
-          } finally {
-            const apii = await mconn?.conn?.getFile(pp);
-            const antiArab = JSON.parse(fs.readFileSync('./src/antiArab.json'));
-            const userPrefix = antiArab.some((prefix) => user.startsWith(prefix));
-            const botTt2 = groupMetadata?.participants?.find((u) => m?.conn?.decodeJid(u.id) == m?.conn?.user?.jid) || {};
-            const isBotAdminNn = botTt2?.admin === 'admin' || false;
-            if (action === 'add') {
-  if (chat.sWelcome && chat.sWelcome.trim() !== '') {
-    text = chat.sWelcome
-      .replace('@user', '@' + user.split('@')[0])
-      .replace('@group', groupMetadata?.subject || 'Grupo')
-      .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
-  } else {
-    text = (tradutor.texto1 || conn.welcome || '¡Bienvenido/a @user!')
-      .replace('@user', '@' + user.split('@')[0])
-      .replace('@group', groupMetadata?.subject || 'Grupo')
-      .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
+  if (isRecentParticipantEvent(id, user, action)) {
+    console.log(`🔄 Evento duplicado ignorado: ${action} para ${user.split('@')[0]} en grupo`);
+    continue;
   }
-} else {
-  if (chat.sBye && chat.sBye.trim() !== '') {
-    text = chat.sBye.replace('@user', '@' + user.split('@')[0]);
-  } else {
-    text = (tradutor.texto2 || conn.bye || 'Adiós @user')
-      .replace('@user', '@' + user.split('@')[0]);
+  
+  let pp;
+  let apii;
+  
+  try {
+    const defaultPP = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-DEFAULT.jpg';
+    pp = await withTimeout(m?.conn?.profilePictureUrl(user, 'image'), 3000, defaultPP);
+    apii = await withTimeout(mconn?.conn?.getFile(pp), 5000, null);
+    
+    if (!apii) {
+      pp = defaultPP;
+      apii = await withTimeout(mconn?.conn?.getFile(pp), 5000, null);
+      if (!apii) continue;
+    }
+
+    const antiArab = JSON.parse(fs.readFileSync('./src/antiArab.json'));
+    const userPrefix = antiArab.some((prefix) => user.startsWith(prefix));
+    const botTt2 = groupMetadata?.participants?.find((u) => m?.conn?.decodeJid(u.id) == m?.conn?.user?.jid) || {};
+    const isBotAdminNn = botTt2?.admin === 'admin' || false;
+    
+    if (action === 'add') {
+      if (chat.sWelcome && chat.sWelcome.trim() !== '') {
+        text = chat.sWelcome
+          .replace('@user', '@' + user.split('@')[0])
+          .replace('@group', groupMetadata?.subject || 'Grupo')
+          .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
+      } else {
+        text = (tradutor.texto1 || conn.welcome || '¡Bienvenido/a @user!')
+          .replace('@user', '@' + user.split('@')[0])
+          .replace('@group', groupMetadata?.subject || 'Grupo')
+          .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
+      }
+    } else {
+      if (chat.sBye && chat.sBye.trim() !== '') {
+        text = chat.sBye.replace('@user', '@' + user.split('@')[0]);
+      } else {
+        text = (tradutor.texto2 || conn.bye || 'Adiós @user')
+          .replace('@user', '@' + user.split('@')[0]);
+      }
+    }
+
+    if (userPrefix && chat.antiArab && botTt.restrict && isBotAdminNn && action === 'add') {
+      const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
+      if (responseb[0].status === '404') return;
+      const fkontak2 = { 'key': { 'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo' }, 'message': { 'contactMessage': { 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` } }, 'participant': '0@s.whatsapp.net' };
+      await m?.conn?.sendMessage(id, { text: `*[◉] @${conn.decodeJid(user).split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ʏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ Φ ᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [conn.decodeJid(user)] }, { quoted: fkontak2 });
+      return;
+    }
+    
+    await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [conn.decodeJid(user)] });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+  } catch (e) {
+    console.error('Error procesando usuario:', e?.message || e);
+    continue;
   }
 }
-
-            if (userPrefix && chat.antiArab && botTt.restrict && isBotAdminNn && action === 'add') {
-              const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
-              if (responseb[0].status === '404') return;
-              const fkontak2 = { 'key': { 'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo' }, 'message': { 'contactMessage': { 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` } }, 'participant': '0@s.whatsapp.net' };
-              await m?.conn?.sendMessage(id, { text: `*[◉] @${conn.decodeJid(user).split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ʏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ φᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [conn.decodeJid(user)] }, { quoted: fkontak2 });
-              return;
-            }
-            await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [conn.decodeJid(user)] });
-              await new Promise(resolve => setTimeout(resolve, 2000));
-          }
-        }
       }
       break;
     case 'promote':
@@ -877,5 +922,3 @@ process.on('uncaughtException', (err) => {
     console.log('⚠️ Error no manejado (excepción):', msg);
   }
 });
-
-//hola
