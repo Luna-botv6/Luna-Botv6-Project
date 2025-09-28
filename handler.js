@@ -877,3 +877,5 @@ process.on('uncaughtException', (err) => {
     console.log('⚠️ Error no manejado (excepción):', msg);
   }
 });
+
+//hola
