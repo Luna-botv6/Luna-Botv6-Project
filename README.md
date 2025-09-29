@@ -88,6 +88,71 @@
 
 ## 🌟 Características
 
+## 🚀💫 **¡NOVEDAD EMOCIONANTE!** ✨🎉
+
+<div align="center">
+
+### 🛠️⚡ **Crea Tus Propios Comandos Personalizados** ⚡🛠️
+
+![Custom Commands](https://img.shields.io/badge/🤖-COMANDOS_PERSONALIZADOS-FF6B6B?style=for-the-badge&logo=robot&logoColor=white&labelColor=FF4757)
+![Owner Only](https://img.shields.io/badge/👑-SOLO_OWNERS-FFD700?style=for-the-badge&logo=crown&logoColor=black&labelColor=FFA502)
+![Easy Creation](https://img.shields.io/badge/⚡-CREACIÓN_FÁCIL-4ECDC4?style=for-the-badge&logo=magic&logoColor=white&labelColor=00CEC9)
+
+**🎯 ¡Ahora puedes crear tus propios comandos sin escribir código!** 
+*El bot te guiará paso a paso para que personalices tu experiencia al máximo* 🌟
+
+</div>
+
+---
+
+### 🎨 **¿Qué Puedes Crear?**
+
+| 📝 **Mensajes Personalizados** | 🏷️ **Etiquetas Inteligentes** | 🖼️ **Comandos con Imágenes** |
+|:------------------------------:|:-----------------------------:|:----------------------------:|
+| Crea respuestas únicas con tu toque personal | Decide quién será mencionado automáticamente | Agrega contenido visual a tus comandos |
+
+---
+
+### 📋 **Guía Paso a Paso**
+
+| Paso | Comando | Descripción | Ejemplo |
+|:----:|---------|-------------|---------|
+| **1️⃣** | `🚀 /createcode` | Inicia el creador de comandos | `/createcode` |
+| **2️⃣** | `📝 /setmessage` | Define el mensaje de respuesta | `/setmessage ¡Hola mundo!` |
+| **3️⃣** | `🏷️ /settag` | Configura las menciones | `/settag si` `/settag no` `/settag todos` |
+| **4️⃣** | `🖼️ /setimage` | Añade soporte para imágenes | `/setimage si` `/setimage no` |
+| **5️⃣** | `⚡ /setcommand` | Establece el nombre del comando | `/setcommand micomando` |
+
+---
+
+### 🎯 **Características Destacadas**
+
+<div align="center">
+
+| 🤖 **Guiado Inteligente** | 👑 **Exclusivo para Owners** | ⚡ **Sin Código** |
+|:------------------------:|:-----------------------------:|:------------------:|
+| ![Bot Guide](https://img.shields.io/badge/🤖-GUÍA_AUTOMÁTICA-00D2D3?style=flat-square) | ![Crown](https://img.shields.io/badge/👑-PRIVILEGIOS_VIP-FFD700?style=flat-square) | ![No Code](https://img.shields.io/badge/⚡-ZERO_CODING-FF6B6B?style=flat-square) |
+| El bot te dice exactamente qué hacer | Solo los propietarios pueden crear comandos | No necesitas saber programar |
+
+| 🎨 **Personalización Total** | 📱 **Fácil de Usar** | 🔧 **Configuración Flexible** |
+|:---------------------------:|:---------------------:|:-----------------------------:|
+| ![Customize](https://img.shields.io/badge/🎨-100%25_PERSONALIZABLE-A55EEA?style=flat-square) | ![Easy](https://img.shields.io/badge/📱-INTERFAZ_AMIGABLE-26DE81?style=flat-square) | ![Flexible](https://img.shields.io/badge/🔧-SÚPER_FLEXIBLE-FF9F43?style=flat-square) |
+| Comandos únicos que reflejen tu personalidad | Interfaz intuitiva y comandos simples | Opciones avanzadas disponibles |
+
+</div>
+
+---
+
+<div align="center">
+
+### 🌟 **¡Desata tu Creatividad!** 🌟
+
+**Con esta función, el límite es tu imaginación. Crea comandos únicos, divertidos y completamente personalizados que hagan de tu bot algo especial** ✨
+
+*¿Qué esperás? ¡Empezá a crear tus propios comandos ahora mismo!* 🚀
+
+</div>
+
 ### 🎮 **Entretenimiento**
 - Sistema de juegos completo (ahorcado, piedra/papel/tijera, tic-tac-toe)
 - Máquina tragamonedas con sistema de recompensas
