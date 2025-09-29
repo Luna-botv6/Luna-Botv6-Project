@@ -258,6 +258,8 @@ graph TD
 
 <div align="center">
 
+---
+
 ### 🎯 **¡Mantente Siempre Actualizado!** 🎯
 
 **Con este sistema, nunca te quedarás atrás. Tu bot siempre tendrá las últimas funciones, correcciones de bugs y mejoras de seguridad** ✨
@@ -265,7 +267,9 @@ graph TD
 *¡Solo ejecuta el comando y deja que el sistema haga el resto!* 🚀
 
 </div>
+
 ---
+
 ### 🎮 **Entretenimiento**
 - Sistema de juegos completo (ahorcado, piedra/papel/tijera, tic-tac-toe)
 - Máquina tragamonedas con sistema de recompensas
