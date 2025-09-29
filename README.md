@@ -152,7 +152,118 @@
 *¿Qué esperás? ¡Empezá a crear tus propios comandos ahora mismo!* 🚀
 
 </div>
+---
+## ⚡🔄 **Sistema de Actualización Inteligente** 🔄⚡
 
+<div align="center">
+
+![Auto Update](https://img.shields.io/badge/🔄-ACTUALIZACIÓN_AUTOMÁTICA-00D4AA?style=for-the-badge&logo=refresh&logoColor=white&labelColor=00A085)
+![Git Integration](https://img.shields.io/badge/📦-INTEGRACIÓN_GIT-F05032?style=for-the-badge&logo=git&logoColor=white&labelColor=E94E32)
+![Owner Control](https://img.shields.io/badge/👑-CONTROL_TOTAL-FFD700?style=for-the-badge&logo=settings&logoColor=black&labelColor=FFA502)
+
+**🎯 Mantén tu bot siempre actualizado con la última versión del repositorio**
+*Sistema inteligente que detecta, compara y aplica actualizaciones automáticamente* 🚀
+
+</div>
+
+---
+
+### 🔍 **Detección Automática de Actualizaciones**
+
+| 🔍 **Verificación** | 📊 **Comparación** | 🔄 **Aplicación** |
+|:------------------:|:-----------------:|:-----------------:|
+| ![Check](https://img.shields.io/badge/🔍-VERIFICACIÓN_AUTOMÁTICA-4A90E2?style=flat-square) | ![Compare](https://img.shields.io/badge/📊-COMPARACIÓN_INTELIGENTE-F39C12?style=flat-square) | ![Apply](https://img.shields.io/badge/🔄-APLICACIÓN_SEGURA-27AE60?style=flat-square) |
+| Revisa el repositorio en tiempo real | Compara archivos locales vs remotos | Actualiza solo lo necesario |
+
+---
+
+### 📋 **Comandos de Actualización**
+
+| Comando | Función | Descripción | Uso |
+|:-------:|---------|-------------|-----|
+| 🔍 `/actualizacion` | **Verificar Updates** | Busca nuevas actualizaciones disponibles | `/actualizacion` |
+| 📥 `/gitpull` | **Actualizar Normal** | Descarga e instala actualizaciones | `/gitpull` |
+| ⚡ `/gitpull --force` | **Actualización Forzada** | Actualiza eliminando cambios locales | `/gitpull --force` |
+
+---
+
+### ⭐ **Características Avanzadas**
+
+<div align="center">
+
+| 🎯 **Detección Inteligente** | 📁 **Comparación de Archivos** | 🔒 **Actualizaciones Seguras** |
+|:---------------------------:|:------------------------------:|:-----------------------------:|
+| ![Smart](https://img.shields.io/badge/🎯-DETECCIÓN_SMART-9B59B6?style=flat-square) | ![Files](https://img.shields.io/badge/📁-COMPARACIÓN_FILES-E67E22?style=flat-square) | ![Safe](https://img.shields.io/badge/🔒-UPDATES_SEGUROS-2ECC71?style=flat-square) |
+| Detecta automáticamente nuevos commits | Compara hasta 10 archivos simultáneamente | Respeta límites de API y rate limits |
+
+| 🧹 **Auto-Limpieza** | 📱 **Reportes Detallados** | ⚠️ **Manejo de Errores** |
+|:--------------------:|:--------------------------:|:-------------------------:|
+| ![Clean](https://img.shields.io/badge/🧹-AUTO_LIMPIEZA-3498DB?style=flat-square) | ![Report](https://img.shields.io/badge/📱-REPORTES_DETAIL-E74C3C?style=flat-square) | ![Error](https://img.shields.io/badge/⚠️-MANEJO_ERRORES-F39C12?style=flat-square) |
+| Elimina archivos temporales automáticamente | Muestra qué cambió y estado de archivos | Manejo inteligente de conflictos |
+
+</div>
+
+---
+
+### 🚀 **Proceso de Actualización**
+
+```mermaid
+graph TD
+    A[🔍 Verificar Updates] --> B{¿Hay actualizaciones?}
+    B -->|Sí| C[📊 Comparar Archivos]
+    B -->|No| D[✅ Bot Actualizado]
+    C --> E[📋 Mostrar Cambios]
+    E --> F[📥 Descargar Updates]
+    F --> G[🔄 Aplicar Cambios]
+    G --> H[🧹 Limpiar Temporales]
+    H --> I[✅ Actualización Completa]
+    
+    style A fill:#4A90E2,stroke:#fff,stroke-width:2px,color:#fff
+    style C fill:#F39C12,stroke:#fff,stroke-width:2px,color:#fff
+    style F fill:#27AE60,stroke:#fff,stroke-width:2px,color:#fff
+    style I fill:#2ECC71,stroke:#fff,stroke-width:2px,color:#fff
+```
+
+---
+
+### 💡 **Información Mostrada en cada Update**
+
+| 📊 Dato | 📝 Descripción |
+|:-------:|----------------|
+| **👤 Autor** | Quién realizó los cambios |
+| **📅 Fecha** | Cuándo se realizaron los cambios |
+| **💬 Mensaje** | Descripción de qué se modificó |
+| **📁 Archivos** | Lista de archivos modificados/agregados/eliminados |
+| **🔍 Estado Local** | Si tus archivos están actualizados o no |
+| **📋 Commits Recientes** | Últimas 3 actualizaciones disponibles |
+
+---
+
+### ⚠️ **Opciones de Seguridad**
+
+<div align="center">
+
+| 🔄 **Actualización Normal** | ⚡ **Actualización Forzada** |
+|:---------------------------:|:----------------------------:|
+| ![Normal](https://img.shields.io/badge/🔄-MODO_SEGURO-27AE60?style=for-the-badge) | ![Force](https://img.shields.io/badge/⚡-MODO_FORZADO-E74C3C?style=for-the-badge) |
+| Preserva tus modificaciones locales | **¡CUIDADO!** Elimina cambios locales |
+| Se detiene si hay conflictos | Sobrescribe archivos modificados |
+| **Recomendado para uso normal** | **Solo usar si es necesario** |
+
+</div>
+
+---
+
+<div align="center">
+
+### 🎯 **¡Mantente Siempre Actualizado!** 🎯
+
+**Con este sistema, nunca te quedarás atrás. Tu bot siempre tendrá las últimas funciones, correcciones de bugs y mejoras de seguridad** ✨
+
+*¡Solo ejecuta el comando y deja que el sistema haga el resto!* 🚀
+
+</div>
+---
 ### 🎮 **Entretenimiento**
 - Sistema de juegos completo (ahorcado, piedra/papel/tijera, tic-tac-toe)
 - Máquina tragamonedas con sistema de recompensas
