@@ -10,6 +10,8 @@ process.setMaxListeners(50);
 import { unwatchFile, watchFile } from 'fs';
 import fs from 'fs';
 import chalk from 'chalk';
+import mentionListener from './plugins/game-ialuna.js';
+import { getConfig } from './lib/funcConfig.js';
 import { readFile } from 'fs/promises';
 const translationsCache = new Map();
 const customCommandsCache = new Map();
@@ -45,7 +47,7 @@ async function loadCustomCommandsOnce(customCommandsDir) {
 function withTimeout(promise, ms, fallback = null) {
   let timer;
   return Promise.race([
-    promise.finally(() => clearTimeout(timer)),
+  Promise.resolve(promise).finally(() => clearTimeout(timer)),
     new Promise((resolve) => timer = setTimeout(() => resolve(fallback), ms))
   ]);
 }
@@ -290,7 +292,14 @@ if (m.message?.templateButtonReplyMessage?.selectedId) {
 if (m.message?.listResponseMessage?.singleSelectReply?.selectedRowId) {
   m.text = m.message.listResponseMessage.singleSelectReply.selectedRowId;
 }
-
+if (m.message?.interactiveResponseMessage?.nativeFlowResponseMessage) {
+  try {
+    const id = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson)?.id;
+    if (id) m.text = id;  
+  } catch (e) {
+    console.error("Error parseando interactiveResponse:", e);
+  }
+}
 const senderJid = conn.decodeJid(m.sender || '');
 const senderNum = senderJid.replace(/[^0-9]/g, '');
 
@@ -488,7 +497,8 @@ ${tradutor.texto1[1]} ${messageNumber}/3
           }
         }
         const hl = _prefix;
-        const adminMode = global.db.data.chats[m.chat].modoadmin;
+        const chat = global.db.data.chats[m.chat] = global.db.data.chats[m.chat] || getConfig(m.chat);
+        const adminMode = chat.modoadmin;
         if (
   adminMode &&
   !isOwner &&
@@ -595,6 +605,23 @@ ${tradutor.texto1[1]} ${messageNumber}/3
 await m.reply(text);
 }
 } finally {
+    // Inicializar listener de IA si es necesario
+
+if (!global.mentionListenerInitialized) {
+
+  try {
+
+    mentionListener(this);
+
+    global.mentionListenerInitialized = true;
+
+  } catch (e) {
+
+    console.error('Error inicializando mentionListener:', e);
+
+  }
+
+}
 
           if (typeof plugin.after === 'function') {
             try {
@@ -685,13 +712,13 @@ if (settingsREAD.autoread || settingsREAD.autoread2) {
 
 export async function participantsUpdate({ id, participants, action }) {
   const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const _translate = await loadTranslation(idioma);
   const tradutor = _translate.handler.participantsUpdate
 
   const m = mconn
   if (opts['self']) return;
   if (global.db.data == null) await loadDatabase();
-  const chat = global.db.data.chats[id] || {};
+  const chat = global.db.data.chats[id] = getConfig(id);
   const botTt = global.db.data.settings[mconn?.conn?.user?.jid] || {};
   let text = '';
   
@@ -798,7 +825,7 @@ if (chat.detect && !chat?.isBanned) {
 
 export async function groupsUpdate(groupsUpdate) {
   const idioma = global.db.data.chats[groupsUpdate[0].id]?.language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const _translate = await loadTranslation(idioma);
   const tradutor = _translate.handler.participantsUpdate
 
   if (opts['self']) {
@@ -840,7 +867,7 @@ export async function deleteUpdate(message) {
   const datas = global
   const id = message?.participant 
   const idioma = datas.db.data.users[id]?.language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const _translate = await loadTranslation(idioma);
   const tradutor = _translate.handler.deleteUpdate
 
 
@@ -868,10 +895,10 @@ ${tradutor.texto1[5]}`.trim();
   }
 }
 
-global.dfail = (type, m, conn) => {
+global.dfail = async (type, m, conn) => {
   const datas = global
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const _translate = await loadTranslation(idioma);
   const tradutor = _translate.handler.dfail
 
   const msg = {

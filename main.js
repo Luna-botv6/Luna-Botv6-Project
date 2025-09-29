@@ -27,7 +27,6 @@ import readline from 'readline';
 import NodeCache from 'node-cache';
 import { restaurarConfiguraciones } from './lib/funcConfig.js';
 import { getOwnerFunction } from './lib/owner-funciones.js';
-import mentionListener from './plugins/game-ialuna.js';
 import { isCleanerEnabled } from './lib/cleaner-config.js';
 import { startAutoCleanService } from './auto-cleaner.js';
 import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.js';
@@ -285,7 +284,6 @@ const connectionOptions = {
 
 
 global.conn = makeWASocket(connectionOptions);
-mentionListener(global.conn);
 restaurarConfiguraciones(global.conn);
 const ownerConfig = getOwnerFunction()
 if (ownerConfig.modopublico) global.conn.public = true
