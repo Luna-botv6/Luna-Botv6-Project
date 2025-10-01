@@ -727,26 +727,19 @@ export async function participantsUpdate({ id, participants, action }) {
     case 'remove':
       if (chat.welcome && !chat?.isBanned) {
         const groupMetadata = await m?.conn?.groupMetadata(id) || (conn?.chats[id] || {}).metadata;
-        for (const user of participants) {
+       for (const user of participants) {
   if (isRecentParticipantEvent(id, user, action)) {
     console.log(`🔄 Evento duplicado ignorado: ${action} para ${user.split('@')[0]} en grupo`);
     continue;
   }
   
-  let pp;
-  let apii;
-  
-  try {
-    const defaultPP = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-DEFAULT.jpg';
-    pp = await withTimeout(m?.conn?.profilePictureUrl(user, 'image'), 3000, defaultPP);
-    apii = await withTimeout(mconn?.conn?.getFile(pp), 5000, null);
-    
-    if (!apii) {
-      pp = defaultPP;
-      apii = await withTimeout(mconn?.conn?.getFile(pp), 5000, null);
-      if (!apii) continue;
-    }
+  let pp = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/185984ba06daeb2e6f8c453ad8bd47701dc28a03/IMG-20250519-WA0115.jpg';
 
+  try {
+    pp = await m?.conn?.profilePictureUrl(user, 'image');
+  } catch (e) {
+  } finally {
+    const apii = await mconn?.conn?.getFile(pp);
     const antiArab = JSON.parse(fs.readFileSync('./src/antiArab.json'));
     const userPrefix = antiArab.some((prefix) => user.startsWith(prefix));
     const botTt2 = groupMetadata?.participants?.find((u) => m?.conn?.decodeJid(u.id) == m?.conn?.user?.jid) || {};
@@ -777,20 +770,16 @@ export async function participantsUpdate({ id, participants, action }) {
       const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
       if (responseb[0].status === '404') return;
       const fkontak2 = { 'key': { 'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo' }, 'message': { 'contactMessage': { 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` } }, 'participant': '0@s.whatsapp.net' };
-      await m?.conn?.sendMessage(id, { text: `*[◉] @${conn.decodeJid(user).split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ʏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ Φ ᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [conn.decodeJid(user)] }, { quoted: fkontak2 });
+      await m?.conn?.sendMessage(id, { text: `*[◉] @${conn.decodeJid(user).split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ʏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ ǫᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [conn.decodeJid(user)] }, { quoted: fkontak2 });
       return;
     }
     
     await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [conn.decodeJid(user)] });
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
-  } catch (e) {
-    console.error('Error procesando usuario:', e?.message || e);
-    continue;
-  }
-}
+            }
+        }
       }
-      break;
+    break;
     case 'promote':
     case 'daradmin':
     case 'darpoder':
