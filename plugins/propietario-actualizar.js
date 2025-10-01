@@ -17,17 +17,19 @@ const handler = async (m, { conn, text, usedPrefix }) => {
     return
   }
 
+  let finalMessage = ''
+
   try {
     execSync('git rev-parse --git-dir', { stdio: 'ignore' })
   } catch {
+    finalMessage += '🔧 Inicializando repositorio Git...\n'
     try {
-      await conn.reply(m.chat, '🔧 Inicializando repositorio Git...', m)
       execSync('git init')
       execSync('git remote add origin https://github.com/Luna-botv6/Luna-Botv6-Project.git')
       execSync('git fetch origin')
       execSync('git checkout -b main')
       execSync('git reset --hard origin/main')
-      await conn.reply(m.chat, '✅ Repositorio Git inicializado correctamente.', m)
+      finalMessage += '✅ Repositorio Git inicializado correctamente.\n'
     } catch (e) {
       await conn.reply(m.chat, `❌ Error al inicializar:\n${e.message}`, m)
       return
@@ -35,52 +37,52 @@ const handler = async (m, { conn, text, usedPrefix }) => {
   }
 
   try {
-    await conn.reply(m.chat, '🔍 Verificando actualizaciones...', m)
+    finalMessage += '🔍 Verificando actualizaciones...\n'
     execSync('git fetch origin')
     const localCommit = execSync('git rev-parse HEAD').toString().trim()
     const remoteCommit = execSync('git rev-parse origin/main').toString().trim()
     if (localCommit === remoteCommit) {
-      await conn.reply(m.chat, '✅ El bot ya está actualizado.', m)
+      finalMessage += '✅ El bot ya está actualizado.\n'
+      await conn.sendButton(
+        m.chat,
+        finalMessage,
+        'LunaBot V6',
+        null,
+        [
+          ['🔄 Restaurar Backup', `${usedPrefix}restaurar`]
+        ],
+        null,
+        null,
+        m
+      )
       cleanupGitFolder()
       return
     }
 
-    await conn.reply(m.chat, '📥 Descargando cambios, espera...', m)
+    finalMessage += '📥 Descargando cambios, espera...\n'
     const pullOutput = await runGitPull()
 
-    let messager = ''
-    if (pullOutput.includes('Already up to date.')) messager = '✅ El bot ya está actualizado.'
-    else if (pullOutput.includes('Updating') || pullOutput.includes('Fast-forward')) messager = '🔄 Bot actualizado exitosamente!\n```\n' + pullOutput + '\n```'
-    else messager = '✅ Actualización completada:\n```\n' + pullOutput + '\n```'
+    if (pullOutput.includes('Already up to date.')) finalMessage += '✅ El bot ya está actualizado.\n'
+    else if (pullOutput.includes('Updating') || pullOutput.includes('Fast-forward')) finalMessage += '🔄 Bot actualizado exitosamente!\n```\n' + pullOutput + '\n```\n'
+    else finalMessage += '✅ Actualización completada:\n```\n' + pullOutput + '\n```\n'
 
-    await conn.reply(m.chat, messager, m)
-
-   setTimeout(async () => {
-  try {
-    await conn.reply(m.chat, '⏳ Restaurando archivos omitidos...', m)
+    finalMessage += '⏳ Restaurando archivos omitidos...\n'
     await restoreBackup()
 
- await conn.sendButton(
-  m.chat,
-  '✅ Actualización completada. Puedes restaurar los archivos omitidos usando el botón:',
-  'LunaBot V6',
-  null,
-  [
-    ['🔄 Restaurar Backup', `${usedPrefix}restaurar`]
-  ],
-  null,
-  null,
-  m
-)
-
+    await conn.sendButton(
+      m.chat,
+      finalMessage,
+      'LunaBot V6',
+      null,
+      [
+        ['🔄 Restaurar Backup', `${usedPrefix}restaurar`]
+      ],
+      null,
+      null,
+      m
+    )
 
     cleanupGitFolder()
-  } catch (e) {
-    await conn.reply(m.chat, '❌ Error al restaurar backup:\n' + (e && e.message ? e.message : String(e)), m)
-    cleanupGitFolder()
-  }
-}, 5000)
-
   } catch (error) {
     try {
       const status = execSync('git status --porcelain')
