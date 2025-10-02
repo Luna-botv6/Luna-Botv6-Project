@@ -170,8 +170,9 @@
 
 ---
 
-### 🔍 **Detección Automática de Actualizaciones**
+markdown# 📋 Sistema Completo de Actualización y Gestión
 
+## 🔍 **Detección Automática de Actualizaciones**
 | 🔍 **Verificación** | 📊 **Comparación** | 🔄 **Aplicación** |
 |:------------------:|:-----------------:|:-----------------:|
 | ![Check](https://img.shields.io/badge/🔍-VERIFICACIÓN_AUTOMÁTICA-4A90E2?style=flat-square) | ![Compare](https://img.shields.io/badge/📊-COMPARACIÓN_INTELIGENTE-F39C12?style=flat-square) | ![Apply](https://img.shields.io/badge/🔄-APLICACIÓN_SEGURA-27AE60?style=flat-square) |
@@ -179,17 +180,127 @@
 
 ---
 
-### 📋 **Comandos de Actualización**
+## 📋 **Comandos de Actualización**
 
+### **Verificación y Actualización Básica**
 | Comando | Función | Descripción | Uso |
 |:-------:|---------|-------------|-----|
 | 🔍 `/actualizacion` | **Verificar Updates** | Busca nuevas actualizaciones disponibles | `/actualizacion` |
 | 📥 `/gitpull` | **Actualizar Normal** | Descarga e instala actualizaciones | `/gitpull` |
 | ⚡ `/gitpull --force` | **Actualización Forzada** | Actualiza eliminando cambios locales | `/gitpull --force` |
 
+### **Gestión Avanzada de Archivos**
+| Comando | Función | Descripción | Uso |
+|:-------:|---------|-------------|-----|
+| 🛡️ `/gitpull omite` | **Actualización Protegida** | Actualiza omitiendo archivos específicos | `/gitpull omite` |
+| 🔄 `/restaurar` | **Restaurar Backup** | Restaura archivos del backup protegido | `/restaurar` |
+| 🗑️ `/eliminarbackup` | **Eliminar Backup** | Elimina los archivos de respaldo guardados | `/eliminarbackup` |
+
 ---
 
-### ⭐ **Características Avanzadas**
+## 🎯 **Flujo de Trabajo Recomendado**
+┌─────────────────┐
+│ /actualizacion  │
+└────────┬────────┘
+│
+¿Hay updates?
+│
+┌────┴────┐
+│   Sí    │         No → Sistema actualizado ✓
+└────┬────┘
+│
+/gitpull
+│
+¿Proteger archivos?
+│
+┌────┴────┐
+│   Sí    │         No → /gitpull normal
+└────┬────┘
+│
+/gitpull omite
+│
+Backup creado 🛡️
+│
+¿Problema?
+│
+┌────┴────┐
+│   Sí    │         No → /eliminarbackup
+└────┬────┘
+│
+/restaurar
+
+---
+
+## 💡 **Casos de Uso**
+
+### **Escenario 1: Actualización Estándar**
+```bash
+/actualizacion          # Verificar
+/gitpull               # Actualizar todo
+Escenario 2: Proteger Configuraciones Personales
+bash/actualizacion         # Verificar
+/gitpull omite         # Actualizar protegiendo archivos
+# Tus configs.js, .env, database.json se mantienen seguros
+Escenario 3: Recuperación de Emergencia
+bash/gitpull omite         # Algo salió mal
+/restaurar             # Volver a la versión anterior
+Escenario 4: Limpieza de Backups
+bash/eliminarbackup        # Todo funciona bien, eliminar respaldos
+
+🔐 Archivos Típicamente Protegidos con /gitpull omite
+TipoArchivosMotivo📝 Configconfig.json, settings.jsConfiguraciones personalizadas🔑 Seguridad.env, credentials.jsonTokens y claves API💾 Datosdatabase.json, users.dbInformación de usuarios🎨 Personalizacionescustom.css, theme.jsonEstilos personalizados
+
+⚠️ Advertencias y Mejores Prácticas
+⚡ /gitpull --force🛡️ /gitpull omite🔄 /restaurar⚠️ Borra cambios locales✅ Protege tus archivos💾 Recupera backupsUsar solo en emergenciasRecomendado para configsSolo funciona tras /gitpull omite
+
+🚀 Ventajas del Sistema
+✅ Seguridad: Protege archivos importantes antes de actualizar
+✅ Reversibilidad: Puedes deshacer cambios con /restaurar
+✅ Flexibilidad: Elige qué proteger y qué actualizar
+✅ Limpieza: Elimina backups cuando ya no los necesitas
+✅ Automatización: Detección automática de actualizaciones
+
+📊 Tabla Resumen de Comandos
+ComandoAcción PrincipalCrea BackupModifica ArchivosRiesgo/actualizacionVerifica updates❌❌🟢 Ninguno/gitpullActualiza todo❌✅🟡 Medio/gitpull --forceFuerza actualización❌✅🔴 Alto/gitpull omiteActualiza protegiendo✅✅🟢 Bajo/restaurarRestaura backup❌✅🟢 Bajo/eliminarbackupLimpia backups❌❌🟢 Ninguno
+
+🔧 Configuración Típica de Protección
+Archivos comúnmente protegidos por /gitpull omite:
+📁 Proyecto/
+├── 🛡️ config.json          ← Protegido
+├── 📁 Mysticseccion        ← Protegido
+├── 🛡️ database.json        ← Protegido
+├── 🔄 index.js             ← Se actualiza
+├── 🔄 package.json         ← Se actualiza
+└── 📁 custom-commands/     ← Protegido
+
+📝 Notas Importantes
+
+💡 Tip: Usa /gitpull omite como método predeterminado para proteger tus configuraciones personales.
+
+
+⚠️ Advertencia: /gitpull --force eliminará TODOS los cambios locales. Úsalo solo si estás seguro.
+
+
+🔄 Recomendación: Ejecuta /actualizacion regularmente para mantenerte al día con las últimas mejoras.
+
+
+🗑️ Limpieza: Usa /eliminarbackup después de confirmar que todo funciona correctamente para liberar espacio.
+
+
+🆘 Solución de Problemas
+ProblemaSoluciónActualización rompió el botUsa /restaurar para volver al backupNo hay actualizaciones disponibles El sistema está al día ✓Error al actualizarIntenta /gitpull --force (precaución)Backup ocupa mucho espacioUsa /eliminarbackup tras confirmar estabilidadPerdí mis configuracionesSi usaste /gitpull omite, usa /restaurar
+
+🎓 Guía Rápida para Principiantes
+
+Primera vez: /actualizacion → /gitpull omite
+Mantenimiento regular: /actualizacion → /gitpull omite
+Algo falló: /restaurar
+Todo funciona bien: /eliminarbackup
+Emergencia total: /gitpull --force
+
+
+
+## ⭐ **Características Avanzadas**
 
 <div align="center">
 
