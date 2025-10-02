@@ -11,6 +11,21 @@
 **Luna Bot es un bot avanzado y altamente personalizable para WhatsApp, diseñado para ofrecerte una experiencia completa con herramientas útiles, entretenimiento, moderación y comandos inteligentes.**
 
 </div>
+
+---
+
+## 🆕 Novedades
+
+<div align="center">
+
+![Update](https://img.shields.io/badge/✨%20Novedad%20Reciente%20✨-4CAF50?style=for-the-badge)
+
+### ✅ 30/09/2025 – Se solucionó el problema con el **mensaje de bienvenida** en los grupos 🎉
+
+</div>
+
+---
+
   
 <div align="center">
 
