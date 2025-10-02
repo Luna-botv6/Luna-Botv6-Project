@@ -8,7 +8,7 @@ const handler = async (m, { conn, text, isROwner }) => {
   const mensaje = text || m.quoted?.text;
   if (!mensaje) throw '✍️ Escribe un mensaje o responde a uno para enviarlo.';
 
-  const mensajeFinal = `*📣 Comunicado del Administrador*\n\n${mensaje}\n\n⭐️ Gracias por estar aquí.\n\nℹ️ Nota: Este mensaje fue enviado por el administrador de este bot. No corresponde a un comunicado oficial del proyecto Luna-Botv6-Project.\n\n🔗 *Canal oficial:* https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y`;
+  const mensajeFinal = `*📣 Comunicado del Administrador*\n\n${mensaje}\n\n⭐️ Gracias por estar aquí.\n\nℹ️ Nota: Este mensaje fue enviado por el administrador de este bot. No oficial del proyecto Luna-Botv6-Project.\n\n🔗 *Canal oficial:* https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y`;
 
   let enviados = 0;
 
