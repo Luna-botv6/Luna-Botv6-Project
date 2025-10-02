@@ -170,163 +170,114 @@
 
 ---
 
-markdown# 📋 Sistema Completo de Actualización y Gestión
+# 📋 Sistema Completo de Actualización y Gestión
 
-## 🔍 **Detección Automática de Actualizaciones**
-| 🔍 **Verificación** | 📊 **Comparación** | 🔄 **Aplicación** |
-|:------------------:|:-----------------:|:-----------------:|
+## 🔍 Detección Automática de Actualizaciones
+| Verificación | Comparación | Aplicación |
+|:------------:|:-----------:|:----------:|
 | ![Check](https://img.shields.io/badge/🔍-VERIFICACIÓN_AUTOMÁTICA-4A90E2?style=flat-square) | ![Compare](https://img.shields.io/badge/📊-COMPARACIÓN_INTELIGENTE-F39C12?style=flat-square) | ![Apply](https://img.shields.io/badge/🔄-APLICACIÓN_SEGURA-27AE60?style=flat-square) |
 | Revisa el repositorio en tiempo real | Compara archivos locales vs remotos | Actualiza solo lo necesario |
 
 ---
 
-## 📋 **Comandos de Actualización**
+## 📋 Comandos de Actualización
 
-### **Verificación y Actualización Básica**
+### 🔹 Básicos
 | Comando | Función | Descripción | Uso |
 |:-------:|---------|-------------|-----|
 | 🔍 `/actualizacion` | **Verificar Updates** | Busca nuevas actualizaciones disponibles | `/actualizacion` |
 | 📥 `/gitpull` | **Actualizar Normal** | Descarga e instala actualizaciones | `/gitpull` |
 | ⚡ `/gitpull --force` | **Actualización Forzada** | Actualiza eliminando cambios locales | `/gitpull --force` |
 
-### **Gestión Avanzada de Archivos**
+### 🔹 Avanzados
 | Comando | Función | Descripción | Uso |
 |:-------:|---------|-------------|-----|
-| 🛡️ `/gitpull omite` | **Actualización Protegida** | Actualiza omitiendo archivos específicos | `/gitpull omite` |
-| 🔄 `/restaurar` | **Restaurar Backup** | Restaura archivos del backup protegido | `/restaurar` |
-| 🗑️ `/eliminarbackup` | **Eliminar Backup** | Elimina los archivos de respaldo guardados | `/eliminarbackup` |
+| 🛡️ `/gitpull omite` | **Actualización Protegida** | Omite archivos sensibles en la actualización | `/gitpull omite` |
+| 🔄 `/restaurar` | **Restaurar Backup** | Vuelve tu config.js y funciones a la normalidad | `/restaurar` |
+| 🗑️ `/eliminarbackup` | **Eliminar Backup** | Borra respaldos innecesarios | `/eliminarbackup` |
 
 ---
 
-
-## 💡 **Casos de Uso**
-
-### **Escenario 1: Actualización Estándar**
-
-/actualizacion          # Verificar
-/gitpull               # Actualizar todo
-Escenario 2: Proteger Configuraciones Personales
-bash/actualizacion         # Verificar
-/gitpull omite         # Actualizar protegiendo archivos
-# Tus configs.js, .env, database.json se mantienen seguros
-Escenario 3: Recuperación de Emergencia
-bash/gitpull omite         # Algo salió mal
-/restaurar             # Volver a la versión anterior
-Escenario 4: Limpieza de Backups
-bash/eliminarbackup        # Todo funciona bien, eliminar respaldos
-
-🔐 Archivos Típicamente Protegidos con /gitpull omite
-TipoArchivosMotivo📝 Configconfig.json, settings.jsConfiguraciones personalizadas🔑 Seguridad.env, credentials.jsonTokens y claves API💾 Datosdatabase.json, users.dbInformación de usuarios🎨 Personalizacionescustom.css, theme.jsonEstilos personalizados
-
-⚠️ Advertencias y Mejores Prácticas
-⚡ /gitpull --force🛡️ /gitpull omite🔄 /restaurar⚠️ Borra cambios locales✅ Protege tus archivos💾 Recupera backupsUsar solo en emergenciasRecomendado para configsSolo funciona tras /gitpull omite
-
-🚀 Ventajas del Sistema
-✅ Seguridad: Protege archivos importantes antes de actualizar
-✅ Reversibilidad: Puedes deshacer cambios con /restaurar
-✅ Flexibilidad: Elige qué proteger y qué actualizar
-✅ Limpieza: Elimina backups cuando ya no los necesitas
-✅ Automatización: Detección automática de actualizaciones
-
-📊 Tabla Resumen de Comandos
-ComandoAcción PrincipalCrea BackupModifica ArchivosRiesgo/actualizacionVerifica updates❌❌🟢 Ninguno/gitpullActualiza todo❌✅🟡 Medio/gitpull --forceFuerza actualización❌✅🔴 Alto/gitpull omiteActualiza protegiendo✅✅🟢 Bajo/restaurarRestaura backup❌✅🟢 Bajo/eliminarbackupLimpia backups❌❌🟢 Ninguno
-
-🔧 Configuración Típica de Protección
-Archivos comúnmente protegidos por /gitpull omite:
-📁 Proyecto/
-├── 🛡️ config.json          ← Protegido
-├── 📁 Mysticseccion        ← Protegido
-├── 🛡️ database.json        ← Protegido
-├── 🔄 index.js             ← Se actualiza
-├── 🔄 package.json         ← Se actualiza
-└── 📁 custom-commands/     ← Protegido
-
-📝 Notas Importantes
-
-💡 Tip: Usa /gitpull omite como método predeterminado para proteger tus configuraciones personales.
-
-
-⚠️ Advertencia: /gitpull --force eliminará TODOS los cambios locales. Úsalo solo si estás seguro.
-
-
-🔄 Recomendación: Ejecuta /actualizacion regularmente para mantenerte al día con las últimas mejoras.
-
-
-🗑️ Limpieza: Usa /eliminarbackup después de confirmar que todo funciona correctamente para liberar espacio.
-
-
-🆘 Solución de Problemas
-ProblemaSoluciónActualización rompió el botUsa /restaurar para volver al backupNo hay actualizaciones disponibles El sistema está al día ✓Error al actualizarIntenta /gitpull --force (precaución)Backup ocupa mucho espacioUsa /eliminarbackup tras confirmar estabilidadPerdí mis configuracionesSi usaste /gitpull omite, usa /restaurar
-
-🎓 Guía Rápida para Principiantes
-
-Primera vez: /actualizacion → /gitpull omite
-Mantenimiento regular: /actualizacion → /gitpull omite
-Algo falló: /restaurar
-Todo funciona bien: /eliminarbackup
-Emergencia total: /gitpull --force
-
-
-
-## ⭐ **Características Avanzadas**
-
-<div align="center">
-
-| 🎯 **Detección Inteligente** | 📁 **Comparación de Archivos** | 🔒 **Actualizaciones Seguras** |
-|:---------------------------:|:------------------------------:|:-----------------------------:|
-| ![Smart](https://img.shields.io/badge/🎯-DETECCIÓN_SMART-9B59B6?style=flat-square) | ![Files](https://img.shields.io/badge/📁-COMPARACIÓN_FILES-E67E22?style=flat-square) | ![Safe](https://img.shields.io/badge/🔒-UPDATES_SEGUROS-2ECC71?style=flat-square) |
-| Detecta automáticamente nuevos commits | Compara hasta 10 archivos simultáneamente | Respeta límites de API y rate limits |
-
-| 🧹 **Auto-Limpieza** | 📱 **Reportes Detallados** | ⚠️ **Manejo de Errores** |
-|:--------------------:|:--------------------------:|:-------------------------:|
-| ![Clean](https://img.shields.io/badge/🧹-AUTO_LIMPIEZA-3498DB?style=flat-square) | ![Report](https://img.shields.io/badge/📱-REPORTES_DETAIL-E74C3C?style=flat-square) | ![Error](https://img.shields.io/badge/⚠️-MANEJO_ERRORES-F39C12?style=flat-square) |
-| Elimina archivos temporales automáticamente | Muestra qué cambió y estado de archivos | Manejo inteligente de conflictos |
-
-</div>
+## 🎯 Flujo de Trabajo Recomendado
+```mermaid
+flowchart TD
+    A[/actualizacion/] --> B{¿Hay updates?}
+    B -- No --> Z[Sistema actualizado ✓]
+    B -- Sí --> C[/gitpull/]
+    C --> D{¿Proteger archivos?}
+    D -- No --> E[/gitpull normal/]
+    D -- Sí --> F[/gitpull omite/]
+    F --> G[Backup creado 🛡️]
+    G --> H{¿Problema?}
+    H -- No --> I[/eliminarbackup/]
+    H -- Sí --> J[/restaurar/]
+```
 
 ---
 
-### 🚀 **Proceso de Actualización**
+## 💡 Casos de Uso
 
+### 🔹 Escenario 1: Actualización Estándar
+```bash
+/actualizacion
+/gitpull
+```
 
-graph TD
-    A[🔍 Verificar Updates] --> B{¿Hay actualizaciones?}
-    B -->|Sí| C[📊 Comparar Archivos]
-    B -->|No| D[✅ Bot Actualizado]
-    C --> E[📋 Mostrar Cambios]
-    E --> F[📥 Descargar Updates]
-    F --> G[🔄 Aplicar Cambios]
-    G --> H[🧹 Limpiar Temporales]
-    H --> I[✅ Actualización Completa]
-    
+### 🔹 Escenario 2: Proteger Configuraciones Personales
+```bash
+/actualizacion
+/gitpull omite
+```
+👉 Mantiene seguros: `config.js`, `.env`, `database.json`
+
+### 🔹 Escenario 3: Recuperación de Emergencia
+```bash
+/gitpull omite
+/restaurar
+```
+
+### 🔹 Escenario 4: Limpieza de Backups
+```bash
+/eliminarbackup
+```
 
 ---
 
-### 💡 **Información Mostrada en cada Update**
+## 🔐 Archivos Comúnmente Protegidos
+- 📝 `config.js`, `custom-commands` → Configuración personalizada  
+- 🔑 `.Mysticseccion`, `credentials.json` → Tokens y claves   
+- 💾 `database.json`, `database` → Información de usuarios  
+- 👥 `moderacion`, `configuracion.json` → Moderación de grupos
 
-| 📊 Dato | 📝 Descripción |
-|:-------:|----------------|
-| **👤 Autor** | Quién realizó los cambios |
-| **📅 Fecha** | Cuándo se realizaron los cambios |
-| **💬 Mensaje** | Descripción de qué se modificó |
-| **📁 Archivos** | Lista de archivos modificados/agregados/eliminados |
-| **🔍 Estado Local** | Si tus archivos están actualizados o no |
-| **📋 Commits Recientes** | Últimas 3 actualizaciones disponibles |
 
 ---
 
-### ⚠️ **Opciones de Seguridad**
+## ⚠️ Advertencias y Buenas Prácticas
+- ⚡ **`/gitpull --force`**: borra cambios locales → usar solo en emergencias.  
+- 🛡️ **`/gitpull omite`**: recomendado para proteger tus plugins.  
+- 🔄 **`/restaurar`**: recupera los archivos protegidos.  
+- 🗑️ **`/eliminarbackup`**: libera espacio cuando confirmes que todo funciona bien.  
 
-<div align="center">
+---
 
-| 🔄 **Actualización Normal** | ⚡ **Actualización Forzada** |
-|:---------------------------:|:----------------------------:|
-| ![Normal](https://img.shields.io/badge/🔄-MODO_SEGURO-27AE60?style=for-the-badge) | ![Force](https://img.shields.io/badge/⚡-MODO_FORZADO-E74C3C?style=for-the-badge) |
-| Preserva tus modificaciones locales | **¡CUIDADO!** Elimina cambios locales |
-| Se detiene si hay conflictos | Sobrescribe archivos modificados |
-| **Recomendado para uso normal** | **Solo usar si es necesario** |
+## 📊 Resumen de Comandos
+| Comando | Acción | Backup | Modifica Archivos | Riesgo |
+|:-------:|--------|:------:|:-----------------:|:------:|
+| `/actualizacion` | Verifica updates | ❌ | ❌ | 🟢 Ninguno |
+| `/gitpull` | Actualiza todo | ❌ | ✅ | 🟡 Medio |
+| `/gitpull --force` | Fuerza actualización | ❌ | ✅ | 🔴 Alto |
+| `/gitpull omite` | Actualiza protegiendo | ✅ | ✅ | 🟢 Bajo |
+| `/restaurar` | Restaura backup | ❌ | ✅ | 🟢 Bajo |
+| `/eliminarbackup` | Elimina backups | ❌ | ❌ | 🟢 Ninguno |
 
-</div>
+---
+
+## 📝 Guía Rápida
+- **Primera vez:** `/actualizacion` → `/gitpull omite`  
+- **Mantenimiento:** `/actualizacion` → `/gitpull omite`  
+- **recupera tu configuracion:** `/restaurar`  
+- **Todo OK:** `/eliminarbackup`  
+- **Emergencia:** `/gitpull --force`  
 
 ---
 
@@ -362,6 +313,8 @@ graph TD
 - Respuestas automáticas personalizables
 - Sistema AFK (Away From Keyboard)
 - Comandos de información y estadísticas
+
+</div>
 
 ---
 
