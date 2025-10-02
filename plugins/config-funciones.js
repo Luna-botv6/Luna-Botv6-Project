@@ -1,11 +1,10 @@
 import fs from 'fs'
 import { setConfig, getConfig } from '../lib/funcConfig.js'
 
-// Sistema de locks para evitar condiciones de carrera
 const configLocks = new Map();
 
 async function safeSetConfig(chatId, config) {
-  // Evitar múltiples escrituras simultáneas
+
   if (configLocks.has(chatId)) {
     await configLocks.get(chatId);
   }
@@ -140,10 +139,12 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner, isAdmin, is
 • ${usedPrefix + command} modoadmin
 • ${tradutor.texto20[2]}
 
-🤖 *SIMSIMI*
-• ${tradutor.texto21[1]}
-• ${usedPrefix + command} simsimi
-• ${tradutor.texto21[2]}
+⏰ *AFK*
+• Activa o desactiva tu estado AFK
+• ${usedPrefix + command} afk [motivo]
+• Mientras estés AFK, los demás recibirán un aviso si te mencionan
+• Puedes desactivar el AFK usando /disable afk en el grupo (admins/owner)
+
 
 🗑️ *ANTIDELETE*
 • ${tradutor.texto22[1]}
@@ -184,7 +185,6 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner, isAdmin, is
 
   const isEnable = /true|enable|(turn)?on|1/i.test(command);
   
-  // Usar getConfig para obtener la configuración actual
   const chat = getConfig(m.chat) || {};
   const user = global.db.data.users[m.sender];
   const bot = global.db.data.settings[conn.user.jid] || {};
@@ -533,6 +533,16 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner, isAdmin, is
       chat.antiArab2 = isEnable;
       await safeSetConfig(m.chat, chat);
       break;
+       case 'afk':
+  if (m.isGroup) {
+    if (!(isAdmin || isROwner || isOwner)) {
+      global.dfail('admin', m, conn);
+      throw false;
+    }
+  }
+  chat.afkAllowed = isEnable;
+  await safeSetConfig(m.chat, chat);
+  break;
 
     default:
       if (!/[01]/.test(command)) return await conn.sendMessage(m.chat, {text: optionsFull}, {quoted: m});
