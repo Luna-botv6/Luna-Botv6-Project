@@ -20,8 +20,8 @@
 
 ![Update](https://img.shields.io/badge/✨%20Novedad%20Reciente%20✨-4CAF50?style=for-the-badge)
 
-###✅ 30/09/2025 – Se solucionó el problema con el mensaje de bienvenida en los grupos 🎉
-###✅ 02/10/2025 – Se agregó control de AFK por grupo ⏰
+### ✅ 30/09/2025 – Se solucionó el problema con el mensaje de bienvenida en los grupos 🎉
+### ✅ 02/10/2025 – Se agregó control de AFK por grupo ⏰
 
 Los administradores y el owner pueden activar o desactivar el estado AFK en cada grupo usando /enable afk o /disable afk.
 
