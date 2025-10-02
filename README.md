@@ -198,38 +198,6 @@ markdown# 📋 Sistema Completo de Actualización y Gestión
 
 ---
 
-## 🎯 **Flujo de Trabajo Recomendado**
-┌─────────────────┐
-│ /actualizacion  │
-└────────┬────────┘
-│
-¿Hay updates?
-│
-┌────┴────┐
-│   Sí    │         No → Sistema actualizado ✓
-└────┬────┘
-│
-/gitpull
-│
-¿Proteger archivos?
-│
-┌────┴────┐
-│   Sí    │         No → /gitpull normal
-└────┬────┘
-│
-/gitpull omite
-│
-Backup creado 🛡️
-│
-¿Problema?
-│
-┌────┴────┐
-│   Sí    │         No → /eliminarbackup
-└────┬────┘
-│
-/restaurar
-
----
 
 ## 💡 **Casos de Uso**
 
