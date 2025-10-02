@@ -202,7 +202,7 @@ markdown# 📋 Sistema Completo de Actualización y Gestión
 ## 💡 **Casos de Uso**
 
 ### **Escenario 1: Actualización Estándar**
-```bash
+
 /actualizacion          # Verificar
 /gitpull               # Actualizar todo
 Escenario 2: Proteger Configuraciones Personales
@@ -288,7 +288,7 @@ Emergencia total: /gitpull --force
 
 ### 🚀 **Proceso de Actualización**
 
-```mermaid
+
 graph TD
     A[🔍 Verificar Updates] --> B{¿Hay actualizaciones?}
     B -->|Sí| C[📊 Comparar Archivos]
@@ -299,11 +299,6 @@ graph TD
     G --> H[🧹 Limpiar Temporales]
     H --> I[✅ Actualización Completa]
     
-    style A fill:#4A90E2,stroke:#fff,stroke-width:2px,color:#fff
-    style C fill:#F39C12,stroke:#fff,stroke-width:2px,color:#fff
-    style F fill:#27AE60,stroke:#fff,stroke-width:2px,color:#fff
-    style I fill:#2ECC71,stroke:#fff,stroke-width:2px,color:#fff
-```
 
 ---
 
@@ -335,19 +330,6 @@ graph TD
 
 ---
 
-<div align="center">
-
----
-
-### 🎯 **¡Mantente Siempre Actualizado!** 🎯
-
-**Con este sistema, nunca te quedarás atrás. Tu bot siempre tendrá las últimas funciones, correcciones de bugs y mejoras de seguridad** ✨
-
-*¡Solo ejecuta el comando y deja que el sistema haga el resto!* 🚀
-
-</div>
-
----
 
 ### 🎮 **Entretenimiento**
 - Sistema de juegos completo (ahorcado, piedra/papel/tijera, tic-tac-toe)
