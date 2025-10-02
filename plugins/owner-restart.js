@@ -18,7 +18,9 @@ const handler = async (m, { conn, isROwner, text }) => {
 ✅ Por favor espera un momento.
   `.trim());
   
-  setTimeout(() => {
+  setTimeout(async () => {
+    await conn.ws.close();
+    
     const indexPath = path.join(process.cwd(), 'index.js');
     const args = [indexPath, ...process.argv.slice(2)];
     
@@ -28,7 +30,7 @@ const handler = async (m, { conn, isROwner, text }) => {
     }).unref();
     
     process.exit(0);
-  }, 1500);
+  }, 2000);
 };
 
 handler.help = ['restart'];
@@ -36,4 +38,5 @@ handler.tags = ['owner'];
 handler.command = ['restart', 'reiniciar'];
 handler.rowner = true;
 
+export default handler;
 export default handler;
