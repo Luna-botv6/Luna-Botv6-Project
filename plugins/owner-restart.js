@@ -39,4 +39,3 @@ handler.command = ['restart', 'reiniciar'];
 handler.rowner = true;
 
 export default handler;
-export default handler;
