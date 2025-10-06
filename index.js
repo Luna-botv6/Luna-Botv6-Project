@@ -6,8 +6,9 @@ import cfonts from 'cfonts';
 import readline from 'readline';
 import yargs from 'yargs';
 import chalk from 'chalk';
-import fs from 'fs';
-import './config.js'; //max update 2025
+import fs from 'fs/promises';
+import fsSync from 'fs';
+import './config.js';
 
 import { PHONENUMBER_MCC } from '@whiskeysockets/baileys';
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -18,7 +19,6 @@ let isRunning = false;
 
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver));
 
-// Animación de inicio personalizada
 say('Iniciando...', {
   font: 'simple',
   align: 'center',
@@ -31,94 +31,98 @@ say('Luna-botv6', {
   gradient: ['blue', 'magenta'],
 });
 
-// Opcional: beep de sistema
-process.stdout.write('\x07'); // sonido beep
+process.stdout.write('\x07');
 
-console.log(chalk.cyanBright.bold('—◉ Bienvenido al sistema Luna-botv5'));
-console.log(chalk.greenBright('—◉ Preparando entorno y verificaciones necesarias...'));
+console.log(chalk.hex('#00FFFF').bold('─◉ Bienvenido al sistema Luna-botv6'));
+console.log(chalk.hex('#FF00FF')('─◉ Preparando entorno y verificaciones necesarias...'));
 
-// Verificar y preparar carpeta ./src/tmp con permisos
 const rutaTmp = join(__dirname, 'src/tmp');
-if (!fs.existsSync(rutaTmp)) {
-  fs.mkdirSync(rutaTmp, { recursive: true });
-  console.log(chalk.greenBright('✔ Carpeta src/tmp creada.'));
-}
 try {
-  fs.chmodSync(rutaTmp, 0o777);
-  console.log(chalk.greenBright('✔ Permisos 777 aplicados a src/tmp.'));
+  await fs.mkdir(rutaTmp, { recursive: true });
+  await fs.chmod(rutaTmp, 0o777);
+  console.log(chalk.hex('#39FF14')('✓ Carpeta src/tmp configurada correctamente.'));
 } catch (err) {
-  console.warn(chalk.yellowBright('⚠ No se pudieron aplicar permisos a src/tmp:'), err.message);
+  console.warn(chalk.hex('#FFA500')('⚠ Error configurando src/tmp:'), err.message);
 }
 
-// Limpieza automática mejorada
-function limpiarArchivosTMP() {
-  console.log(chalk.cyan.bold('🧹 Iniciando limpieza en carpeta tmp/ y archivo core'));
-  
-  let totalEliminados = 0;
-  let archivosTmp = 0;
-  let archivoCore = false;
-
-  // Limpiar carpeta tmp
+async function limpiarArchivosTMP() {
   const tmpPath = join(__dirname, 'src/tmp');
-  if (fs.existsSync(tmpPath)) {
-    const archivos = fs.readdirSync(tmpPath);
-    for (const archivo of archivos) {
-      const rutaCompleta = join(tmpPath, archivo);
-      try {
-        fs.rmSync(rutaCompleta, { recursive: true, force: true });
-        archivosTmp++;
-        totalEliminados++;
-      } catch (err) {
-        console.error(chalk.red(`✖ Error eliminando ${archivo}:`), err.message);
-      }
-    }
-  }
-
-  // Limpiar archivo core de la raíz
   const coreFile = join(__dirname, 'core');
-  if (fs.existsSync(coreFile)) {
-    try {
-      fs.rmSync(coreFile, { recursive: true, force: true });
-      archivoCore = true;
-      totalEliminados++;
-    } catch (err) {
-      console.error(chalk.red('✖ Error eliminando archivo core:'), err.message);
-    }
-  }
+  const MAX_AGE = 300000;
+  const stats = { tmp: 0, core: false, total: 0 };
 
-  // Mensaje de finalización después de 3 segundos
-  setTimeout(() => {
-    if (totalEliminados > 0) {
-      let mensaje = chalk.cyan.bold('✨ Limpieza completada: ');
-      if (archivosTmp > 0) {
-        mensaje += chalk.red(`${archivosTmp} archivos tmp/`);
-      }
-      if (archivoCore) {
-        mensaje += archivosTmp > 0 ? chalk.red(' + archivo core') : chalk.red('archivo core');
-      }
-      console.log(mensaje);
-    } else {
-      console.log(chalk.cyan.bold('✨ Limpieza completada: No había archivos para eliminar'));
+  try {
+    const [tmpFiles, coreExists] = await Promise.allSettled([
+      fs.readdir(tmpPath),
+      fs.access(coreFile).then(() => true).catch(() => false)
+    ]);
+
+    if (tmpFiles.status === 'fulfilled' && tmpFiles.value.length > 0) {
+      const now = Date.now();
+      const deletePromises = tmpFiles.value.map(async (file) => {
+        try {
+          const fullPath = join(tmpPath, file);
+          const fileStat = await fs.stat(fullPath);
+          
+          if (now - fileStat.mtimeMs > MAX_AGE) {
+            await fs.rm(fullPath, { recursive: true, force: true });
+            stats.tmp++;
+            return true;
+          }
+        } catch (err) {
+          return false;
+        }
+        return false;
+      });
+
+      await Promise.allSettled(deletePromises);
     }
-  }, 3000);
+
+    if (coreExists.status === 'fulfilled' && coreExists.value) {
+      try {
+        await fs.rm(coreFile, { force: true });
+        stats.core = true;
+      } catch {}
+    }
+
+    stats.total = stats.tmp + (stats.core ? 1 : 0);
+
+    if (stats.total > 0) {
+      const parts = [];
+      if (stats.tmp > 0) parts.push(`${stats.tmp} archivos tmp/`);
+      if (stats.core) parts.push('archivo core');
+      console.log(chalk.hex('#00CED1').bold('✨ Limpieza completada: ') + chalk.hex('#FF1493')(parts.join(' + ')));
+    }
+  } catch (err) {
+    console.error(chalk.hex('#FF1493')('✖ Error en limpieza:'), err.message);
+  }
 }
 
-// Ejecutar limpieza cada 15 minutos
-setInterval(limpiarArchivosTMP, 900000);
+let limpiezaActiva = false;
 
-// Ejecutar una vez al inicio
-limpiarArchivosTMP();
-
-function verificarOCrearCarpetaAuth() {
-  const authPath = join(__dirname, global.authFile);
-  if (!fs.existsSync(authPath)) {
-    fs.mkdirSync(authPath, { recursive: true });
+async function ejecutarLimpieza() {
+  if (limpiezaActiva) return;
+  limpiezaActiva = true;
+  try {
+    await limpiarArchivosTMP();
+  } finally {
+    setTimeout(() => { limpiezaActiva = false; }, 5000);
   }
+}
+
+setInterval(ejecutarLimpieza, 900000);
+setTimeout(ejecutarLimpieza, 3000);
+
+async function verificarOCrearCarpetaAuth() {
+  const authPath = join(__dirname, global.authFile);
+  try {
+    await fs.mkdir(authPath, { recursive: true });
+  } catch {}
 }
 
 function verificarCredsJson() {
   const credsPath = join(__dirname, global.authFile, 'creds.json');
-  return fs.existsSync(credsPath);
+  return fsSync.existsSync(credsPath);
 }
 
 function formatearNumeroTelefono(numero) {
@@ -144,7 +148,7 @@ async function start(file) {
   if (isRunning) return;
   isRunning = true;
 
-  verificarOCrearCarpetaAuth();
+  await verificarOCrearCarpetaAuth();
 
   if (verificarCredsJson()) {
     const args = [join(__dirname, file), ...process.argv.slice(2)];
@@ -153,14 +157,14 @@ async function start(file) {
     return;
   }
 
-  const opcion = await question(chalk.yellowBright.bold('—◉ㅤSeleccione una opción (solo el numero):\n') + chalk.white.bold('1. Con código QR\n2. Con código de texto de 8 dígitos\n—> '));
+  const opcion = await question(chalk.hex('#FFD700').bold('─◉　Seleccione una opción (solo el numero):\n') + chalk.hex('#E0E0E0').bold('1. Con código QR\n2. Con código de texto de 8 dígitos\n─> '));
 
   let numeroTelefono = '';
   if (opcion === '2') {
-    const phoneNumber = await question(chalk.yellowBright.bold('\n—◉ㅤEscriba su número de WhatsApp:\n') + chalk.white.bold('◉ㅤEjemplo: +5493483466763\n—> '));
+    const phoneNumber = await question(chalk.hex('#FFD700').bold('\n─◉　Escriba su número de WhatsApp:\n') + chalk.hex('#E0E0E0').bold('◉　Ejemplo: +5493483466763\n─> '));
     numeroTelefono = formatearNumeroTelefono(phoneNumber);
     if (!esNumeroValido(numeroTelefono)) {
-      console.log(chalk.bgRed(chalk.white.bold('[ ERROR ] Número inválido. Asegúrese de haber escrito su numero en formato internacional y haber comenzado con el código de país.\n—◉ㅤEjemplo:\n◉ +5493483466763\n')));
+      console.log(chalk.bgHex('#FF1493')(chalk.white.bold('[ ERROR ] Número inválido. Asegúrese de haber escrito su numero en formato internacional y haber comenzado con el código de país.\n─◉　Ejemplo:\n◉ +5493483466763\n')));
       process.exit(0);
     }
     process.argv.push(numeroTelefono);
@@ -178,7 +182,7 @@ async function start(file) {
   const p = fork();
 
   p.on('message', (data) => {
-    console.log(chalk.green.bold('—◉ㅤRECIBIDO:'), data);
+    console.log(chalk.hex('#39FF14').bold('─◉　RECIBIDO:'), data);
     switch (data) {
       case 'reset':
         p.process.kill();
@@ -193,7 +197,7 @@ async function start(file) {
 
   p.on('exit', (_, code) => {
     isRunning = false;
-    console.error(chalk.red.bold('[ ERROR ] Ocurrió un error inesperado:'), code);
+    console.error(chalk.hex('#FF1493').bold('[ ERROR ] Ocurrió un error inesperado:'), code);
     p.process.kill();
     isRunning = false;
     start.apply(this, arguments);

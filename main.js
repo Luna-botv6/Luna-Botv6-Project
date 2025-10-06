@@ -58,34 +58,49 @@ global.__require = function require(dir = import.meta.url) {
 global.API = (name, path = '/', query = {}, apikeyqueryname) => (name in global.APIs ? global.APIs[name] : name) + path + (query || apikeyqueryname ? '?' + new URLSearchParams(Object.entries({...query, ...(apikeyqueryname ? {[apikeyqueryname]: global.APIKeys[name in global.APIs ? global.APIs[name] : name]} : {})})) : '');
 
 global.timestamp = { start: new Date };
-function clearSessionAndRestart() {
-    console.log(chalk.red('[ ❌ ] Timeout de pareado alcanzado. Eliminando sesión...'));
+async function clearSessionAndRestart() {
+    console.log(chalk.red('[ ✖ ] Timeout de pareado alcanzado. Limpiando sesión...'));
     
     if (pairingTimeout) {
         clearTimeout(pairingTimeout);
         pairingTimeout = null;
     }
     
-    // Limpiar ambas carpetas
-    if (fs.existsSync(`./${global.authFile}`)) {
-        fs.rmSync(`./${global.authFile}`, { recursive: true, force: true });
+    const carpetas = [global.authFile, 'MysticPairing', 'MysticSession'];
+    const eliminadas = [];
+    
+    await Promise.allSettled(
+        carpetas.map(async (carpeta) => {
+            const ruta = `./${carpeta}`;
+            if (fs.existsSync(ruta)) {
+                await fs.promises.rm(ruta, { recursive: true, force: true });
+                eliminadas.push(carpeta);
+            }
+        })
+    );
+    
+    if (eliminadas.length > 0) {
+        console.log(chalk.yellow(`[ ℹ️ ] Limpieza completada: ${eliminadas.join(', ')}`));
     }
     
-    if (fs.existsSync('./MysticPairing')) {
-        fs.rmSync('./MysticPairing', { recursive: true, force: true });
-    }
-    
-    console.log(chalk.yellow('[ ℹ️ ] Carpetas de sesión eliminadas'));
-    console.log(chalk.yellow('[ ℹ️ ] Reiniciando bot en 3 segundos...'));
-    setTimeout(() => {
-        process.exit(1);
-    }, 3000);
+    console.log(chalk.yellow('[ ℹ️ ] Reiniciando en 2 segundos...'));
+    setTimeout(() => process.exit(1), 2000);
 }
-function clearPairingSession() {
-    const pairingFolder = './MysticPairing';
-    if (fs.existsSync(pairingFolder)) {
-        fs.rmSync(pairingFolder, { recursive: true, force: true });
-        console.log(chalk.yellow('[ ℹ️ ] Sesión de pairing eliminada'));
+async function clearPairingSession() {
+    const carpetas = ['./MysticPairing', './MysticSession'];
+    const eliminadas = [];
+    
+    await Promise.allSettled(
+        carpetas.map(async (carpeta) => {
+            if (fs.existsSync(carpeta)) {
+                await fs.promises.rm(carpeta, { recursive: true, force: true });
+                eliminadas.push(carpeta.replace('./', ''));
+            }
+        })
+    );
+    
+    if (eliminadas.length > 0) {
+        console.log(chalk.yellow(`[ ✓ ] Sesiones limpiadas: ${eliminadas.join(', ')}`));
     }
 }
 global.videoList = [];
@@ -249,14 +264,8 @@ const connectionOptions = {
     },
 
     patchMessageBeforeSending: async (message) => {
-        try {
-            global.conn.uploadPreKeysToServerIfRequired();
-            return message;
-        } catch (e) {
-            secureLogger?.error?.('Error en patchMessageBeforeSending:', e);
-            return message;
-        }
-    },
+    return message;
+},
 
     msgRetryCounterCache: new NodeCache({
         stdTTL: 300,
@@ -585,18 +594,6 @@ if (connection === 'open') {
   console.log(chalk.green('[ ℹ️ ] Bot iniciado exitosamente'));
   codigoSolicitado = false;
 
-  // subir pre-keys en background
-  setImmediate(async () => {
-    try {
-      if (global.conn?.uploadPreKeysToServerIfRequired) {
-        await global.conn.uploadPreKeysToServerIfRequired();
-        console.log(chalk.yellow('[ ℹ️ ] Pre-keys subidas/verificadas.'));
-      }
-    } catch (e) {
-      console.log(chalk.red('[ ❗ ] Error al subir pre-keys:'), e?.message || e);
-    }
-  });
-
 } else if (connection === 'connecting') {
   console.log(chalk.yellow('[ ℹ️ ] Conectando a WhatsApp...'));
 
@@ -821,18 +818,6 @@ setInterval(() => {
   clearTmp();
   if (privacyConfig.dataRetention.enabled) cleanOldUserData();
 }, 1000 * 60 * 60 * 2); // Cada 2 horas
-
-// refrescar pre-keys cada 5 minutos
-setInterval(() => {
-  if (!global.conn || !global.conn.user) return;
-  setImmediate(async () => {
-    try {
-      await global.conn.uploadPreKeysToServerIfRequired();
-    } catch (e) {
-      console.log('[⚠️] Error en refresco de pre-keys:', e?.message || e);
-    }
-  });
-}, 1000 * 60 * 5);
 
 
 setInterval(() => {
