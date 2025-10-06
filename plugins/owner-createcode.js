@@ -63,7 +63,7 @@ Usa: \`/setmessage tu mensaje aquí\``)
       
       global.savedCodes[cmdName].message = newMessage
       await regenerateCode(cmdName, m, conn, participants)
-      return m.reply(`✅ *Mensaje del comando /${cmdName} actualizado exitosamente!*`)
+      return m.reply(`✅ *Mensaje del comando /${cmdName} actualizado y recargado exitosamente!*`)
 
     case 'edittag':
       if (!text) return m.reply('⛔ *Usa: /edittag nombrecomando tipo* (tipos: no, si, todos)')
@@ -78,7 +78,7 @@ Usa: \`/setmessage tu mensaje aquí\``)
       else if (['si', 'sí', 's'].includes(tagType)) global.savedCodes[tagCmdName].tagUser = true
       
       await regenerateCode(tagCmdName, m, conn, participants)
-      return m.reply(`✅ *Etiqueta del comando /${tagCmdName} actualizada exitosamente!*`)
+      return m.reply(`✅ *Etiqueta del comando /${tagCmdName} actualizada y recargada exitosamente!*`)
 
     case 'editimage':
       if (!text) return m.reply('⛔ *Usa: /editimage nombrecomando* y responde con una imagen, o /editimage nombrecomando remove')
@@ -92,7 +92,7 @@ Usa: \`/setmessage tu mensaje aquí\``)
         global.savedCodes[imgCmdName].imagePath = null
         global.savedCodes[imgCmdName].imageName = null
         await regenerateCode(imgCmdName, m, conn, participants)
-        return m.reply(`✅ *Imagen del comando /${imgCmdName} eliminada exitosamente!*`)
+        return m.reply(`✅ *Imagen del comando /${imgCmdName} eliminada y recargada exitosamente!*`)
       }
       
       if (!m.quoted || m.quoted.mtype !== 'imageMessage') return m.reply('⛔ *Debes responder a una imagen o usar "remove" para eliminarla.*')
@@ -110,7 +110,7 @@ Usa: \`/setmessage tu mensaje aquí\``)
         global.savedCodes[imgCmdName].imageName = imageName
         
         await regenerateCode(imgCmdName, m, conn, participants)
-        return m.reply(`✅ *Imagen del comando /${imgCmdName} actualizada exitosamente!*`)
+        return m.reply(`✅ *Imagen del comando /${imgCmdName} actualizada y recargada exitosamente!*`)
       } catch {
         return m.reply('⛔ *Error al guardar la imagen.*')
       }
@@ -223,6 +223,19 @@ async function generateCode(session, commandName, m, conn, participants) {
   fs.writeFileSync(filePath, code)
   global.savedCodes[commandName] = session
 
+  try {
+    delete global.plugins[`custom-commands/${commandName}.js`]
+    const fullPath = path.resolve(filePath)
+    const module = await import(`file://${fullPath}?t=${Date.now()}`)
+    global.plugins[`custom-commands/${commandName}.js`] = module.default || module
+    
+    if (global.customCommandsCache) {
+      global.customCommandsCache.set(fileName, module.default || module)
+    }
+  } catch (e) {
+    console.log('Error cargando comando:', e.message)
+  }
+
   let msg = `✅ *¡Comando ${session.editing ? 'editado' : 'creado'} exitosamente!*\n📄 *Archivo:* ${fileName}\n⚡ *Comando:* /${commandName}`
   if (tagAll) msg += `\n💥 *Etiqueta:* Todos`
   else if (tagUser) msg += `\n🏷️ *Etiqueta:* Usuario`
@@ -235,6 +248,11 @@ async function generateCode(session, commandName, m, conn, participants) {
 async function regenerateCode(commandName, m, conn, participants) {
   const session = global.savedCodes[commandName]
   const { message, tagUser, tagAll, needsImage, imagePath, imageName } = session
+  
+  const cacheKey = `custom-${commandName}.js`
+  if (global.customCommandsCache) {
+    global.customCommandsCache.delete(cacheKey)
+  }
   
   let code = `import fs from 'fs'\n\n`
   code += `const handler = async (m, { conn, participants }) => {
@@ -261,6 +279,19 @@ async function regenerateCode(commandName, m, conn, participants) {
   if (!fs.existsSync(customDir)) fs.mkdirSync(customDir, { recursive: true })
   const filePath = `./custom-commands/${commandName}.js`
   fs.writeFileSync(filePath, code)
+  
+  try {
+    delete global.plugins[`custom-commands/${commandName}.js`]
+    const fullPath = path.resolve(filePath)
+    const module = await import(`file://${fullPath}?t=${Date.now()}`)
+    global.plugins[`custom-commands/${commandName}.js`] = module.default || module
+    
+    if (global.customCommandsCache) {
+      global.customCommandsCache.set(`${commandName}.js`, module.default || module)
+    }
+  } catch (e) {
+    console.log('Error recargando comando:', e.message)
+  }
 }
 
 handler.help = ['createcode', 'createadv', 'editcode', 'edit', 'edittag', 'editimage', 'setmessage', 'settag', 'setimage', 'uploadimage', 'setcommand', 'cancelcode']
