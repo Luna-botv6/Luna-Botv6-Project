@@ -605,23 +605,6 @@ ${tradutor.texto1[1]} ${messageNumber}/3
 await m.reply(text);
 }
 } finally {
-    // Inicializar listener de IA si es necesario
-
-if (!global.mentionListenerInitialized) {
-
-  try {
-
-    mentionListener(this);
-
-    global.mentionListenerInitialized = true;
-
-  } catch (e) {
-
-    console.error('Error inicializando mentionListener:', e);
-
-  }
-
-}
 
           if (typeof plugin.after === 'function') {
             try {

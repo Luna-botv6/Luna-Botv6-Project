@@ -30,6 +30,7 @@ import { getOwnerFunction } from './lib/owner-funciones.js';
 import { isCleanerEnabled } from './lib/cleaner-config.js';
 import { startAutoCleanService } from './auto-cleaner.js';
 import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.js';
+import mentionListener from './plugins/game-ialuna.js';
 
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
@@ -736,6 +737,17 @@ conn.ev.on('message.delete', conn.onDelete);
 conn.ev.on('call', conn.onCall);
 conn.ev.on('connection.update', conn.connectionUpdate);
 conn.ev.on('creds.update', conn.credsUpdate);
+  if (restatConn || !global.mentionListenerInitialized) {
+    try {
+      console.log(chalk.yellow('[ 🤖 ] Inicializando listener de IA...'));
+      mentionListener(conn);
+      global.mentionListenerInitialized = true;
+      console.log(chalk.green('[ ✅ ] Listener de IA inicializado correctamente'));
+    } catch (e) {
+      console.error(chalk.red('[ ❌ ] Error inicializando mentionListener:'), e);
+      global.mentionListenerInitialized = false;
+    }
+  }
 isInit = false;
 return true;
 };
