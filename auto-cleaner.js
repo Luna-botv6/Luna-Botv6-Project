@@ -1,103 +1,176 @@
-import { readdir, unlink } from 'fs/promises';
+import { readdir, unlink, stat } from 'fs/promises';
 import { join } from 'path';
-import fs from 'fs';
+import { existsSync } from 'fs';
 import chalk from 'chalk';
-import { shouldAutoClean, updateLastCleanTime, getAutoCleanConfig } from './lib/cleaner-config.js';
+import { 
+  shouldAutoClean, 
+  updateLastCleanTime, 
+  getAutoCleanConfig,
+  getTimeUntilNextClean 
+} from './lib/cleaner-config.js';
 
-// Función para eliminar archivos en lotes (igual que cleaner.js)
-async function deleteFilesInBatches(dir, fileFilter, batchSize = 20, delay = 10) {
-  if (!fs.existsSync(dir)) {
-    console.log(chalk.cyanBright(`🧹 [auto-cleaner] La carpeta ${dir} no existe, se omite.`));
-    return 0;
+const CONFIG = {
+  SESSION_DIR: './MysticSession',
+  BATCH_SIZE: 20,
+  BATCH_DELAY: 150,
+  OLD_FILES_THRESHOLD: 3600000,
+  PROTECTED_FILES: new Set(['creds.json']),
+  KEY_PREFIXES: ['pre-key-', 'sender-key-', 'app-state-sync-key-'],
+  CHECK_INTERVAL: 1800000
+};
+
+let isRunning = false;
+let cleanupInterval = null;
+
+async function deleteFilesInBatches(dir, fileFilter, batchSize = CONFIG.BATCH_SIZE, delay = CONFIG.BATCH_DELAY) {
+  if (!existsSync(dir)) return 0;
+
+  const files = await readdir(dir);
+  const targets = [];
+
+  for (const file of files) {
+    try {
+      if (await fileFilter(file)) targets.push(file);
+    } catch {}
   }
 
-  try {
-    const files = await readdir(dir);
-    const targets = files.filter(fileFilter);
-    if (targets.length === 0) {
-      console.log(chalk.cyanBright(`🧹 [auto-cleaner] No se encontraron archivos para eliminar en ${dir}`));
-      return 0;
-    }
+  if (targets.length === 0) return 0;
 
-    let eliminados = 0;
-    for (let i = 0; i < targets.length; i += batchSize) {
-      const batch = targets.slice(i, i + batchSize);
-      await Promise.all(batch.map(async file => {
-        const filePath = join(dir, file);
-        await unlink(filePath);
-        eliminados++;
-      }));
-      await new Promise(r => setTimeout(r, delay));
-    }
+  let deleted = 0;
 
-    console.log(chalk.cyanBright(`🗑️ [auto-cleaner] Archivos eliminados en ${dir}: ${eliminados}`));
-    return eliminados;
-  } catch (err) {
-    console.error(chalk.red(`❌ [auto-cleaner] Error limpiando ${dir}: ${err.message}`));
-    return 0;
+  for (let i = 0; i < targets.length; i += batchSize) {
+    const batch = targets.slice(i, i + batchSize);
+    
+    const results = await Promise.allSettled(
+      batch.map(file => unlink(join(dir, file)))
+    );
+    
+    deleted += results.filter(r => r.status === 'fulfilled').length;
+    
+    if (i + batchSize < targets.length) {
+      await new Promise(resolve => setImmediate(resolve));
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
   }
+
+  if (deleted > 0) {
+    console.log(chalk.green(`🗑️  [auto-cleaner] ${deleted} archivos eliminados`));
+  }
+
+  return deleted;
 }
 
-// Limpiar archivos de sesión
-async function purgeSession() {
-  console.log(chalk.cyanBright('✨ [auto-cleaner] Iniciando limpieza automática de claves...'));
-  return await deleteFilesInBatches('./MysticSession', file =>
-    file.startsWith('pre-key-') ||
-    file.startsWith('sender-key-') ||
-    file.startsWith('app-state-sync-key-'));
+async function purgeSessionKeys() {
+  return await deleteFilesInBatches(
+    CONFIG.SESSION_DIR,
+    async file => CONFIG.KEY_PREFIXES.some(prefix => file.startsWith(prefix))
+  );
 }
 
-// Limpiar archivos antiguos
 async function purgeOldFiles() {
-  const dir = './MysticSession';
-  if (!fs.existsSync(dir)) return 0;
-  const oneHourAgo = Date.now() - (60 * 60 * 1000);
-  return await deleteFilesInBatches(dir, file => {
-    const stats = fs.statSync(join(dir, file));
-    return stats.isFile() && stats.mtimeMs < oneHourAgo && file !== 'creds.json';
-  });
+  if (!existsSync(CONFIG.SESSION_DIR)) return 0;
+  
+  const threshold = Date.now() - CONFIG.OLD_FILES_THRESHOLD;
+  
+  return await deleteFilesInBatches(
+    CONFIG.SESSION_DIR,
+    async file => {
+      if (CONFIG.PROTECTED_FILES.has(file)) return false;
+      
+      try {
+        const stats = await stat(join(CONFIG.SESSION_DIR, file));
+        return stats.isFile() && stats.mtimeMs < threshold;
+      } catch {
+        return false;
+      }
+    }
+  );
 }
 
-// Función principal de limpieza automática
 async function performAutoClean() {
+  if (isRunning) {
+    console.log(chalk.yellow('⚠️  [auto-cleaner] Ya en ejecución'));
+    return;
+  }
+
+  isRunning = true;
+
   try {
-    console.log(chalk.cyanBright('🤖 [auto-cleaner] Ejecutando limpieza automática...'));
-    await purgeSession();
-    await purgeOldFiles();
+    console.log(chalk.cyan('🤖 [auto-cleaner] Iniciando limpieza en segundo plano...'));
+    
+    const startTime = Date.now();
+    
+    const keysDeleted = await purgeSessionKeys();
+    await new Promise(resolve => setImmediate(resolve));
+    
+    const oldFilesDeleted = await purgeOldFiles();
+    
     updateLastCleanTime();
     
-    const config = getAutoCleanConfig();
-    const nextClean = new Date(Date.now() + (config.intervalHours * 60 * 60 * 1000));
-    console.log(chalk.cyanBright(`✅ [auto-cleaner] Limpieza automática completada. Próxima limpieza: ${nextClean.toLocaleString()}`));
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    const total = keysDeleted + oldFilesDeleted;
+    
+    if (total > 0) {
+      const config = getAutoCleanConfig();
+      const nextClean = new Date(Date.now() + (config.intervalHours * 3600000));
+      console.log(chalk.green(`✅ [auto-cleaner] ${total} archivos eliminados en ${duration}s`));
+      console.log(chalk.cyan(`⏰ [auto-cleaner] Próxima limpieza: ${nextClean.toLocaleString()}`));
+    }
   } catch (error) {
-    console.error(chalk.red(`❌ [auto-cleaner] Error en limpieza automática: ${error.message}`));
+    console.error(chalk.red(`❌ [auto-cleaner] Error: ${error.message}`));
+  } finally {
+    isRunning = false;
   }
 }
 
-// Verificar y ejecutar limpieza automática si es necesario
 export function checkAutoClean() {
   if (shouldAutoClean()) {
-    performAutoClean();
+    setImmediate(() => performAutoClean());
   }
 }
 
-// Inicializar verificación periódica (cada 30 minutos)
 export function startAutoCleanService() {
-  console.log(chalk.cyanBright('🚀 [auto-cleaner] Servicio de limpieza automática iniciado'));
+  if (cleanupInterval) {
+    console.log(chalk.yellow('⚠️  [auto-cleaner] Servicio ya iniciado'));
+    return;
+  }
+
+  console.log(chalk.cyan.bold('🚀 [auto-cleaner] Servicio iniciado'));
   
-  // Verificar inmediatamente
-  checkAutoClean();
+  setImmediate(() => checkAutoClean());
   
-  // Luego verificar cada 30 minutos
-  setInterval(() => {
+  cleanupInterval = setInterval(() => {
     checkAutoClean();
-  }, 30 * 60 * 1000); // 30 minutos
+  }, CONFIG.CHECK_INTERVAL);
+  
+  cleanupInterval.unref();
 }
 
-// Función para obtener el estado del próximo auto-clean
+export function stopAutoCleanService() {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+    console.log(chalk.yellow('🛑 [auto-cleaner] Servicio detenido'));
+  }
+}
+
 export function getNextAutoCleanTime() {
   const config = getAutoCleanConfig();
   if (!config.enabled || !config.lastCleanTime) return null;
   
-  return new Date(config.lastCleanTime + (config.intervalHours * 60 * 60 * 1000));
+  return new Date(config.lastCleanTime + (config.intervalHours * 3600000));
+}
+
+export function getCleanupStatus() {
+  const config = getAutoCleanConfig();
+  const timeUntil = getTimeUntilNextClean();
+  
+  return {
+    isRunning,
+    autoCleanEnabled: config.enabled,
+    intervalHours: config.intervalHours,
+    lastCleanTime: config.lastCleanTime ? new Date(config.lastCleanTime) : null,
+    nextCleanTime: getNextAutoCleanTime(),
+    minutesUntilNextClean: timeUntil ? Math.ceil(timeUntil / 60000) : null
+  };
 }
