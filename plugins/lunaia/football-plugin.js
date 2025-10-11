@@ -1,18 +1,24 @@
 const FOOTBALL_KEYWORDS = [
   'futbol', 'fútbol', 'football', 'river', 'boca', 'racing', 'independiente',
   'san lorenzo', 'estudiantes', 'gimnasia', 'newells', 'rosario central',
-  'cuando juega', 'próximo partido', 'proximo partido', 'fixture',
-  'argentina', 'seleccion', 'selección', 'copa america', 'mundial',
+  'cuando juega', 'próximo partido', 'proximo partido', 'fixture', 'seleccion', 'selección', 'copa america', 'mundial',
   'liga profesional', 'primera división', 'primera division'
 ];
 
 const FOOTBALL_TEAMS = {
-  'river': 'River Plate', 'boca': 'Boca Juniors', 'racing': 'Racing Club',
-  'independiente': 'Independiente', 'san lorenzo': 'San Lorenzo', 'estudiantes': 'Estudiantes',
-  'gimnasia': 'Gimnasia y Esgrima La Plata', 'newells': 'Newell\'s Old Boys',
-  'rosario central': 'Rosario Central', 'argentina': 'Selección Argentina',
-  'seleccion': 'Selección Argentina', 'selección': 'Selección Argentina'
+  'river': 'River Plate',
+  'boca': 'Boca Juniors',
+  'racing': 'Racing Club',
+  'independiente': 'Independiente',
+  'san lorenzo': 'San Lorenzo',
+  'estudiantes': 'Estudiantes',
+  'gimnasia': 'Gimnasia y Esgrima La Plata',
+  'newells': 'Newell\'s Old Boys',
+  'rosario central': 'Rosario Central',
+  'seleccion': 'Selección Argentina',
+  'selección': 'Selección Argentina'
 };
+
 
 function canHandle(text) {
   const lowerText = text.toLowerCase();
