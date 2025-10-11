@@ -20,12 +20,13 @@
 
 ![Update](https://img.shields.io/badge/✨%20Novedad%20Reciente%20✨-4CAF50?style=for-the-badge)
 
-### ✅ 30/09/2025 – Se solucionó el problema con el mensaje de bienvenida en los grupos 🎉
-### ✅ 02/10/2025 – Se agregó control de AFK por grupo ⏰
+## ✅ 14/10/2025 (actualización en progreso) – Nuevos comandos de Waifu/Gacha 🌟
+Se añadieron `.rw`, `.claim`, `.harem`, `.rewardwaifu`, `.vote` y `.updatewaifus`. Los usuarios ahora pueden coleccionar waifus, reclamar tiradas y recibir recompensas diarias.
 
-Los administradores y el owner pueden activar o desactivar el estado AFK en cada grupo usando /enable afk o /disable afk.
+## ✅ 14/10/2025 (actualización en progreso) – Mejora de rendimiento 🚀
+Actualización de Baileys que mejora la velocidad del bot, solucionando errores y haciendo que los comandos del bot respondan más rápido, mejorando las secciones y mucho más.
 
-Cuando el AFK está desactivado, ningún usuario puede establecer su estado AFK.
+
 
 </div>
 
