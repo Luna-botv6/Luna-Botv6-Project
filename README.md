@@ -20,6 +20,18 @@
 
 ![Update](https://img.shields.io/badge/✨%20Novedad%20Reciente%20✨-4CAF50?style=for-the-badge)
 
+
+## 🔄 Sistema de Solicitudes de Grupos
+
+**Fecha:** 11 de Octubre, 2025
+
+- ✅ Comandos `/aceptargrupo` y `/denegargrupo` con botones interactivos
+- 🏷️ Tags de usuario arreglados
+- 🔒 Rate limiting (3 solicitudes/hora)
+- 🆔 Sistema de IDs único por solicitud
+- 📱 Notificaciones automáticas
+- ⏱️ Cumplimiento 100% políticas WhatsApp
+
 ## ✅ 14/10/2025 (actualización en progreso) – Nuevos comandos de Waifu/Gacha 🌟
 Se añadieron `.rw`, `.claim`, `.harem`, `.rewardwaifu`, `.vote` y `.updatewaifus`. Los usuarios ahora pueden coleccionar waifus, reclamar tiradas y recibir recompensas diarias.
 
