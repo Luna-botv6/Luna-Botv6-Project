@@ -2,11 +2,12 @@ import fs from 'fs';
 
 const linkRegex = /chat\.whatsapp\.com\/([0-9A-Za-z]{20,24})/i;
 let enviando = false;
-let requestCount = new Map(); // Control de rate limiting por usuario
+let requestCount = new Map();
+let pendingRequests = new Map();
 const MAX_REQUESTS_PER_HOUR = 3;
-const COOLDOWN_TIME = 60 * 60 * 1000; // 1 hora en milisegundos
+const COOLDOWN_TIME = 60 * 60 * 1000;
+const REQUEST_EXPIRY = 24 * 60 * 60 * 1000;
 
-// Función para limpiar rate limiting
 const cleanupRateLimit = () => {
   const now = Date.now();
   for (const [user, data] of requestCount.entries()) {
@@ -16,7 +17,15 @@ const cleanupRateLimit = () => {
   }
 };
 
-// Función para verificar rate limiting
+const cleanupPendingRequests = () => {
+  const now = Date.now();
+  for (const [requestId, data] of pendingRequests.entries()) {
+    if (now - data.timestamp > REQUEST_EXPIRY) {
+      pendingRequests.delete(requestId);
+    }
+  }
+};
+
 const checkRateLimit = (userId) => {
   const now = Date.now();
   const userKey = userId.split('@')[0];
@@ -28,13 +37,11 @@ const checkRateLimit = (userId) => {
   
   const userData = requestCount.get(userKey);
   
-  // Reset counter si ha pasado más de una hora
   if (now - userData.lastReset > COOLDOWN_TIME) {
     requestCount.set(userKey, { count: 1, lastReset: now });
     return true;
   }
   
-  // Verificar si excede el límite
   if (userData.count >= MAX_REQUESTS_PER_HOUR) {
     return false;
   }
@@ -43,26 +50,143 @@ const checkRateLimit = (userId) => {
   return true;
 };
 
-// Función para validar el enlace más estrictamente
 const validateGroupLink = (link) => {
   if (!link || typeof link !== 'string') return false;
-  
-  // Verificar formato del enlace
   if (!linkRegex.test(link)) return false;
-  
-  // Verificar que el enlace esté completo
   if (!link.startsWith('https://chat.whatsapp.com/')) return false;
-  
   return true;
 };
 
-// Función para agregar delay natural
 const naturalDelay = () => {
-  const delay = Math.random() * 2000 + 1000; // Entre 1-3 segundos
+  const delay = Math.random() * 2000 + 1000;
   return new Promise(resolve => setTimeout(resolve, delay));
 };
 
-const handler = async (m, { conn, text, isMods, isOwner, isPrems }) => {
+const generateRequestId = () => {
+  return `${Date.now()}${Math.random().toString(36).substr(2, 6)}`;
+};
+
+const handler = async (m, { conn, text, isMods, isOwner, isPrems, usedPrefix, command }) => {
+  
+  if (command === 'aceptargrupo' || command === 'acceptgroup') {
+    if (!isOwner) {
+      await conn.sendMessage(m.chat, { 
+        text: "❌ Solo los propietarios pueden aprobar solicitudes." 
+      }, { quoted: m });
+      return;
+    }
+
+    const requestId = text?.trim();
+    
+    if (!requestId) {
+      await conn.sendMessage(m.chat, { 
+        text: "❌ Debes proporcionar el ID de la solicitud.\n\nEjemplo: /aceptargrupo 123456abc" 
+      }, { quoted: m });
+      return;
+    }
+
+    cleanupPendingRequests();
+
+    if (!pendingRequests.has(requestId)) {
+      await conn.sendMessage(m.chat, { 
+        text: "❌ Solicitud no encontrada o ya fue procesada.\n\n💡 Las solicitudes expiran después de 24 horas." 
+      }, { quoted: m });
+      return;
+    }
+
+    const request = pendingRequests.get(requestId);
+
+    try {
+      await naturalDelay();
+      await conn.groupAcceptInvite(request.code);
+      
+      await conn.sendMessage(m.chat, { 
+        text: `✅ *Solicitud Aprobada*\n\n` +
+          `Bot unido al grupo exitosamente.\n\n` +
+          `👤 Usuario: ${request.userNumber}\n` +
+          `🔗 Enlace: ${request.link}\n` +
+          `🆔 ID: ${requestId}`
+      }, { quoted: m });
+
+      await naturalDelay();
+      
+      await conn.sendMessage(request.userId, {
+        text: `✅ *Solicitud Aprobada*\n\n` +
+          `¡Tu solicitud para que el bot se una al grupo ha sido aprobada!\n\n` +
+          `El bot ya está en tu grupo. ¡Disfrútalo! 🎉\n\n` +
+          `_Gracias por usar nuestro servicio._`
+      });
+
+      pendingRequests.delete(requestId);
+
+    } catch (error) {
+      console.error('Error al aprobar solicitud:', error);
+      await conn.sendMessage(m.chat, { 
+        text: `❌ Error al unirse al grupo: ${error.message}\n\nEl enlace podría ser inválido o haber expirado.` 
+      }, { quoted: m });
+    }
+    return;
+  }
+
+  if (command === 'denegargrupo' || command === 'denygroup') {
+    if (!isOwner) {
+      await conn.sendMessage(m.chat, { 
+        text: "❌ Solo los propietarios pueden rechazar solicitudes." 
+      }, { quoted: m });
+      return;
+    }
+
+    const args = text?.trim().split(' ');
+    const requestId = args?.[0];
+    const motivo = args?.slice(1).join(' ') || 'No cumple con las políticas del bot';
+
+    if (!requestId) {
+      await conn.sendMessage(m.chat, { 
+        text: "❌ Debes proporcionar el ID de la solicitud.\n\nEjemplo: /denegargrupo 123456abc [motivo opcional]" 
+      }, { quoted: m });
+      return;
+    }
+
+    cleanupPendingRequests();
+
+    if (!pendingRequests.has(requestId)) {
+      await conn.sendMessage(m.chat, { 
+        text: "❌ Solicitud no encontrada o ya fue procesada.\n\n💡 Las solicitudes expiran después de 24 horas." 
+      }, { quoted: m });
+      return;
+    }
+
+    const request = pendingRequests.get(requestId);
+
+    try {
+      await conn.sendMessage(m.chat, { 
+        text: `❌ *Solicitud Rechazada*\n\n` +
+          `👤 Usuario: ${request.userNumber}\n` +
+          `🆔 ID: ${requestId}\n` +
+          `📝 Motivo: ${motivo}`
+      }, { quoted: m });
+
+      await naturalDelay();
+      
+      await conn.sendMessage(request.userId, {
+        text: `❌ *Solicitud Rechazada*\n\n` +
+          `Lo sentimos, tu solicitud para que el bot se una al grupo ha sido rechazada.\n\n` +
+          `📝 *Motivo:* ${motivo}\n\n` +
+          `_Si tienes dudas, puedes contactar con el administrador del bot._`
+      });
+
+      pendingRequests.delete(requestId);
+
+    } catch (error) {
+      console.error('Error al rechazar solicitud:', error);
+      await conn.sendMessage(m.chat, { 
+        text: `⚠️ Solicitud marcada como rechazada, pero hubo un error al notificar al usuario.` 
+      }, { quoted: m });
+      pendingRequests.delete(requestId);
+    }
+    return;
+  }
+
   const idioma = global.defaultLenguaje || 'es';
   
   let tradutor;
@@ -70,18 +194,16 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems }) => {
     const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
     tradutor = _translate.plugins.owner.join;
   } catch (error) {
-    // Fallback messages en caso de error al cargar traducciones
     tradutor = {
       texto1: "❌ Por favor, proporciona un enlace válido de grupo de WhatsApp.",
       texto2: "✅ Me he unido al grupo exitosamente.",
-      texto3: "📋 Tu solicitud ha sido enviada al administrador del bot para revisión.",
-      texto4: "⏳ Has excedido el límite de solicitudes. Intenta más tarde.",
+      texto3: "📋 Tu solicitud ha sido enviada al administrador del bot para revisión.\n\n🆔 ID de solicitud: ",
+      texto4: "⏳ Has excedido el límite de solicitudes (3 por hora). Intenta más tarde.",
       texto5: "❌ Ha ocurrido un error al procesar tu solicitud.",
-      texto6: "🔒 Solicitud de unión a grupo rechazada por políticas de seguridad."
+      texto6: "🔒 Solicitud rechazada por políticas de seguridad."
     };
   }
 
-  // Verificar si ya está procesando una solicitud
   if (enviando) {
     await conn.sendMessage(m.chat, { 
       text: "⏳ Por favor espera, estoy procesando otra solicitud..." 
@@ -89,14 +211,13 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems }) => {
     return;
   }
 
-  // Limpiar rate limiting periódicamente
   cleanupRateLimit();
+  cleanupPendingRequests();
 
   try {
     enviando = true;
     const link = text?.trim();
 
-    // Validación mejorada del enlace
     if (!validateGroupLink(link)) {
       throw new Error(tradutor.texto1);
     }
@@ -106,9 +227,7 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems }) => {
       throw new Error(tradutor.texto1);
     }
 
-    // Verificar privilegios del usuario
     if (isPrems || isMods || isOwner || m.fromMe) {
-      // Agregar delay natural antes de unirse
       await naturalDelay();
       
       try {
@@ -120,27 +239,29 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems }) => {
       }
       
     } else {
-      // Verificar rate limiting para usuarios normales
       if (!checkRateLimit(m.sender)) {
         await conn.sendMessage(m.chat, { text: tradutor.texto4 }, { quoted: m });
         return;
       }
 
-      // Validaciones adicionales de seguridad
+      const requestId = generateRequestId();
       const senderNumber = m.sender.split('@')[0];
       
-      // Verificar que el usuario no esté en lista negra (opcional)
-      // if (isBlacklisted(senderNumber)) {
-      //   await conn.sendMessage(m.chat, { text: tradutor.texto6 }, { quoted: m });
-      //   return;
-      // }
+      pendingRequests.set(requestId, {
+        userId: m.sender,
+        userNumber: senderNumber,
+        link: link,
+        code: code,
+        timestamp: Date.now(),
+        chat: m.chat
+      });
 
-      await conn.sendMessage(m.chat, { text: tradutor.texto3 }, { quoted: m });
+      await conn.sendMessage(m.chat, { 
+        text: tradutor.texto3 + `\`${requestId}\`` 
+      }, { quoted: m });
 
-      // Delay antes de enviar notificación a owners
       await naturalDelay();
 
-      // Notificar a los propietarios de manera más profesional
       const dataArray = global.owner?.filter(([id]) => id) || [];
       
       if (dataArray.length > 0) {
@@ -148,18 +269,32 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems }) => {
           `👤 Usuario: @${senderNumber}\n` +
           `📱 Número: ${senderNumber}\n` +
           `🔗 Enlace: ${link}\n` +
+          `🆔 ID: \`${requestId}\`\n` +
           `⏰ Hora: ${new Date().toLocaleString()}\n\n` +
-          `_Usa /approve o /reject para responder_`;
+          `_Usa los botones para aprobar o rechazar:_`;
 
         for (const entry of dataArray) {
           try {
             const number = Array.isArray(entry) ? entry[0] : entry;
-            await naturalDelay(); // Delay entre cada envío
+            await naturalDelay();
             
             await conn.sendMessage(number + '@s.whatsapp.net', {
               text: notificationMessage,
               mentions: [m.sender]
-            });
+            }, { quoted: null });
+            
+            await conn.sendButton(
+              number + '@s.whatsapp.net',
+              '💡 Acciones disponibles:',
+              'Sistema de Solicitudes',
+              null,
+              [
+                ['✅ Aprobar Grupo', `${usedPrefix}aceptargrupo ${requestId}`],
+                ['❌ Rechazar Grupo', `${usedPrefix}denegargrupo ${requestId}`]
+              ],
+              null,
+              null
+            );
           } catch (notifyError) {
             console.error('Error al notificar owner:', notifyError);
           }
@@ -169,24 +304,16 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems }) => {
 
   } catch (err) {
     console.error('Error en handler join:', err);
-    
     const errorMessage = err.message || tradutor.texto5;
     await conn.sendMessage(m.chat, { text: errorMessage }, { quoted: m });
-    
   } finally {
     enviando = false;
   }
 };
 
-// Configuración del handler
-handler.help = ['join [chat.whatsapp.com]'];
-handler.tags = ['premium'];
-handler.command = /^(join|nuevogrupo)$/i;
-handler.private = true;
-
-// Límites adicionales para evitar spam
-handler.limit = true;
+handler.help = ['join [chat.whatsapp.com]', 'aceptargrupo [id]', 'denegargrupo [id] [motivo]'];
+handler.tags = ['premium', 'owner'];
+handler.command = /^(join|nuevogrupo|aceptargrupo|acceptgroup|denegargrupo|denygroup)$/i;
 handler.register = true;
 
 export default handler;
-
