@@ -1,11 +1,29 @@
 import * as fs from 'fs';
-
 const cooldowns = new Map();
-
 const handler = async (m, {isOwner, isAdmin, conn, text, participants, args, command, usedPrefix}) => {
   const chatId = m.chat;
-  const cooldownTime = 2 * 60 * 1000; // 2 minutos en milisegundos
+  const cooldownTime = 2 * 60 * 1000;
   const now = Date.now();
+  
+  if (usedPrefix == 'a' || usedPrefix == 'A') return;
+  
+  const groupMetadata = await conn.groupMetadata(m.chat);
+  const groupAdmins = groupMetadata.participants.filter(p => p.admin !== null).map(p => p.id);
+  
+  let realUserJid = m.sender;
+  
+  if (m.sender.includes('@lid')) {
+    const participantData = groupMetadata.participants.find(p => p.lid === m.sender);
+    if (participantData && participantData.id) {
+      realUserJid = participantData.id;
+    }
+  }
+  
+  const isUserAdmin = groupAdmins.includes(realUserJid);
+  
+  if (!isUserAdmin && !isOwner) {
+    return m.reply('⚠️ Este comando solo puede ser usado por administradores del grupo.');
+  }
   
   if (cooldowns.has(chatId)) {
     const expirationTime = cooldowns.get(chatId) + cooldownTime;
@@ -21,12 +39,6 @@ const handler = async (m, {isOwner, isAdmin, conn, text, participants, args, com
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
   const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
   const tradutor = _translate.plugins.gc_tagall
-
-  if (usedPrefix == 'a' || usedPrefix == 'A') return;
-  if (!(isAdmin || isOwner)) {
-    global.dfail('admin', m, conn);
-    throw false;
-  }
   
   cooldowns.set(chatId, now);
   
@@ -39,10 +51,8 @@ const handler = async (m, {isOwner, isAdmin, conn, text, participants, args, com
   teks += `*└* Luna-Botv5- 𝐁𝐨𝐭\n\n*▌│█║▌║▌║║▌║▌║▌║█*`;
   conn.sendMessage(m.chat, {text: teks, mentions: participants.map((a) => a.id)} );
 };
-
 handler.help = ['tagall <mesaje>', 'invocar <mesaje>'];
 handler.tags = ['group'];
 handler.command = /^(tagall|invocar|invocacion|todos|invocación)$/i;
-handler.admin = true;
 handler.group = true;
 export default handler;
