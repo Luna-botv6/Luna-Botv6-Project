@@ -341,6 +341,12 @@ ${tradutor.texto1[26]}
 ├💸 _${usedPrefix}transfer *<tipo> <cant> <@tag>*_
 ├❌ _${usedPrefix}unreg *<sn>*_
 ├🛡️ _${usedPrefix}verprotes_
+├🎲 _${usedPrefix}rw_  
+├💖 _${usedPrefix}claimw_  
+├💞 _${usedPrefix}harem_  
+├🏆 _${usedPrefix}rewardwaifu_  
+├🗳️ _${usedPrefix}vote <nombreWaifu> <valor>_  
+├⚡ _${usedPrefix}updatewaifus_  
 ╰───── • ◆ • ────────────╯
 
     
