@@ -101,6 +101,10 @@ async function downloadAudio(msg) {
 export async function handleVoiceMessage(conn, msg, jid, processedMessages) {
   const tempDir = './temp_audio';
   try {
+    if (jid.endsWith('@g.us')) {
+      return;
+    }
+
     const msgId = msg.key.id;
     if (processedMessages.has(msgId)) return;
     processedMessages.add(msgId);
