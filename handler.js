@@ -11,6 +11,7 @@ import { unwatchFile, watchFile } from 'fs';
 import fs from 'fs';
 import chalk from 'chalk';
 import mentionListener from './plugins/game-ialuna.js';
+import { isVoiceMessage, handleVoiceMessage } from './plugins/voice-handler.js';
 import { getConfig } from './lib/funcConfig.js';
 import { readFile } from 'fs/promises';
 const translationsCache = new Map();
@@ -64,6 +65,7 @@ const lidToNameCache = global.lidToNameCache || (global.lidToNameCache = new Map
 
 const recentMessages = new Set()
 const recentParticipantEvents = new Map();
+const processedVoiceMessages = new Set();
 
 function isRecentParticipantEvent(groupId, participant, action) {
   const key = `${groupId}-${participant}-${action}`;
@@ -125,7 +127,7 @@ export async function handler(chatUpdate) {
 if (!m || typeof m !== 'object' || !m.message) return;
 if (m.key?.remoteJid?.endsWith('broadcast')) return;
 if (m.key?.id && isDuplicate(m.key.id)) return;
-if (m.isBaileys) return;
+if (m.isBaileys && !m.message?.audioMessage) return;
 
   const sender = m.key?.fromMe ? this.user.jid : (m.key?.participant || m.participant || m.key?.remoteJid || '');
   const chat = m.key?.remoteJid || '';
@@ -140,6 +142,15 @@ if (m.isBaileys) return;
     m.message?.listResponseMessage?.singleSelectReply?.selectedRowId || '';
 
   if (!m.text) m.text = '';
+  if (isVoiceMessage(m)) {
+    const jid = m.key.remoteJid;
+    const settings = global.db?.data?.settings?.[this?.user?.jid];
+    
+    if (settings?.iaLunaActive !== false) {
+      await handleVoiceMessage(this, m, jid, processedVoiceMessages);
+      return;
+    }
+  }
 
 
 
@@ -323,9 +334,9 @@ const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].
       }, time);
     }
 
-    if (m.isBaileys || isBaileysFail && m?.sender === mconn?.conn?.user?.jid) {
-      return;
-    }
+    if (m.isBaileys && !m.message?.audioMessage) {
+  return;
+}
 
     m.exp += Math.ceil(Math.random() * 10);
 
