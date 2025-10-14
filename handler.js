@@ -345,13 +345,37 @@ const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].
     let usedPrefix;
     const _user = global.db.data && global.db.data.users && global.db.data.users[m.sender];
 
-    const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch((_) => null)) : {}) || {};
-    const participants = (m.isGroup ? groupMetadata.participants : []) || [];
-    const user = (m.isGroup ? participants.find((u) => conn.decodeJid(u.id) === m.sender) : {}) || {};
-    const bot = (m.isGroup ? participants.find((u) => conn.decodeJid(u.id) == this.user.jid) : {}) || {};
-    const isRAdmin = user?.admin == 'superadmin' || false;
-    const isAdmin = isRAdmin || user?.admin == 'admin' || false;
-    const isBotAdmin = bot?.admin || false;
+    let groupMetadata = {};
+let participants = [];
+let isAdmin = false;
+let isRAdmin = false;
+let isBotAdmin = false;
+
+if (m.isGroup) {
+  groupMetadata = ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch((_) => null)) || {};
+  participants = groupMetadata.participants || [];
+  
+  const groupAdmins = participants.filter(p => p.admin !== null).map(p => p.id);
+  
+  let realUserJid = m.sender;
+  if (m.sender.includes('@lid')) {
+    const participantData = participants.find(p => p.lid === m.sender);
+    if (participantData && participantData.id) {
+      realUserJid = participantData.id;
+    }
+  }
+  
+  isAdmin = groupAdmins.includes(realUserJid);
+  
+  const superAdmin = participants.find(p => p.id === realUserJid);
+  isRAdmin = superAdmin?.admin === 'superadmin' || false;
+  
+  const botParticipant = participants.find((u) => conn.decodeJid(u.id) == this.user.jid);
+  isBotAdmin = botParticipant?.admin || false;
+}
+
+const user = {};
+const bot = {};
 
     const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins');
     const customCommandsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), './custom-commands');
@@ -716,64 +740,70 @@ export async function participantsUpdate({ id, participants, action }) {
   const botTt = global.db.data.settings[mconn?.conn?.user?.jid] || {};
   let text = '';
   
-  switch (action) {
+  // Normalizar action - WhatsApp envía 'leave' cuando alguien sale voluntariamente
+  const normalizedAction = action === 'leave' ? 'remove' : action;
+  
+  switch (normalizedAction) {
     case 'add':
     case 'remove':
       if (chat.welcome && !chat?.isBanned) {
         const groupMetadata = await m?.conn?.groupMetadata(id) || (conn?.chats[id] || {}).metadata;
-       for (const user of participants) {
-  if (isRecentParticipantEvent(id, user, action)) {
-    console.log(`🔄 Evento duplicado ignorado: ${action} para ${user.split('@')[0]} en grupo`);
-    continue;
-  }
-  
-  let pp = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/185984ba06daeb2e6f8c453ad8bd47701dc28a03/IMG-20250519-WA0115.jpg';
+        for (const user of participants) {
+          if (isRecentParticipantEvent(id, user, normalizedAction)) {
+            console.log(`🔄 Evento duplicado ignorado: ${normalizedAction} para ${user.split('@')[0]} en grupo`);
+            continue;
+          }
+          
+          let pp = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/185984ba06daeb2e6f8c453ad8bd47701dc28a03/IMG-20250519-WA0115.jpg';
 
-  try {
-    pp = await m?.conn?.profilePictureUrl(user, 'image');
-  } catch (e) {
-  } finally {
-    const apii = await mconn?.conn?.getFile(pp);
-    const antiArab = JSON.parse(fs.readFileSync('./src/antiArab.json'));
-    const userPrefix = antiArab.some((prefix) => user.startsWith(prefix));
-    const botTt2 = groupMetadata?.participants?.find((u) => m?.conn?.decodeJid(u.id) == m?.conn?.user?.jid) || {};
-    const isBotAdminNn = botTt2?.admin === 'admin' || false;
-    
-    if (action === 'add') {
-      if (chat.sWelcome && chat.sWelcome.trim() !== '') {
-        text = chat.sWelcome
-          .replace('@user', '@' + user.split('@')[0])
-          .replace('@group', groupMetadata?.subject || 'Grupo')
-          .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
-      } else {
-        text = (tradutor.texto1 || conn.welcome || '¡Bienvenido/a @user!')
-          .replace('@user', '@' + user.split('@')[0])
-          .replace('@group', groupMetadata?.subject || 'Grupo')
-          .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
-      }
-    } else {
-      if (chat.sBye && chat.sBye.trim() !== '') {
-        text = chat.sBye.replace('@user', '@' + user.split('@')[0]);
-      } else {
-        text = (tradutor.texto2 || conn.bye || 'Adiós @user')
-          .replace('@user', '@' + user.split('@')[0]);
-      }
-    }
-
-    if (userPrefix && chat.antiArab && botTt.restrict && isBotAdminNn && action === 'add') {
-      const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
-      if (responseb[0].status === '404') return;
-      const fkontak2 = { 'key': { 'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo' }, 'message': { 'contactMessage': { 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` } }, 'participant': '0@s.whatsapp.net' };
-      await m?.conn?.sendMessage(id, { text: `*[◉] @${conn.decodeJid(user).split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ʏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ ǫᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [conn.decodeJid(user)] }, { quoted: fkontak2 });
-      return;
-    }
-    
-    await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [conn.decodeJid(user)] });
-    await new Promise(resolve => setTimeout(resolve, 2000));
+          try {
+            pp = await m?.conn?.profilePictureUrl(user, 'image');
+          } catch (e) {
+            // Usar imagen por defecto
+          }
+          
+          const apii = await mconn?.conn?.getFile(pp);
+          const antiArab = JSON.parse(fs.readFileSync('./src/antiArab.json'));
+          const userPrefix = antiArab.some((prefix) => user.startsWith(prefix));
+          const botTt2 = groupMetadata?.participants?.find((u) => m?.conn?.decodeJid(u.id) == m?.conn?.user?.jid) || {};
+          const isBotAdminNn = botTt2?.admin === 'admin' || false;
+          
+          if (normalizedAction === 'add') {
+            if (chat.sWelcome && chat.sWelcome.trim() !== '') {
+              text = chat.sWelcome
+                .replace('@user', '@' + user.split('@')[0])
+                .replace('@group', groupMetadata?.subject || 'Grupo')
+                .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
+            } else {
+              text = (tradutor.texto1 || conn.welcome || '¡Bienvenido/a @user!')
+                .replace('@user', '@' + user.split('@')[0])
+                .replace('@group', groupMetadata?.subject || 'Grupo')
+                .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
             }
+          } else if (normalizedAction === 'remove') {
+            if (chat.sBye && chat.sBye.trim() !== '') {
+              text = chat.sBye.replace('@user', '@' + user.split('@')[0]);
+            } else {
+              text = (tradutor.texto2 || conn.bye || 'Adiós @user')
+                .replace('@user', '@' + user.split('@')[0]);
+            }
+          }
+
+          if (userPrefix && chat.antiArab && botTt.restrict && isBotAdminNn && normalizedAction === 'add') {
+            const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
+            if (responseb[0].status === '404') return;
+            const fkontak2 = { 'key': { 'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo' }, 'message': { 'contactMessage': { 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` } }, 'participant': '0@s.whatsapp.net' };
+            await m?.conn?.sendMessage(id, { text: `*[◉] @${conn.decodeJid(user).split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ʏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ ǫᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [conn.decodeJid(user)] }, { quoted: fkontak2 });
+            return;
+          }
+          
+          console.log(`✅ Enviando mensaje de ${normalizedAction === 'add' ? 'bienvenida' : 'despedida'} a ${user.split('@')[0]}`);
+          await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [conn.decodeJid(user)] });
+          await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
-    break;
+      break;
+      
     case 'promote':
     case 'daradmin':
     case 'darpoder':
@@ -782,6 +812,7 @@ export async function participantsUpdate({ id, participants, action }) {
         return;
       }
       text = (chat.sPromote || tradutor.texto3 || conn?.spromote || '@user ```is now Admin```');
+      
     case 'demote':
     case 'quitarpoder':
     case 'quitaradmin':
@@ -792,16 +823,15 @@ export async function participantsUpdate({ id, participants, action }) {
         }
         text = (chat?.sDemote || tradutor.texto4 || conn?.sdemote || '@user ```is no longer Admin```');
       }
-     let userId = m?.conn?.decodeJid(participants[0]) || participants[0]
-let tag = '@' + userId.split('@')[0]
-
-text = text.replace(/@user/g, tag)
-
-if (chat.detect && !chat?.isBanned) {
-  mconn?.conn?.sendMessage(id, { text, mentions: [userId] });
-}
-
-
+      
+      let userId = m?.conn?.decodeJid(participants[0]) || participants[0]
+      let tag = '@' + userId.split('@')[0]
+      
+      text = text.replace(/@user/g, tag)
+      
+      if (chat.detect && !chat?.isBanned) {
+        mconn?.conn?.sendMessage(id, { text, mentions: [userId] });
+      }
       break;
   }
 }
