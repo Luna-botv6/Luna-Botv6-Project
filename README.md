@@ -720,7 +720,7 @@ Este proyecto está basado en el excelente trabajo de:
 
 - **[Mystic-Bot-MD](https://github.com/BrunoSobrino/TheMystic-Bot-MD)** por [Bruno Sobrino](https://github.com/BrunoSobrino)
 
-Un agradecimiento especial a todos los colaboradores y la comunidad que hace posible este proyecto.
+Un agradecimiento especial a toda la comunidad que hace posible este proyecto.
 
 ---
 
