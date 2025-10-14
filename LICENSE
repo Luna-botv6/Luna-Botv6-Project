@@ -1,21 +1,97 @@
-MIT License
+# MIT License
 
-Copyright (c) 2025 Germán Miño
+**Copyright (c) 2025 Germán Miño**
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+---
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## Permisos
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Se concede permiso, de forma gratuita, a cualquier persona que obtenga una copia de este software y los archivos de documentación asociados (el "Software"), para utilizar el Software sin restricciones, incluyendo sin limitación los derechos de usar, copiar, modificar, fusionar, publicar, distribuir, sublicenciar y/o vender copias del Software, y para permitir a las personas a quienes se les proporcione el Software que lo hagan, sujeto a las siguientes condiciones:
+
+---
+
+## Condiciones
+
+El aviso de copyright anterior y este aviso de permiso se incluirán en todas las copias o porciones sustanciales del Software.
+
+---
+
+## Descargo de Responsabilidad
+
+**EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUYENDO PERO NO LIMITADO A LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN PROPÓSITO PARTICULAR Y NO INFRACCIÓN. EN NINGÚN CASO LOS AUTORES O TITULARES DE LOS DERECHOS DE AUTOR SERÁN RESPONSABLES DE NINGUNA RECLAMACIÓN, DAÑO U OTRA RESPONSABILIDAD, YA SEA EN UNA ACCIÓN CONTRACTUAL, EXTRACONTRACTUAL O DE OTRO TIPO, QUE SURJA DE, FUERA DE O EN CONEXIÓN CON EL SOFTWARE O EL USO U OTROS TRATOS EN EL SOFTWARE.**
+
+---
+
+## Términos Adicionales de Uso
+
+### 1. Comandos Personalizados y Contenido Generado por Usuarios
+
+Luna-Botv6 incluye funcionalidades que permiten a los usuarios crear y ejecutar comandos personalizados. El desarrollador original **NO se hace responsable** de:
+
+- El contenido, propósito o naturaleza de los comandos personalizados creados por los usuarios
+- Cualquier uso indebido, ilegal, malicioso o no ético del bot o sus funcionalidades
+- Daños, pérdidas de datos, violaciones de privacidad o cualquier otro perjuicio derivado del uso de comandos personalizados
+- Violaciones de los términos de servicio de WhatsApp o cualquier otra plataforma
+- Contenido ofensivo, difamatorio, ilegal o inapropiado generado mediante el bot
+
+### 2. Uso del Bot en WhatsApp
+
+Este bot utiliza librerías de terceros para interactuar con WhatsApp. Los usuarios deben:
+
+- Cumplir con los Términos de Servicio de WhatsApp
+- Ser conscientes de que el uso de bots no oficiales puede resultar en el baneo de sus cuentas
+- Asumir toda responsabilidad por las consecuencias del uso del bot en sus cuentas personales
+
+### 3. Responsabilidad del Usuario Final
+
+**AL UTILIZAR ESTE SOFTWARE, EL USUARIO FINAL ACEPTA:**
+
+- Ser el único responsable de cómo utiliza el bot y sus funcionalidades
+- No utilizar el bot para actividades ilegales, acoso, spam, o cualquier actividad que viole leyes locales, nacionales o internacionales
+- Asumir todos los riesgos asociados con el uso del software
+- Indemnizar y eximir de responsabilidad al desarrollador original de cualquier reclamación derivada del uso del software
+
+### 4. Modificaciones y Distribución
+
+Si modificas o redistribuyes este software:
+
+- Debes mantener este aviso de licencia completo
+- Debes indicar claramente que has realizado modificaciones
+- No puedes usar el nombre del autor original para promocionar versiones modificadas sin permiso expreso
+- Eres responsable de cualquier código o funcionalidad que añadas
+
+### 5. Sin Garantías ni Soporte
+
+Este software se proporciona sin ninguna garantía de funcionamiento, seguridad o idoneidad. El desarrollador original:
+
+- No garantiza actualizaciones o correcciones de errores
+- No proporciona soporte técnico obligatorio
+- No garantiza la compatibilidad con futuras versiones de WhatsApp o sus librerías
+
+### 6. Uso Ético
+
+Se recomienda encarecidamente a todos los usuarios:
+
+- Respetar la privacidad de otros usuarios
+- No utilizar el bot para spam o actividades maliciosas
+- Considerar el impacto de sus acciones en la comunidad
+- Usar el bot de manera responsable y ética
+
+---
+
+## Aceptación de Términos
+
+**El uso, modificación o distribución de este software implica la aceptación total de estos términos y condiciones.**
+
+---
+
+## Información de Contacto
+
+- **Proyecto**: Luna-Botv6
+- **Plataforma**: WhatsApp Bot
+- **Tecnología**: Node.js + Baileys
+- **Repositorio**: [GitHub - Luna-botv6](https://github.com/Luna-botv6/Luna-Botv6-Project)
+
+---
+
+*Última actualización: Octubre 2025*
