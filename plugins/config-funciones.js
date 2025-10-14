@@ -19,7 +19,32 @@ async function safeSetConfig(chatId, config) {
   }
 }
 
-const handler = async (m, {conn, usedPrefix, command, args, isOwner, isAdmin, isROwner}) => {
+const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, isAdmin: _isAdmin, isROwner: _isROwner}) => {
+  let isOwner = _isOwner;
+  let isAdmin = _isAdmin;
+  let isROwner = _isROwner;
+  
+  if (m.isGroup && m.sender.includes('@lid')) {
+    const groupMetadata = await conn.groupMetadata(m.chat).catch(() => null);
+    if (groupMetadata) {
+      const participantData = groupMetadata.participants.find(p => p.lid === m.sender);
+      if (participantData && participantData.id) {
+        const realUserJid = participantData.id;
+        const realNum = realUserJid.replace(/[^0-9]/g, '');
+        
+        const ownerNums = global.owner.map(([num]) => num);
+        if (ownerNums.includes(realNum)) {
+          isROwner = true;
+          isOwner = true;
+        }
+        
+        if (participantData.admin) {
+          isAdmin = true;
+        }
+      }
+    }
+  }
+  
   const datas = global
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
   const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
@@ -545,8 +570,10 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner, isAdmin, is
   break;
 
     default:
-      if (!/[01]/.test(command)) return await conn.sendMessage(m.chat, {text: optionsFull}, {quoted: m});
-      throw false;
+      if (!/[01]/.test(command)) {
+        await conn.sendMessage(m.chat, {text: optionsFull}, {quoted: m});
+      }
+      return;
   }
   
   const statusEmoji = isEnable ? '✅' : '❌';
