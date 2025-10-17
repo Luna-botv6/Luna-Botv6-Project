@@ -1,10 +1,27 @@
 import fs from 'fs';
 import { setConfig } from '../lib/funcConfig.js'; 
 
-const handler = async (m, { conn, args, usedPrefix, command, isAdmin }) => {
-  if (!isAdmin) return m.reply('*[❌] Solo los administradores pueden usar este comando.*');
+const handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
+  if (usedPrefix == 'a' || usedPrefix == 'A') return;
+  
+  const groupMetadata = await conn.groupMetadata(m.chat);
+  const groupAdmins = groupMetadata.participants.filter(p => p.admin !== null).map(p => p.id);
+  
+  let realUserJid = m.sender;
+  
+  if (m.sender.includes('@lid')) {
+    const participantData = groupMetadata.participants.find(p => p.lid === m.sender);
+    if (participantData && participantData.id) {
+      realUserJid = participantData.id;
+    }
+  }
+  
+  const isUserAdmin = groupAdmins.includes(realUserJid);
+  
+  if (!isUserAdmin && !isOwner) {
+    return m.reply('*[❌] Solo los administradores pueden usar este comando.*');
+  }
 
-  // Idioma dinámico
   const datas = global;
   const idioma = datas.db?.data?.users[m.sender]?.language || global.defaultLenguaje || 'es';
   let tradutor;
@@ -15,7 +32,6 @@ const handler = async (m, { conn, args, usedPrefix, command, isAdmin }) => {
     tradutor = { texto1: ["Modo de grupo cambiado"] };
   }
 
-  
   const option = (args[0] || '').toLowerCase();
 
   const states = {
@@ -39,7 +55,6 @@ ${tradutor.texto1[0]}
 `.trim());
   }
 
-  
   let updated = false;
   try {
     await conn.groupSettingUpdate(m.chat, isClose);
@@ -48,7 +63,6 @@ ${tradutor.texto1[0]}
     updated = false;
   }
 
-  
   setConfig(m.chat, { groupMode: isClose === 'announcement' ? 'cerrado' : 'abierto' });
 
   if (updated) {
@@ -61,5 +75,6 @@ ${tradutor.texto1[0]}
 handler.help = ['grupo abrir', 'grupo cerrar'];
 handler.tags = ['group'];
 handler.command = /^(grupo|group)$/i;
+handler.group = true;
 
 export default handler;
