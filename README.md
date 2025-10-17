@@ -21,10 +21,10 @@
 ![Update](https://img.shields.io/badge/✨%20Novedad%20Reciente%20✨-4CAF50?style=for-the-badge)
 
 
-## ✅ 16/10/2025 – Actualización Importante 🔧
-Se han corregido múltiples errores en el sistema para mejorar la estabilidad general del bot.  
-La vinculación mediante el código de 8 dígitos **no está disponible temporalmente**, ya que presenta fallos y se encuentra en revisión.  
-El equipo continúa trabajando activamente en nuevas mejoras, optimizaciones y correcciones para ofrecer una experiencia más estable y completa en las próximas actualizaciones.
+## ✅ 17/10/2025 – Corrección y Mejoras 🔧
+
+Se solucionó el problema con los códigos de 8 dígitos, que ya funcionan correctamente.
+También se aplicaron varias correcciones y se sigue trabajando en nuevas mejoras y optimizaciones.
 
 
 
