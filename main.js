@@ -37,7 +37,7 @@ const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
 let stopped = 'close';  
 let pairingTimeout = null;
 let pairingStartTime = null;
-const PAIRING_TIMEOUT_DURATION = 120000; // 2 minutos
+const PAIRING_TIMEOUT_DURATION = 120000;
 
 protoType();
 serialize();
@@ -59,6 +59,7 @@ global.__require = function require(dir = import.meta.url) {
 global.API = (name, path = '/', query = {}, apikeyqueryname) => (name in global.APIs ? global.APIs[name] : name) + path + (query || apikeyqueryname ? '?' + new URLSearchParams(Object.entries({...query, ...(apikeyqueryname ? {[apikeyqueryname]: global.APIKeys[name in global.APIs ? global.APIs[name] : name]} : {})})) : '');
 
 global.timestamp = { start: new Date };
+
 async function clearSessionAndRestart() {
     console.log(chalk.red('[ ✖ ] Timeout de pareado alcanzado. Limpiando sesión...'));
     
@@ -67,7 +68,7 @@ async function clearSessionAndRestart() {
         pairingTimeout = null;
     }
     
-    const carpetas = [global.authFile, 'MysticPairing', 'MysticSession'];
+    const carpetas = [global.authFile, 'MysticSession'];
     const eliminadas = [];
     
     await Promise.allSettled(
@@ -87,23 +88,7 @@ async function clearSessionAndRestart() {
     console.log(chalk.yellow('[ ℹ️ ] Reiniciando en 2 segundos...'));
     setTimeout(() => process.exit(1), 2000);
 }
-async function clearPairingSession() {
-    const carpetas = ['./MysticPairing', './MysticSession'];
-    const eliminadas = [];
-    
-    await Promise.allSettled(
-        carpetas.map(async (carpeta) => {
-            if (fs.existsSync(carpeta)) {
-                await fs.promises.rm(carpeta, { recursive: true, force: true });
-                eliminadas.push(carpeta.replace('./', ''));
-            }
-        })
-    );
-    
-    if (eliminadas.length > 0) {
-        console.log(chalk.yellow(`[ ✓ ] Sesiones limpiadas: ${eliminadas.join(', ')}`));
-    }
-}
+
 global.videoList = [];
 global.videoListXXX = [];
 const __dirname = global.__dirname(import.meta.url);
@@ -142,8 +127,6 @@ global.loadDatabase = async function loadDatabase() {
 };
 loadDatabase();
 
-/* Creditos a Otosaka (https://wa.me/51993966345) */
-
 global.chatgpt = new Low(new JSONFile(path.join(__dirname, '/db/chatgpt.json')));
 global.loadChatgptDB = async function loadChatgptDB() {
   if (global.chatgpt.READ) {
@@ -167,21 +150,15 @@ global.loadChatgptDB = async function loadChatgptDB() {
 };
 loadChatgptDB();
 
-/* ------------------------------------------------*/
-
 let opcion = '1';
-const authFolder = opcion === '2' ? 'MysticPairing' : global.authFile;
-const {state, saveCreds} = await useMultiFileAuthState(authFolder);
-const { version } = await fetchLatestBaileysVersion();
+const authFolder = global.authFile;
 let phoneNumber = global.botnumber || process.argv.find(arg => /^\+\d+$/.test(arg));
 
-const methodCodeQR = process.argv.includes("qr")
-const methodCode = !!phoneNumber || process.argv.includes("code")
-const MethodMobile = process.argv.includes("mobile")
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
-
-
+const methodCodeQR = process.argv.includes("qr");
+const methodCode = !!phoneNumber || process.argv.includes("code");
+const MethodMobile = process.argv.includes("mobile");
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+const question = (texto) => new Promise((resolver) => rl.question(texto, resolver));
 
 try {
   if (methodCodeQR) {
@@ -190,23 +167,26 @@ try {
   } else if (methodCode && phoneNumber) {
     opcion = '2';
     console.log(chalk.yellow('[ ℹ️ ] Modo código seleccionado desde argumentos'));
- } else if (!fs.existsSync(`./${authFolder}/creds.json`)) {
+  } else if (!fs.existsSync(`./${authFolder}/creds.json`)) {
     console.log(chalk.cyan('[ ℹ️ ] No se encontró sesión existente'));
     do {
       opcion = await question(chalk.bgBlack(chalk.bold.yellowBright('[ ℹ️ ] Seleccione una opción:\n1. Con código QR\n2. Con código de texto de 8 dígitos\n---> ')));
       if (!/^[1-2]$/.test(opcion)) {
-        console.log(chalk.red('[ ❗ ] Por favor, seleccione solo 1 o 2.\n'));
+        console.log(chalk.red('[ ● ] Por favor, seleccione solo 1 o 2.\n'));
       }
     } while (!['1', '2'].includes(opcion));
   } else {
     console.log(chalk.green('[ ℹ️ ] Sesión existente encontrada'));
   }
 } catch (error) {
-  console.error(chalk.red('[ ❗ ] Error al seleccionar opción:'), error);
-  opcion = '1'; 
+  console.error(chalk.red('[ ● ] Error al seleccionar opción:'), error);
+  opcion = '1';
 }
 
-console.info = () => {} // https://github.com/skidy89/baileys actualmente no muestra logs molestos en la consola
+const {state, saveCreds} = await useMultiFileAuthState(authFolder);
+const { version } = await fetchLatestBaileysVersion();
+
+console.info = () => {}
 
 const connectionOptions = {
     logger: Pino({ level: 'silent' }),
@@ -221,25 +201,7 @@ const connectionOptions = {
         ),
     },
 
-    ...(opcion === '2' && {
-        shouldIgnoreJid: jid => isJidBroadcast(jid),
-        shouldSyncHistoryMessage: () => false,
-        linkPreviewImageThumbnailWidth: 192,
-        transactionOpts: {
-            maxCommitRetries: 1,
-            delayBetweenTriesMs: 1000,
-        },
-        retryRequestDelayMs: 250,
-        maxMsgRetryCount: 3,
-        appStateMacVerification: {
-            patch: false,
-            snapshot: false,
-        },
-        emitOwnEvents: false,
-        fireInitQueries: false
-    }),
-
-    markOnlineOnConnect: false,
+    markOnlineOnConnect: true,
     generateHighQualityLinkPreview: false,
 
     qrTimeout: 40000,
@@ -252,7 +214,6 @@ const connectionOptions = {
 
     version,
 
-    // Funciones auxiliares dentro de connectionOptions
     getMessage: async (key) => {
         try {
             let jid = jidNormalizedUser(key.remoteJid);
@@ -265,8 +226,8 @@ const connectionOptions = {
     },
 
     patchMessageBeforeSending: async (message) => {
-    return message;
-},
+        return message;
+    },
 
     msgRetryCounterCache: new NodeCache({
         stdTTL: 300,
@@ -292,204 +253,201 @@ const connectionOptions = {
     },
 };
 
-
 global.conn = makeWASocket(connectionOptions);
+
+setInterval(async () => {
+  if (global.conn?.user) {
+    try {
+      await global.conn.sendPresenceUpdate('available');
+    } catch (e) {
+      secureLogger?.error?.('Error enviando presencia:', e.message);
+    }
+  }
+}, 30000);
+
 restaurarConfiguraciones(global.conn);
-const ownerConfig = getOwnerFunction()
-if (ownerConfig.modopublico) global.conn.public = true
-if (ownerConfig.auread) global.opts['autoread'] = true
-if (ownerConfig.modogrupos) global.conn.modogrupos = true
+const ownerConfig = getOwnerFunction();
+if (ownerConfig.modopublico) global.conn.public = true;
+if (ownerConfig.auread) global.opts['autoread'] = true;
+if (ownerConfig.modogrupos) global.conn.modogrupos = true;
 conn.ev.on('connection.update', connectionUpdate);
 
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 
-if (!fs.existsSync(`./${authFolder}/creds.json`)) {
-    if (opcion === '2') {
-        console.log(chalk.yellow('[ ℹ️ ] Modo código de 8 dígitos seleccionado'));
-        clearPairingSession();
+if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
+    console.log(chalk.yellow('[ ℹ️ ] Modo código de 8 dígitos seleccionado'));
+    
+    if (MethodMobile) {
+        console.log(chalk.red('[ ● ] No se puede usar código de emparejamiento con API móvil'));
+        process.exit(1);
+    }
+
+    let numeroTelefono;
+    
+    if (phoneNumber) {
+        numeroTelefono = phoneNumber.replace(/[^0-9]/g, '');
+        console.log(chalk.green('[ ℹ️ ] Usando número proporcionado:'), phoneNumber);
         
-        if (MethodMobile) {
-            console.log(chalk.red('[ ❗ ] No se puede usar código de emparejamiento con API móvil'));
+        if (!numeroTelefono.match(/^\d+$/) || !Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
+            console.log(chalk.red('[ ● ] Número de teléfono inválido:'), phoneNumber);
+            console.log(chalk.yellow('[ ℹ️ ] Formato correcto: +5493483511079'));
             process.exit(1);
         }
+    } else {
+        while (true) {
+            numeroTelefono = await question(chalk.bgBlack(chalk.bold.yellowBright('[ ℹ️ ] Escriba su número de WhatsApp (incluya código de país):\nEjemplo: +5493483511079\n---> ')));
 
-        let numeroTelefono;
-        
-        if (phoneNumber) {
-            numeroTelefono = phoneNumber.replace(/[^0-9]/g, '');
-            console.log(chalk.green('[ ℹ️ ] Usando número proporcionado:'), phoneNumber);
+            if (numeroTelefono.match(/^\d+$/) && Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
+                break;
+            } else {
+                console.log(chalk.red('[ ● ] Número inválido. Use formato: +5493483511079'));
+            }
+        }
+    }
+
+    if (!phoneNumber) {
+        rl.close();
+    }
+
+    global.conn.phoneNumber = numeroTelefono;
+    pairingStartTime = Date.now();
+    
+    pairingTimeout = setTimeout(() => {
+        if (!global.conn?.user) {
+            clearSessionAndRestart();
+        }
+    }, PAIRING_TIMEOUT_DURATION);
+    
+    console.log(chalk.yellow(`[ ⏰ ] Tienes ${PAIRING_TIMEOUT_DURATION / 1000} segundos para completar el pareado`));
+    
+    setTimeout(async () => {
+        try {
+            console.log(chalk.yellow('[ ℹ️ ] Preparando solicitud de código de emparejamiento...'));
             
-            if (!numeroTelefono.match(/^\d+$/) || !Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
-                console.log(chalk.red('[ ❗ ] Número de teléfono inválido:'), phoneNumber);
-                console.log(chalk.yellow('[ ℹ️ ] Formato correcto: +5493483511079'));
-                process.exit(1);
-            }
-        } else {
-            while (true) {
-                numeroTelefono = await question(chalk.bgBlack(chalk.bold.yellowBright('[ ℹ️ ] Escriba su número de WhatsApp (incluya código de país):\nEjemplo: +5493483511079\n---> ')));
-               await conn.requestPairingCode(numeroTelefono);
-
-
-                if (numeroTelefono.match(/^\d+$/) && Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
-                    break;
-                } else {
-                    console.log(chalk.red('[ ❗ ] Número inválido. Use formato: +5493483511079'));
-                }
-            }
-        }
-
-        if (!phoneNumber) {
-            rl.close();
-        }
-
-        global.conn.phoneNumber = numeroTelefono;
-        pairingStartTime = Date.now();
-        
-        pairingTimeout = setTimeout(() => {
-            if (!global.conn?.user) {
-                clearSessionAndRestart();
-            }
-        }, PAIRING_TIMEOUT_DURATION);
-        
-        console.log(chalk.yellow(`[ ⏰ ] Tienes ${PAIRING_TIMEOUT_DURATION / 1000} segundos para completar el pareado`));
-        
-        setTimeout(async () => {
-            try {
-                console.log(chalk.yellow('[ ℹ️ ] Preparando solicitud de código de emparejamiento...'));
-                
-                // Esperar a que la conexión esté lista
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                let codigo;
-                let intentos = 0;
-                const maxIntentos = 3;
-                
-                while (intentos < maxIntentos && !global.conn?.user) {
-                    try {
-                        intentos++;
-                        console.log(chalk.yellow(`[ ℹ️ ] Solicitando código de emparejamiento... (Intento ${intentos}/${maxIntentos})`));
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            let codigo;
+            let intentos = 0;
+            const maxIntentos = 3;
+            
+            while (intentos < maxIntentos && !global.conn?.user) {
+                try {
+                    intentos++;
+                    console.log(chalk.yellow(`[ ℹ️ ] Solicitando código de emparejamiento... (Intento ${intentos}/${maxIntentos})`));
+                    
+                    codigo = await global.conn.requestPairingCode(numeroTelefono);
+                    
+                    if (codigo) {
+                        codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo;
                         
-                        // Solicitar código sin verificación previa de registro
-                        codigo = await global.conn.requestPairingCode(numeroTelefono);
+                        console.log(chalk.green('╔══════════════════════════════╗'));
+                        console.log(chalk.green.bold('📱 CÓDIGO DE EMPAREJAMIENTO:'));
+                        console.log(chalk.yellow.bold('   ' + codigo));
+                        console.log(chalk.green('╚══════════════════════════════╝'));
+                        console.log(chalk.cyan('[ ℹ️ ] Pasos para vincular:'));
+                        console.log(chalk.cyan('1. Abre WhatsApp en tu teléfono'));
+                        console.log(chalk.cyan('2. Ve a Configuración > Dispositivos vinculados'));
+                        console.log(chalk.cyan('3. Toca "Vincular dispositivo"'));
+                        console.log(chalk.cyan('4. Selecciona "Vincular con número de teléfono"'));
+                        console.log(chalk.cyan('5. Ingresa el código de arriba'));
+                        console.log(chalk.red.bold(`6. IMPORTANTE: Tienes ${Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000)} segundos restantes`));
+                        console.log(chalk.green('╚══════════════════════════════╝'));
                         
-                        if (codigo) {
-                            codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo;
-                            
-                            console.log(chalk.green('════════════════════════════════'));
-                            console.log(chalk.green.bold('🔐 CÓDIGO DE EMPAREJAMIENTO:'));
-                            console.log(chalk.yellow.bold('   ' + codigo));
-                            console.log(chalk.green('════════════════════════════════'));
-                            console.log(chalk.cyan('[ ℹ️ ] Pasos para vincular:'));
-                            console.log(chalk.cyan('1. Abre WhatsApp en tu teléfono'));
-                            console.log(chalk.cyan('2. Ve a Configuración > Dispositivos vinculados'));
-                            console.log(chalk.cyan('3. Toca "Vincular dispositivo"'));
-                            console.log(chalk.cyan('4. Selecciona "Vincular con número de teléfono"'));
-                            console.log(chalk.cyan('5. Ingresa el código de arriba'));
-                            console.log(chalk.red.bold(`6. IMPORTANTE: Tienes ${Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000)} segundos restantes`));
-                            console.log(chalk.green('════════════════════════════════'));
-                            
-                            // Salir del bucle ya que obtuvimos el código
-                            break;
-                        }
-                        
-                    } catch (error) {
-                        console.log(chalk.red(`[ ❗ ] Error en intento ${intentos}:`, error.message));
-                        
-                        if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
-                            console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad alcanzado. Esperando...'));
-                            await new Promise(resolve => setTimeout(resolve, 10000));
-                        } else if (intentos < maxIntentos) {
-                            console.log(chalk.yellow(`[ ℹ️ ] Reintentando en 3 segundos...`));
-                            await new Promise(resolve => setTimeout(resolve, 3000));
-                        }
+                        break;
+                    }
+                    
+                } catch (error) {
+                    console.log(chalk.red(`[ ● ] Error en intento ${intentos}:`, error.message));
+                    
+                    if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+                        console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad alcanzado. Esperando...'));
+                        await new Promise(resolve => setTimeout(resolve, 10000));
+                    } else if (intentos < maxIntentos) {
+                        console.log(chalk.yellow(`[ ℹ️ ] Reintentando en 3 segundos...`));
+                        await new Promise(resolve => setTimeout(resolve, 3000));
                     }
                 }
-                
-                if (!codigo) {
-                    console.log(chalk.red('[ ❗ ] No se pudo obtener el código después de varios intentos'));
-                    clearSessionAndRestart();
+            }
+            
+            if (!codigo) {
+                console.log(chalk.red('[ ● ] No se pudo obtener el código después de varios intentos'));
+                clearSessionAndRestart();
+                return;
+            }
+            
+            let codigoRenovado = false;
+            const intervaloCodigo = setInterval(async () => {
+                if (global.conn?.user) {
+                    clearInterval(intervaloCodigo);
+                    if (pairingTimeout) {
+                        clearTimeout(pairingTimeout);
+                        pairingTimeout = null;
+                    }
+                    
+                    console.log(chalk.green('[ ✅ ] ¡Dispositivo vinculado exitosamente!'));
+                    console.log(chalk.green('[ ℹ️ ] Sesión guardada correctamente en ' + authFolder));
+                    
                     return;
                 }
                 
-                // Configurar renovación del código (solo si es necesario)
-                let codigoRenovado = false;
-                const intervaloCodigo = setInterval(async () => {
-                    // Si ya se conectó, limpiar intervalo
-                    if (global.conn?.user) {
-                        clearInterval(intervaloCodigo);
-                        if (pairingTimeout) {
-                            clearTimeout(pairingTimeout);
-                            pairingTimeout = null;
-                        }
-                        console.log(chalk.green('[ ✅ ] ¡Dispositivo vinculado exitosamente!'));
-                        return;
-                    }
-                    
-                    // Si se acabó el tiempo, salir
-                    if (!pairingTimeout) {
-                        clearInterval(intervaloCodigo);
-                        return;
-                    }
-                    
-                    const tiempoRestante = Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000);
-                    if (tiempoRestante <= 0) {
-                        clearInterval(intervaloCodigo);
-                        return;
-                    }
-                    
-                    // Solo renovar si han pasado más de 30 segundos y no se ha vinculado
-                    if (!codigoRenovado && tiempoRestante < 90) {
-                        try {
-                            console.log(chalk.yellow(`[ ℹ️ ] Renovando código... (${tiempoRestante}s restantes)`));
-                            const nuevoCodigo = await global.conn.requestPairingCode(numeroTelefono);
-                            const codigoFormateado = nuevoCodigo?.match(/.{1,4}/g)?.join("-") || nuevoCodigo;
-                            
-                            console.log(chalk.green('════════════════════════════════'));
-                            console.log(chalk.green.bold('🔐 NUEVO CÓDIGO DE EMPAREJAMIENTO:'));
-                            console.log(chalk.yellow.bold('   ' + codigoFormateado));
-                            console.log(chalk.red.bold(`⏰ Tiempo restante: ${tiempoRestante} segundos`));
-                            console.log(chalk.green('════════════════════════════════'));
-                            
-                            codigoRenovado = true; // Marcar como renovado para evitar múltiples renovaciones
-                            
-                        } catch (error) {
-                            console.log(chalk.red('[ ❗ ] Error al renovar código:', error.message));
-                            
-                            if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
-                                console.log(chalk.yellow('[ ⚠️ ] Límite de velocidad alcanzado. Continuando con código actual...'));
-                            }
-                        }
-                    }
-                }, 15000); // Verificar cada 15 segundos en lugar de 20
-                
-            } catch (error) {
-                console.error(chalk.red('[ ❗ ] Error crítico al solicitar código de emparejamiento:'), error.message);
-                
-                // Limpiar timeout si existe
-                if (pairingTimeout) {
-                    clearTimeout(pairingTimeout);
-                    pairingTimeout = null;
+                if (!pairingTimeout) {
+                    clearInterval(intervaloCodigo);
+                    return;
                 }
                 
-                // Si es un error de rate limit, limpiar y reiniciar
-                if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
-                    console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad detectado. Reiniciando proceso...'));
-                    clearSessionAndRestart();
-                } else {
-                    // Para otros errores, limpiar sesión e intentar de nuevo
-                    console.log(chalk.yellow('[ ℹ️ ] Error inesperado. Limpiando sesión...'));
-                    clearPairingSession();
-                    setTimeout(() => {
-                        process.exit(1);
-                    }, 3000);
+                const tiempoRestante = Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000);
+                if (tiempoRestante <= 0) {
+                    clearInterval(intervaloCodigo);
+                    return;
                 }
+                
+                if (!codigoRenovado && tiempoRestante < 90) {
+                    try {
+                        console.log(chalk.yellow(`[ ℹ️ ] Renovando código... (${tiempoRestante}s restantes)`));
+                        const nuevoCodigo = await global.conn.requestPairingCode(numeroTelefono);
+                        const codigoFormateado = nuevoCodigo?.match(/.{1,4}/g)?.join("-") || nuevoCodigo;
+                        
+                        console.log(chalk.green('╔══════════════════════════════╗'));
+                        console.log(chalk.green.bold('📱 NUEVO CÓDIGO DE EMPAREJAMIENTO:'));
+                        console.log(chalk.yellow.bold('   ' + codigoFormateado));
+                        console.log(chalk.red.bold(`⏰ Tiempo restante: ${tiempoRestante} segundos`));
+                        console.log(chalk.green('╚══════════════════════════════╝'));
+                        
+                        codigoRenovado = true;
+                        
+                    } catch (error) {
+                        console.log(chalk.red('[ ● ] Error al renovar código:', error.message));
+                        
+                        if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+                            console.log(chalk.yellow('[ ⚠️ ] Límite de velocidad alcanzado. Continuando con código actual...'));
+                        }
+                    }
+                }
+            }, 15000);
+            
+        } catch (error) {
+            console.error(chalk.red('[ ● ] Error crítico al solicitar código de emparejamiento:'), error.message);
+            
+            if (pairingTimeout) {
+                clearTimeout(pairingTimeout);
+                pairingTimeout = null;
             }
-        }, 5000); // Aumentar el delay inicial a 5 segundos
-    }
+            
+            if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+                console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad detectado. Reiniciando proceso...'));
+                clearSessionAndRestart();
+            } else {
+                console.log(chalk.yellow('[ ℹ️ ] Error inesperado. Limpiando sesión...'));
+                setTimeout(() => {
+                    process.exit(1);
+                }, 3000);
+            }
+        }
+    }, 5000);
 }
+
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 if (isCleanerEnabled()) runCleaner();
-
 
 startAutoCleanService();
 
@@ -526,14 +484,12 @@ async function clearTmp() {
   }
 }
 
-
 if (privacyConfig.dataRetention.enabled) {
     setInterval(() => {
         if (stopped === 'close' || !global.conn || !global.conn?.user) return;
         cleanOldUserData();
-    }, 1000 * 60 * 60 * 24); // Cada 24 horas
+    }, 1000 * 60 * 60 * 24);
 }
-
 
 const dirToWatchccc = path.join(__dirname, './');
 function deleteCoreFiles(filePath) {
@@ -581,7 +537,6 @@ async function connectionUpdate(update) {
   }
   if (global.db.data == null) loadDatabase();
 
-  
   if (opcion === '1' && qr) {
     if (qr !== lastQR) {
       console.log(chalk.yellow('[ ℹ️ ] Escanea el código QR.'));
@@ -589,19 +544,22 @@ async function connectionUpdate(update) {
     }
   }
 
-  
-if (connection === 'open') {
-  console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
-  console.log(chalk.green('[ ℹ️ ] Bot iniciado exitosamente'));
-  codigoSolicitado = false;
+  if (connection === 'open') {
+    console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
+    console.log(chalk.green('[ ℹ️ ] Bot iniciado exitosamente'));
+    codigoSolicitado = false;
 
-} else if (connection === 'connecting') {
-  console.log(chalk.yellow('[ ℹ️ ] Conectando a WhatsApp...'));
+    if (opcion === '2' && pairingTimeout) {
+        clearTimeout(pairingTimeout);
+        pairingTimeout = null;
+    }
 
-} else if (connection === 'close') {
-  console.log(chalk.red('[ ❌ ] Conexión cerrada'));
-}
+  } else if (connection === 'connecting') {
+    console.log(chalk.yellow('[ ℹ️ ] Conectando a WhatsApp...'));
 
+  } else if (connection === 'close') {
+    console.log(chalk.red('[ ✖ ] Conexión cerrada'));
+  }
 
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
   if (reason == 405) {
@@ -669,7 +627,6 @@ global.reloadHandler = async function(restatConn) {
     conn.ev.off('creds.update', conn.credsUpdate);
   }
 
-
 const funcionesOwner = getOwnerFunction();
 
 conn.ev.on('messages.upsert', async ({ messages }) => {
@@ -680,7 +637,6 @@ conn.ev.on('messages.upsert', async ({ messages }) => {
   const isGroup = m.key.remoteJid.endsWith('@g.us');
   const sender = m.key.participant || m.key.remoteJid;
 
-  // Función antiprivado
   if (funcionesOwner.antiprivado && !isGroup && !global.owner.includes(sender.split('@')[0])) {
     try {
       await conn.sendMessage(sender, { text: '🚫 *No puedo responder en chats privados.*' });
@@ -688,7 +644,6 @@ conn.ev.on('messages.upsert', async ({ messages }) => {
     return;
   }
 
-  // Función modogrupos
   if (funcionesOwner.modogrupos && !isGroup) {
     try {
       await conn.sendMessage(sender, { text: '🚫 *Solo puedo responder en grupos.*' });
@@ -697,8 +652,6 @@ conn.ev.on('messages.upsert', async ({ messages }) => {
   }
 });
 
-  // Para cambiar estos mensajes, solo los archivos en la carpeta de language, 
-  // busque la clave "handler" dentro del json y cámbiela si es necesario
   conn.welcome = '👋 ¡Bienvenido/a!\n@user';
   conn.bye = '👋 ¡Hasta luego!\n@user';
   conn.spromote = '*[ ℹ️ ] @user Fue promovido a administrador.*';
@@ -744,7 +697,7 @@ conn.ev.on('creds.update', conn.credsUpdate);
       global.mentionListenerInitialized = true;
       console.log(chalk.green('[ ✅ ] Listener de IA inicializado correctamente'));
     } catch (e) {
-      console.error(chalk.red('[ ❌ ] Error inicializando mentionListener:'), e);
+      console.error(chalk.red('[ ✖ ] Error inicializando mentionListener:'), e);
       global.mentionListenerInitialized = false;
     }
   }
@@ -829,8 +782,7 @@ setInterval(() => {
   if (stopped === 'close' || !global.conn || !global.conn?.user) return;
   clearTmp();
   if (privacyConfig.dataRetention.enabled) cleanOldUserData();
-}, 1000 * 60 * 60 * 2); // Cada 2 horas
-
+}, 1000 * 60 * 60 * 2);
 
 setInterval(() => {
   if (stopped === 'close' || !global.conn || !global.conn?.user) return;
@@ -845,7 +797,6 @@ setInterval(async () => {
   await global.conn?.updateProfileStatus(bio).catch(() => {});
 }, 60000);
 
-
 function clockString(ms) {
   const d = isNaN(ms) ? '--' : Math.floor(ms / 86400000);
   const h = isNaN(ms) ? '--' : Math.floor(ms / 3600000) % 24;
@@ -855,7 +806,8 @@ function clockString(ms) {
 }
 
 _quickTest().catch(console.error);
-    process.on('uncaughtException', (err) => {
+
+process.on('uncaughtException', (err) => {
   secureLogger.error('🚨 Error inesperado no capturado');
   secureLogger.error('📄 Mensaje:', err?.message || err);
 });
