@@ -53,9 +53,8 @@ También se aplicaron varias correcciones y se sigue trabajando en nuevas mejora
   <div style="color: white; text-align: left; line-height: 1.6;">
     <p><strong>🟢 Estado:</strong> Completamente operativo</p>
     <p><strong>📱 Número oficial:</strong> <code>+54 9 348 351 1079</code></p>
-    <p><strong>📅 Última verificación:</strong> 11 octubre, 2025</p>
+    <p><strong>📅 Última verificación:</strong> 17 octubre, 2025</p>
     <p><strong>⏰ Horario de servicio:</strong> 24/7 disponible</p>
-    <p><strong>🌍 Regiones activas:</strong> América Latina y España</p>
   </div>
   
   <div style="margin-top: 15px;">
@@ -66,15 +65,6 @@ También se aplicaron varias correcciones y se sigue trabajando en nuevas mejora
   
 </div>
 
-<div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin: 20px 0;">
-  <div style="background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; min-width: 120px;">
-    <div style="font-size: 24px; font-weight: bold; color: #28a745;">1,247</div>
-    <div style="font-size: 12px; color: #6c757d;">USUARIOS ACTIVOS</div>
-  </div>
-  <div style="background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; min-width: 120px;">
-    <div style="font-size: 24px; font-weight: bold; color: #007bff;">892</div>
-    <div style="font-size: 12px; color: #6c757d;">GRUPOS CONECTADOS</div>
-  </div>
   <div style="background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; min-width: 120px;">
     <div style="font-size: 24px; font-weight: bold; color: #ffc107;">24/7</div>
     <div style="font-size: 12px; color: #6c757d;">DISPONIBILIDAD</div>
