@@ -4,25 +4,13 @@ const handler = async (m, { conn, text, isOwner, participants, usedPrefix, comma
   const groupMetadata = await conn.groupMetadata(m.chat)
   const groupAdmins = groupMetadata.participants.filter(p => p.admin !== null).map(p => p.id)
 
-  let realUserJid = m.sender
-  if (m.sender.includes('@lid')) {
-    const pdata = groupMetadata.participants.find(p => p.lid === m.sender)
-    if (pdata && pdata.id) realUserJid = pdata.id
-  }
-
+  const realUserJid = m.sender
   const isUserAdmin = groupAdmins.includes(realUserJid)
   if (!isUserAdmin && !isOwner) return m.reply('⚠️ Este comando solo puede ser usado por administradores del grupo.')
 
-  const resolveLidToId = (jidOrLid) => {
-    if (!jidOrLid) return null
-    if (!jidOrLid.includes('@lid')) return jidOrLid
-    const pdata = groupMetadata.participants.find(p => p.lid === jidOrLid)
-    return pdata ? pdata.id : null
-  }
-
   let target = null
-  if (m.mentionedJid && m.mentionedJid[0]) target = resolveLidToId(m.mentionedJid[0])
-  else if (m.quoted && m.quoted.sender) target = resolveLidToId(m.quoted.sender)
+  if (m.mentionedJid && m.mentionedJid[0]) target = m.mentionedJid[0]
+  else if (m.quoted && m.quoted.sender) target = m.quoted.sender
 
   if (!target) return m.reply(`🚫 Usa: *${usedPrefix + command} @usuario*`)
 

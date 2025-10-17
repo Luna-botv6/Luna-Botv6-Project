@@ -4,12 +4,7 @@ const handler = async (m, { conn, isOwner }) => {
   const groupMetadata = await conn.groupMetadata(m.chat)
   const groupAdmins = groupMetadata.participants.filter(p => p.admin !== null).map(p => p.id)
 
-  let realUserJid = m.sender
-  if (m.sender.includes('@lid')) {
-    const pdata = groupMetadata.participants.find(p => p.lid === m.sender)
-    if (pdata && pdata.id) realUserJid = pdata.id
-  }
-
+  const realUserJid = m.sender
   const isUserAdmin = groupAdmins.includes(realUserJid)
   if (!isUserAdmin && !isOwner) return m.reply('⚠️ Solo los administradores pueden usar este comando.')
 
