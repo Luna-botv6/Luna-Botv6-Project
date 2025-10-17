@@ -21,8 +21,11 @@
 ![Update](https://img.shields.io/badge/✨%20Novedad%20Reciente%20✨-4CAF50?style=for-the-badge)
 
 
-## ✅ 15/10/2025 – Correcciones Importantes 🔧
-Se arregló el sistema de .setwelcome y .setbye, comandos .play y .play2, detección de fantasmas y eliminación de código innecesario del handler.
+## ✅ 16/10/2025 – Actualización Importante 🔧
+Se han corregido múltiples errores en el sistema para mejorar la estabilidad general del bot.  
+La vinculación mediante el código de 8 dígitos **no está disponible temporalmente**, ya que presenta fallos y se encuentra en revisión.  
+El equipo continúa trabajando activamente en nuevas mejoras, optimizaciones y correcciones para ofrecer una experiencia más estable y completa en las próximas actualizaciones.
+
 
 
 </div>
