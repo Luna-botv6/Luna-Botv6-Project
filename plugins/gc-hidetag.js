@@ -18,17 +18,9 @@ const handler = async (m, {conn, text, participants, isOwner, isAdmin}) => {
   }
   
   const isUserAdmin = groupAdmins.includes(realUserJid);
-  
   const senderJid = realUserJid.replace('@s.whatsapp.net', '');
   const isLidOwner = global.lidOwners && global.lidOwners.includes(senderJid);
   const isGlobalOwner = global.owner && global.owner.some(([num]) => num === senderJid);
-  
-  console.log('DEBUG - Sender original:', m.sender);
-  console.log('DEBUG - Sender real:', realUserJid);
-  console.log('DEBUG - isUserAdmin:', isUserAdmin);
-  console.log('DEBUG - isOwner:', isOwner);
-  console.log('DEBUG - isLidOwner:', isLidOwner);
-  console.log('DEBUG - isGlobalOwner:', isGlobalOwner);
   
   if (!isUserAdmin && !isOwner && !isLidOwner && !isGlobalOwner) {
     return m.reply('⚠️ Este comando solo puede ser usado por administradores del grupo.');
@@ -49,11 +41,37 @@ const handler = async (m, {conn, text, participants, isOwner, isAdmin}) => {
     cooldowns.set(userCooldownKey, now);
   }
   
+  const convertLidToReal = (jid) => {
+    if (jid.includes('@lid')) {
+      const participant = groupMetadata.participants.find(p => p.lid === jid);
+      return participant ? participant.id : jid;
+    }
+    return conn.decodeJid(jid);
+  };
+  
   try {
     const users = participants.map((u) => conn.decodeJid(u.id));
     const q = m.quoted ? m.quoted : m || m.text || m.sender;
     const c = m.quoted ? await m.getQuotedObj() : m.msg || m.text || m.sender;
-    const msg = conn.cMod(m.chat, generateWAMessageFromContent(m.chat, {[m.quoted ? q.mtype : 'extendedTextMessage']: m.quoted ? c.message[q.mtype] : {text: '' || c}}, {quoted: m, userJid: conn.user.id}), text || q.text, conn.user.jid, {mentions: users});
+    
+    let finalText = text || q.text;
+    
+    const mentionMatches = finalText.match(/@(\d+)/g);
+    
+    if (mentionMatches && mentionMatches.length > 0) {
+      mentionMatches.forEach(match => {
+        const number = match.substring(1);
+        const lidJid = `${number}@lid`;
+        const realJid = convertLidToReal(lidJid);
+        const realNumber = realJid.split('@')[0];
+        
+        if (number !== realNumber) {
+          finalText = finalText.replace(new RegExp(`@${number}`, 'g'), `@${realNumber}`);
+        }
+      });
+    }
+    
+    const msg = conn.cMod(m.chat, generateWAMessageFromContent(m.chat, {[m.quoted ? q.mtype : 'extendedTextMessage']: m.quoted ? c.message[q.mtype] : {text: '' || c}}, {quoted: m, userJid: conn.user.id}), finalText, conn.user.jid, {mentions: users});
     await conn.relayMessage(m.chat, msg.message, {messageId: msg.key.id});
   } catch {
     const users = participants.map((u) => conn.decodeJid(u.id));
@@ -62,11 +80,46 @@ const handler = async (m, {conn, text, participants, isOwner, isAdmin}) => {
     const isMedia = /image|video|sticker|audio/.test(mime);
     const more = String.fromCharCode(8206);
     const masss = more.repeat(850);
-    const htextos = `${text ? text : '*Hola :D*'}`;
+    
+    let htextos = text ? text : (quoted && quoted.text ? quoted.text : '*Hola :D*');
+    let quotedMentions = [];
+    
+    if (quoted && quoted.message) {
+      const quotedContent = quoted.message[quoted.mtype];
+      
+      if (quotedContent && quotedContent.contextInfo && quotedContent.contextInfo.mentionedJid) {
+        quotedMentions = quotedContent.contextInfo.mentionedJid.map(convertLidToReal);
+        
+        quotedContent.contextInfo.mentionedJid.forEach((lidJid, index) => {
+          const realJid = quotedMentions[index];
+          const lidNumber = lidJid.split('@')[0];
+          const realNumber = realJid.split('@')[0];
+          
+          if (lidNumber !== realNumber) {
+            htextos = htextos.replace(new RegExp(`@${lidNumber}`, 'g'), `@${realNumber}`);
+          }
+        });
+      }
+    }
+    
+    const mentionMatches = htextos.match(/@(\d+)/g);
+    
+    if (mentionMatches && mentionMatches.length > 0) {
+      mentionMatches.forEach(match => {
+        const number = match.substring(1);
+        const lidJid = `${number}@lid`;
+        const realJid = convertLidToReal(lidJid);
+        const realNumber = realJid.split('@')[0];
+        
+        if (number !== realNumber) {
+          htextos = htextos.replace(new RegExp(`@${number}`, 'g'), `@${realNumber}`);
+        }
+      });
+    }
     
     if ((isMedia && quoted.mtype === 'imageMessage') && htextos) {
       var mediax = await quoted.download?.();
-      conn.sendMessage(m.chat, {image: mediax, mentions: users, caption: htextos, mentions: users}, {quoted: m});
+      conn.sendMessage(m.chat, {image: mediax, mentions: users, caption: htextos}, {quoted: m});
     } else if ((isMedia && quoted.mtype === 'videoMessage') && htextos) {
       var mediax = await quoted.download?.();
       conn.sendMessage(m.chat, {video: mediax, mentions: users, mimetype: 'video/mp4', caption: htextos}, {quoted: m});

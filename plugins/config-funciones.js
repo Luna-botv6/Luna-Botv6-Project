@@ -1,10 +1,10 @@
-import fs from 'fs'
-import { setConfig, getConfig } from '../lib/funcConfig.js'
+import fs from 'fs';
+import { readFile } from 'fs/promises';
+import { setConfig, getConfig } from '../lib/funcConfig.js';
 
 const configLocks = new Map();
 
 async function safeSetConfig(chatId, config) {
-
   if (configLocks.has(chatId)) {
     await configLocks.get(chatId);
   }
@@ -45,168 +45,125 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, i
     }
   }
   
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.config_funciones
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender]?.language || global.defaultLenguaje;
+  
+  let _translate = {};
+  try {
+    const translateData = await readFile(`./src/languages/${idioma}.json`, 'utf8');
+    _translate = JSON.parse(translateData);
+  } catch (e) {
+    console.error('Error cargando idioma:', e.message);
+  }
+  
+  const tradutor = _translate.plugins?.config_funciones || {};
 
-  const optionsFull = `*====[ ⚙️ ${tradutor.texto1[0]} ⚙️ ]====*
+  const optionsFull = `*====[ ⚙️ ${tradutor.texto1?.[0] || 'CONFIGURACIÓN'} ⚙️ ]====*
 
 🎉 *WELCOME*
-• ${tradutor.texto1[1]}
-• ${usedPrefix + command} welcome
-• ${tradutor.texto1[3]}
-
-🌐 *PUBLIC*
-• ${tradutor.texto2[1]}
-• ${usedPrefix + command} public
-• ${tradutor.texto2[2]}
-• ${tradutor.texto2[3]}
-
-🔥 *MODOHORNY*
-• ${tradutor.texto3[1]}
-• ${usedPrefix + command} modohorny
-• ${tradutor.texto3[2]}
+- ${tradutor.texto1?.[1] || 'Activa/desactiva la bienvenida'}
+- ${usedPrefix + command} welcome
+- ${tradutor.texto1?.[3] || 'Solo para grupos'}
 
 🚫 *ANTILINK*
-• ${tradutor.texto4[1]}
-• ${usedPrefix + command} antilink
-• ${tradutor.texto4[2]}
-• ${tradutor.texto4[3]}
+- ${tradutor.texto4?.[1] || 'Elimina mensajes con links'}
+- ${usedPrefix + command} antilink
+- ${tradutor.texto4?.[2] || 'Solo grupos'}
+- ${tradutor.texto4?.[3] || 'Requiere admin'}
 
 🚫 *ANTILINK 2*
-• ${tradutor.texto5[1]}
-• ${usedPrefix + command} antilink2
-• ${tradutor.texto5[2]}
-• ${tradutor.texto5[3]}
-
-👀 *DETECT*
-• ${tradutor.texto6[1]}
-• ${usedPrefix + command} detect
-• ${tradutor.texto6[2]}
-
-👀 *DETECT 2*
-• ${tradutor.texto7[1]}
-• ${usedPrefix + command} detect2
-• ${tradutor.texto7[2]}
+- ${tradutor.texto5?.[1] || 'Versión alternativa de antilink'}
+- ${usedPrefix + command} antilink2
+- ${tradutor.texto5?.[2] || 'Solo grupos'}
+- ${tradutor.texto5?.[3] || 'Requiere admin'}
 
 🔒 *RESTRICT*
-• ${tradutor.texto8[1]}
-• ${usedPrefix + command} restrict
-• ${tradutor.texto8[2]}
-• ${tradutor.texto8[3]}
+- ${tradutor.texto8?.[1] || 'Restringe acciones del bot'}
+- ${usedPrefix + command} restrict
+- ${tradutor.texto8?.[2] || 'Solo owner'}
+- ${tradutor.texto8?.[3] || 'Afecta todo el bot'}
 
 📖 *AUTOREAD*
-• ${tradutor.texto9[1]}
-• ${usedPrefix + command} autoread
-• ${tradutor.texto9[2]}
-• ${tradutor.texto9[3]}
+- ${tradutor.texto9?.[1] || 'Lee mensajes automáticamente'}
+- ${usedPrefix + command} autoread
+- ${tradutor.texto9?.[2] || 'Solo owner'}
+- ${tradutor.texto9?.[3] || 'Afecta todo el bot'}
 
 🎵 *AUDIOS*
-• ${tradutor.texto10[1]}
-• ${usedPrefix + command} audios
-• ${tradutor.texto10[2]}
+- ${tradutor.texto10?.[1] || 'Activa/desactiva audios del bot'}
+- ${usedPrefix + command} audios
+- ${tradutor.texto10?.[2] || 'Solo grupos'}
 
 🏷️ *AUTOSTICKER*
-• ${tradutor.texto11[1]}
-• ${usedPrefix + command} autosticker
-• ${tradutor.texto11[2]}
+- ${tradutor.texto11?.[1] || 'Convierte imágenes en stickers automáticamente'}
+- ${usedPrefix + command} autosticker
+- ${tradutor.texto11?.[2] || 'Solo grupos'}
 
-💻 *PCONLY*
-• ${tradutor.texto12[1]}
-• ${usedPrefix + command} pconly
-• ${tradutor.texto12[2]}
-• ${tradutor.texto12[3]}
-
-👥 *GCONLY*
-• ${tradutor.texto13[1]}
-• ${usedPrefix + command} gconly
-• ${tradutor.texto13[2]}
-• ${tradutor.texto13[3]}
-
-👁️ *ANTIVIEWONCE*
-• ${tradutor.texto14[1]}
-• ${usedPrefix + command} antiviewonce
-• ${tradutor.texto14[2]}
-
-📞 *ANTILLAMADAS*
-• ${tradutor.texto15[1]}
-• ${usedPrefix + command} anticall
-• ${tradutor.texto15[2]}
-• ${tradutor.texto15[3]}
+📞 *ANTICALL*
+- ${tradutor.texto15?.[1] || 'Bloquea llamadas entrantes'}
+- ${usedPrefix + command} anticall
+- ${tradutor.texto15?.[2] || 'Solo owner'}
+- ${tradutor.texto15?.[3] || 'Bloquea automáticamente'}
 
 ☢️ *ANTITOXIC*
-• ${tradutor.texto16[1]}
-• ${usedPrefix + command} antitoxic
-• ${tradutor.texto16[2]}
-• ${tradutor.texto16[3]}
-
-🛡️ *ANTITRABAS*
-• ${tradutor.texto17[1]}
-• ${usedPrefix + command} antitraba
-• ${tradutor.texto17[2]}
-• ${tradutor.texto17[3]}
-
-🚷 *ANTIARABES*
-• ${tradutor.texto18[1]}
-• ${usedPrefix + command} antiarabes
-• ${tradutor.texto18[2]}
-• ${tradutor.texto18[3]}
-
-🚷 *ANTIARABES 2*
-• ${tradutor.texto19[1]}
-• ${usedPrefix + command} antiarabes2
-• ${tradutor.texto19[2]}
-• ${tradutor.texto19[3]}
+- ${tradutor.texto16?.[1] || 'Elimina mensajes tóxicos'}
+- ${usedPrefix + command} antitoxic
+- ${tradutor.texto16?.[2] || 'Solo grupos'}
+- ${tradutor.texto16?.[3] || 'Requiere admin'}
 
 👑 *MODOADMIN*
-• ${tradutor.texto20[1]}
-• ${usedPrefix + command} modoadmin
-• ${tradutor.texto20[2]}
+- ${tradutor.texto20?.[1] || 'Solo admins pueden usar comandos'}
+- ${usedPrefix + command} modoadmin
+- ${tradutor.texto20?.[2] || 'Solo grupos'}
 
 ⏰ *AFK*
-• Activa o desactiva tu estado AFK
-• ${usedPrefix + command} afk [motivo]
-• Mientras estés AFK, los demás recibirán un aviso si te mencionan
-• Puedes desactivar el AFK usando /disable afk en el grupo (admins/owner)
-
+- Activa o desactiva tu estado AFK
+- ${usedPrefix + command} afk [motivo]
+- Mientras estés AFK, los demás recibirán un aviso si te mencionan
+- Puedes desactivar el AFK usando /disable afk en el grupo (admins/owner)
 
 🗑️ *ANTIDELETE*
-• ${tradutor.texto22[1]}
-• ${usedPrefix + command} antidelete
-• ${tradutor.texto22[2]}
+- ${tradutor.texto22?.[1] || 'Reenvía mensajes eliminados'}
+- ${usedPrefix + command} antidelete
+- ${tradutor.texto22?.[2] || 'Solo grupos'}
 
 🔊 *AUDIOS_BOT*
-• ${tradutor.texto23[1]}
-• ${usedPrefix + command} audios_bot
-• ${tradutor.texto23[2]}
-• ${tradutor.texto23[3]}
-
-🧠 *MODOIA*
-• ${tradutor.texto24[1]}
-• ${usedPrefix + command} modoia
-• ${tradutor.texto24[2]}
-• ${tradutor.texto24[3]}
+- ${tradutor.texto23?.[1] || 'Activa/desactiva audios globales'}
+- ${usedPrefix + command} audios_bot
+- ${tradutor.texto23?.[2] || 'Solo owner'}
+- ${tradutor.texto23?.[3] || 'Afecta todo el bot'}
 
 🚯 *ANTISPAM*
-• ${tradutor.texto25[1]}
-• ${usedPrefix + command} antispam
-• ${tradutor.texto25[2]}
-• ${tradutor.texto25[3]}
-
-🤖 *MODEJADIBOT*
-• ${tradutor.texto26[1]}
-• ${usedPrefix + command} modejadibot
-• ${tradutor.texto26[2]} (${usedPrefix}serbot / ${usedPrefix}jadibot)
-• ${tradutor.texto26[3]}
+- ${tradutor.texto25?.[1] || 'Previene spam de comandos'}
+- ${usedPrefix + command} antispam
+- ${tradutor.texto25?.[2] || 'Solo owner'}
+- ${tradutor.texto25?.[3] || 'Límite de 2 comandos/10s'}
 
 🔐 *ANTIPRIVADO*
-• ${tradutor.texto27[1]}
-• ${usedPrefix + command} antiprivado
-• ${tradutor.texto27[2]}
-• ${tradutor.texto27[3]}
+- ${tradutor.texto27?.[1] || 'Bloquea mensajes privados'}
+- ${usedPrefix + command} antiprivado
+- ${tradutor.texto27?.[2] || 'Solo owner'}
+- ${tradutor.texto27?.[3] || 'Owners pueden escribir'}
 
-*================================*`
+🌐 *MODOPUBLICO*
+- Activa/desactiva el modo público del bot
+- ${usedPrefix + command} modopublico
+- Permite que todos usen el bot sin restricciones
+- Solo owner
+
+👁️ *VIERWIMAGE*
+- Captura imágenes/videos de vista única
+- ${usedPrefix + command} vierwimage
+- Los view once se reenvían al owner
+- Solo owner
+
+🏢 *MODOGRUPOS*
+- Solo permite grupos autorizados
+- ${usedPrefix + command} modogrupos
+- El bot sale de grupos no autorizados
+- Solo owner
+
+*================================*`;
 
   const isEnable = /true|enable|(turn)?on|1/i.test(command);
   
@@ -214,8 +171,7 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, i
   const user = global.db.data.users[m.sender];
   const bot = global.db.data.settings[conn.user.jid] || {};
   const type = (args[0] || '').toLowerCase();
-  let isAll = false; 
-  const isUser = false;
+  let isAll = false;
 
   switch (type) {
     case 'welcome':
@@ -260,39 +216,6 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, i
       await safeSetConfig(m.chat, chat);
       break;
 
-    case 'simsimi':
-      if (m.isGroup) {
-        if (!(isAdmin || isROwner || isOwner)) {
-          global.dfail('admin', m, conn);
-          throw false;
-        }
-      }
-      chat.simi = isEnable;
-      await safeSetConfig(m.chat, chat);
-      break;
-
-    case 'antiporno':
-      if (m.isGroup) {
-        if (!(isAdmin || isOwner)) {
-          global.dfail('admin', m, conn);
-          throw false;
-        }
-      }
-      chat.antiporno = isEnable;
-      await safeSetConfig(m.chat, chat);
-      break;
-
-    case 'delete':
-      if (m.isGroup) {
-        if (!(isAdmin || isOwner)) {
-          global.dfail('admin', m, conn);
-          throw false;
-        }
-      }
-      chat.delete = isEnable;
-      await safeSetConfig(m.chat, chat);
-      break;
-
     case 'antidelete':
       if (m.isGroup) {
         if (!(isAdmin || isOwner)) {
@@ -302,15 +225,6 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, i
       }
       chat.antidelete = isEnable;
       await safeSetConfig(m.chat, chat);
-      break;
-
-    case 'public':
-      isAll = true;
-      if (!isROwner) {
-        global.dfail('rowner', m, conn);
-        throw false;
-      }
-      global.opts['self'] = !isEnable;
       break;
 
     case 'antilink':
@@ -332,28 +246,6 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, i
         }
       }
       chat.antiLink2 = isEnable;
-      await safeSetConfig(m.chat, chat);
-      break;
-
-    case 'antiviewonce':
-      if (m.isGroup) {
-        if (!(isAdmin || isOwner)) {
-          global.dfail('admin', m, conn);
-          throw false;
-        }
-      }
-      chat.antiviewonce = isEnable;
-      await safeSetConfig(m.chat, chat);
-      break;
-
-    case 'modohorny':
-      if (m.isGroup) {
-        if (!(isAdmin || isROwner || isOwner)) {
-          global.dfail('admin', m, conn);
-          throw false;
-        }
-      }
-      chat.modohorny = isEnable;
       await safeSetConfig(m.chat, chat);
       break;
 
@@ -408,24 +300,6 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, i
       bot.audios_bot = isEnable;  
       break;
 
-    case 'modoia':
-      isAll = true;
-      if (!(isROwner || isOwner)) {
-        global.dfail('owner', m, conn);
-        throw false;
-      }
-      bot.modoia = isEnable;  
-      break;      
-
-    case 'nyimak':
-      isAll = true;
-      if (!isROwner) {
-        global.dfail('rowner', m, conn);
-        throw false;
-      }
-      global.opts['nyimak'] = isEnable;
-      break;
-
     case 'autoread':
       isAll = true;
       if (!(isROwner || isOwner)) {
@@ -433,36 +307,6 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, i
         throw false;
       }
       bot.autoread2 = isEnable;
-      break;
-
-    case 'pconly':
-    case 'privateonly':
-      isAll = true;
-      if (!isROwner) {
-        global.dfail('rowner', m, conn);
-        throw false;
-      }
-      global.opts['pconly'] = isEnable;
-      break;
-
-    case 'gconly':
-    case 'grouponly':
-      isAll = true;
-      if (!isROwner) {
-        global.dfail('rowner', m, conn);
-        throw false;
-      }
-      global.opts['gconly'] = isEnable;
-      break;
-
-    case 'swonly':
-    case 'statusonly':
-      isAll = true;
-      if (!isROwner) {
-        global.dfail('rowner', m, conn);
-        throw false;
-      }
-      global.opts['swonly'] = isEnable;
       break;
 
     case 'anticall':
@@ -480,16 +324,142 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, i
         global.dfail('owner', m, conn);
         throw false;
       }
-      bot.antiPrivate = isEnable;
+      
+      let ownerConfigData = {};
+      try {
+        const configFile = await fs.promises.readFile('./database/funciones-owner.json', 'utf8');
+        ownerConfigData = JSON.parse(configFile);
+      } catch (e) {
+        ownerConfigData = {
+          auread: false,
+          modopublico: false,
+          vierwimage: false,
+          antiprivado: false,
+          modogrupos: false
+        };
+      }
+      
+      ownerConfigData.antiprivado = isEnable;
+      
+      try {
+        await fs.promises.writeFile(
+          './database/funciones-owner.json', 
+          JSON.stringify(ownerConfigData, null, 2), 
+          'utf8'
+        );
+      } catch (e) {
+        console.error('Error guardando funciones-owner.json:', e.message);
+        return m.reply('❌ Error al guardar la configuración.');
+      }
+      
       break;
 
-    case 'modejadibot':
+    case 'modopublico':
       isAll = true;
-      if (!isROwner) {
-        global.dfail('rowner', m, conn);
+      if (!(isROwner || isOwner)) {
+        global.dfail('owner', m, conn);
         throw false;
       }
-      bot.modejadibot = isEnable;
+      
+      let configPublico = {};
+      try {
+        const configFile = await fs.promises.readFile('./database/funciones-owner.json', 'utf8');
+        configPublico = JSON.parse(configFile);
+      } catch (e) {
+        configPublico = {
+          auread: false,
+          modopublico: false,
+          vierwimage: false,
+          antiprivado: false,
+          modogrupos: false
+        };
+      }
+      
+      configPublico.modopublico = isEnable;
+      
+      try {
+        await fs.promises.writeFile(
+          './database/funciones-owner.json', 
+          JSON.stringify(configPublico, null, 2), 
+          'utf8'
+        );
+      } catch (e) {
+        console.error('Error guardando funciones-owner.json:', e.message);
+        return m.reply('❌ Error al guardar la configuración.');
+      }
+      
+      break;
+
+    case 'vierwimage':
+      isAll = true;
+      if (!(isROwner || isOwner)) {
+        global.dfail('owner', m, conn);
+        throw false;
+      }
+      
+      let configView = {};
+      try {
+        const configFile = await fs.promises.readFile('./database/funciones-owner.json', 'utf8');
+        configView = JSON.parse(configFile);
+      } catch (e) {
+        configView = {
+          auread: false,
+          modopublico: false,
+          vierwimage: false,
+          antiprivado: false,
+          modogrupos: false
+        };
+      }
+      
+      configView.vierwimage = isEnable;
+      
+      try {
+        await fs.promises.writeFile(
+          './database/funciones-owner.json', 
+          JSON.stringify(configView, null, 2), 
+          'utf8'
+        );
+      } catch (e) {
+        console.error('Error guardando funciones-owner.json:', e.message);
+        return m.reply('❌ Error al guardar la configuración.');
+      }
+      
+      break;
+
+    case 'modogrupos':
+      isAll = true;
+      if (!(isROwner || isOwner)) {
+        global.dfail('owner', m, conn);
+        throw false;
+      }
+      
+      let configGrupos = {};
+      try {
+        const configFile = await fs.promises.readFile('./database/funciones-owner.json', 'utf8');
+        configGrupos = JSON.parse(configFile);
+      } catch (e) {
+        configGrupos = {
+          auread: false,
+          modopublico: false,
+          vierwimage: false,
+          antiprivado: false,
+          modogrupos: false
+        };
+      }
+      
+      configGrupos.modogrupos = isEnable;
+      
+      try {
+        await fs.promises.writeFile(
+          './database/funciones-owner.json', 
+          JSON.stringify(configGrupos, null, 2), 
+          'utf8'
+        );
+      } catch (e) {
+        console.error('Error guardando funciones-owner.json:', e.message);
+        return m.reply('❌ Error al guardar la configuración.');
+      }
+      
       break;
 
     case 'antispam':
@@ -512,62 +482,16 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, i
       await safeSetConfig(m.chat, chat);
       break;
 
-    case 'game': 
-    case 'juegos': 
-    case 'fun': 
-    case 'ruleta':
-      if (m.isGroup) {
-        if (!(isAdmin || isOwner)) {
-          global.dfail('admin', m, conn);
-          throw false;
-        }
-      }
-      chat.game = isEnable;
-      await safeSetConfig(m.chat, chat);
-      break;
-
-    case 'antitraba':
+    case 'afk':
       if (m.isGroup) {
         if (!(isAdmin || isROwner || isOwner)) {
           global.dfail('admin', m, conn);
           throw false;
         }
       }
-      chat.antiTraba = isEnable;
+      chat.afkAllowed = isEnable;
       await safeSetConfig(m.chat, chat);
       break;
-
-    case 'antiarabes':
-      if (m.isGroup) {
-        if (!(isAdmin || isROwner || isOwner)) {
-          global.dfail('admin', m, conn); 
-          throw false;
-        }
-      }
-      chat.antiArab = isEnable;
-      await safeSetConfig(m.chat, chat);
-      break;
-
-    case 'antiarabes2':
-      if (m.isGroup) {
-        if (!(isAdmin || isROwner || isOwner)) {
-          global.dfail('admin', m, conn);
-          throw false;
-        }
-      }
-      chat.antiArab2 = isEnable;
-      await safeSetConfig(m.chat, chat);
-      break;
-       case 'afk':
-  if (m.isGroup) {
-    if (!(isAdmin || isROwner || isOwner)) {
-      global.dfail('admin', m, conn);
-      throw false;
-    }
-  }
-  chat.afkAllowed = isEnable;
-  await safeSetConfig(m.chat, chat);
-  break;
 
     default:
       if (!/[01]/.test(command)) {
@@ -578,13 +502,13 @@ const handler = async (m, {conn, usedPrefix, command, args, isOwner: _isOwner, i
   
   const statusEmoji = isEnable ? '✅' : '❌';
   const statusText = isEnable ? '_activada_' : '_desactivada_';
-  const scopeText = isAll ? '_bot._' : isUser ? '' : '_chat._';
+  const scopeText = isAll ? '_bot._' : '_chat._';
   
-  const responseMessage = `*====[ ⚙️ ${tradutor.texto28[0]} ⚙️ ]====*
+  const responseMessage = `*====[ ⚙️ ${tradutor.texto28?.[0] || 'CONFIGURACIÓN ACTUALIZADA'} ⚙️ ]====*
 
-${statusEmoji} *${tradutor.texto28[1]}* _${type}_
+${statusEmoji} *${tradutor.texto28?.[1] || 'Función'}:* _${type}_
 *Estado:* ${statusText}
-*${tradutor.texto28[2]}* ${scopeText}
+*${tradutor.texto28?.[2] || 'Alcance'}:* ${scopeText}
 
 *================================*`;
 
