@@ -14,8 +14,178 @@ import mentionListener from './plugins/game-ialuna.js';
 import { isVoiceMessage, handleVoiceMessage } from './plugins/voice-handler.js';
 import { getConfig } from './lib/funcConfig.js';
 import { readFile } from 'fs/promises';
+import mddd5 from 'md5';
+import ws from 'ws';
+import { setConfig } from './lib/funcConfig.js'
+import { setOwnerFunction } from './lib/owner-funciones.js'
+import { addExp, getUserStats, setUserStats } from './lib/stats.js'
+// Cache para metadata del bot
+const botMetadataCache = {
+  name: null,
+  number: null,
+  jid: null,
+  lastUpdate: 0
+};
+
+const BOT_METADATA_TTL = 60000; 
+
+function getBotMetadata(conn) {
+  const now = Date.now();
+  
+  if (botMetadataCache.lastUpdate && (now - botMetadataCache.lastUpdate) < BOT_METADATA_TTL) {
+    return {
+      name: botMetadataCache.name || 'Luna-Bot',
+      number: botMetadataCache.number || 'Sin número',
+      jid: botMetadataCache.jid
+    };
+  }
+  
+  try {
+    botMetadataCache.jid = conn?.user?.jid || conn?.user?.id;
+    botMetadataCache.number = conn?.user?.jid?.split('@')[0] || 'Sin número';
+    botMetadataCache.name = conn?.user?.name || conn?.user?.verifiedName || 'Luna-Bot';
+    botMetadataCache.lastUpdate = now;
+  } catch (e) {
+    console.error('Error obteniendo metadata del bot:', e.message);
+  }
+  
+  return {
+    name: botMetadataCache.name || 'Luna-Bot',
+    number: botMetadataCache.number || 'Sin número',
+    jid: botMetadataCache.jid
+  };
+}
+
 const translationsCache = new Map();
 const customCommandsCache = new Map();
+const groupCache = new Map();
+const lidToJidCache = global.lidToJidCache || (global.lidToJidCache = new Map());
+const lidToNameCache = global.lidToNameCache || (global.lidToNameCache = new Map());
+const recentMessages = new Map();
+const recentParticipantEvents = new Map();
+const processedVoiceMessages = new Set();
+
+const CACHE_TTL = 5 * 60 * 1000;
+const DUPLICATE_TIMEOUT = 5000;
+
+function getCachedGroupData(chatId) {
+  const cached = groupCache.get(chatId);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+    return cached.data;
+  }
+  return null;
+}
+
+function setCachedGroupData(chatId, data) {
+  groupCache.set(chatId, {
+    data,
+    timestamp: Date.now()
+  });
+}
+
+
+function cleanupCache(cache, ttl, name = 'cache') {
+  const now = Date.now();
+  let cleaned = 0;
+  
+  for (const [key, value] of cache.entries()) {
+    const timestamp = value?.timestamp || value;
+    if ((now - timestamp) > ttl) {
+      cache.delete(key);
+      cleaned++;
+    }
+  }
+  
+  if (cleaned > 0) {
+    console.log(chalk.gray(`🧹 Limpieza de ${name}: ${cleaned} entradas eliminadas`));
+  }
+}
+
+
+setInterval(() => {
+  cleanupCache(groupCache, CACHE_TTL, 'groupCache');
+  cleanupCache(recentMessages, DUPLICATE_TIMEOUT, 'recentMessages');
+  cleanupCache(recentParticipantEvents, 5000, 'participantEvents');
+  cleanupCache(translationsCache, 30 * 60 * 1000, 'translationsCache');
+  
+  if (processedVoiceMessages.size > 1000) {
+    processedVoiceMessages.clear();
+    console.log(chalk.gray('🧹 Limpieza de processedVoiceMessages'));
+  }
+}, 120000);
+
+async function getGroupInfo(conn, chatId, forceRefresh = false) {
+  if (!forceRefresh) {
+    const cached = getCachedGroupData(chatId);
+    if (cached) return cached;
+  }
+
+  try {
+    const metadata = conn.chats[chatId]?.metadata || await conn.groupMetadata(chatId);
+    
+    const adminsSet = new Set();
+    const participantsMap = new Map();
+    
+    if (metadata.participants) {
+      for (const p of metadata.participants) {
+        participantsMap.set(p.id, p);
+        if (p.lid) {
+          participantsMap.set(p.lid, p);
+        }
+        if (p.admin !== null) {
+          adminsSet.add(p.id);
+        }
+      }
+    }
+    
+    const groupData = {
+      metadata,
+      participants: metadata.participants || [],
+      admins: adminsSet,
+      participantsMap
+    };
+
+    setCachedGroupData(chatId, groupData);
+    return groupData;
+  } catch (e) {
+    console.error('Error obteniendo metadata del grupo:', e.message);
+    return {
+      metadata: {},
+      participants: [],
+      admins: new Set(),
+      participantsMap: new Map()
+    };
+  }
+}
+
+function isUserAdmin(groupInfo, userJid) {
+  if (groupInfo.admins.has(userJid)) return true;
+  
+  if (userJid.includes('@lid')) {
+    const participant = groupInfo.participantsMap.get(userJid);
+    if (participant?.id) {
+      return groupInfo.admins.has(participant.id);
+    }
+  }
+  
+  return false;
+}
+
+function isDuplicate(messageId, sender, text) {
+  if (!messageId) return false;
+  
+  const uniqueKey = `${messageId}_${sender}_${text?.substring(0, 50) || ''}`;
+  
+  if (recentMessages.has(uniqueKey)) {
+    const timestamp = recentMessages.get(uniqueKey);
+    if (Date.now() - timestamp < DUPLICATE_TIMEOUT) {
+      return true; 
+    }
+  }
+  
+  recentMessages.set(uniqueKey, Date.now());
+  return false;
+}
 
 async function loadTranslation(idioma) {
   if (translationsCache.has(idioma)) return translationsCache.get(idioma);
@@ -48,24 +218,10 @@ async function loadCustomCommandsOnce(customCommandsDir) {
 function withTimeout(promise, ms, fallback = null) {
   let timer;
   return Promise.race([
-  Promise.resolve(promise).finally(() => clearTimeout(timer)),
+    Promise.resolve(promise).finally(() => clearTimeout(timer)),
     new Promise((resolve) => timer = setTimeout(() => resolve(fallback), ms))
   ]);
 }
-
-
-import mddd5 from 'md5';
-import ws from 'ws';
-import { setConfig } from './lib/funcConfig.js'
-import { setOwnerFunction } from './lib/owner-funciones.js'
-import { addExp, getUserStats, setUserStats } from './lib/stats.js'
-
-const lidToJidCache = global.lidToJidCache || (global.lidToJidCache = new Map());
-const lidToNameCache = global.lidToNameCache || (global.lidToNameCache = new Map());
-
-const recentMessages = new Set()
-const recentParticipantEvents = new Map();
-const processedVoiceMessages = new Set();
 
 function isRecentParticipantEvent(groupId, participant, action) {
   const key = `${groupId}-${participant}-${action}`;
@@ -79,18 +235,7 @@ function isRecentParticipantEvent(groupId, participant, action) {
   }
   
   recentParticipantEvents.set(key, now);
-  
-  setTimeout(() => {
-    recentParticipantEvents.delete(key);
-  }, 5000);
-  
   return false;
-}
-function isDuplicate(id) {
-  if (recentMessages.has(id)) return true
-  recentMessages.add(id)
-  setTimeout(() => recentMessages.delete(id), 3000)
-  return false
 }
 
 function logError(e, plugin = 'general') {
@@ -103,9 +248,7 @@ function logError(e, plugin = 'general') {
   console.log(chalk.gray('⚠️ Para más detalles, revisa el archivo de logs si está activado.\n'));
 }
 
-
 let mconn;
-
 
 const { proto } = (await import("@whiskeysockets/baileys")).default;
 const isNumber = (x) => typeof x === 'number' && !isNaN(x);
@@ -113,7 +256,6 @@ const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(functi
   clearTimeout(this);
   resolve();
 }, ms));
-
 
 export async function handler(chatUpdate) {
   if (this.setMaxListeners) this.setMaxListeners(25);
@@ -124,10 +266,10 @@ export async function handler(chatUpdate) {
   this.pushMessage(chatUpdate.messages).catch(console.error);
 
   let m = chatUpdate.messages[chatUpdate.messages.length - 1];
-if (!m || typeof m !== 'object' || !m.message) return;
-if (m.key?.remoteJid?.endsWith('broadcast')) return;
-if (m.key?.id && isDuplicate(m.key.id)) return;
-if (m.isBaileys && !m.message?.audioMessage) return;
+  if (!m || typeof m !== 'object' || !m.message) return;
+  if (m.key?.remoteJid?.endsWith('broadcast')) return;
+  if (m.key?.id && isDuplicate(m.key.id, m.key.participant || m.key.remoteJid, m.message?.conversation || '')) return;
+  if (m.isBaileys && !m.message?.audioMessage) return;
 
   const sender = m.key?.fromMe ? this.user.jid : (m.key?.participant || m.participant || m.key?.remoteJid || '');
   const chat = m.key?.remoteJid || '';
@@ -142,6 +284,7 @@ if (m.isBaileys && !m.message?.audioMessage) return;
     m.message?.listResponseMessage?.singleSelectReply?.selectedRowId || '';
 
   if (!m.text) m.text = '';
+  
   if (isVoiceMessage(m)) {
     const jid = m.key.remoteJid;
     const settings = global.db?.data?.settings?.[this?.user?.jid];
@@ -152,31 +295,46 @@ if (m.isBaileys && !m.message?.audioMessage) return;
     }
   }
 
-
-
-  if (!m) {
-    return;
-  }
+  if (!m) return;
   if (global.db.data == null) await global.loadDatabase();
-
   if (global.chatgpt.data === null) await global.loadChatgptDB();
+   for (const name in global.plugins) {
+  const plugin = global.plugins[name];
+  if (!plugin || typeof plugin.before !== 'function') continue;
+  try {
+    
+    if (!m || !m.sender) continue;
+
+    const isOwner = Array.isArray(global.owner)
+      ? global.owner.some(([num]) => m.sender?.includes(num))
+      : false;
+
+    const stop = await plugin.before.call(this, m, {
+      conn: this,
+      isOwner,
+      isROwner: isOwner,
+      chatUpdate,
+    });
+    if (stop) return; 
+  } catch (e) {
+    console.error(`Error en before global (${name}):`, e.message);
+  }
+}
 
   try {
     m = smsg(this, m) || m;
-    if (!m) {
-      return;
-    }
-    global.mconn = m
-    mconn = m
+    if (!m) return;
+    
+    global.mconn = m;
+    mconn = m;
     m.exp = 0;
     m.money = false;
     m.limit = false;
-    try {
-     
-      const user = global.db.data.users[m.sender];
     
-
+    try {
+      const user = global.db.data.users[m.sender];
       const chatgptUser = global.chatgpt.data.users[m.sender];
+      
       if (typeof chatgptUser !== 'object') {
         global.chatgpt.data.users[m.sender] = [];
       }
@@ -184,8 +342,8 @@ if (m.isBaileys && !m.message?.audioMessage) return;
       if (typeof user !== 'object') {
         global.db.data.users[m.sender] = {};
       }
+      
       if (user) {
-        
         const dick = {
           wait: 0,
           banned: false,
@@ -197,135 +355,126 @@ if (m.isBaileys && !m.message?.audioMessage) return;
           sewa: false,
           skill: '',
           language: 'es',
+        };
+        
+        for (const dicks in dick) {
+          if (user[dicks] === undefined || !user.hasOwnProperty(dicks)) {
+            user[dicks] = dick[dicks];
+          }
         }
-      for (const dicks in dick) {
-        if (user[dicks] === undefined || !user.hasOwnProperty(dicks)) {
-        }
-      }}
-      
-      
+      }
 
-const chat = global.db.data.chats[m.chat];
-if (typeof chat !== 'object') {
-  global.db.data.chats[m.chat] = {};
-}
-if (chat) {
-  const defaultChatConfig = {
-    isBanned: false,
-    welcome: true,
-    detect: true,
-    detect2: false,
-    sWelcome: '',
-    sBye: '',
-    sPromote: '',
-    sDemote: '',
-    antidelete: false,
-    modohorny: true,
-    autosticker: false,
-    audios: true,
-    antiLink: false,
-    antiLink2: false,
-    antiviewonce: false,
-    antiToxic: false,
-    antiTraba: false,
-    antiArab: false,
-    antiArab2: false,
-    antiporno: false,
-    modoadmin: false,
-    simi: false,
-    game: true,
-    expired: 0,
-    language: 'es',
-  }
-  
-  for (const configKey in defaultChatConfig) {
-    if (chat[configKey] === undefined) {
-      chat[configKey] = defaultChatConfig[configKey];
-    }
-  }
-}
+      const chat = global.db.data.chats[m.chat];
+      if (typeof chat !== 'object') {
+        global.db.data.chats[m.chat] = {};
+      }
+      
+      if (chat) {
+        const defaultChatConfig = {
+          isBanned: false,
+          welcome: true,
+          detect: true,
+          detect2: false,
+          sWelcome: '',
+          sBye: '',
+          sPromote: '',
+          sDemote: '',
+          antidelete: false,
+          modohorny: true,
+          autosticker: false,
+          audios: true,
+          antiLink: false,
+          antiLink2: false,
+          antiviewonce: false,
+          antiToxic: false,
+          antiTraba: false,
+          antiArab: false,
+          antiArab2: false,
+          antiporno: false,
+          modoadmin: false,
+          simi: false,
+          game: true,
+          expired: 0,
+          language: 'es',
+        };
+        
+        for (const configKey in defaultChatConfig) {
+          if (chat[configKey] === undefined) {
+            chat[configKey] = defaultChatConfig[configKey];
+          }
+        }
+      }
+      
       const settings = global.db.data.settings[this.user.jid];
-if (typeof settings !== 'object') global.db.data.settings[this.user.jid] = {};
-if (settings) {
-  const defaultBotSettings = {
-    self: false,
-    autoread: false,
-    autoread2: false,
-    restrict: false,
-    antiCall: false,
-    antiPrivate: false,
-    modejadibot: true,
-    antispam: false,
-    audios_bot: true,
-    modoia: false
-  };
-  
-  for (const settingKey in defaultBotSettings) {
-    if (settings[settingKey] === undefined) {
-      settings[settingKey] = defaultBotSettings[settingKey];
-    }
-  }
-}
+      if (typeof settings !== 'object') global.db.data.settings[this.user.jid] = {};
+      
+      if (settings) {
+        const defaultBotSettings = {
+          self: false,
+          autoread: false,
+          autoread2: false,
+          restrict: false,
+          antiCall: false,
+          antiPrivate: false,
+          modejadibot: true,
+          antispam: false,
+          audios_bot: true,
+          modoia: false
+        };
+        
+        for (const settingKey in defaultBotSettings) {
+          if (settings[settingKey] === undefined) {
+            settings[settingKey] = defaultBotSettings[settingKey];
+          }
+        }
+      }
     } catch (e) {
       logError(e, m?.plugin || 'handler');
     }
 
-const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
-const _translate = await loadTranslation(idioma);
-const tradutor = _translate.handler?.handler || {};
+    const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
+    const _translate = await loadTranslation(idioma);
+    const tradutor = _translate.handler?.handler || {};
 
+    if (opts['nyimak']) return;
+    if (!m.fromMe && opts['self']) return;
+    if (opts['pconly'] && m.chat.endsWith('g.us')) return;
+    if (opts['gconly'] && !m.chat.endsWith('g.us')) return;
+    if (opts['swonly'] && m.chat !== 'status@broadcast') return;
+    if (typeof m.text !== 'string') m.text = '';
 
-    if (opts['nyimak']) {
-      return;
+    if (m.message?.buttonsResponseMessage?.selectedButtonId) {
+      m.text = m.message.buttonsResponseMessage.selectedButtonId;
     }
-    if (!m.fromMe && opts['self']) {
-      return;
+    if (m.message?.templateButtonReplyMessage?.selectedId) {
+      m.text = m.message.templateButtonReplyMessage.selectedId;
     }
-    if (opts['pconly'] && m.chat.endsWith('g.us')) {
-      return;
+    if (m.message?.listResponseMessage?.singleSelectReply?.selectedRowId) {
+      m.text = m.message.listResponseMessage.singleSelectReply.selectedRowId;
     }
-    if (opts['gconly'] && !m.chat.endsWith('g.us')) {
-      return;
+    if (m.message?.interactiveResponseMessage?.nativeFlowResponseMessage) {
+      try {
+        const id = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson)?.id;
+        if (id) m.text = id;  
+      } catch (e) {
+        console.error("Error parseando interactiveResponse:", e);
+      }
     }
-    if (opts['swonly'] && m.chat !== 'status@broadcast') {
-      return;
-    }
-    if (typeof m.text !== 'string') {
-      m.text = '';
-    }
+    
+    const senderJid = this.decodeJid(m.sender || '');
+    const senderNum = senderJid.replace(/[^0-9]/g, '');
 
-if (m.message?.buttonsResponseMessage?.selectedButtonId) {
-  m.text = m.message.buttonsResponseMessage.selectedButtonId;
-}
-if (m.message?.templateButtonReplyMessage?.selectedId) {
-  m.text = m.message.templateButtonReplyMessage.selectedId;
-}
-if (m.message?.listResponseMessage?.singleSelectReply?.selectedRowId) {
-  m.text = m.message.listResponseMessage.singleSelectReply.selectedRowId;
-}
-if (m.message?.interactiveResponseMessage?.nativeFlowResponseMessage) {
-  try {
-    const id = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson)?.id;
-    if (id) m.text = id;  
-  } catch (e) {
-    console.error("Error parseando interactiveResponse:", e);
-  }
-}
-const senderJid = conn.decodeJid(m.sender || '');
-const senderNum = senderJid.replace(/[^0-9]/g, '');
+    const ownerNums = global.owner.map(([num]) => num);
+    const lidNums = global.lidOwners || [];
 
-const ownerNums = global.owner.map(([num]) => num);
-const lidNums = global.lidOwners || [];
-
-const isROwner = ownerNums.includes(senderNum) || lidNums.includes(senderNum);
-const isOwner = isROwner || m.fromMe;
-
-const isMods = isOwner || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
-const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].premiumTime > 0;
-
+    const isROwner = ownerNums.includes(senderNum) || lidNums.includes(senderNum);
+    const isOwner = isROwner || m.fromMe;
+    const isMods = isOwner || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
+    const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].premiumTime > 0;
 
     if (opts['queque'] && m.text && !(isMods || isPrems)) {
-      const queque = this.msgqueque; const time = 1000 * 5;
+      const queque = this.msgqueque;
+      const time = 1000 * 5;
       const previousID = queque[queque.length - 1];
       queque.push(m.id || m.key.id);
       setInterval(async function () {
@@ -334,93 +483,88 @@ const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender].
       }, time);
     }
 
-    if (m.isBaileys && !m.message?.audioMessage) {
-  return;
-}
+    if (m.isBaileys && !m.message?.audioMessage) return;
 
     m.exp += Math.ceil(Math.random() * 10);
 
-    if ((m.id.startsWith('NJX-') || (m.id.startsWith('BAE5') && m.id.length === 16) || (m.id.startsWith('B24E') && m.id.length === 20))) return
+    if ((m.id.startsWith('NJX-') || (m.id.startsWith('BAE5') && m.id.length === 16) || (m.id.startsWith('B24E') && m.id.length === 20))) return;
 
     let usedPrefix;
     const _user = global.db.data && global.db.data.users && global.db.data.users[m.sender];
 
     let groupMetadata = {};
-let participants = [];
-let isAdmin = false;
-let isRAdmin = false;
-let isBotAdmin = false;
+    let participants = [];
+    let isAdmin = false;
+    let isRAdmin = false;
+    let isBotAdmin = false;
 
-if (m.isGroup) {
-  groupMetadata = ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch((_) => null)) || {};
-  participants = groupMetadata.participants || [];
-  
-  const groupAdmins = participants.filter(p => p.admin !== null).map(p => p.id);
-  
-  let realUserJid = m.sender;
-  if (m.sender.includes('@lid')) {
-    const participantData = participants.find(p => p.lid === m.sender);
-    if (participantData && participantData.id) {
-      realUserJid = participantData.id;
+    if (m.isGroup) {
+      const groupInfo = await getGroupInfo(this, m.chat);
+      
+      groupMetadata = groupInfo.metadata;
+      participants = groupInfo.participants;
+      
+      let realUserJid = m.sender;
+      if (m.sender.includes('@lid')) {
+        const participantData = groupInfo.participantsMap.get(m.sender);
+        if (participantData?.id) {
+          realUserJid = participantData.id;
+        }
+      }
+      
+      isAdmin = isUserAdmin(groupInfo, realUserJid);
+      
+      if (isAdmin) {
+        const superAdmin = groupInfo.participantsMap.get(realUserJid);
+        isRAdmin = superAdmin?.admin === 'superadmin';
+      }
+      
+      isBotAdmin = groupInfo.admins.has(this.user.jid);
     }
-  }
-  
-  isAdmin = groupAdmins.includes(realUserJid);
-  
-  const superAdmin = participants.find(p => p.id === realUserJid);
-  isRAdmin = superAdmin?.admin === 'superadmin' || false;
-  
-  const botParticipant = participants.find((u) => conn.decodeJid(u.id) == this.user.jid);
-  isBotAdmin = botParticipant?.admin || false;
-}
 
-const user = {};
-const bot = {};
+    const user = {};
+    const bot = {};
 
     const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins');
     const customCommandsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), './custom-commands');
     
     const allPlugins = { ...global.plugins };
     
-await loadCustomCommandsOnce(customCommandsDir);
-for (const [file, plugin] of customCommandsCache.entries()) {
-  allPlugins[`custom-${file}`] = plugin;
-}
-
+    await loadCustomCommandsOnce(customCommandsDir);
+    for (const [file, plugin] of customCommandsCache.entries()) {
+      allPlugins[`custom-${file}`] = plugin;
+    }
     
     for (const name in allPlugins) {
       const plugin = allPlugins[name];
-      if (!plugin) {
-        continue;
-      }
-      if (plugin.disabled) {
-        continue;
-      }
+      if (!plugin) continue;
+      if (plugin.disabled) continue;
+      
       const __filename = name.startsWith('custom-') ? 
         join(customCommandsDir, name.replace('custom-', '')) : 
         join(___dirname, name);
 
-if (typeof plugin.all === 'function') {
-  try {
-    await plugin.all.call(this, m, {
-      conn: this,
-      chatUpdate,
-      __dirname: name.startsWith('custom-') ? customCommandsDir : ___dirname,
-      __filename,
-    });
-  } catch (e) {
-  }
-}
+      if (typeof plugin.all === 'function') {
+        try {
+          await plugin.all.call(this, m, {
+            conn: this,
+            chatUpdate,
+            __dirname: name.startsWith('custom-') ? customCommandsDir : ___dirname,
+            __filename,
+          });
+        } catch (e) {
+          logError(e, name);
+        }
+      }
 
-
-if (!opts['restrict']) {
-  if (plugin.tags && plugin.tags.includes('admin')) {
-    continue;
-  }
-}
+      if (!opts['restrict']) {
+        if (plugin.tags && plugin.tags.includes('admin')) {
+          continue;
+        }
+      }
 
       const str2Regex = (str) => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
-      const _prefix = plugin.customPrefix ? plugin.customPrefix : conn.prefix ? conn.prefix : global.prefix;
+      const _prefix = plugin.customPrefix ? plugin.customPrefix : this.prefix ? this.prefix : global.prefix;
       const match = (_prefix instanceof RegExp ?
         [[_prefix.exec(m.text), _prefix]] :
         Array.isArray(_prefix) ?
@@ -434,6 +578,7 @@ if (!opts['restrict']) {
             [[new RegExp(str2Regex(_prefix)).exec(m.text), new RegExp(str2Regex(_prefix))]] :
             [[[], new RegExp]]
       ).find((p) => p[1]);
+      
       if (typeof plugin.before === 'function') {
         if (await plugin.before.call(this, m, {
           match,
@@ -455,9 +600,9 @@ if (!opts['restrict']) {
           continue;
         }
       }
-      if (typeof plugin !== 'function') {
-        continue;
-      }
+      
+      if (typeof plugin !== 'function') continue;
+      
       if ((usedPrefix = (match[0] || '')[0])) {
         const noPrefix = m.text.replace(usedPrefix, '');
         let [command, ...args] = noPrefix.trim().split` `.filter((v) => v);
@@ -478,9 +623,8 @@ if (!opts['restrict']) {
               plugin.command === command :
               false;
 
-        if (!isAccept) {
-          continue;
-        }
+        if (!isAccept) continue;
+        
         m.plugin = name;
         updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender });
         
@@ -514,8 +658,8 @@ ${tradutor.texto1[1]} ${messageNumber}/3
           }
 
           if (botSpam.antispam && m.text && user && user.lastCommandTime && (Date.now() - user.lastCommandTime) < 10000 && !isROwner) {
-  if (user.commandCount >= 2) {
-    const remainingTime = Math.ceil((user.lastCommandTime + 10000 - Date.now()) / 1000);
+            if (user.commandCount >= 2) {
+              const remainingTime = Math.ceil((user.lastCommandTime + 10000 - Date.now()) / 1000);
               if (remainingTime > 0) {
                 const messageText = `*[ ℹ️ ] Espera* _${remainingTime} segundos_ *antes de utilizar otro comando.*`;
                 m.reply(messageText);
@@ -531,18 +675,12 @@ ${tradutor.texto1[1]} ${messageNumber}/3
             user.commandCount = 1;
           }
         }
+        
         const hl = _prefix;
         const chat = global.db.data.chats[m.chat] = global.db.data.chats[m.chat] || getConfig(m.chat);
         const adminMode = chat.modoadmin;
-        if (
-  adminMode &&
-  !isOwner &&
-  !isROwner &&
-  m.isGroup &&
-  !isAdmin &&
-  (plugin.admin || plugin.botAdmin || plugin.group || plugin.command)
-) return;
-
+        
+        if (adminMode && !isOwner && !isROwner && m.isGroup && !isAdmin && (plugin.admin || plugin.botAdmin || plugin.group || plugin.command)) return;
 
         if (plugin.rowner && plugin.owner && !(isROwner || isOwner)) {
           fail('owner', m, this);
@@ -582,14 +720,15 @@ ${tradutor.texto1[1]} ${messageNumber}/3
           fail('unreg', m, this);
           continue;
         }
+        
         m.isCommand = true;
         const xp = 'exp' in plugin ? parseInt(plugin.exp) : 17;
         if (xp > 200) {
           m.reply('Ngecit -_-');
-        }
-        else {
+        } else {
           m.exp += xp;
         }
+        
         if (!isPrems && plugin.limit && global.db.data.users[m.sender].limit < plugin.limit * 1) {
           mconn.conn.reply(m.chat, `${tradutor.texto2} _${usedPrefix}buyall_`, m);
           continue;
@@ -598,6 +737,7 @@ ${tradutor.texto1[1]} ${messageNumber}/3
           mconn.conn.reply(m.chat, `${tradutor.texto3[0]} ${plugin.level} ${tradutor.texto3[1]} ${_user.level}, ${tradutor.texto3[2]} ${usedPrefix}lvl ${tradutor.texto3[3]}`, m);
           continue;
         }
+        
         const extra = {
           match,
           usedPrefix,
@@ -621,9 +761,10 @@ ${tradutor.texto1[1]} ${messageNumber}/3
           __dirname: name.startsWith('custom-') ? customCommandsDir : ___dirname,
           __filename,
         };
+        
         try {
-  await plugin.call(this, m, extra);
-  await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 3000));
+          await plugin.call(this, m, extra);
+          await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 3000));
           if (!isPrems) {
             m.limit = m.limit || plugin.limit || false;
           }
@@ -635,12 +776,10 @@ ${tradutor.texto1[1]} ${messageNumber}/3
             for (const key of Object.values(global.APIKeys)) {
               text = text.replace(new RegExp(key, 'g'), '#HIDDEN#');
             }
-          if (e.name) {
-}
-await m.reply(text);
-}
-} finally {
-
+            if (e.name) {}
+            await m.reply(text);
+          }
+        } finally {
           if (typeof plugin.after === 'function') {
             try {
               await plugin.after.call(this, m, extra);
@@ -664,90 +803,92 @@ await m.reply(text);
         this.msgqueque.splice(quequeIndex, 1);
       }
     }
- let user;
-const stats = global.db.data.stats ?? {}
+    
+    let user;
+    const stats = global.db.data.stats ?? {};
 
-if (m) {
-  if (m.sender) {
-    user = getUserStats(m.sender)
+    if (m) {
+      if (m.sender) {
+        user = getUserStats(m.sender);
 
-    if (m.exp) {
-      addExp(m.sender, m.exp)
-    }
+        if (m.exp) {
+          addExp(m.sender, m.exp);
+        }
 
-    if (typeof m.limit === 'number') {
-      user.limit = (user.limit ?? 10) - m.limit
-      setUserStats(m.sender, user)
-    }
-  }
+        if (typeof m.limit === 'number') {
+          user.limit = (user.limit ?? 10) - m.limit;
+          setUserStats(m.sender, user);
+        }
+      }
 
-  if (m.plugin) {
-    const now = Date.now()
-    if (!(m.plugin in stats)) {
-      stats[m.plugin] = {
-        total: 0,
-        success: 0,
-        last: 0,
-        lastSuccess: 0,
+      if (m.plugin) {
+        const now = Date.now();
+        if (!(m.plugin in stats)) {
+          stats[m.plugin] = {
+            total: 0,
+            success: 0,
+            last: 0,
+            lastSuccess: 0,
+          };
+        }
+        const stat = stats[m.plugin];
+
+        if (typeof stat.total !== 'number') stat.total = 0;
+        if (typeof stat.success !== 'number') stat.success = 0;
+        if (typeof stat.last !== 'number') stat.last = 0;
+        if (typeof stat.lastSuccess !== 'number') stat.lastSuccess = 0;
+
+        stat.total += 1;
+        stat.last = now;
+        if (m.error == null) {
+          stat.success += 1;
+          stat.lastSuccess = now;
+        }
+
+        global.db.data.stats = stats;
       }
     }
-    const stat = stats[m.plugin]
 
-    if (typeof stat.total !== 'number') stat.total = 0
-    if (typeof stat.success !== 'number') stat.success = 0
-    if (typeof stat.last !== 'number') stat.last = 0
-    if (typeof stat.lastSuccess !== 'number') stat.lastSuccess = 0
-
-    stat.total += 1
-    stat.last = now
-    if (m.error == null) {
-      stat.success += 1
-      stat.lastSuccess = now
-    }
-
-    global.db.data.stats = stats
-  }
-}
-
-try {
+    try {
       if (!opts['noprint']) await (await import(`./src/libraries/print.js`)).default(m, this);
     } catch (e) {
       console.log(m, m.quoted, e);
     }
+    
     const settingsREAD = global.db.data.settings[mconn.conn.user.jid] || {};
     if (opts['autoread']) {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  await mconn.conn.readMessages([m.key]);
-}
-if (settingsREAD.autoread || settingsREAD.autoread2) {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  await mconn.conn.readMessages([m.key]);
-}
-
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await mconn.conn.readMessages([m.key]);
+    }
+    if (settingsREAD.autoread || settingsREAD.autoread2) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      await mconn.conn.readMessages([m.key]);
+    }
   }
 }
-
 
 export async function participantsUpdate({ id, participants, action }) {
   const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
   const _translate = await loadTranslation(idioma);
-  const tradutor = _translate.handler.participantsUpdate
+  const tradutor = _translate.handler.participantsUpdate;
 
-  const m = mconn
+  const m = mconn;
   if (opts['self']) return;
   if (global.db.data == null) await loadDatabase();
+  
+  groupCache.delete(id);
+  
   const chat = global.db.data.chats[id] = getConfig(id);
   const botTt = global.db.data.settings[mconn?.conn?.user?.jid] || {};
   let text = '';
   
-  // Normalizar action - WhatsApp envía 'leave' cuando alguien sale voluntariamente
   const normalizedAction = action === 'leave' ? 'remove' : action;
   
   switch (normalizedAction) {
     case 'add':
     case 'remove':
       if (chat.welcome && !chat?.isBanned) {
-        const groupMetadata = await m?.conn?.groupMetadata(id) || (conn?.chats[id] || {}).metadata;
+        const groupMetadata = await m?.conn?.groupMetadata(id) || (m?.conn?.chats[id] || {}).metadata;
         for (const user of participants) {
           if (isRecentParticipantEvent(id, user, normalizedAction)) {
             console.log(`🔄 Evento duplicado ignorado: ${normalizedAction} para ${user.split('@')[0]} en grupo`);
@@ -759,11 +900,16 @@ export async function participantsUpdate({ id, participants, action }) {
           try {
             pp = await m?.conn?.profilePictureUrl(user, 'image');
           } catch (e) {
-            // Usar imagen por defecto
           }
           
           const apii = await mconn?.conn?.getFile(pp);
-          const antiArab = JSON.parse(fs.readFileSync('./src/antiArab.json'));
+          let antiArab = [];
+try {
+  const antiArabData = await fs.promises.readFile('./src/antiArab.json', 'utf8');
+  antiArab = JSON.parse(antiArabData);
+} catch (e) {
+  console.error('Error leyendo antiArab.json:', e.message);
+}
           const userPrefix = antiArab.some((prefix) => user.startsWith(prefix));
           const botTt2 = groupMetadata?.participants?.find((u) => m?.conn?.decodeJid(u.id) == m?.conn?.user?.jid) || {};
           const isBotAdminNn = botTt2?.admin === 'admin' || false;
@@ -775,7 +921,7 @@ export async function participantsUpdate({ id, participants, action }) {
                 .replace('@group', groupMetadata?.subject || 'Grupo')
                 .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
             } else {
-              text = (tradutor.texto1 || conn.welcome || '¡Bienvenido/a @user!')
+              text = (tradutor.texto1 || m?.conn?.welcome || '¡Bienvenido/a @user!')
                 .replace('@user', '@' + user.split('@')[0])
                 .replace('@group', groupMetadata?.subject || 'Grupo')
                 .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
@@ -784,7 +930,7 @@ export async function participantsUpdate({ id, participants, action }) {
             if (chat.sBye && chat.sBye.trim() !== '') {
               text = chat.sBye.replace('@user', '@' + user.split('@')[0]);
             } else {
-              text = (tradutor.texto2 || conn.bye || 'Adiós @user')
+              text = (tradutor.texto2 || m?.conn?.bye || 'Adiós @user')
                 .replace('@user', '@' + user.split('@')[0]);
             }
           }
@@ -793,12 +939,12 @@ export async function participantsUpdate({ id, participants, action }) {
             const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
             if (responseb[0].status === '404') return;
             const fkontak2 = { 'key': { 'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo' }, 'message': { 'contactMessage': { 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` } }, 'participant': '0@s.whatsapp.net' };
-            await m?.conn?.sendMessage(id, { text: `*[◉] @${conn.decodeJid(user).split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ʏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ ǫᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [conn.decodeJid(user)] }, { quoted: fkontak2 });
+            await m?.conn?.sendMessage(id, { text: `*[◉] @${m.conn.decodeJid(user).split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ʏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ ǫᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [m.conn.decodeJid(user)] }, { quoted: fkontak2 });
             return;
           }
           
           console.log(`✅ Enviando mensaje de ${normalizedAction === 'add' ? 'bienvenida' : 'despedida'} a ${user.split('@')[0]}`);
-          await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [conn.decodeJid(user)] });
+          await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [m.conn.decodeJid(user)] });
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
@@ -811,7 +957,7 @@ export async function participantsUpdate({ id, participants, action }) {
         console.log(`🔄 Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]} en grupo`);
         return;
       }
-      text = (chat.sPromote || tradutor.texto3 || conn?.spromote || '@user ```is now Admin```');
+      text = (chat.sPromote || tradutor.texto3 || m?.conn?.spromote || '@user ```is now Admin```');
       
     case 'demote':
     case 'quitarpoder':
@@ -821,13 +967,13 @@ export async function participantsUpdate({ id, participants, action }) {
           console.log(`🔄 Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]} en grupo`);
           return;
         }
-        text = (chat?.sDemote || tradutor.texto4 || conn?.sdemote || '@user ```is no longer Admin```');
+        text = (chat?.sDemote || tradutor.texto4 || m?.conn?.sdemote || '@user ```is no longer Admin```');
       }
       
-      let userId = m?.conn?.decodeJid(participants[0]) || participants[0]
-      let tag = '@' + userId.split('@')[0]
+      let userId = m?.conn?.decodeJid(participants[0]) || participants[0];
+      let tag = '@' + userId.split('@')[0];
       
-      text = text.replace(/@user/g, tag)
+      text = text.replace(/@user/g, tag);
       
       if (chat.detect && !chat?.isBanned) {
         mconn?.conn?.sendMessage(id, { text, mentions: [userId] });
@@ -839,23 +985,25 @@ export async function participantsUpdate({ id, participants, action }) {
 export async function groupsUpdate(groupsUpdate) {
   const idioma = global.db.data.chats[groupsUpdate[0].id]?.language || global.defaultLenguaje;
   const _translate = await loadTranslation(idioma);
-  const tradutor = _translate.handler.participantsUpdate
+  const tradutor = _translate.handler.participantsUpdate;
 
-  if (opts['self']) {
-    return;
-  }
+  if (opts['self']) return;
+  
   for (const groupUpdate of groupsUpdate) {
     const id = groupUpdate.id;
     if (!id) continue;
     if (groupUpdate.size == NaN) continue;
     if (groupUpdate.subjectTime) continue;
+    
+    groupCache.delete(id);
+    
     const chats = global.db.data.chats[id]; 
     let text = '';
     if (!chats?.detect) continue;
-    if (groupUpdate?.desc) text = (chats?.sDesc || tradutor.texto5 || conn?.sDesc || '```Description has been changed to```\n@desc').replace('@desc', groupUpdate.desc);
-    if (groupUpdate?.subject) text = (chats?.sSubject || tradutor.texto6 || conn?.sSubject || '```Subject has been changed to```\n@subject').replace('@subject', groupUpdate.subject);
-    if (groupUpdate?.icon) text = (chats?.sIcon || tradutor.texto7 || conn?.sIcon || '```Icon has been changed to```').replace('@icon', groupUpdate.icon);
-    if (groupUpdate?.revoke) text = (chats?.sRevoke || tradutor.texto8 || conn?.sRevoke || '```Group link has been changed to```\n@revoke').replace('@revoke', groupUpdate.revoke);
+    if (groupUpdate?.desc) text = (chats?.sDesc || tradutor.texto5 || mconn?.conn?.sDesc || '```Description has been changed to```\n@desc').replace('@desc', groupUpdate.desc);
+    if (groupUpdate?.subject) text = (chats?.sSubject || tradutor.texto6 || mconn?.conn?.sSubject || '```Subject has been changed to```\n@subject').replace('@subject', groupUpdate.subject);
+    if (groupUpdate?.icon) text = (chats?.sIcon || tradutor.texto7 || mconn?.conn?.sIcon || '```Icon has been changed to```').replace('@icon', groupUpdate.icon);
+    if (groupUpdate?.revoke) text = (chats?.sRevoke || tradutor.texto8 || mconn?.conn?.sRevoke || '```Group link has been changed to```\n@revoke').replace('@revoke', groupUpdate.revoke);
     if (!text) continue;
     await mconn?.conn?.sendMessage(id, { text, mentions: mconn?.conn?.parseMention(text) });
   }
@@ -877,42 +1025,42 @@ export async function callUpdate(callUpdate) {
 }
 
 export async function deleteUpdate(message) {
-  const datas = global
-  const id = message?.participant 
+  const datas = global;
+  const id = message?.participant;
   const idioma = datas.db.data.users[id]?.language || global.defaultLenguaje;
   const _translate = await loadTranslation(idioma);
-  const tradutor = _translate.handler.deleteUpdate
+  const tradutor = _translate.handler.deleteUpdate;
 
-
-  let d = new Date(new Date + 3600000)
-  let date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })
-  let time = d.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })
+  let d = new Date(new Date + 3600000);
+  let date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
+  let time = d.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
+  
   try {
-    const { fromMe, id, participant } = message
-    if (fromMe) return
-    let msg = mconn.conn.serializeM(mconn.conn.loadMessage(id))
-    let chat = global.db.data.chats[msg?.chat] || {}
-    if (!chat?.antidelete) return
-    if (!msg) return
-    if (!msg?.isGroup) return
+    const { fromMe, id, participant } = message;
+    if (fromMe) return;
+    let msg = mconn.conn.serializeM(mconn.conn.loadMessage(id));
+    let chat = global.db.data.chats[msg?.chat] || {};
+    if (!chat?.antidelete) return;
+    if (!msg) return;
+    if (!msg?.isGroup) return;
     const antideleteMessage = `${tradutor.texto1[0]}
 ${tradutor.texto1[1]} @${participant.split`@`[0]}
 ${tradutor.texto1[2]} ${time}
 ${tradutor.texto1[3]} ${date}\n
 ${tradutor.texto1[4]}
 ${tradutor.texto1[5]}`.trim();
-    await mconn.conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [conn.decodeJid(participant)] }, { quoted: msg })
-    mconn.conn.copyNForward(msg.chat, msg).catch(e => console.log(e, msg))
+    await mconn.conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [mconn.conn.decodeJid(participant)] }, { quoted: msg });
+    mconn.conn.copyNForward(msg.chat, msg).catch(e => console.log(e, msg));
   } catch (e) {
-    console.error(e)
+    console.error(e);
   }
 }
 
 global.dfail = async (type, m, conn) => {
-  const datas = global
+  const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
   const _translate = await loadTranslation(idioma);
-  const tradutor = _translate.handler.dfail
+  const tradutor = _translate.handler.dfail;
 
   const msg = {
     rowner: tradutor.texto1,
@@ -926,6 +1074,7 @@ global.dfail = async (type, m, conn) => {
     unreg: tradutor.texto9,
     restrict: tradutor.texto10,
   }[type];
+  
   const aa = { quoted: m, userJid: conn.user.jid };
   const prep = generateWAMessageFromContent(m.chat, { extendedTextMessage: { text: msg, contextInfo: { externalAdReply: { title: tradutor.texto11[0], body: tradutor.texto11[1], thumbnail: imagen1, sourceUrl: tradutor.texto11[2] } } } }, aa);
   if (msg) return conn.relayMessage(m.chat, prep.message, { messageId: prep.key.id });
@@ -940,7 +1089,7 @@ watchFile(file, async () => {
   if (global.conns && global.conns.length > 0) {
     const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
     for (const userr of users) {
-      userr.subreloadHandler(false)
+      userr.subreloadHandler(false);
     }
   }
 });
