@@ -1,1 +1,69 @@
-const _0x30a850=_0xb976;function _0xb976(_0x3424f8,_0xb99645){const _0xe378a=_0xe378();return _0xb976=function(_0xb976e8,_0x276be3){_0xb976e8=_0xb976e8-0xf4;let _0x412161=_0xe378a[_0xb976e8];return _0x412161;},_0xb976(_0x3424f8,_0xb99645);}(function(_0x4e3051,_0x291d2d){const _0x20c17c=_0xb976,_0x239789=_0x4e3051();while(!![]){try{const _0x57091b=parseInt(_0x20c17c(0x10f))/0x1+-parseInt(_0x20c17c(0x11b))/0x2+parseInt(_0x20c17c(0xf7))/0x3+parseInt(_0x20c17c(0x121))/0x4+-parseInt(_0x20c17c(0x111))/0x5+-parseInt(_0x20c17c(0x118))/0x6+parseInt(_0x20c17c(0xfe))/0x7;if(_0x57091b===_0x291d2d)break;else _0x239789['push'](_0x239789['shift']());}catch(_0x674995){_0x239789['push'](_0x239789['shift']());}}}(_0xe378,0xb4f73));import _0x4c3633 from'axios';import*as _0x3f76bc from'cheerio';const handler=async(_0x4244f4,{conn:_0x388496,args:_0x258416,command:_0x502452,usedPrefix:_0x4b02e6})=>{const _0x106e55=_0xb976;if(!_0x258416[0x0])return _0x388496[_0x106e55(0x11d)](_0x4244f4[_0x106e55(0x105)],'*[!]\x20Ingresa\x20un\x20enlace\x20de\x20Facebook\x20para\x20descargar\x20el\x20video.*\x0a\x0a*Ejemplo:*\x0a'+(_0x4b02e6+_0x502452)+'\x20https://www.facebook.com/watch?v=123456789',_0x4244f4);if(!_0x258416[0x0][_0x106e55(0x10b)](/facebook\.com|fb\.watch|m\.facebook\.com/))return _0x388496[_0x106e55(0x11d)](_0x4244f4[_0x106e55(0x105)],_0x106e55(0x114)+(_0x4b02e6+_0x502452)+_0x106e55(0x113),_0x4244f4);await _0x388496['sendMessage'](_0x4244f4['chat'],{'react':{'text':'⏱️','key':_0x4244f4[_0x106e55(0x10a)]}});const _0x1cc54d='✅\x20*VIDEO\x20DE\x20FACEBOOK*\x0a\x0a📱\x20*Descargando...*';await _0x388496[_0x106e55(0x11d)](_0x4244f4['chat'],_0x1cc54d,_0x4244f4);try{const _0x4e15fc=await fetchDownloadLinks(_0x258416[0x0],_0x106e55(0x101),_0x388496,_0x4244f4);if(!_0x4e15fc){await _0x388496[_0x106e55(0xfd)](_0x4244f4[_0x106e55(0x105)],{'react':{'text':'❌','key':_0x4244f4[_0x106e55(0x10a)]}});return;}if(_0x4e15fc[_0x106e55(0x122)]===0x0)return await _0x388496[_0x106e55(0xfd)](_0x4244f4[_0x106e55(0x105)],{'react':{'text':'❌','key':_0x4244f4[_0x106e55(0x10a)]}}),await _0x388496[_0x106e55(0x11d)](_0x4244f4[_0x106e55(0x105)],_0x106e55(0xf4),_0x4244f4);let _0x5d5953=getDownloadLink(_0x106e55(0x101),_0x4e15fc);if(!_0x5d5953)return await _0x388496[_0x106e55(0xfd)](_0x4244f4[_0x106e55(0x105)],{'react':{'text':'❌','key':_0x4244f4[_0x106e55(0x10a)]}}),await _0x388496[_0x106e55(0x11d)](_0x4244f4['chat'],_0x106e55(0x106),_0x4244f4);try{const _0x36d5a9=_0x5d5953['includes'](_0x106e55(0x11e))?_0x106e55(0x10c):_0x106e55(0x104),_0xdabc9c='✅\x20*VIDEO\x20DE\x20FACEBOOK*\x0a\x0a🎬\x20*Descargado\x20exitosamente*\x0a📡\x20*Fuente:*\x20InstaTikTok';_0x36d5a9===_0x106e55(0x10c)?await _0x388496[_0x106e55(0xfd)](_0x4244f4[_0x106e55(0x105)],{'video':{'url':_0x5d5953},'caption':_0xdabc9c},{'quoted':_0x4244f4}):await _0x388496['sendMessage'](_0x4244f4[_0x106e55(0x105)],{'image':{'url':_0x5d5953},'caption':_0xdabc9c},{'quoted':_0x4244f4}),await _0x388496[_0x106e55(0xfd)](_0x4244f4['chat'],{'react':{'text':'✅','key':_0x4244f4[_0x106e55(0x10a)]}});}catch(_0x2a13c0){return console[_0x106e55(0x108)](_0x106e55(0x120),_0x2a13c0['message']),await _0x388496['sendMessage'](_0x4244f4[_0x106e55(0x105)],{'react':{'text':'❌','key':_0x4244f4['key']}}),await _0x388496[_0x106e55(0x11d)](_0x4244f4['chat'],_0x106e55(0x107)+_0x2a13c0[_0x106e55(0x11f)],_0x4244f4);}}catch(_0x4f9524){return console[_0x106e55(0x108)]('Error\x20en\x20downloader:',_0x4f9524),await _0x388496['sendMessage'](_0x4244f4[_0x106e55(0x105)],{'react':{'text':'❌','key':_0x4244f4[_0x106e55(0x10a)]}}),await _0x388496[_0x106e55(0x11d)](_0x4244f4[_0x106e55(0x105)],_0x106e55(0x10d)+(_0x4f9524[_0x106e55(0x11f)]||_0x4f9524),_0x4244f4);}};async function fetchDownloadLinks(_0x18ccf1,_0x1e0510,_0x39e0d2,_0x3d1ac7){const _0x447691=_0xb976,{SITE_URL:_0x4fcfd4,form:_0x5b6c93}=createApiRequest(_0x18ccf1,_0x1e0510);try{const _0x126687=await _0x4c3633['post'](_0x4fcfd4+_0x447691(0x102),_0x5b6c93['toString'](),{'headers':{'Content-Type':'application/x-www-form-urlencoded;\x20charset=UTF-8','Origin':_0x4fcfd4,'Referer':_0x4fcfd4,'User-Agent':_0x447691(0xfc),'X-Requested-With':_0x447691(0xf6)},'timeout':0x3a98}),_0x3b120a=_0x126687?.['data']?.[_0x447691(0x11c)];if(!_0x3b120a||_0x126687?.['data']?.[_0x447691(0x109)]!==_0x447691(0x119))return await _0x39e0d2[_0x447691(0x11d)](_0x3d1ac7['chat'],'*[❌]\x20Error\x20al\x20obtener\x20datos\x20del\x20servidor.*',_0x3d1ac7),null;const _0x1becc1=_0x3f76bc[_0x447691(0xfa)](_0x3b120a),_0x190d47=[];return _0x1becc1('a.btn[href^=\x22http\x22]')['each']((_0x4f3fd7,_0x85996c)=>{const _0x32a8d4=_0x447691,_0x1dfe66=_0x1becc1(_0x85996c)['attr'](_0x32a8d4(0xfb));_0x1dfe66&&!_0x190d47[_0x32a8d4(0x115)](_0x1dfe66)&&_0x190d47['push'](_0x1dfe66);}),console[_0x447691(0x108)](_0x447691(0xf8),_0x190d47),_0x190d47;}catch(_0x2d88e0){return console[_0x447691(0x108)](_0x447691(0x10e),_0x2d88e0[_0x447691(0x11f)]),await _0x39e0d2[_0x447691(0x11d)](_0x3d1ac7[_0x447691(0x105)],'*[❌]\x20Error\x20de\x20conexión:*\x20'+_0x2d88e0[_0x447691(0x11f)],_0x3d1ac7),null;}}function createApiRequest(_0x4387ac,_0x5c9a55){const _0x567e20=_0xb976,_0x214815=_0x567e20(0x103),_0x4e3bea=new URLSearchParams();return _0x4e3bea[_0x567e20(0xff)](_0x567e20(0x117),_0x4387ac),_0x4e3bea[_0x567e20(0xff)]('platform',_0x5c9a55),_0x4e3bea[_0x567e20(0xff)](_0x567e20(0x100),_0x214815),{'SITE_URL':_0x214815,'form':_0x4e3bea};}function getDownloadLink(_0x2715a9,_0x48f79e){const _0x5c1304=_0xb976;if(_0x2715a9===_0x5c1304(0x112))return _0x48f79e;else{if(_0x2715a9==='tiktok')return _0x48f79e[_0x5c1304(0xf5)](_0x580ebb=>/hdplay/[_0x5c1304(0x110)](_0x580ebb))||_0x48f79e[0x0];else{if(_0x2715a9===_0x5c1304(0x101))return _0x48f79e['at'](-0x1);}}return null;}handler['help']=[_0x30a850(0x101),'fb'],handler[_0x30a850(0xf9)]=['downloader'],handler[_0x30a850(0x116)]=/^(facebook|fb|facebookdl|fbdl)$/i,handler[_0x30a850(0x11a)]=0x3,handler['register']=![];export default handler;function _0xe378(){const _0x101b90=['5978035iotLno','append','siteurl','facebook','api','https://instatiktok.com/','jpg','chat','*[❌]\x20Error\x20al\x20obtener\x20el\x20enlace\x20de\x20descarga.*','*[❌]\x20Error\x20al\x20enviar\x20el\x20archivo:*\x20','log','status','key','match','mp4','*[❌]\x20Ocurrió\x20un\x20error:*\x0a','Error\x20en\x20fetchDownloadLinks:','1325345TFCiPH','test','5403975HofNIz','instagram','\x20https://www.facebook.com/watch?v=123456789','*[!]\x20El\x20enlace\x20no\x20parece\x20ser\x20válido\x20de\x20Facebook.*\x0a\x0a*Ejemplo:*\x0a','includes','command','url','4245090JNBTLN','success','limit','1218396SceriI','html','reply','.mp4','message','Error\x20al\x20enviar\x20el\x20archivo:','2765596xiLyJs','length','*[❌]\x20No\x20se\x20encontraron\x20enlaces\x20de\x20descarga.*','find','XMLHttpRequest','803982tuSbmS','Enlaces\x20encontrados:','tags','load','href','Mozilla/5.0\x20(Windows\x20NT\x2010.0;\x20Win64;\x20x64)\x20AppleWebKit/537.36','sendMessage'];_0xe378=function(){return _0x101b90;};return _0xe378();}
+import { fbdl } from 'ruhend-scraper';
+
+const handler = async (m, { conn, text, usedPrefix, command }) => {
+  if (!text) return conn.reply(
+    m.chat,
+    `Ingresa un enlace de Facebook.\n\nEjemplo:\n${usedPrefix + command} https://facebook.com/reel/1341328334215918/?referral_source=external_deeplink&_rdr`,
+    m
+  );
+
+  if (!/(?:https?:\/\/)?(?:www\.)?facebook\.com\/(reel|watch|video|share)\/[^\s/?#&]+/i.test(text)) {
+    return conn.reply(
+      m.chat,
+      `El enlace no parece ser válido.\n\nEjemplo:\n${usedPrefix + command} https://facebook.com/reel/1341328334215918/?referral_source=external_deeplink&_rdr`,
+      m
+    );
+  }
+
+  await conn.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } });
+  await conn.reply(m.chat, `Descargando video de Facebook...`, m);
+
+  try {
+    const mediaData = await getFacebookMedia(text);
+
+    if (!mediaData || mediaData.length === 0) {
+      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
+      return conn.reply(m.chat, 'No se pudo obtener ningún video.', m);
+    }
+
+    const media = mediaData[0];
+    const url = media.hd || media.sd || media.url;
+
+    if (!url) return conn.reply(m.chat, 'No se encontró URL válida para el video.', m);
+
+    await conn.sendMessage(
+      m.chat,
+      {
+        video: { url },
+        mimetype: 'video/mp4',
+        caption: '✅ VIDEO DE FACEBOOK\nDescargado exitosamente\nFuente: Luna-botv6'
+      },
+      { quoted: m }
+    );
+
+    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
+
+  } catch (error) {
+    await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
+    return conn.reply(
+      m.chat,
+      `Error al descargar el video. Intenta con otro enlace o más tarde.`,
+      m
+    );
+  }
+};
+
+async function getFacebookMedia(url) {
+  try {
+    const res = await fbdl(url);
+    return res.data || [];
+  } catch {
+    return [];
+  }
+}
+
+handler.help = ['facebook', 'fb'];
+handler.tags = ['downloader'];
+handler.command = /^(facebook|fb|facebookdl|fbdl)$/i;
+
+export default handler;
