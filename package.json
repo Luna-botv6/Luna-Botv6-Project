@@ -45,6 +45,7 @@
     "syntax-error": "^1.4.0",
     "url-regex-safe": "^3.0.0",
     "jimp": "^0.22.12",
+    "ruhend-scraper": "^9.0.8",
     "yt-search": "^2.10.3"
   },
   "optionalDependencies": {
