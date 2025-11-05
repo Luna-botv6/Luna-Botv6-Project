@@ -19,7 +19,7 @@ import ws from 'ws';
 import { setConfig } from './lib/funcConfig.js'
 import { setOwnerFunction } from './lib/owner-funciones.js'
 import { addExp, getUserStats, setUserStats } from './lib/stats.js'
-// Cache para metadata del bot
+
 const botMetadataCache = {
   name: null,
   number: null,
@@ -59,34 +59,46 @@ function getBotMetadata(conn) {
 const translationsCache = new Map();
 const customCommandsCache = new Map();
 const groupCache = new Map();
-const lidToJidCache = global.lidToJidCache || (global.lidToJidCache = new Map());
-const lidToNameCache = global.lidToNameCache || (global.lidToNameCache = new Map());
 const recentMessages = new Map();
 const recentParticipantEvents = new Map();
 const processedVoiceMessages = new Set();
 
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 3 * 60 * 1000;
 const DUPLICATE_TIMEOUT = 5000;
+const MAX_CACHE_SIZE = 300;
 
 function getCachedGroupData(chatId) {
   const cached = groupCache.get(chatId);
   if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
     return cached.data;
   }
+  groupCache.delete(chatId);
   return null;
 }
 
 function setCachedGroupData(chatId, data) {
+  if (groupCache.size >= MAX_CACHE_SIZE) {
+    const firstKey = groupCache.keys().next().value;
+    groupCache.delete(firstKey);
+  }
+  
   groupCache.set(chatId, {
     data,
     timestamp: Date.now()
   });
 }
 
-
 function cleanupCache(cache, ttl, name = 'cache') {
   const now = Date.now();
   let cleaned = 0;
+  const maxSize = MAX_CACHE_SIZE;
+  
+  if (cache.size > maxSize) {
+    const deleteCount = cache.size - maxSize;
+    const keys = Array.from(cache.keys()).slice(0, deleteCount);
+    keys.forEach(key => cache.delete(key));
+    cleaned += deleteCount;
+  }
   
   for (const [key, value] of cache.entries()) {
     const timestamp = value?.timestamp || value;
@@ -101,75 +113,18 @@ function cleanupCache(cache, ttl, name = 'cache') {
   }
 }
 
-
 setInterval(() => {
   cleanupCache(groupCache, CACHE_TTL, 'groupCache');
   cleanupCache(recentMessages, DUPLICATE_TIMEOUT, 'recentMessages');
   cleanupCache(recentParticipantEvents, 5000, 'participantEvents');
   cleanupCache(translationsCache, 30 * 60 * 1000, 'translationsCache');
+  cleanupCache(customCommandsCache, 60 * 60 * 1000, 'customCommandsCache');
   
-  if (processedVoiceMessages.size > 1000) {
+  if (processedVoiceMessages.size > MAX_CACHE_SIZE) {
     processedVoiceMessages.clear();
     console.log(chalk.gray('🧹 Limpieza de processedVoiceMessages'));
   }
-}, 120000);
-
-async function getGroupInfo(conn, chatId, forceRefresh = false) {
-  if (!forceRefresh) {
-    const cached = getCachedGroupData(chatId);
-    if (cached) return cached;
-  }
-
-  try {
-    const metadata = conn.chats[chatId]?.metadata || await conn.groupMetadata(chatId);
-    
-    const adminsSet = new Set();
-    const participantsMap = new Map();
-    
-    if (metadata.participants) {
-      for (const p of metadata.participants) {
-        participantsMap.set(p.id, p);
-        if (p.lid) {
-          participantsMap.set(p.lid, p);
-        }
-        if (p.admin !== null) {
-          adminsSet.add(p.id);
-        }
-      }
-    }
-    
-    const groupData = {
-      metadata,
-      participants: metadata.participants || [],
-      admins: adminsSet,
-      participantsMap
-    };
-
-    setCachedGroupData(chatId, groupData);
-    return groupData;
-  } catch (e) {
-    console.error('Error obteniendo metadata del grupo:', e.message);
-    return {
-      metadata: {},
-      participants: [],
-      admins: new Set(),
-      participantsMap: new Map()
-    };
-  }
-}
-
-function isUserAdmin(groupInfo, userJid) {
-  if (groupInfo.admins.has(userJid)) return true;
-  
-  if (userJid.includes('@lid')) {
-    const participant = groupInfo.participantsMap.get(userJid);
-    if (participant?.id) {
-      return groupInfo.admins.has(participant.id);
-    }
-  }
-  
-  return false;
-}
+}, 60000);
 
 function isDuplicate(messageId, sender, text) {
   if (!messageId) return false;
@@ -183,6 +138,11 @@ function isDuplicate(messageId, sender, text) {
     }
   }
   
+  if (recentMessages.size >= MAX_CACHE_SIZE) {
+    const firstKey = recentMessages.keys().next().value;
+    recentMessages.delete(firstKey);
+  }
+  
   recentMessages.set(uniqueKey, Date.now());
   return false;
 }
@@ -192,6 +152,12 @@ async function loadTranslation(idioma) {
   try {
     const data = await readFile(`./src/languages/${idioma}.json`, 'utf8');
     const parsed = JSON.parse(data);
+    
+    if (translationsCache.size >= 50) {
+      const firstKey = translationsCache.keys().next().value;
+      translationsCache.delete(firstKey);
+    }
+    
     translationsCache.set(idioma, parsed);
     return parsed;
   } catch (e) {
@@ -215,14 +181,6 @@ async function loadCustomCommandsOnce(customCommandsDir) {
   }
 }
 
-function withTimeout(promise, ms, fallback = null) {
-  let timer;
-  return Promise.race([
-    Promise.resolve(promise).finally(() => clearTimeout(timer)),
-    new Promise((resolve) => timer = setTimeout(() => resolve(fallback), ms))
-  ]);
-}
-
 function isRecentParticipantEvent(groupId, participant, action) {
   const key = `${groupId}-${participant}-${action}`;
   const now = Date.now();
@@ -234,6 +192,11 @@ function isRecentParticipantEvent(groupId, participant, action) {
     }
   }
   
+  if (recentParticipantEvents.size >= MAX_CACHE_SIZE) {
+    const firstKey = recentParticipantEvents.keys().next().value;
+    recentParticipantEvents.delete(firstKey);
+  }
+  
   recentParticipantEvents.set(key, now);
   return false;
 }
@@ -242,15 +205,14 @@ function logError(e, plugin = 'general') {
   const emoji = '💥';
   const archivo = plugin || 'desconocido';
   const mensaje = e?.message || e?.toString() || 'Error desconocido';
-
-  console.log(chalk.red(`\n${emoji} Error en el plugin: ${chalk.yellow(archivo)}`));
-  console.log(chalk.red(`🧩 Mensaje: ${chalk.white(mensaje)}`));
-  console.log(chalk.gray('⚠️ Para más detalles, revisa el archivo de logs si está activado.\n'));
+  console.log(chalk.red(`\n${emoji} Error en: ${chalk.yellow(archivo)}`));
+  console.log(chalk.red(`🧩 ${chalk.white(mensaje)}`));
 }
 
 let mconn;
 
 const { proto } = (await import("@whiskeysockets/baileys")).default;
+
 const isNumber = (x) => typeof x === 'number' && !isNaN(x);
 const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(function () {
   clearTimeout(this);
@@ -298,28 +260,24 @@ export async function handler(chatUpdate) {
   if (!m) return;
   if (global.db.data == null) await global.loadDatabase();
   if (global.chatgpt.data === null) await global.loadChatgptDB();
-   for (const name in global.plugins) {
-  const plugin = global.plugins[name];
-  if (!plugin || typeof plugin.before !== 'function') continue;
-  try {
-    
-    if (!m || !m.sender) continue;
-
-    const isOwner = Array.isArray(global.owner)
-      ? global.owner.some(([num]) => m.sender?.includes(num))
-      : false;
-
-    const stop = await plugin.before.call(this, m, {
-      conn: this,
-      isOwner,
-      isROwner: isOwner,
-      chatUpdate,
-    });
-    if (stop) return; 
-  } catch (e) {
-    console.error(`Error en before global (${name}):`, e.message);
+  
+  for (const name in global.plugins) {
+    const plugin = global.plugins[name];
+    if (!plugin || typeof plugin.before !== 'function') continue;
+    try {
+      if (!m || !m.sender) continue;
+      const isOwner = Array.isArray(global.owner) ? global.owner.some(([num]) => m.sender?.includes(num)) : false;
+      const stop = await plugin.before.call(this, m, {
+        conn: this,
+        isOwner,
+        isROwner: isOwner,
+        chatUpdate,
+      });
+      if (stop) return; 
+    } catch (e) {
+      console.error(`Error en before (${name}):`, e.message);
+    }
   }
-}
 
   try {
     m = smsg(this, m) || m;
@@ -358,7 +316,7 @@ export async function handler(chatUpdate) {
         };
         
         for (const dicks in dick) {
-          if (user[dicks] === undefined || !user.hasOwnProperty(dicks)) {
+          if (user[dicks] === undefined) {
             user[dicks] = dick[dicks];
           }
         }
@@ -484,10 +442,8 @@ export async function handler(chatUpdate) {
     }
 
     if (m.isBaileys && !m.message?.audioMessage) return;
-
     m.exp += Math.ceil(Math.random() * 10);
-
-    if ((m.id.startsWith('NJX-') || (m.id.startsWith('BAE5') && m.id.length === 16) || (m.id.startsWith('B24E') && m.id.length === 20))) return;
+    if ((m.id.startsWith('NJX-') || m.id.startsWith('EVO') || m.id.startsWith('Lyru-') || (m.id.startsWith('BAE5') && m.id.length === 16) || (m.id.startsWith('B24E') && m.id.length === 20) || (m.id.startsWith('8SCO') && m.id.length === 20) || m.id.startsWith('FizzxyTheGreat-'))) return;
 
     let usedPrefix;
     const _user = global.db.data && global.db.data.users && global.db.data.users[m.sender];
@@ -499,27 +455,39 @@ export async function handler(chatUpdate) {
     let isBotAdmin = false;
 
     if (m.isGroup) {
-      const groupInfo = await getGroupInfo(this, m.chat);
-      
-      groupMetadata = groupInfo.metadata;
-      participants = groupInfo.participants;
-      
-      let realUserJid = m.sender;
-      if (m.sender.includes('@lid')) {
-        const participantData = groupInfo.participantsMap.get(m.sender);
-        if (participantData?.id) {
-          realUserJid = participantData.id;
-        }
+  const cached = getCachedGroupData(m.chat);
+  
+  if (cached) {
+    groupMetadata = cached.metadata;
+    participants = cached.participants;
+    isAdmin = cached.isAdmin;
+    isRAdmin = cached.isRAdmin;
+    isBotAdmin = cached.isBotAdmin;
+  } else {
+    const metadata = this.chats[m.chat]?.metadata || await this.groupMetadata(m.chat).catch(_ => ({}));
+    groupMetadata = metadata;
+        participants = (metadata.participants || []).map(p => ({ 
+      id: p.id, 
+      jid: p.id, 
+      lid: p.lid, 
+      admin: p.admin 
+    }));
+    
+    const user = participants.find((u) => u.id === m.sender) || {};
+    const bot = participants.find((u) => u.id === this.user.jid) || {};
+        
+        isRAdmin = user?.admin == 'superadmin' || false;
+        isAdmin = isRAdmin || user?.admin == 'admin' || false;
+        isBotAdmin = bot?.admin || false;
+        
+        setCachedGroupData(m.chat, {
+          metadata: groupMetadata,
+          participants,
+          isAdmin,
+          isRAdmin,
+          isBotAdmin
+        });
       }
-      
-      isAdmin = isUserAdmin(groupInfo, realUserJid);
-      
-      if (isAdmin) {
-        const superAdmin = groupInfo.participantsMap.get(realUserJid);
-        isRAdmin = superAdmin?.admin === 'superadmin';
-      }
-      
-      isBotAdmin = groupInfo.admins.has(this.user.jid);
     }
 
     const user = {};
@@ -627,6 +595,13 @@ export async function handler(chatUpdate) {
         
         m.plugin = name;
         updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender });
+        try {
+        await this.sendPresenceUpdate('composing', m.chat);
+  
+        await delay(800);  
+        } catch (e) {
+        console.log('Error al enviar presencia:', e.message);
+}
         
         if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
           const chat = global.db.data.chats[m.chat];
@@ -657,9 +632,9 @@ ${tradutor.texto1[1]} ${messageNumber}/3
             return;
           }
 
-          if (botSpam.antispam && m.text && user && user.lastCommandTime && (Date.now() - user.lastCommandTime) < 10000 && !isROwner) {
-            if (user.commandCount >= 2) {
-              const remainingTime = Math.ceil((user.lastCommandTime + 10000 - Date.now()) / 1000);
+          if (botSpam.antispam && m.text && user && user.lastCommandTime && (Date.now() - user.lastCommandTime) < 5000 && !isROwner) {
+            if (user.commandCount === 2) {
+              const remainingTime = Math.ceil((user.lastCommandTime + 5000 - Date.now()) / 1000);
               if (remainingTime > 0) {
                 const messageText = `*[ ℹ️ ] Espera* _${remainingTime} segundos_ *antes de utilizar otro comando.*`;
                 m.reply(messageText);
@@ -764,7 +739,6 @@ ${tradutor.texto1[1]} ${messageNumber}/3
         
         try {
           await plugin.call(this, m, extra);
-          await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 3000));
           if (!isPrems) {
             m.limit = m.limit || plugin.limit || false;
           }
@@ -855,15 +829,10 @@ ${tradutor.texto1[1]} ${messageNumber}/3
       console.log(m, m.quoted, e);
     }
     
-    const settingsREAD = global.db.data.settings[mconn.conn.user.jid] || {};
-    if (opts['autoread']) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      await mconn.conn.readMessages([m.key]);
-    }
-    if (settingsREAD.autoread || settingsREAD.autoread2) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      await mconn.conn.readMessages([m.key]);
-    }
+   const settingsREAD = global.db.data.settings[mconn.conn.user.jid] || {};
+if (opts['autoread'] || settingsREAD.autoread2) {
+  mconn.conn.readMessages([m.key]).catch(() => {});
+}
   }
 }
 
@@ -888,28 +857,31 @@ export async function participantsUpdate({ id, participants, action }) {
     case 'add':
     case 'remove':
       if (chat.welcome && !chat?.isBanned) {
-        const groupMetadata = await m?.conn?.groupMetadata(id) || (m?.conn?.chats[id] || {}).metadata;
+        if (normalizedAction === 'remove' && participants.includes(m?.conn?.user?.jid)) return;
+        
+       const groupMetadata = m?.conn?.chats[id]?.metadata || await m?.conn?.groupMetadata(id).catch(_ => ({}));
+        
         for (const user of participants) {
           if (isRecentParticipantEvent(id, user, normalizedAction)) {
-            console.log(`🔄 Evento duplicado ignorado: ${normalizedAction} para ${user.split('@')[0]} en grupo`);
+            console.log(`🔄 Evento duplicado ignorado: ${normalizedAction} para ${user.split('@')[0]}`);
             continue;
           }
           
-          let pp = 'https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/185984ba06daeb2e6f8c453ad8bd47701dc28a03/IMG-20250519-WA0115.jpg';
+          let pp = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60';
 
           try {
             pp = await m?.conn?.profilePictureUrl(user, 'image');
-          } catch (e) {
-          }
+          } catch (e) {}
           
           const apii = await mconn?.conn?.getFile(pp);
           let antiArab = [];
-try {
-  const antiArabData = await fs.promises.readFile('./src/antiArab.json', 'utf8');
-  antiArab = JSON.parse(antiArabData);
-} catch (e) {
-  console.error('Error leyendo antiArab.json:', e.message);
-}
+          try {
+            const antiArabData = await fs.promises.readFile('./src/antiArab.json', 'utf8');
+            antiArab = JSON.parse(antiArabData);
+          } catch (e) {
+            console.error('Error leyendo antiArab.json:', e.message);
+          }
+          
           const userPrefix = antiArab.some((prefix) => user.startsWith(prefix));
           const botTt2 = groupMetadata?.participants?.find((u) => m?.conn?.decodeJid(u.id) == m?.conn?.user?.jid) || {};
           const isBotAdminNn = botTt2?.admin === 'admin' || false;
@@ -918,11 +890,13 @@ try {
             if (chat.sWelcome && chat.sWelcome.trim() !== '') {
               text = chat.sWelcome
                 .replace('@user', '@' + user.split('@')[0])
+                .replace('@subject', await m?.conn?.getName(id))
                 .replace('@group', groupMetadata?.subject || 'Grupo')
                 .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
             } else {
               text = (tradutor.texto1 || m?.conn?.welcome || '¡Bienvenido/a @user!')
                 .replace('@user', '@' + user.split('@')[0])
+                .replace('@subject', await m?.conn?.getName(id))
                 .replace('@group', groupMetadata?.subject || 'Grupo')
                 .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
             }
@@ -943,9 +917,7 @@ try {
             return;
           }
           
-          console.log(`✅ Enviando mensaje de ${normalizedAction === 'add' ? 'bienvenida' : 'despedida'} a ${user.split('@')[0]}`);
-          await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [m.conn.decodeJid(user)] });
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [user] });
         }
       }
       break;
@@ -954,7 +926,7 @@ try {
     case 'daradmin':
     case 'darpoder':
       if (isRecentParticipantEvent(id, participants[0], action)) {
-        console.log(`🔄 Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]} en grupo`);
+        console.log(`🔄 Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]}`);
         return;
       }
       text = (chat.sPromote || tradutor.texto3 || m?.conn?.spromote || '@user ```is now Admin```');
@@ -964,7 +936,7 @@ try {
     case 'quitaradmin':
       if (!text) {
         if (isRecentParticipantEvent(id, participants[0], action)) {
-          console.log(`🔄 Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]} en grupo`);
+          console.log(`🔄 Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]}`);
           return;
         }
         text = (chat?.sDemote || tradutor.texto4 || m?.conn?.sdemote || '@user ```is no longer Admin```');

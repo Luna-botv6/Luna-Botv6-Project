@@ -547,6 +547,14 @@ async function connectionUpdate(update) {
   if (connection === 'open') {
     console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
     console.log(chalk.green('[ ℹ️ ] Bot iniciado exitosamente'));
+    setTimeout(async () => {
+      try {
+        const { autoreconnectSubbots } = await import('./plugins/subbot-reconeccion.js');
+        await autoreconnectSubbots(conn);
+      } catch (error) {
+        console.error(chalk.red('❌ Error en auto-reconexión:'), error.message);
+      }
+    }, 5000);
     codigoSolicitado = false;
 
     if (opcion === '2' && pairingTimeout) {
