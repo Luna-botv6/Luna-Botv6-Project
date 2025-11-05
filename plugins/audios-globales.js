@@ -3,20 +3,19 @@ import { getConfig } from '../lib/funcConfig.js';
 
 const handler = (m) => m;
 
-// ✅ AGREGADO: Control de duplicados específico para audios
 const recentAudios = new Set();
 
 function isDuplicateAudio(messageId, trigger) {
   const key = `${messageId}_${trigger}`;
   if (recentAudios.has(key)) return true;
   recentAudios.add(key);
-  setTimeout(() => recentAudios.delete(key), 15000); // 15 segundos
+  setTimeout(() => recentAudios.delete(key), 15000); 
   return false;
 }
 
 handler.all = async function (m, { conn }) {
   try {
-    // ✅ VERIFICACIONES BÁSICAS MEJORADAS
+   
     if (!m || !m.text || m.fromMe || m.isBaileys || !m.id) return;
 
     const chat = getConfig(m.chat) || {};
@@ -60,13 +59,13 @@ handler.all = async function (m, { conn }) {
 
     const message = m.text.toLowerCase();
     
-    // ✅ MEJORADO: Procesamiento con control de duplicados
+    
     for (const [trigger, file] of Object.entries(audios)) {
       const keywords = trigger.split('|');
       const matchedKeyword = keywords.find(k => message.includes(k));
       
       if (matchedKeyword) {
-        // ✅ CRÍTICO: Verificar duplicados antes de enviar
+       
         if (isDuplicateAudio(m.id, matchedKeyword)) {
           console.log(`🔄 Audio duplicado bloqueado: ${matchedKeyword} - ${m.id}`);
           return;
@@ -79,9 +78,14 @@ handler.all = async function (m, { conn }) {
         }
 
         try {
-          await conn.sendPresenceUpdate('recording', m.chat);
           
-          // ✅ MÉTODO 1: Usar sendFile (más confiable)
+          await conn.sendPresenceUpdate('recording', m.chat);
+          console.log(`🎙️ Mostrando "grabando audio..." para: ${matchedKeyword}`);
+          
+          
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+       
           await conn.sendFile(m.chat, path, 'audio.mp3', '', m, true, {
             mimetype: 'audio/mpeg'
           });
@@ -91,7 +95,7 @@ handler.all = async function (m, { conn }) {
           console.error(`❌ Error enviando audio:`, sendError);
         }
         
-        break; // ✅ IMPORTANTE: Solo un audio por mensaje
+        break; 
       }
     }
   } catch (e) {
