@@ -109,15 +109,13 @@ const LunaBot = {
 <table>
 <tr>
 <td>
-  
-### ✅ 17/10/2025 – Corrección y Mejoras 🔧
 
-```diff
-+ ✨ Códigos de 8 dígitos funcionando correctamente
-+ 🔧 Múltiples correcciones aplicadas
-+ 🚀 Optimizaciones en proceso
-+ 💎 Mejoras de rendimiento implementadas
-```
+## ✅ 06/11/2025 – Actualización y Optimización 🚀
+diff+ ⚡ Handler.js optimizado - Mayor velocidad de respuesta
++ 🔧 Main.js mejorado con nuevas funciones integradas
++ 🤖 SubBot actualizado con funcionalidades avanzadas
++ 🚀 Rendimiento general incrementado
++ ✨ Sistema más estable y eficiente
 
 </td>
 </tr>
