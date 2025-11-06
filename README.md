@@ -13,69 +13,112 @@
 </div>
 
 ---
-
-## 🆕 Novedades
-
 <div align="center">
 
-![Update](https://img.shields.io/badge/✨%20Novedad%20Reciente%20✨-4CAF50?style=for-the-badge)
-
-
-## ✅ 17/10/2025 – Corrección y Mejoras 🔧
-
-Se solucionó el problema con los códigos de 8 dígitos, que ya funcionan correctamente.
-También se aplicaron varias correcciones y se sigue trabajando en nuevas mejoras y optimizaciones.
-
-
-
-</div>
+<!-- Título animado con gradiente -->
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=32&duration=2800&pause=2000&color=A855F7&center=true&vCenter=true&width=600&lines=✨+Novedades+Recientes+✨;🚀+Luna+Bot+WhatsApp;💜+Siempre+Innovando" alt="Typing SVG" />
 
 ---
 
+## 🆕 Últimas Actualizaciones
+
+<table>
+<tr>
+<td>
   
-<div align="center">
+### ✅ 17/10/2025 – Corrección y Mejoras 🔧
+
+```diff
++ ✨ Códigos de 8 dígitos funcionando correctamente
++ 🔧 Múltiples correcciones aplicadas
++ 🚀 Optimizaciones en proceso
++ 💎 Mejoras de rendimiento implementadas
+```
+
+</td>
+</tr>
+</table>
+
+---
 
 ## 🚀 Estado del Servicio
 
-![Bot Status](https://img.shields.io/badge/🟢%20Luna%20Bot-ONLINE-brightgreen?style=for-the-badge&logo=whatsapp)
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=28&pause=1000&color=10B981&center=true&vCenter=true&repeat=true&width=435&lines=🟢+LUNA+BOT+ONLINE;✅+100%25+OPERATIVO;⚡+RESPUESTA+RÁPIDA" alt="Status" />
 
-<div style="margin: 15px 0;">
-  <img src="https://img.shields.io/badge/📅%20Fecha-10%20Sep%202025-blue?style=flat-square" alt="Fecha actual"/>
-  <img src="https://img.shields.io/badge/📞%20Oficial-%2B54%209%20348%20351%201079-25D366?style=flat-square&logo=whatsapp" alt="Número oficial"/>
-  <img src="https://img.shields.io/badge/⚡%20Latencia-42ms-yellow?style=flat-square" alt="Latencia"/>
-  <img src="https://img.shields.io/badge/🔥%20Uptime-99.8%25-success?style=flat-square" alt="Uptime"/>
-</div>
+<br>
 
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 20px; margin: 20px auto; max-width: 600px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-  
-  <h3 style="color: white; margin-top: 0;">✅ ¡Bot funcionando correctamente!</h3>
-  
-  <div style="color: white; text-align: left; line-height: 1.6;">
-    <p><strong>🟢 Estado:</strong> Completamente operativo</p>
-    <p><strong>📱 Número oficial:</strong> <code>+54 9 348 351 1079</code></p>
-    <p><strong>📅 Última verificación:</strong> 17 octubre, 2025</p>
-    <p><strong>⏰ Horario de servicio:</strong> 24/7 disponible</p>
-  </div>
-  
-  <div style="margin-top: 15px;">
-    <a href="https://wa.me/5493483511079" style="background: #25D366; color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: bold;">
-      💬 Contactar Bot Oficial
-    </a>
-  </div>
-  
-</div>
+<!-- Badges animados -->
+<p>
+  <img src="https://img.shields.io/badge/📅%20Fecha-10%20Sep%202025-5B21B6?style=for-the-badge&logo=calendar&logoColor=white" alt="Fecha"/>
+  <img src="https://img.shields.io/badge/📞%20Oficial-%2B54%209%20348%20351%201079-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="Teléfono"/>
+</p>
 
-  <div style="background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; min-width: 120px;">
-    <div style="font-size: 24px; font-weight: bold; color: #ffc107;">24/7</div>
-    <div style="font-size: 12px; color: #6c757d;">DISPONIBILIDAD</div>
-  </div>
-</div>
+<p>
+  <img src="https://img.shields.io/badge/⚡%20Latencia-42ms-FCD34D?style=for-the-badge&logo=lightning&logoColor=white" alt="Latencia"/>
+  <img src="https://img.shields.io/badge/🔥%20Uptime-99.8%25-10B981?style=for-the-badge&logo=statuspage&logoColor=white" alt="Uptime"/>
+  <img src="https://img.shields.io/badge/⏰%20Horario-24%2F7-8B5CF6?style=for-the-badge&logo=clock&logoColor=white" alt="24/7"/>
+</p>
 
-<div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 10px; padding: 15px; margin: 20px auto; max-width: 500px;">
-  <div style="color: #0c5460;">
-    <strong>📢 Aviso importante:</strong> El bot se encuentra funcionando con normalidad. Para soporte técnico, contacta al número oficial.
-  </div>
-</div>
+<br>
+
+<!-- Cuadro de información con estilo -->
+```yaml
+🟢 Estado: Completamente Operativo
+📱 Número Oficial: +54 9 348 351 1079
+📅 Última Verificación: 17 Octubre, 2025
+⏰ Disponibilidad: 24/7 Sin Interrupciones
+🌐 Región: Argentina
+💬 Respuestas: Instantáneas
+```
+
+<br>
+
+<!-- Botón de contacto destacado -->
+<a href="https://wa.me/5493483511079">
+  <img src="https://img.shields.io/badge/💬%20CONTACTAR%20BOT%20OFICIAL-25D366?style=for-the-badge&logo=whatsapp&logoColor=white&labelColor=128C7E" alt="Contactar"/>
+</a>
+
+<br><br>
+
+<!-- Estadísticas visuales -->
+<table>
+<tr>
+<td align="center" width="150">
+  <img src="https://img.shields.io/badge/🎯-ACTIVO-10B981?style=flat-square&labelColor=065F46" width="100%"/>
+  <br><b>Estado</b>
+</td>
+<td align="center" width="150">
+  <img src="https://img.shields.io/badge/⚡-42ms-FCD34D?style=flat-square&labelColor=92400E" width="100%"/>
+  <br><b>Latencia</b>
+</td>
+<td align="center" width="150">
+  <img src="https://img.shields.io/badge/📊-99.8%25-8B5CF6?style=flat-square&labelColor=5B21B6" width="100%"/>
+  <br><b>Uptime</b>
+</td>
+<td align="center" width="150">
+  <img src="https://img.shields.io/badge/🌟-24%2F7-EC4899?style=flat-square&labelColor=9F1239" width="100%"/>
+  <br><b>Soporte</b>
+</td>
+</tr>
+</table>
+
+---
+
+<!-- Aviso importante con estilo -->
+> [!IMPORTANT]
+> **📢 Aviso:** El bot está funcionando con normalidad. Para soporte técnico, contacta al número oficial.
+
+<!-- Alternativa con nota -->
+> [!NOTE]
+> **✨ Tip:** Guarda el número oficial en tus contactos para acceso rápido al bot.
+
+<br>
+
+<!-- Separador animado -->
+<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+
+<!-- Firma o créditos -->
+<sub>Hecho con 💜 por el equipo de Luna Bot</sub>
 
 </div>
 
