@@ -102,6 +102,7 @@ const LunaBot = {
 <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer"/>
 
 </div>
+
 ---
 
 ## 🆕 Últimas Actualizaciones
@@ -143,7 +144,7 @@ diff+ ⚡ Handler.js optimizado - Mayor velocidad de respuesta
 
 <br>
 
-<!-- Cuadro de información con estilo -->
+<!-- Cuadro de información -->
 ```yaml
 🟢 Estado: Completamente Operativo
 📱 Número Oficial: +54 9 348 351 1079
@@ -200,7 +201,7 @@ diff+ ⚡ Handler.js optimizado - Mayor velocidad de respuesta
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
 <!-- Firma o créditos -->
-<sub>Hecho con 💜 por el equipo de Luna Bot</sub>
+<sub>Hecho con 💜🌙 por el equipo de Luna Bot</sub>
 
 </div>
 
