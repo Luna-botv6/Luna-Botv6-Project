@@ -1,21 +1,20 @@
 <div align="center">
 
-<!-- Banner animado con título -->
+
 <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=180&section=header&text=Luna%20Bot%20V6&fontSize=42&fontColor=fff&animation=twinkling&fontAlignY=32"/>
 
-<!-- Subtítulo animado -->
 <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=28&pause=1000&color=FFD700&center=true&vCenter=true&width=600&lines=🌙+Bot+Avanzado+de+WhatsApp;✨+Altamente+Personalizable;🚀+Herramientas+%2B+Entretenimiento;💎+Moderación+Inteligente" alt="Typing SVG" />
 
 <br><br>
 
-<!-- Logo con animación de pulso -->
+
 <a href="https://github.com/Luna-botv6/Luna-Botv6-Project">
   <img src="https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-20250519-WA0115.jpg" alt="Luna Bot Logo" width="400" style="border-radius: 25px;"/>
 </a>
 
 <br><br>
 
-<!-- Badges principales con animación -->
+
 <p>
   <a href="https://github.com/Luna-botv6/Luna-Botv6-Project">
     <img src="https://img.shields.io/badge/🌙%20Version-6.0%20LATEST-8B5CF6?style=for-the-badge&logo=github&logoColor=white&labelColor=5B21B6" alt="Version"/>
@@ -38,29 +37,40 @@
 
 <br>
 
-<!-- Descripción con efecto de gradiente -->
-<div>
+
+<table>
+<tr>
+<td align="center">
   
-```ascii
-╔══════════════════════════════════════════════════════════════════╗
-║                                                                  ║
-║   🌙 Luna Bot - La Experiencia Definitiva en WhatsApp 🌙       ║
-║                                                                  ║
-║   ✨ Bot avanzado y altamente personalizable                    ║
-║   🎯 Herramientas útiles para el día a día                      ║
-║   🎮 Entretenimiento sin límites                                ║
-║   🛡️  Moderación inteligente de grupos                          ║
-║   🤖 Comandos inteligentes con IA                               ║
-║   ⚡ Respuestas rápidas y eficientes                            ║
-║                                                                  ║
-╚══════════════════════════════════════════════════════════════════╝
+### 💫 **La Experiencia Definitiva en WhatsApp**
+
+</td>
+</tr>
+<tr>
+<td>
+
+```js
+const LunaBot = {
+  caracteristicas: [
+    "✨ Bot avanzado y altamente personalizable",
+    "🎯 Herramientas útiles para el día a día",
+    "🎮 Entretenimiento sin límites",
+    "🛡️  Moderación inteligente de grupos",
+    "🤖 Comandos inteligentes con IA",
+    "⚡ Respuestas rápidas y eficientes"
+  ],
+  estado: "🔥 ACTIVO",
+  version: "6.0"
+};
 ```
 
-</div>
+</td>
+</tr>
+</table>
 
 <br>
 
-<!-- Características destacadas con iconos animados -->
+
 <table>
 <tr>
 <td align="center" width="25%">
@@ -84,28 +94,23 @@
 
 <br>
 
-<!-- Estadísticas del proyecto -->
 <p>
   <img src="https://img.shields.io/github/stars/Luna-botv6/Luna-Botv6-Project?style=social" alt="GitHub stars"/>
   <img src="https://img.shields.io/github/forks/Luna-botv6/Luna-Botv6-Project?style=social" alt="GitHub forks"/>
   <img src="https://img.shields.io/github/watchers/Luna-botv6/Luna-Botv6-Project?style=social" alt="GitHub watchers"/>
 </p>
 
-<!-- Contador de visitantes -->
+
 <img src="https://komarev.com/ghpvc/?username=Luna-botv6&label=Visitas&color=blueviolet&style=for-the-badge" alt="Profile views"/>
 
 <br><br>
 
-<!-- Separador con estilo -->
 <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer"/>
 
 </div>
 
 ---
 
-<!-- Versión alternativa más minimalista -->
-
-<!--
 
 VERSIÓN 2 - ESTILO MINIMALISTA:
 
@@ -140,7 +145,6 @@ Herramientas útiles • Entretenimiento • Moderación • IA
 
 ---
 
-<!-- VERSIÓN 3 - ESTILO FUTURISTA:
 
 <div align="center">
 
@@ -193,14 +197,8 @@ Herramientas útiles • Entretenimiento • Moderación • IA
 <img src="https://capsule-render.vercel.app/api?type=cylinder&color=gradient&customColorList=12,14,20&height=100&section=footer"/>
 
 </div>
---->
 
----
-<div align="center">
-
-<!-- Título animado con gradiente -->
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=32&duration=2800&pause=2000&color=A855F7&center=true&vCenter=true&width=600&lines=✨+Novedades+Recientes+✨;🚀+Luna+Bot+WhatsApp;💜+Siempre+Innovando" alt="Typing SVG" />
-
+-->
 ---
 
 ## 🆕 Últimas Actualizaciones
