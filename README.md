@@ -1,16 +1,199 @@
-# 🌙 Luna-Bot V6 - WhatsApp Bot
-
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-20250519-WA0115.jpg" alt="Luna Bot Logo" width="400" style="border-radius: 25px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); animation: pulse 2s infinite; border: 4px solid linear-gradient(45deg, #FFD700, #FFA500);"/>
-  
-  [![Version](https://img.shields.io/badge/Version-6.0-blue?style=for-the-badge)](https://github.com/Luna-botv6/Luna-Botv6-Project)
-[![Node](https://img.shields.io/badge/Node-v18+-green?style=for-the-badge&logo=nodedotjs)](https://nodejs.org)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
-[![WhatsApp](https://img.shields.io/badge/WhatsApp-Bot-25D366?style=for-the-badge&logo=whatsapp)](https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y)
 
-**Luna Bot es un bot avanzado y altamente personalizable para WhatsApp, diseñado para ofrecerte una experiencia completa con herramientas útiles, entretenimiento, moderación y comandos inteligentes.**
+<!-- Banner animado con título -->
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=180&section=header&text=Luna%20Bot%20V6&fontSize=42&fontColor=fff&animation=twinkling&fontAlignY=32"/>
+
+<!-- Subtítulo animado -->
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=28&pause=1000&color=FFD700&center=true&vCenter=true&width=600&lines=🌙+Bot+Avanzado+de+WhatsApp;✨+Altamente+Personalizable;🚀+Herramientas+%2B+Entretenimiento;💎+Moderación+Inteligente" alt="Typing SVG" />
+
+<br><br>
+
+<!-- Logo con animación de pulso -->
+<a href="https://github.com/Luna-botv6/Luna-Botv6-Project">
+  <img src="https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-20250519-WA0115.jpg" alt="Luna Bot Logo" width="400" style="border-radius: 25px;"/>
+</a>
+
+<br><br>
+
+<!-- Badges principales con animación -->
+<p>
+  <a href="https://github.com/Luna-botv6/Luna-Botv6-Project">
+    <img src="https://img.shields.io/badge/🌙%20Version-6.0%20LATEST-8B5CF6?style=for-the-badge&logo=github&logoColor=white&labelColor=5B21B6" alt="Version"/>
+  </a>
+  <a href="https://nodejs.org">
+    <img src="https://img.shields.io/badge/⚡%20Node.js-v18%2B-10B981?style=for-the-badge&logo=nodedotjs&logoColor=white&labelColor=065F46" alt="Node"/>
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/📜%20License-MIT-FCD34D?style=for-the-badge&logo=opensourceinitiative&logoColor=white&labelColor=92400E" alt="License"/>
+  </a>
+</p>
+
+<p>
+  <a href="https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y">
+    <img src="https://img.shields.io/badge/💬%20WhatsApp-Bot%20Oficial-25D366?style=for-the-badge&logo=whatsapp&logoColor=white&labelColor=128C7E" alt="WhatsApp"/>
+  </a>
+  <img src="https://img.shields.io/badge/🔥%20Estado-ACTIVO-EC4899?style=for-the-badge&logo=statuspage&logoColor=white&labelColor=9F1239" alt="Status"/>
+  <img src="https://img.shields.io/badge/⭐%20Calidad-Premium-FFD700?style=for-the-badge&logo=starship&logoColor=white&labelColor=B45309" alt="Quality"/>
+</p>
+
+<br>
+
+<!-- Descripción con efecto de gradiente -->
+<div>
+  
+```ascii
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║   🌙 Luna Bot - La Experiencia Definitiva en WhatsApp 🌙       ║
+║                                                                  ║
+║   ✨ Bot avanzado y altamente personalizable                    ║
+║   🎯 Herramientas útiles para el día a día                      ║
+║   🎮 Entretenimiento sin límites                                ║
+║   🛡️  Moderación inteligente de grupos                          ║
+║   🤖 Comandos inteligentes con IA                               ║
+║   ⚡ Respuestas rápidas y eficientes                            ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
 
 </div>
+
+<br>
+
+<!-- Características destacadas con iconos animados -->
+<table>
+<tr>
+<td align="center" width="25%">
+  <img src="https://img.shields.io/badge/🛠️-HERRAMIENTAS-8B5CF6?style=flat-square&labelColor=5B21B6" width="100%"/>
+  <br><sub><b>Útiles y Prácticas</b></sub>
+</td>
+<td align="center" width="25%">
+  <img src="https://img.shields.io/badge/🎮-JUEGOS-10B981?style=flat-square&labelColor=065F46" width="100%"/>
+  <br><sub><b>Entretenimiento Total</b></sub>
+</td>
+<td align="center" width="25%">
+  <img src="https://img.shields.io/badge/🛡️-MODERACIÓN-EC4899?style=flat-square&labelColor=9F1239" width="100%"/>
+  <br><sub><b>Control de Grupos</b></sub>
+</td>
+<td align="center" width="25%">
+  <img src="https://img.shields.io/badge/🤖-IA-FCD34D?style=flat-square&labelColor=92400E" width="100%"/>
+  <br><sub><b>Inteligencia Artificial</b></sub>
+</td>
+</tr>
+</table>
+
+<br>
+
+<!-- Estadísticas del proyecto -->
+<p>
+  <img src="https://img.shields.io/github/stars/Luna-botv6/Luna-Botv6-Project?style=social" alt="GitHub stars"/>
+  <img src="https://img.shields.io/github/forks/Luna-botv6/Luna-Botv6-Project?style=social" alt="GitHub forks"/>
+  <img src="https://img.shields.io/github/watchers/Luna-botv6/Luna-Botv6-Project?style=social" alt="GitHub watchers"/>
+</p>
+
+<!-- Contador de visitantes -->
+<img src="https://komarev.com/ghpvc/?username=Luna-botv6&label=Visitas&color=blueviolet&style=for-the-badge" alt="Profile views"/>
+
+<br><br>
+
+<!-- Separador con estilo -->
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer"/>
+
+</div>
+
+---
+
+<!-- Versión alternativa más minimalista -->
+
+<!--
+
+VERSIÓN 2 - ESTILO MINIMALISTA:
+
+<div align="center">
+
+# 🌙 **Luna Bot V6**
+### *El Bot Más Completo para WhatsApp*
+
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=8B5CF6&center=true&vCenter=true&width=435&lines=Bot+Avanzado+de+WhatsApp;Herramientas+%2B+Entretenimiento;Moderación+Inteligente;Comandos+con+IA" alt="Typing SVG" />
+
+<br>
+
+<img src="https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-20250519-WA0115.jpg" alt="Logo" width="300"/>
+
+<br>
+
+`Version 6.0` • `Node.js v18+` • `MIT License` • `Bot Activo`
+
+<br>
+
+**✨ Bot avanzado y altamente personalizable para WhatsApp**  
+Herramientas útiles • Entretenimiento • Moderación • IA
+
+<br>
+
+[![WhatsApp](https://img.shields.io/badge/Canal_Oficial-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y)
+[![GitHub](https://img.shields.io/badge/Repositorio-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Luna-botv6/Luna-Botv6-Project)
+
+</div>
+
+-->
+
+---
+
+<!-- VERSIÓN 3 - ESTILO FUTURISTA:
+
+<div align="center">
+
+<img src="https://capsule-render.vercel.app/api?type=cylinder&color=gradient&customColorList=12,14,20&height=150&section=header&text=LUNA%20BOT%20V6&fontSize=50&fontColor=fff&animation=fadeIn"/>
+
+<img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&weight=700&size=24&pause=1000&color=FFD700&center=true&vCenter=true&repeat=true&width=600&lines=🌙+NEXT+GENERATION+WHATSAPP+BOT;⚡+POWERED+BY+ARTIFICIAL+INTELLIGENCE;🚀+ADVANCED+FEATURES+%26+TOOLS;💎+PREMIUM+EXPERIENCE" alt="Futuristic" />
+
+<br>
+
+<table>
+<tr>
+<td width="50%" align="center">
+
+<img src="https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-20250519-WA0115.jpg" width="100%" style="border-radius: 15px;"/>
+
+</td>
+<td width="50%">
+
+```yaml
+🌙 Nombre: Luna Bot
+📦 Versión: 6.0
+⚡ Engine: Node.js v18+
+📜 Licencia: MIT
+🔥 Estado: ONLINE
+💬 Plataforma: WhatsApp
+🤖 IA: Integrada
+⭐ Calidad: Premium
+```
+
+</td>
+</tr>
+</table>
+
+<br>
+
+### 🎯 **CARACTERÍSTICAS PRINCIPALES**
+
+| 🛠️ **HERRAMIENTAS** | 🎮 **ENTRETENIMIENTO** | 🛡️ **MODERACIÓN** | 🤖 **IA** |
+|:---:|:---:|:---:|:---:|
+| Útiles & Prácticas | Juegos Integrados | Control de Grupos | ChatGPT Ready |
+
+<br>
+
+<a href="https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y">
+  <img src="https://img.shields.io/badge/🚀%20ÚNETE%20AL%20CANAL%20OFICIAL-25D366?style=for-the-badge&logo=whatsapp&logoColor=white&labelColor=128C7E&scale=1.2" alt="Join"/>
+</a>
+
+<br><br>
+
+<img src="https://capsule-render.vercel.app/api?type=cylinder&color=gradient&customColorList=12,14,20&height=100&section=footer"/>
+
+</div>
+--->
 
 ---
 <div align="center">
