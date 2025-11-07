@@ -1,6 +1,6 @@
 <svg width="900" height="180" viewBox="0 0 900 180" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Degradado animado para el fondo -->
+   
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#001f3f;stop-opacity:1">
         <animate attributeName="stop-color" values="#001f3f;#0074D9;#7b2ff7;#ff00ea;#001f3f" dur="6s" repeatCount="indefinite"/>
@@ -13,7 +13,7 @@
       </stop>
     </linearGradient>
     
-    <!-- Degradado animado para el texto -->
+    
     <linearGradient id="textGradient" x1="0%" y1="0%" x2="200%" y2="0%">
       <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1"/>
       <stop offset="50%" style="stop-color:#7b2ff7;stop-opacity:1"/>
@@ -22,7 +22,7 @@
       <animate attributeName="x2" values="200%;0%" dur="3s" repeatCount="indefinite"/>
     </linearGradient>
     
-    <!-- Filtro de brillo -->
+    
     <filter id="glow">
       <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
       <feMerge>
@@ -31,14 +31,14 @@
       </feMerge>
     </filter>
     
-    <!-- Patrón de ondas -->
+    
     <path id="wave" d="M0,90 Q22.5,70 45,90 T90,90 T135,90 T180,90 T225,90 T270,90 T315,90 T360,90 T405,90 T450,90 T495,90 T540,90 T585,90 T630,90 T675,90 T720,90 T765,90 T810,90 T855,90 T900,90 V180 H0 Z"/>
   </defs>
   
-  <!-- Fondo con degradado animado -->
+  
   <rect width="900" height="180" fill="url(#bgGradient)"/>
   
-  <!-- Ondas inferiores con animación -->
+  
   <use href="#wave" fill="#001f3f" opacity="0.3">
     <animateTransform attributeName="transform" type="translate" values="0,0; -45,0; 0,0" dur="4s" repeatCount="indefinite"/>
   </use>
@@ -46,7 +46,7 @@
     <animateTransform attributeName="transform" type="translate" values="0,10; 45,10; 0,10" dur="6s" repeatCount="indefinite"/>
   </use>
   
-  <!-- Estrellas titilantes -->
+  
   <circle cx="100" cy="30" r="1.5" fill="white" opacity="0.8">
     <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
   </circle>
@@ -66,7 +66,7 @@
     <animate attributeName="opacity" values="0.5;1;0.5" dur="3.2s" repeatCount="indefinite"/>
   </circle>
   
-  <!-- Rayos eléctricos -->
+
   <line x1="150" y1="0" x2="150" y2="180" stroke="#00d4ff" stroke-width="2" opacity="0">
     <animate attributeName="opacity" values="0;0;1;0;0" dur="4s" repeatCount="indefinite"/>
   </line>
@@ -77,12 +77,11 @@
     <animate attributeName="opacity" values="0;0;0;1;0" dur="4s" begin="2s" repeatCount="indefinite"/>
   </line>
   
-  <!-- Texto con degradado animado y efecto de brillo -->
+  
   <text x="450" y="110" font-family="Arial, sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="url(#textGradient)" filter="url(#glow)">
     Luna Bot V6
     <animate attributeName="opacity" values="1;0.9;1" dur="2s" repeatCount="indefinite"/>
   </text>
   
-  <!-- Luna emoji -->
   <text x="450" y="55" font-size="48" text-anchor="middle">🌙</text>
 </svg>
