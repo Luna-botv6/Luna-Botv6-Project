@@ -1,9 +1,8 @@
 <div align="center">
-<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,1,2&height=180&section=header&text=Luna%20Bot%20V6&fontSize=42&fontColor=fff&animation=twinkling&fontAlignY=32"/>
+<img width="100%" src="https://capsule-render.vercel.app/api?type=cylinder&color=0:0a1929,50:1e88e5,100:0a1929&height=180&section=header&text=Luna%20Bot%20V6&fontSize=42&fontColor=fff&animation=twinkling&fontAlignY=32"/>
 <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=28&pause=1000&color=FFD700&center=true&vCenter=true&width=600&lines=🌙+Bot+Avanzado+de+WhatsApp;✨+Altamente+Personalizable;🚀+Herramientas+%2B+Entretenimiento;💎+Moderación+Inteligente" alt="Typing SVG" />
-  
 <br><br>
-
+  
 <a href="https://github.com/Luna-botv6/Luna-Botv6-Project">
   <img src="https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-20250519-WA0115.jpg" alt="Luna Bot Logo" width="400" style="border-radius: 25px;"/>
 </a>
