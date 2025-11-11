@@ -40,7 +40,7 @@
   
 ## 💫 **La Experiencia Definitiva en WhatsApp**
 
-
+```js
 const LunaBot = {
   caracteristicas: [
     "✨ Bot avanzado y altamente personalizable",
@@ -53,7 +53,7 @@ const LunaBot = {
   estado: "🔥 ACTIVO",
   version: "6.0"
 };
-
+---
 
 ```
 
