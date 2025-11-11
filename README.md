@@ -40,24 +40,21 @@
   
 ## 💫 **La Experiencia Definitiva en WhatsApp**
 
-</td>
-</tr>
-<tr>
-<td>
 
-```js
 const LunaBot = {
   caracteristicas: [
     "✨ Bot avanzado y altamente personalizable",
     "🎯 Herramientas útiles para el día a día",
     "🎮 Entretenimiento sin límites",
-    "🛡️  Moderación inteligente de grupos",
+    "🛡️ Moderación inteligente de grupos",
     "🤖 Comandos inteligentes con IA",
     "⚡ Respuestas rápidas y eficientes"
   ],
   estado: "🔥 ACTIVO",
   version: "6.0"
 };
+
+
 ```
 
 </td>
