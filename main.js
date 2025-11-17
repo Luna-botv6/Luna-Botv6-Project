@@ -255,6 +255,9 @@ const connectionOptions = {
 
 global.conn = makeWASocket(connectionOptions);
 
+// CRÍTICO: Listener para guardar credenciales automáticamente
+conn.ev.on('creds.update', saveCreds);
+
 setInterval(async () => {
   if (global.conn?.user) {
     try {
@@ -527,6 +530,10 @@ let codigoSolicitado = false;
 
 async function connectionUpdate(update) {
   const { connection, lastDisconnect, isNewLogin, qr } = update;
+  if (lastDisconnect?.error) {
+    console.log(chalk.red('⚠️ Razón de desconexión:'), lastDisconnect.error?.message || lastDisconnect.error);
+  }
+
   stopped = connection;
   if (isNewLogin) conn.isInit = true;
 
@@ -622,6 +629,8 @@ global.reloadHandler = async function(restatConn) {
     } catch { }
     conn.ev.removeAllListeners();
     global.conn = makeWASocket(connectionOptions, {chats: oldChats});
+    // Volver a agregar el listener de credenciales después de recrear la conexión
+    conn.ev.on('creds.update', saveCreds);
     store?.bind(conn);
     isInit = true;
   }
