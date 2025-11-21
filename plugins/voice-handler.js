@@ -106,8 +106,11 @@ export async function handleVoiceMessage(conn, msg, jid, processedMessages) {
     }
 
     const msgId = msg.key.id;
-    if (processedMessages.has(msgId)) return;
-    processedMessages.add(msgId);
+if (processedVoiceMessages.has(msgId)) {
+  const timestamp = processedVoiceMessages.get(msgId);
+  if (Date.now() - timestamp < 5000) return;
+}
+processedVoiceMessages.set(msgId, Date.now());
 
     await conn.sendMessage(jid, { text: '🎤 *Procesando tu nota de voz...* ⏳' }, { quoted: msg });
 

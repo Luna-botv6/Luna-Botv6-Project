@@ -3,12 +3,12 @@ import path from "path";
 import chalk from "chalk";
 import { connectionManager } from "../lib/connection-manager.js";
 
-let handler = async (m, { conn }) => {
-  return true;
-};
+const handler = (m) => m;
 
-handler.all = async function (m) {
-  return true;
+
+handler.all = async function (m, { conn }) {
+
+  return !0;
 };
 
 export default handler;
@@ -16,7 +16,7 @@ export default handler;
 export async function autoreconnectSubbots(mainConn) {
   console.log(chalk.blue("🔄 Iniciando restauración de sesiones..."));
 
-  const subBotDir = `./sub-lunabot/`;
+  const subBotDir = "./sub-lunabot/";
 
   if (!fs.existsSync(subBotDir)) {
     console.log(chalk.yellow("📁 No hay sesiones guardadas"));
@@ -29,9 +29,10 @@ export async function autoreconnectSubbots(mainConn) {
 
     for (const userId of userDirs) {
       const userPath = path.join(subBotDir, userId);
-      const credsPath = path.join(userPath, "creds.json");
 
       if (!fs.statSync(userPath).isDirectory()) continue;
+
+      const credsPath = path.join(userPath, "creds.json");
       if (!fs.existsSync(credsPath)) continue;
 
       try {
@@ -83,19 +84,13 @@ export async function autoreconnectSubbots(mainConn) {
 
           if (!creds || (credSize < 50 && keyCount <= 2)) {
             console.log(
-              chalk.yellow(
-                `🗑️ Sesión vacía eliminada: ${userId}`
-              )
+              chalk.yellow(`🗑️ Sesión vacía eliminada: ${userId}`)
             );
             fs.rmSync(userPath, { recursive: true, force: true });
           }
         }
       } catch (error) {
-        console.log(
-          chalk.red(
-            `❌ Error procesando sesión: ${userId}`
-          )
-        );
+        console.log(chalk.red(`❌ Error procesando sesión: ${userId}`));
 
         try {
           const rawData = fs.readFileSync(credsPath, "utf8");
@@ -125,7 +120,8 @@ export async function autoreconnectSubbots(mainConn) {
 
     try {
       const imported = await import("./subbot.js");
-      const initializeSubBot = imported.initializeSubBot || imported.default?.initializeSubBot;
+      const initializeSubBot =
+        imported.initializeSubBot || imported.default?.initializeSubBot;
 
       if (!initializeSubBot) {
         console.log(chalk.red("❌ Error: No se pudo importar el módulo"));
@@ -152,17 +148,13 @@ export async function autoreconnectSubbots(mainConn) {
           await new Promise((resolve) => setTimeout(resolve, 3000));
         } catch (error) {
           console.error(
-            chalk.red(
-              `❌ Error restaurando ${session.userId}`
-            )
+            chalk.red(`❌ Error restaurando ${session.userId}`)
           );
         }
       }
     } catch (importError) {
       console.error(
-        chalk.red(
-          `❌ Error importando módulo: ${importError.message}`
-        )
+        chalk.red(`❌ Error importando módulo: ${importError.message}`)
       );
       return;
     }
@@ -216,13 +208,16 @@ function createMockMessage(mainConn, userId) {
     mentionedJid: [],
     body: "/serbot",
     text: "/serbot",
-    reply: async (text) => {
-      return Promise.resolve();
-    },
+    reply: async (text) => Promise.resolve(),
   };
 }
 
-async function simulateSerbot(mockMessage, mainConn, initializeSubBot, userPath) {
+async function simulateSerbot(
+  mockMessage,
+  mainConn,
+  initializeSubBot,
+  userPath
+) {
   const userId = path.basename(userPath);
 
   if (!global.db) {
@@ -257,15 +252,13 @@ async function simulateSerbot(mockMessage, mainConn, initializeSubBot, userPath)
     console.log(chalk.green(`✅ SubBot ${userId} reconectado`));
   } catch (error) {
     global.db.data.users[mockMessage.sender].Subs = oldSubsValue;
-    console.error(
-      chalk.red(`❌ Error reconectando ${userId}`)
-    );
+    console.error(chalk.red(`❌ Error reconectando ${userId}`));
     throw error;
   }
 }
 
 export async function validateAndCleanSessions() {
-  const subBotDir = `./sub-lunabot/`;
+  const subBotDir = "./sub-lunabot/";
 
   if (!fs.existsSync(subBotDir)) return;
 
@@ -338,21 +331,22 @@ export async function validateAndCleanSessions() {
           );
           cleanedCount++;
         } catch (error) {
-          console.log(
-            chalk.red(`❌ Error eliminando ${userId}`)
-          );
+          console.log(chalk.red(`❌ Error eliminando ${userId}`));
         }
       }
     }
 
     if (cleanedCount > 0) {
       console.log(
-        chalk.green(`✅ Limpieza completada: ${cleanedCount} sesiones eliminadas`)
+        chalk.green(
+          `✅ Limpieza completada: ${cleanedCount} sesiones eliminadas`
+        )
       );
     }
   } catch (error) {
     console.error(chalk.red("❌ Error en validación de sesiones"));
   }
 }
+
 
 setInterval(validateAndCleanSessions, 60 * 60 * 1000);

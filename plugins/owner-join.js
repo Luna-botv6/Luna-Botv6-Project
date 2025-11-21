@@ -3,6 +3,10 @@ let enviando = false;
 let pendingRequests = new Map();
 const REQUEST_EXPIRY = 24 * 60 * 60 * 1000;
 
+const USER_LIMIT_WINDOW = 12 * 60 * 60 * 1000;
+const MAX_REQUESTS_PER_USER = 3;
+const userRequestStats = new Map();
+
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const generateRequestId = () => {
@@ -20,8 +24,20 @@ const cleanupRequests = () => {
   }
 };
 
+const canUserRequest = (sender) => {
+  const now = Date.now();
+  const current = userRequestStats.get(sender) || { count: 0, first: now };
+  if (now - current.first > USER_LIMIT_WINDOW) {
+    userRequestStats.set(sender, { count: 1, first: now });
+    return true;
+  }
+  if (current.count >= MAX_REQUESTS_PER_USER) return false;
+  current.count += 1;
+  userRequestStats.set(sender, current);
+  return true;
+};
+
 const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, command}) => {
-  
   if (m.type === 'protocolMessage' || m.type === 'protocol') return;
   if (m.messageStubType === 20 || m.messageStubType === 21) return;
   if (m.mtype === 'templateButtonReplyMessage') await delay(3000);
@@ -46,7 +62,12 @@ const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, com
       await conn.groupAcceptInvite(request.code);
       await conn.sendMessage(m.chat, {react: {text: '✅', key: m.key}});
       await delay(2000);
-      await m.reply(`✅ Bot unido al grupo\n\n👤 Usuario: ${request.userNumber}\n🆔 ID: ${requestId}`);
+      await m.reply(
+        `✅ Bot unido al grupo\n\n` +
+        `👤 Usuario: ${request.userNumber}\n` +
+        `🆔 ID: ${requestId}\n\n` +
+        `ℹ️ Recuerda usar el bot de forma responsable y sin spam.`
+      );
       pendingRequests.delete(requestId);
     } catch (error) {
       await conn.sendMessage(m.chat, {react: {text: '❌', key: m.key}});
@@ -69,7 +90,7 @@ const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, com
     
     const args = text?.trim().split(' ');
     const requestId = args?.[0];
-    const motivo = args?.slice(1).join(' ') || 'No cumple con las políticas';
+    const motivo = args?.slice(1).join(' ') || 'No cumple con las políticas de uso.';
 
     if (!requestId || !/^\d{4}$/.test(requestId)) {
       return m.reply('❌ Uso: /denegar 1234 [motivo]');
@@ -84,7 +105,12 @@ const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, com
     
     await conn.sendMessage(m.chat, {react: {text: '❌', key: m.key}});
     await delay(2000);
-    await m.reply(`❌ Solicitud rechazada\n\n👤 Usuario: ${request.userNumber}\n📝 Motivo: ${motivo}`);
+    await m.reply(
+      `❌ Solicitud rechazada\n\n` +
+      `👤 Usuario: ${request.userNumber}\n` +
+      `📝 Motivo: ${motivo}\n\n` +
+      `ℹ️ El bot evita unirse a grupos que puedan usarse para spam o actividades indebidas.`
+    );
     pendingRequests.delete(requestId);
     return;
   }
@@ -111,7 +137,10 @@ const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, com
         await conn.groupAcceptInvite(code);
         await conn.sendMessage(m.chat, {react: {text: '✅', key: m.key}});
         await delay(2000);
-        await m.reply('✅ Me uní al grupo exitosamente.');
+        await m.reply(
+          '✅ Me uní al grupo exitosamente.\n\n' +
+          'ℹ️ Usa el bot de forma responsable y evita el spam para proteger la cuenta.'
+        );
       } catch (error) {
         await conn.sendMessage(m.chat, {react: {text: '❌', key: m.key}});
         await delay(2000);
@@ -126,6 +155,15 @@ const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, com
         throw new Error(msg);
       }
     } else {
+      const sender = m.sender;
+      if (!canUserRequest(sender)) {
+        enviando = false;
+        return m.reply(
+          '⚠️ Has enviado demasiadas solicitudes en poco tiempo.\n\n' +
+          'Intenta de nuevo más tarde. Esto ayuda a evitar abuso y proteger la cuenta del bot.'
+        );
+      }
+
       cleanupRequests();
       
       const requestId = generateRequestId();
@@ -141,7 +179,12 @@ const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, com
 
       await conn.sendMessage(m.chat, {react: {text: '📋', key: m.key}});
       await delay(2000);
-      await m.reply(`📋 Solicitud enviada a revisión.\n\n🆔 ID: *${requestId}*\n\n⏰ El administrador revisará tu solicitud.`);
+      await m.reply(
+        `📋 Solicitud enviada a revisión.\n\n` +
+        `🆔 ID: *${requestId}*\n\n` +
+        `⏰ El administrador revisará tu solicitud.\n` +
+        `ℹ️ El bot solo se une a grupos que respetan las normas y no se usan para spam.`
+      );
       
       await delay(6000);
 
@@ -156,7 +199,8 @@ const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, com
           `⏰ ${new Date().toLocaleString()}\n\n` +
           `_Comandos:_\n` +
           `✅ ${usedPrefix}aceptar ${requestId}\n` +
-          `❌ ${usedPrefix}denegar ${requestId}`;
+          `❌ ${usedPrefix}denegar ${requestId}\n\n` +
+          `ℹ️ Revisa que el grupo no se use para spam ni actividades que puedan infringir las políticas de WhatsApp.`;
 
         await conn.sendMessage(mainOwner, {
           text: msg,
