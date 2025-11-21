@@ -1,12 +1,10 @@
 export async function all(m) {
-  if (!global.db?.data) return;
+  if (!global.db.data) return;
 
   if (!global.db.data.sticker) global.db.data.sticker = {};
 
-  const isDirectSticker = !!m.message?.stickerMessage;
-  const isQuotedSticker =
-    !!m.quoted &&
-    (m.quoted.mtype === 'stickerMessage' || m.quoted.type === 'stickerMessage');
+  const isDirectSticker = m.message?.stickerMessage;
+  const isQuotedSticker = m.quoted && (m.quoted.mtype === 'stickerMessage' || m.quoted.type === 'stickerMessage');
 
   if (!isDirectSticker && !isQuotedSticker) return;
 
@@ -38,20 +36,11 @@ export async function all(m) {
   if (!stickerData) return;
 
   try {
-    const cmdText = (stickerData.text || '').trim();
-    if (!cmdText) return;
-
+    let cmdText = stickerData.text || '';
     const commandPrefixes = ['.', '#', '!', '/'];
-    const usedPrefix = commandPrefixes.find(prefix => cmdText.startsWith(prefix));
-    const isCommand = !!usedPrefix;
+    const isCommand = commandPrefixes.some(prefix => cmdText.startsWith(prefix));
 
     if (isCommand) {
-      const commandWithoutPrefix = cmdText.slice(usedPrefix.length).trim();
-      if (!commandWithoutPrefix) return;
-
-      const [commandRaw, ...args] = commandWithoutPrefix.split(/\s+/);
-      const command = (commandRaw || '').toLowerCase();
-
       const fakeMessage = {
         ...m,
         text: cmdText,
@@ -65,10 +54,13 @@ export async function all(m) {
         reply: (text, options = {}) => this.reply(m.chat, text, m, options)
       };
 
+      const usedPrefix = commandPrefixes.find(prefix => cmdText.startsWith(prefix));
+      const commandWithoutPrefix = cmdText.slice(usedPrefix.length);
+      const [command, ...args] = commandWithoutPrefix.trim().split(' ');
+
       for (const pluginName in global.plugins) {
         const plugin = global.plugins[pluginName];
         if (!plugin || plugin.disabled) continue;
-        if (typeof plugin !== 'function') continue;
 
         let isMatch = false;
 
@@ -85,95 +77,77 @@ export async function all(m) {
           }
         }
 
-        if (!isMatch) continue;
+        if (isMatch) {
+          const _args = args;
+          const text = args.join(' ');
+          const groupMetadata = (m.isGroup ? ((this.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(() => null)) : {}) || {};
+          const participants = (m.isGroup ? groupMetadata.participants : []) || [];
+          const user = (m.isGroup ? participants.find((u) => this.decodeJid(u.id) === m.sender) : {}) || {};
+          const bot = (m.isGroup ? participants.find((u) => this.decodeJid(u.id) === this.user.jid) : {}) || {};
+          const isAdmin = user?.admin === 'admin' || user?.admin === 'superadmin' || false;
+          const isBotAdmin = bot?.admin || false;
+          const isOwnerCheck = global.owner.map(([num]) => num).includes(m.sender.replace(/[^0-9]/g, '')) || m.fromMe;
 
-        const groupMetadata =
-          (m.isGroup
-            ? (this.chats[m.chat]?.metadata || (await this.groupMetadata(m.chat).catch(() => null)))
-            : {}) || {};
+          if (plugin.admin && !isAdmin) {
+            return this.reply(m.chat, 'Solo admins pueden usar este comando', m);
+          }
 
-        const participants = (m.isGroup ? groupMetadata.participants : []) || [];
-        const user =
-          (m.isGroup
-            ? participants.find(u => this.decodeJid(u.id) === m.sender)
-            : {}) || {};
-        const bot =
-          (m.isGroup
-            ? participants.find(u => this.decodeJid(u.id) === this.user.jid)
-            : {}) || {};
+          if (plugin.group && !m.isGroup) {
+            return this.reply(m.chat, 'Este comando solo funciona en grupos', m);
+          }
 
-        const isRAdmin = user?.admin === 'superadmin' || false;
-        const isAdmin = isRAdmin || user?.admin === 'admin' || false;
-        const isBotAdmin = !!bot?.admin;
+          if (plugin.owner && !isOwnerCheck) {
+            return this.reply(m.chat, 'Solo el owner puede usar este comando', m);
+          }
 
-        const senderNum = this.decodeJid(m.sender || '').replace(/[^0-9]/g, '');
-        const ownerNums = global.owner.map(([num]) => num);
-        const isROwner = ownerNums.includes(senderNum);
-        const isOwner = isROwner || m.fromMe;
-        const isMods =
-          isOwner ||
-          global.mods
-            .map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net')
-            .includes(m.sender);
-        const isPrems =
-          isROwner || isOwner || isMods || global.db.data.users[m.sender]?.premiumTime > 0;
+          const senderNum = this.decodeJid(m.sender || '').replace(/[^0-9]/g, '');
+          const ownerNums = global.owner.map(([num]) => num);
+          const isROwner = ownerNums.includes(senderNum);
+          const isOwnerFinal = isROwner || m.fromMe;
+          const isMods = isOwnerFinal || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
+          const isPrems = isROwner || isOwnerFinal || isMods || global.db.data.users[m.sender]?.premiumTime > 0;
 
-        if (plugin.admin && !isAdmin) {
-          await this.reply(m.chat, 'Solo admins pueden usar este comando', m);
+          const extra = {
+            usedPrefix,
+            noPrefix: commandWithoutPrefix,
+            _args,
+            args,
+            command,
+            text,
+            conn: this,
+            participants,
+            groupMetadata,
+            user,
+            bot,
+            isROwner,
+            isOwner: isOwnerFinal,
+            isRAdmin: user?.admin === 'superadmin' || false,
+            isAdmin,
+            isBotAdmin,
+            isPrems,
+            isMods,
+            chatUpdate: null,
+            __dirname: './plugins',
+            __filename: pluginName
+          };
+
+          await plugin.call(this, fakeMessage, extra);
           return;
         }
-
-        if (plugin.group && !m.isGroup) {
-          await this.reply(m.chat, 'Este comando solo funciona en grupos', m);
-          return;
-        }
-
-        if (plugin.owner && !isOwner) {
-          await this.reply(m.chat, 'Solo el owner puede usar este comando', m);
-          return;
-        }
-
-        const extra = {
-          usedPrefix,
-          noPrefix: commandWithoutPrefix,
-          _args: args,
-          args,
-          command,
-          text: args.join(' '),
-          conn: this,
-          participants,
-          groupMetadata,
-          user,
-          bot,
-          isROwner,
-          isOwner,
-          isRAdmin,
-          isAdmin,
-          isBotAdmin,
-          isPrems,
-          isMods,
-          chatUpdate: null,
-          __dirname: './plugins',
-          __filename: pluginName
-        };
-
-        await plugin.call(this, fakeMessage, extra);
-        return;
       }
     }
 
     if (stickerData.mentionedJid && stickerData.mentionedJid.length > 0) {
-      await this.sendMessage(
-        m.chat,
-        {
-          text: stickerData.text,
-          mentions: stickerData.mentionedJid
-        },
-        { quoted: m }
-      );
+      await this.sendMessage(m.chat, {
+        text: cmdText,
+        mentions: stickerData.mentionedJid
+      }, {
+        quoted: m
+      });
     } else {
-      await this.reply(m.chat, stickerData.text, m);
+      await this.reply(m.chat, cmdText, m);
     }
+
   } catch (error) {
     console.error('Error procesando comando de sticker:', error);
     try {
