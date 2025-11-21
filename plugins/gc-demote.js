@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-const handler = async (m, {conn, usedPrefix, participants}) => {
+const handler = async (m, { conn, usedPrefix, participants, isOwner, args, command }) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
   const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
@@ -15,38 +15,56 @@ const handler = async (m, {conn, usedPrefix, participants}) => {
     if (participantData && participantData.id) realUserJid = participantData.id;
   }
 
-  const senderJid = realUserJid.replace('@s.whatsapp.net', '');
-  const isLidOwner = global.lidOwners && global.lidOwners.includes(senderJid);
-  const isGlobalOwner = global.owner && global.owner.some(([num]) => num === senderJid);
-  const isAdmin = groupAdmins.includes(realUserJid);
-
-  if (!(isAdmin || isLidOwner || isGlobalOwner)) {
-    return conn.reply(m.chat, '*[❗] Solo los administradores pueden usar este comando.*', m);
+  const isUserAdmin = groupAdmins.includes(realUserJid);
+  if (!isUserAdmin && !isOwner) {
+    return m.reply('*[❗] Solo los administradores pueden usar este comando.*');
   }
 
-  let user;
+  const resolveLidToId = (jidOrLid) => {
+    if (!jidOrLid) return null;
+    if (!jidOrLid.includes('@lid')) return jidOrLid;
+    const pdata = groupMetadata.participants.find(p => p.lid === jidOrLid);
+    return pdata ? pdata.id : null;
+  };
 
-  if (m.mentionedJid && m.mentionedJid.length > 0) user = m.mentionedJid[0];
-  else if (m.quoted && m.quoted.sender) user = m.quoted.sender;
-  else if (m.text) {
+  let user = null;
+
+  if (m.mentionedJid && m.mentionedJid[0]) {
+    const mention = m.mentionedJid[0];
+    const maybe = resolveLidToId(mention);
+    user = maybe || mention;
+  } else if (m.quoted && m.quoted.sender) {
+    const quotedSender = m.quoted.sender;
+    const maybe = resolveLidToId(quotedSender);
+    user = maybe || quotedSender;
+  } else if (m.text) {
     const cleanText = m.text.replace(/[^0-9]/g, '');
-    if (cleanText.length < 11 || cleanText.length > 15) return conn.reply(m.chat, tradutor.texto2, m);
+    if (cleanText.length < 11 || cleanText.length > 15) return m.reply(tradutor.texto2);
     user = cleanText + '@s.whatsapp.net';
   }
 
-  if (!user) return conn.reply(m.chat, `${tradutor.texto1[0]} ${usedPrefix}quitaradmin @tag*\n*┠≽ ${usedPrefix}quitaradmin ${tradutor.texto1[1]}`, m);
+  if (!user) {
+    const msg = `${tradutor.texto1[0]} ${usedPrefix}quitaradmin @tag*\n*┠≽ ${usedPrefix}quitaradmin ${tradutor.texto1[1]}`;
+    return m.reply(msg, m.chat, { mentions: conn.parseMention(msg) });
+  }
 
-  const participantData = groupMetadata.participants.find(p => p.id === user || p.lid === user);
-  if (!participantData) return conn.reply(m.chat, '*[❗] La persona que mencionaste no está en el grupo.*', m);
+  const isUserInGroup = participants.find(p => p.id === user);
+  if (!isUserInGroup) {
+    const maybeFromLid = groupMetadata.participants.find(p => p.lid === user);
+    if (maybeFromLid) {
+      user = maybeFromLid.id;
+    }
+  }
 
-  const realUser = participantData.id;
+  const finalCheck = participants.find(p => p.id === user);
+  if (!finalCheck) return m.reply('*[❗] La persona mencionada no está en el grupo.*');
 
   try {
-    await conn.groupParticipantsUpdate(m.chat, [realUser], 'demote');
-    conn.reply(m.chat, tradutor.texto3.replace(/@user/g, `@${realUser.split('@')[0]}`), m, { mentions: [realUser] });
+    await conn.groupParticipantsUpdate(m.chat, [user], 'demote');
+    await m.reply(tradutor.texto3.replace(/@user/g, `@${user.split('@')[0]}`), null, { mentions: [user] });
   } catch (e) {
     console.error(e);
-    conn.reply(m.chat, '*[❗] No se pudo degradar al usuario. Asegúrate de que seas administrador y que el usuario sea un miembro del grupo.*', m);
+    await m.reply('*[❗] No se pudo degradar al usuario. Asegúrate de que seas administrador y que el usuario sea un miembro del grupo.*');
   }
 };
 
@@ -54,7 +72,6 @@ handler.help = ['demote <@user>', 'quitarpoder <@user>', 'quitaradmin <@user>'];
 handler.tags = ['group'];
 handler.command = /^(demote|quitarpoder|quitaradmin)$/i;
 handler.group = true;
-handler.admin = true;
 handler.botAdmin = true;
 
 export default handler;
