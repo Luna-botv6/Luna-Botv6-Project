@@ -108,13 +108,16 @@ const LunaBot = {
 <tr>
 <td>
 
-## ✅ 06/11/2025 – Actualización y Optimización 🚀
-diff+ ⚡ Handler.js optimizado - Mayor velocidad de respuesta
-+ 🔧 Main.js mejorado con nuevas funciones integradas
-+ 🤖 SubBot actualizado con funcionalidades avanzadas
-+ 🚀 Rendimiento general incrementado
-+ ✨ Sistema más estable y eficiente
+## ✅ 25/11/2025 – Sistema de Mute/Unmute Implementado 🔇
 
++ 🔇 Comando /mute @usuario - Silencia usuarios en grupos
++ 🔊 Comando /unmute @usuario - Dessilencia usuarios
++ 📋 Comando /listamute - Muestra usuarios muteados del grupo
++ 🛡️ Validación de permisos de admin integrada
++ ⚡ Eliminación automática de mensajes de usuarios muteados
++ 🔄 Soporte para LID y números de teléfono
++ ✨ Sistema optimizado y sin lag
+  
 </td>
 </tr>
 </table>
