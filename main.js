@@ -644,30 +644,6 @@ global.reloadHandler = async function(restatConn) {
     conn.ev.off('creds.update', conn.credsUpdate);
   }
 
-const funcionesOwner = getOwnerFunction();
-
-conn.ev.on('messages.upsert', async ({ messages }) => {
-  if (!Array.isArray(messages)) return;
-  const m = messages[0];
-  if (!m.message || m.key?.remoteJid === 'status@broadcast') return;
-
-  const isGroup = m.key.remoteJid.endsWith('@g.us');
-  const sender = m.key.participant || m.key.remoteJid;
-
-  if (funcionesOwner.antiprivado && !isGroup && !global.owner.includes(sender.split('@')[0])) {
-    try {
-      await conn.sendMessage(sender, { text: '🚫 *No puedo responder en chats privados.*' });
-    } catch (e) {}
-    return;
-  }
-
-  if (funcionesOwner.modogrupos && !isGroup) {
-    try {
-      await conn.sendMessage(sender, { text: '🚫 *Solo puedo responder en grupos.*' });
-    } catch (e) {}
-    return;
-  }
-});
 
   conn.welcome = '👋 ¡Bienvenido/a!\n@user';
   conn.bye = '👋 ¡Hasta luego!\n@user';

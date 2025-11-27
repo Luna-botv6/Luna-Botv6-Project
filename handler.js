@@ -35,14 +35,14 @@ function getBotMetadata(conn) {
   if (botMetadataCache.lastUpdate && (now - botMetadataCache.lastUpdate) < BOT_METADATA_TTL) {
     return {
       name: botMetadataCache.name || 'Luna-Bot',
-      number: botMetadataCache.number || 'Sin número',
+      number: botMetadataCache.number || 'Sin nÃºmero',
       jid: botMetadataCache.jid
     };
   }
   
   try {
     botMetadataCache.jid = conn?.user?.jid || conn?.user?.id;
-    botMetadataCache.number = conn?.user?.jid?.split('@')[0] || 'Sin número';
+    botMetadataCache.number = conn?.user?.jid?.split('@')[0] || 'Sin nÃºmero';
     botMetadataCache.name = conn?.user?.name || conn?.user?.verifiedName || 'Luna-Bot';
     botMetadataCache.lastUpdate = now;
   } catch (e) {
@@ -51,7 +51,7 @@ function getBotMetadata(conn) {
   
   return {
     name: botMetadataCache.name || 'Luna-Bot',
-    number: botMetadataCache.number || 'Sin número',
+    number: botMetadataCache.number || 'Sin nÃºmero',
     jid: botMetadataCache.jid
   };
 }
@@ -109,7 +109,7 @@ function cleanupCache(cache, ttl, name = 'cache') {
   }
   
   if (cleaned > 0) {
-    console.log(chalk.gray(`🧹 Limpieza de ${name}: ${cleaned} entradas eliminadas`));
+    console.log(chalk.gray(`⚡ Limpieza de ${name}: ${cleaned} entradas eliminadas`));
   }
 }
 
@@ -122,7 +122,7 @@ setInterval(() => {
   
   if (processedVoiceMessages.size > MAX_CACHE_SIZE) {
     processedVoiceMessages.clear();
-    console.log(chalk.gray('🧹 Limpieza de processedVoiceMessages'));
+    console.log(chalk.gray('⚡ Limpieza de processedVoiceMessages'));
   }
 }, 60000);
 
@@ -202,11 +202,11 @@ function isRecentParticipantEvent(groupId, participant, action) {
 }
 
 function logError(e, plugin = 'general') {
-  const emoji = '💥';
+  const emoji = 'ðŸ’¥';
   const archivo = plugin || 'desconocido';
   const mensaje = e?.message || e?.toString() || 'Error desconocido';
   console.log(chalk.red(`\n${emoji} Error en: ${chalk.yellow(archivo)}`));
-  console.log(chalk.red(`🧩 ${chalk.white(mensaje)}`));
+  console.log(chalk.red(`ðŸ§© ${chalk.white(mensaje)}`));
 }
 
 let mconn;
@@ -504,9 +504,27 @@ export async function handler(chatUpdate) {
     }
     
     for (const name in allPlugins) {
-      const plugin = allPlugins[name];
-      if (!plugin) continue;
-      if (plugin.disabled) continue;
+  const plugin = allPlugins[name];
+  if (!plugin) continue;
+  if (plugin.disabled) continue;
+
+  
+  if (global.__modogruposBlock && global.__modogruposBlock.has(m.chat)) {
+  const senderNum = (m.sender || '').split('@')[0].replace(/\D/g, '')
+  const owners = (global.owner || []).map(o => {
+    const num = Array.isArray(o) ? o[0] : o
+    return String(num || '').replace(/\D/g, '')
+  }).filter(Boolean)
+  const lidOwners = (global.lidOwners || []).map(x => String(x || '').replace(/\D/g, '')).filter(Boolean)
+  const allOwnersNum = [...owners, ...lidOwners]
+  const isOwnerHere = allOwnersNum.includes(senderNum)
+
+  if (!isOwnerHere) {
+    continue
+  }
+}
+
+
       
       const __filename = name.startsWith('custom-') ? 
         join(customCommandsDir, name.replace('custom-', '')) : 
@@ -636,7 +654,7 @@ ${tradutor.texto1[1]} ${messageNumber}/3
             if (user.commandCount === 2) {
               const remainingTime = Math.ceil((user.lastCommandTime + 5000 - Date.now()) / 1000);
               if (remainingTime > 0) {
-                const messageText = `*[ ℹ️ ] Espera* _${remainingTime} segundos_ *antes de utilizar otro comando.*`;
+                const messageText = `*[ â„¹ï¸ ] Espera* _${remainingTime} segundos_ *antes de utilizar otro comando.*`;
                 m.reply(messageText);
                 return;
               } else {
@@ -863,7 +881,7 @@ export async function participantsUpdate({ id, participants, action }) {
         
         for (const user of participants) {
           if (isRecentParticipantEvent(id, user, normalizedAction)) {
-            console.log(`🔄 Evento duplicado ignorado: ${normalizedAction} para ${user.split('@')[0]}`);
+            console.log(`ðŸ”„ Evento duplicado ignorado: ${normalizedAction} para ${user.split('@')[0]}`);
             continue;
           }
           
@@ -892,19 +910,19 @@ export async function participantsUpdate({ id, participants, action }) {
                 .replace('@user', '@' + user.split('@')[0])
                 .replace('@subject', await m?.conn?.getName(id))
                 .replace('@group', groupMetadata?.subject || 'Grupo')
-                .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
+                .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÃ“N*');
             } else {
-              text = (tradutor.texto1 || m?.conn?.welcome || '¡Bienvenido/a @user!')
+              text = (tradutor.texto1 || m?.conn?.welcome || 'Â¡Bienvenido/a @user!')
                 .replace('@user', '@' + user.split('@')[0])
                 .replace('@subject', await m?.conn?.getName(id))
                 .replace('@group', groupMetadata?.subject || 'Grupo')
-                .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÓN*');
+                .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÃ“N*');
             }
           } else if (normalizedAction === 'remove') {
             if (chat.sBye && chat.sBye.trim() !== '') {
               text = chat.sBye.replace('@user', '@' + user.split('@')[0]);
             } else {
-              text = (tradutor.texto2 || m?.conn?.bye || 'Adiós @user')
+              text = (tradutor.texto2 || m?.conn?.bye || 'AdiÃ³s @user')
                 .replace('@user', '@' + user.split('@')[0]);
             }
           }
@@ -913,7 +931,7 @@ export async function participantsUpdate({ id, participants, action }) {
             const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
             if (responseb[0].status === '404') return;
             const fkontak2 = { 'key': { 'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo' }, 'message': { 'contactMessage': { 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` } }, 'participant': '0@s.whatsapp.net' };
-            await m?.conn?.sendMessage(id, { text: `*[◉] @${m.conn.decodeJid(user).split('@')[0]} ᴇɴ ᴇsᴛᴇ ɢʀᴜᴘᴏ ɴᴏ sᴇ ᴘᴇʀᴍɪᴛᴇɴ ɴᴜᴍᴇʀᴏs ᴀʀᴀʙᴇs ʏ ʀᴀʀᴏs, ᴘᴏʀ ʟᴏ ǫᴜᴇ sᴇ ᴛᴇ sᴀᴄᴀʀᴀ ᴅᴇʟ ɢʀᴜᴘᴏ*`, mentions: [m.conn.decodeJid(user)] }, { quoted: fkontak2 });
+            await m?.conn?.sendMessage(id, { text: `*[â—‰] @${m.conn.decodeJid(user).split('@')[0]} á´‡É´ á´‡sá´›á´‡ É¢Ê€á´œá´˜á´ É´á´ sá´‡ á´˜á´‡Ê€á´Éªá´›á´‡É´ É´á´œá´á´‡Ê€á´s á´€Ê€á´€Ê™á´‡s Ê Ê€á´€Ê€á´s, á´˜á´Ê€ ÊŸá´ Ç«á´œá´‡ sá´‡ á´›á´‡ sá´€á´„á´€Ê€á´€ á´…á´‡ÊŸ É¢Ê€á´œá´˜á´*`, mentions: [m.conn.decodeJid(user)] }, { quoted: fkontak2 });
             return;
           }
           
@@ -926,7 +944,7 @@ export async function participantsUpdate({ id, participants, action }) {
     case 'daradmin':
     case 'darpoder':
       if (isRecentParticipantEvent(id, participants[0], action)) {
-        console.log(`🔄 Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]}`);
+        console.log(`ðŸ”„ Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]}`);
         return;
       }
       text = (chat.sPromote || tradutor.texto3 || m?.conn?.spromote || '@user ```is now Admin```');
@@ -936,7 +954,7 @@ export async function participantsUpdate({ id, participants, action }) {
     case 'quitaradmin':
       if (!text) {
         if (isRecentParticipantEvent(id, participants[0], action)) {
-          console.log(`🔄 Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]}`);
+          console.log(`ðŸ”„ Evento duplicado ignorado: ${action} para ${participants[0].split('@')[0]}`);
           return;
         }
         text = (chat?.sDemote || tradutor.texto4 || m?.conn?.sdemote || '@user ```is no longer Admin```');
@@ -987,9 +1005,9 @@ export async function callUpdate(callUpdate) {
   for (const nk of callUpdate) {
     if (nk.isGroup == false) {
       if (nk.status == 'offer') {
-        const callmsg = await mconn?.conn?.reply(nk.from, `Hola *@${nk.from.split('@')[0]}*, las ${nk.isVideo ? 'videollamadas' : 'llamadas'} no están permitidas, serás bloqueado.\n-\nSi accidentalmente llamaste póngase en contacto con mi creador para que te desbloquee!`, false, { mentions: [nk.from] });
-        const vcard = `BEGIN:VCARD\nVERSION:3.0\nN:;ehl villano 💎;;;\nFN:ehl villano💎\nORG:ehl villano 💎\nTITLE:\nitem1.TEL;waid=5493483466763:+549 348 346 6763\nitem1.X-ABLabel:ehl villano 💎\nX-WA-BIZ-DESCRIPTION:[◉] ᴄᴏɴᴛᴀᴄᴛᴀ ᴀ ᴇsᴛᴇ ɴᴜᴍ ᴘᴀʀᴀ ᴄᴏsᴀs ɪᴍᴘᴏʀᴛᴀɴᴛᴇs.\nX-WA-BIZ-NAME:ehl villano 💎\nEND:VCARD`;
-        await mconn.conn.sendMessage(nk.from, { contacts: { displayName: 'ehl villano 💎', contacts: [{ vcard }] } }, { quoted: callmsg });
+        const callmsg = await mconn?.conn?.reply(nk.from, `Hola *@${nk.from.split('@')[0]}*, las ${nk.isVideo ? 'videollamadas' : 'llamadas'} no estÃ¡n permitidas, serÃ¡s bloqueado.\n-\nSi accidentalmente llamaste pÃ³ngase en contacto con mi creador para que te desbloquee!`, false, { mentions: [nk.from] });
+        const vcard = `BEGIN:VCARD\nVERSION:3.0\nN:;ehl villano ðŸ’Ž;;;\nFN:ehl villanoðŸ’Ž\nORG:ehl villano ðŸ’Ž\nTITLE:\nitem1.TEL;waid=5493483466763:+549 348 346 6763\nitem1.X-ABLabel:ehl villano ðŸ’Ž\nX-WA-BIZ-DESCRIPTION:[â—‰] á´„á´É´á´›á´€á´„á´›á´€ á´€ á´‡sá´›á´‡ É´á´œá´ á´˜á´€Ê€á´€ á´„á´sá´€s Éªá´á´˜á´Ê€á´›á´€É´á´›á´‡s.\nX-WA-BIZ-NAME:ehl villano ðŸ’Ž\nEND:VCARD`;
+        await mconn.conn.sendMessage(nk.from, { contacts: { displayName: 'ehl villano ðŸ’Ž', contacts: [{ vcard }] } }, { quoted: callmsg });
         await mconn.conn.updateBlockStatus(nk.from, 'block');
       }
     }
@@ -1069,17 +1087,17 @@ watchFile(file, async () => {
 process.on('unhandledRejection', (reason) => {
   const msg = reason?.message || reason?.toString() || 'Error desconocido';
   if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-    console.log('⚠️ Error crítico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
+    console.log('âš ï¸ Error crÃ­tico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
   } else {
-    console.log('⚠️ Promesa rechazada sin manejar:', msg);
+    console.log('âš ï¸ Promesa rechazada sin manejar:', msg);
   }
 });
 
 process.on('uncaughtException', (err) => {
   const msg = err?.message || err?.toString() || 'Error desconocido';
   if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-    console.log('⚠️ Error crítico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
+    console.log('âš ï¸ Error crÃ­tico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
   } else {
-    console.log('⚠️ Error no manejado (excepción):', msg);
+    console.log('âš ï¸ Error no manejado (excepciÃ³n):', msg);
   }
 });
