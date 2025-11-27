@@ -1,39 +1,45 @@
-/* Creditos a https://github.com/FG98F */
+const handler = async (m, { conn, participants, isOwner }) => {
+  if (!m.isGroup) return m.reply('*[❗] Este comando solo puede usarse en grupos.*');
 
+  const groupMetadata = await conn.groupMetadata(m.chat);
+  const groupAdmins = groupMetadata.participants.filter(p => p.admin !== null).map(p => p.id);
 
-const handler = async (m, {conn, usedPrefix, command}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.gc_delete
+  let realUserJid = m.sender;
+  if (m.sender.includes('@lid')) {
+    const pdata = groupMetadata.participants.find(p => p.lid === m.sender);
+    if (pdata && pdata.id) realUserJid = pdata.id;
+  }
 
-  if (!m.quoted) throw tradutor.texto1;
+  const isUserAdmin = groupAdmins.includes(realUserJid);
+  if (!isUserAdmin && !isOwner) return m.reply('*[❗] Solo los administradores pueden usar este comando.*');
+
+  if (!m.quoted) return m.reply('*[❗] Debes citar un mensaje para eliminarlo.*');
+
+  const resolveLidToId = (jidOrLid) => {
+    if (!jidOrLid) return null;
+    if (!jidOrLid.includes('@lid')) return jidOrLid;
+    const pdata = groupMetadata.participants.find(p => p.lid === jidOrLid);
+    return pdata ? pdata.id : null;
+  };
+
+  const user = m.quoted.sender ? resolveLidToId(m.quoted.sender) || m.quoted.sender : null;
+  const messageId = m.quoted.key?.id || m.message.extendedTextMessage?.contextInfo?.stanzaId;
+  const participant = m.quoted.sender || m.message.extendedTextMessage?.contextInfo?.participant;
+
+  if (!user || !messageId) return m.reply('*[❗] No se pudo eliminar el mensaje.*');
+
   try {
-    const delet = m.message.extendedTextMessage.contextInfo.participant;
-    const bang = m.message.extendedTextMessage.contextInfo.stanzaId;
-    return conn.sendMessage(m.chat, {delete: {remoteJid: m.chat, fromMe: false, id: bang, participant: delet}});
-  } catch {
-    return conn.sendMessage(m.chat, {delete: m.quoted.vM.key});
+    await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, fromMe: false, id: messageId, participant } });
+  } catch (e) {
+    console.error(e);
+    await m.reply('*[❗] No se pudo eliminar el mensaje. Asegúrate de que el bot sea administrador.*');
   }
 };
+
 handler.help = ['del', 'delete'];
 handler.tags = ['group'];
 handler.command = /^del(ete)?$/i;
 handler.group = true;
-handler.admin = true;
 handler.botAdmin = true;
-export default handler;
 
-/* let handler = function (m) {
-if (!m.quoted) throw false
-let { chat, fromMe, isBaileys } = m.quoted
-if (!fromMe) throw false
-if (!isBaileys) throw '*[❗𝐈𝐍𝐅𝐎❗] 𝙴𝚂𝙴 𝙼𝙴𝙽𝚂𝙰𝙹𝙴 𝙽𝙾 𝙵𝚄𝙴 𝙴𝙽𝚅𝙸𝙰𝙳𝙾 𝙿𝙾𝚁 𝙼𝙸, 𝙽𝙾 𝙻𝙾 𝙿𝚄𝙴𝙳𝙾 𝙴𝙻𝙸𝙼𝙸𝙽𝙰𝚁*'
-conn.sendMessage(chat, { delete: m.quoted.vM.key })
-}
-handler.help = ['del', 'delete']
-handler.tags = ['tools']
-handler.command = /^del(ete)?$/i
-handler.group = true
-handler.admin = true
-export default handler*/
+export default handler;

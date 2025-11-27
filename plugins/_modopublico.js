@@ -1,18 +1,14 @@
-import { readFile } from 'fs/promises';
+import { isFunctionEnabled } from '../lib/owner-funciones.js'
 
-export async function before(m, {conn, isOwner, isROwner}) {
-  let ownerConfig = {};
+export const isGlobalBefore = true
+
+export async function before(m, { conn, isOwner, isROwner }) {
   try {
-    const configData = await readFile('./database/funciones-owner.json', 'utf8');
-    ownerConfig = JSON.parse(configData);
+    const modoPublico = isFunctionEnabled('modopublico')
+    global.opts['self'] = !modoPublico
   } catch (e) {
-    console.error('Error leyendo funciones-owner.json:', e.message);
-    return;
+    global.opts['self'] = false
   }
   
-  if (ownerConfig.modopublico) {
-    global.opts['self'] = false;
-  } else {
-    global.opts['self'] = true;
-  }
+  return false
 }
