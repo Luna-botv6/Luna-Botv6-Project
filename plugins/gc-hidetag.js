@@ -1,4 +1,6 @@
 import { generateWAMessageFromContent } from "@whiskeysockets/baileys";
+import { writeFileSync, unlinkSync, existsSync } from "fs";
+import { join } from "path";
 
 const cooldowns = new Map();
 
@@ -59,43 +61,94 @@ const handler = async (m, { conn, text, participants, isOwner }) => {
       });
     }
 
-    const msg = conn.cMod(
-      m.chat,
-      generateWAMessageFromContent(
-        m.chat,
-        { [quoted.mtype || 'extendedTextMessage']: quoted.message || { text: finalText } },
-        { quoted: m, userJid: conn.user.id }
-      ),
-      finalText,
-      conn.user.jid,
-      { mentions: users }
-    );
-    await conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id });
+    const isMediaType = /imageMessage|videoMessage|audioMessage|stickerMessage/.test(quoted.mtype);
 
-  } catch {
+    if (isMediaType) {
+      const mediaBuffer = await quoted.download?.();
+
+      if (/imageMessage/.test(quoted.mtype)) {
+        await conn.sendMessage(m.chat, { image: mediaBuffer, mentions: users, caption: finalText }, { quoted: m });
+      } else if (/videoMessage/.test(quoted.mtype)) {
+        await conn.sendMessage(m.chat, { video: mediaBuffer, mentions: users, mimetype: 'video/mp4', caption: finalText }, { quoted: m });
+      } else if (/audioMessage/.test(quoted.mtype)) {
+        await conn.sendMessage(m.chat, { audio: mediaBuffer, mentions: users, mimetype: 'audio/mpeg', fileName: 'Hidetag.mp3' }, { quoted: m });
+      } else if (/stickerMessage/.test(quoted.mtype)) {
+        await conn.sendMessage(m.chat, { sticker: mediaBuffer, mentions: users }, { quoted: m });
+      }
+    } else {
+      const msg = conn.cMod(
+        m.chat,
+        generateWAMessageFromContent(
+          m.chat,
+          { [quoted.mtype || 'extendedTextMessage']: quoted.message || { text: finalText } },
+          { quoted: m, userJid: conn.user.id }
+        ),
+        finalText,
+        conn.user.jid,
+        { mentions: users }
+      );
+      await conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id });
+    }
+
+  } catch (error) {
     const quoted = m.quoted || m;
     const users = participants.map(u => resolveLidToId(u.id));
     const mime = quoted.mimetype || '';
+    
     const isMedia = /image|video|sticker|audio/.test(mime);
-    const spacer = String.fromCharCode(8206).repeat(850);
-    let htextos = text || quoted.text || '*Hola :D*';
-
-    const mentionMatches = htextos.match(/@(\d+)/g);
-    if (mentionMatches) {
-      mentionMatches.forEach(match => {
-        const number = match.substring(1);
-        const realJid = resolveLidToId(`${number}@lid`);
-        htextos = htextos.replace(new RegExp(`@${number}`, 'g'), `@${realJid.split('@')[0]}`);
-      });
-    }
 
     if (isMedia) {
       const mediaBuffer = await quoted.download?.();
-      if (/image/.test(mime)) await conn.sendMessage(m.chat, { image: mediaBuffer, mentions: users, caption: htextos }, { quoted: m });
-      else if (/video/.test(mime)) await conn.sendMessage(m.chat, { video: mediaBuffer, mentions: users, mimetype: 'video/mp4', caption: htextos }, { quoted: m });
-      else if (/audio/.test(mime)) await conn.sendMessage(m.chat, { audio: mediaBuffer, mentions: users, mimetype: 'audio/mpeg', fileName: 'Hidetag.mp3' }, { quoted: m });
-      else if (/sticker/.test(mime)) await conn.sendMessage(m.chat, { sticker: mediaBuffer, mentions: users }, { quoted: m });
+      
+      if (!mediaBuffer) {
+        return m.reply('Error: no se pudo descargar el archivo');
+      }
+
+      const tempDir = join(process.cwd(), 'src', 'tmp');
+      const timestamp = Date.now();
+      const fileExtMatch = mime.match(/\w+$/);
+      const fileExt = fileExtMatch ? fileExtMatch[0] : 'bin';
+      const tempFilePath = join(tempDir, `${timestamp}.${fileExt}`);
+
+      try {
+        writeFileSync(tempFilePath, mediaBuffer);
+
+        const captionText = text || quoted.text || 'Hola';
+
+        if (/image/.test(mime)) {
+          await conn.sendMessage(m.chat, { image: mediaBuffer, mentions: users, caption: captionText }, { quoted: m });
+        } else if (/video/.test(mime)) {
+          await conn.sendMessage(m.chat, { video: mediaBuffer, mentions: users, mimetype: 'video/mp4', caption: captionText }, { quoted: m });
+        } else if (/audio/.test(mime)) {
+          await conn.sendMessage(m.chat, { audio: mediaBuffer, mentions: users, mimetype: 'audio/mpeg', fileName: 'Hidetag.mp3' }, { quoted: m });
+        } else if (/sticker/.test(mime)) {
+          await conn.sendMessage(m.chat, { sticker: mediaBuffer, mentions: users }, { quoted: m });
+        }
+
+        setTimeout(() => {
+          if (existsSync(tempFilePath)) {
+            try {
+              unlinkSync(tempFilePath);
+            } catch (err) {}
+          }
+        }, 5 * 60 * 1000);
+
+      } catch (err) {
+        m.reply('Error al procesar el archivo');
+      }
     } else {
+      const spacer = String.fromCharCode(8206).repeat(850);
+      let htextos = text || quoted.text || 'Hola';
+
+      const mentionMatches = htextos.match(/@(\d+)/g);
+      if (mentionMatches) {
+        mentionMatches.forEach(match => {
+          const number = match.substring(1);
+          const realJid = resolveLidToId(`${number}@lid`);
+          htextos = htextos.replace(new RegExp(`@${number}`, 'g'), `@${realJid.split('@')[0]}`);
+        });
+      }
+
       await conn.relayMessage(
         m.chat,
         {
