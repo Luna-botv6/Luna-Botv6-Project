@@ -28,8 +28,21 @@ export function makeWASocket(connectionOptions, options = {}) {
 
   const sock = Object.defineProperties(conn, {
     chats: {
-      value: {...(options.chats || {})},
+      value: {...(options.chats || {}), ...(global.groupCache ? Object.fromEntries(global.groupCache) : {})},
       writable: true,
+    },
+
+    getGroupData: {
+      async value(groupId, forceRefresh = false) {
+        if (!global.getGroupDataOptimized) return { metadata: {}, participants: [] };
+        return await global.getGroupDataOptimized(this, groupId, forceRefresh);
+      }
+    },
+
+    getCachedGroupData: {
+      value(chatId) {
+        return global.getCachedGroupData?.(chatId) || null;
+      }
     },
     
     // Core utilities
@@ -240,10 +253,15 @@ export function makeWASocket(connectionOptions, options = {}) {
     } : {}),
   });
 
-  if (sock.user?.id) sock.user.jid = sock.decodeJid(sock.user.id);
+ if (sock.user?.id) sock.user.jid = sock.decodeJid(sock.user.id);
   store.bind(sock);
+  
+  if (global.getGroupDataOptimized && global.setCachedGroupData) {
+    sock.getGroupDataOptimized = global.getGroupDataOptimized;
+    sock.setCachedGroupData = global.setCachedGroupData;
+  }
+  
   return sock;
 }
-
 // Export helper functions
 export {smsg, serialize, protoType, logic};
