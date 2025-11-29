@@ -1,4 +1,103 @@
 import { updateLastCommand } from './logBans.js';
+
+async function getGroupMetadataOptimized(conn, groupId, retries = 2) {
+  let lastError;
+  
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      if (conn.chats?.[groupId]?.metadata) {
+        return conn.chats[groupId].metadata;
+      }
+      
+      const metadata = await conn.groupMetadata(groupId);
+      
+      if (metadata && metadata.participants) {
+        return metadata;
+      }
+    } catch (e) {
+      lastError = e;
+      console.log(`[Metadata] Intento ${attempt + 1}/${retries} fallido: ${e.message}`);
+      
+      if (attempt < retries - 1) {
+        await delay(300 * (attempt + 1));
+      }
+    }
+  }
+  
+  console.error(`[Metadata] Error después de ${retries} intentos:`, lastError?.message);
+  return { participants: [], subject: 'Grupo' };
+}
+
+function processParticipants(metadata) {
+  if (!metadata?.participants) return [];
+  
+  return metadata.participants.map(p => ({
+    id: p.id,
+    jid: p.id,
+    lid: p.lid,
+    admin: p.admin,
+    isAdmin: p.admin !== null,
+    isSuperAdmin: p.admin === 'superadmin'
+  }));
+}
+
+function resolveLidToJid(groupMetadata, jidOrLid) {
+  if (!jidOrLid) return null;
+  
+  if (!jidOrLid.includes('@lid')) {
+    return jidOrLid;
+  }
+  
+  const participant = groupMetadata.participants?.find(p => p.lid === jidOrLid);
+  return participant?.id || null;
+}
+
+async function getGroupDataOptimized(conn, groupId, forceRefresh = false) {
+  const cached = getCachedGroupData(groupId);
+  
+  if (cached && !forceRefresh) {
+    return {
+      metadata: cached.metadata,
+      participants: cached.participants,
+      isAdmin: cached.isAdmin,
+      isRAdmin: cached.isRAdmin,
+      isBotAdmin: cached.isBotAdmin,
+      fromCache: true
+    };
+  }
+  
+  try {
+    const metadata = await getGroupMetadataOptimized(conn, groupId);
+    const participants = processParticipants(metadata);
+    
+    setCachedGroupData(groupId, {
+      metadata,
+      participants,
+      isAdmin: false,
+      isRAdmin: false,
+      isBotAdmin: false
+    });
+    
+    return {
+      metadata,
+      participants,
+      isAdmin: false,
+      isRAdmin: false,
+      isBotAdmin: false,
+      fromCache: false
+    };
+  } catch (e) {
+    console.error(`[GroupData] Error obteniendo datos:`, e.message);
+    return {
+      metadata: { participants: [], subject: 'Grupo' },
+      participants: [],
+      isAdmin: false,
+      isRAdmin: false,
+      isBotAdmin: false,
+      error: true
+    };
+  }
+}
 import { generateWAMessageFromContent } from "@whiskeysockets/baileys";
 import { smsg } from './src/libraries/simple.js';
 import { format } from 'util';
@@ -19,53 +118,15 @@ import ws from 'ws';
 import { setConfig } from './lib/funcConfig.js'
 import { setOwnerFunction } from './lib/owner-funciones.js'
 import { addExp, getUserStats, setUserStats } from './lib/stats.js'
-
-const botMetadataCache = {
-  name: null,
-  number: null,
-  jid: null,
-  lastUpdate: 0
-};
-
-const BOT_METADATA_TTL = 60000; 
-
-function getBotMetadata(conn) {
-  const now = Date.now();
-  
-  if (botMetadataCache.lastUpdate && (now - botMetadataCache.lastUpdate) < BOT_METADATA_TTL) {
-    return {
-      name: botMetadataCache.name || 'Luna-Bot',
-      number: botMetadataCache.number || 'Sin nÃºmero',
-      jid: botMetadataCache.jid
-    };
-  }
-  
-  try {
-    botMetadataCache.jid = conn?.user?.jid || conn?.user?.id;
-    botMetadataCache.number = conn?.user?.jid?.split('@')[0] || 'Sin nÃºmero';
-    botMetadataCache.name = conn?.user?.name || conn?.user?.verifiedName || 'Luna-Bot';
-    botMetadataCache.lastUpdate = now;
-  } catch (e) {
-    console.error('Error obteniendo metadata del bot:', e.message);
-  }
-  
-  return {
-    name: botMetadataCache.name || 'Luna-Bot',
-    number: botMetadataCache.number || 'Sin nÃºmero',
-    jid: botMetadataCache.jid
-  };
-}
-
-const translationsCache = new Map();
-const customCommandsCache = new Map();
 const groupCache = new Map();
 const recentMessages = new Map();
 const recentParticipantEvents = new Map();
-const processedVoiceMessages = new Set();
+const translationsCache = new Map();
+const customCommandsCache = new Map();
 
-const CACHE_TTL = 3 * 60 * 1000;
-const DUPLICATE_TIMEOUT = 5000;
-const MAX_CACHE_SIZE = 300;
+const CACHE_TTL = 2 * 60 * 1000;
+const DUPLICATE_TIMEOUT = 3000;
+const MAX_CACHE_SIZE = 150;
 
 function getCachedGroupData(chatId) {
   const cached = groupCache.get(chatId);
@@ -86,6 +147,53 @@ function setCachedGroupData(chatId, data) {
     data,
     timestamp: Date.now()
   });
+}
+
+global.groupCache = groupCache;
+global.recentMessages = recentMessages;
+global.recentParticipantEvents = recentParticipantEvents;
+global.translationsCache = translationsCache;
+global.customCommandsCache = customCommandsCache;
+global.getCachedGroupData = getCachedGroupData;
+global.setCachedGroupData = setCachedGroupData;
+global.getGroupDataOptimized = getGroupDataOptimized;
+
+const botMetadataCache = {
+  name: null,
+  number: null,
+  jid: null,
+  lastUpdate: 0
+};
+
+const BOT_METADATA_TTL = 60000;
+
+const processedVoiceMessages = new Set();
+
+function getBotMetadata(conn) {
+  const now = Date.now();
+  
+  if (botMetadataCache.lastUpdate && (now - botMetadataCache.lastUpdate) < BOT_METADATA_TTL) {
+    return {
+      name: botMetadataCache.name || 'Luna-Bot',
+      number: botMetadataCache.number || 'Sin número',
+      jid: botMetadataCache.jid
+    };
+  }
+  
+  try {
+    botMetadataCache.jid = conn?.user?.jid || conn?.user?.id;
+    botMetadataCache.number = conn?.user?.jid?.split('@')[0] || 'Sin número';
+    botMetadataCache.name = conn?.user?.name || conn?.user?.verifiedName || 'Luna-Bot';
+    botMetadataCache.lastUpdate = now;
+  } catch (e) {
+    console.error('Error obteniendo metadata del bot:', e.message);
+  }
+  
+  return {
+    name: botMetadataCache.name || 'Luna-Bot',
+    number: botMetadataCache.number || 'Sin número',
+    jid: botMetadataCache.jid
+  };
 }
 
 function cleanupCache(cache, ttl, name = 'cache') {
@@ -116,15 +224,14 @@ function cleanupCache(cache, ttl, name = 'cache') {
 setInterval(() => {
   cleanupCache(groupCache, CACHE_TTL, 'groupCache');
   cleanupCache(recentMessages, DUPLICATE_TIMEOUT, 'recentMessages');
-  cleanupCache(recentParticipantEvents, 5000, 'participantEvents');
-  cleanupCache(translationsCache, 30 * 60 * 1000, 'translationsCache');
-  cleanupCache(customCommandsCache, 60 * 60 * 1000, 'customCommandsCache');
+  cleanupCache(recentParticipantEvents, 3000, 'participantEvents');
+  cleanupCache(translationsCache, 20 * 60 * 1000, 'translationsCache');
+  cleanupCache(customCommandsCache, 30 * 60 * 1000, 'customCommandsCache');
   
-  if (processedVoiceMessages.size > MAX_CACHE_SIZE) {
+  if (processedVoiceMessages.size > MAX_CACHE_SIZE / 2) {
     processedVoiceMessages.clear();
-    console.log(chalk.gray('⚡ Limpieza de processedVoiceMessages'));
   }
-}, 60000);
+}, 30000);
 
 function isDuplicate(messageId, sender, text) {
   if (!messageId) return false;
@@ -455,41 +562,28 @@ export async function handler(chatUpdate) {
     let isBotAdmin = false;
 
     if (m.isGroup) {
-  const cached = getCachedGroupData(m.chat);
-  
-  if (cached) {
-    groupMetadata = cached.metadata;
-    participants = cached.participants;
-    isAdmin = cached.isAdmin;
-    isRAdmin = cached.isRAdmin;
-    isBotAdmin = cached.isBotAdmin;
-  } else {
-    const metadata = this.chats[m.chat]?.metadata || await this.groupMetadata(m.chat).catch(_ => ({}));
-    groupMetadata = metadata;
-        participants = (metadata.participants || []).map(p => ({ 
-      id: p.id, 
-      jid: p.id, 
-      lid: p.lid, 
-      admin: p.admin 
-    }));
-    
-    const user = participants.find((u) => u.id === m.sender) || {};
-    const bot = participants.find((u) => u.id === this.user.jid) || {};
+      try {
+        const groupData = await getGroupDataOptimized(this, m.chat);
         
-        isRAdmin = user?.admin == 'superadmin' || false;
-        isAdmin = isRAdmin || user?.admin == 'admin' || false;
-        isBotAdmin = bot?.admin || false;
+        groupMetadata = groupData.metadata;
+        participants = groupData.participants;
         
-        setCachedGroupData(m.chat, {
-          metadata: groupMetadata,
-          participants,
-          isAdmin,
-          isRAdmin,
-          isBotAdmin
-        });
+        const userReal = m.sender.includes('@lid') ? 
+          resolveLidToJid(groupMetadata, m.sender) : m.sender;
+        
+        const user = participants.find((u) => u.id === userReal) || {};
+        const bot = participants.find((u) => u.id === this.user.jid) || {};
+        
+        isRAdmin = user?.isSuperAdmin || false;
+        isAdmin = isRAdmin || user?.isAdmin || false;
+        isBotAdmin = bot?.isAdmin || false;
+        
+      } catch (e) {
+        console.error('[GroupMetadata Error]:', e.message);
+        groupMetadata = {};
+        participants = [];
       }
     }
-
     const user = {};
     const bot = {};
 
@@ -613,13 +707,14 @@ export async function handler(chatUpdate) {
         
         m.plugin = name;
         updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender });
-        try {
-        await this.sendPresenceUpdate('composing', m.chat);
-  
-        await delay(800);  
-        } catch (e) {
-        console.log('Error al enviar presencia:', e.message);
-}
+       if (this.user?.jid) {
+          try {
+            await this.sendPresenceUpdate('composing', m.chat);
+            await delay(300);
+          } catch (e) {
+            
+          }
+        }
         
         if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
           const chat = global.db.data.chats[m.chat];
@@ -1087,17 +1182,17 @@ watchFile(file, async () => {
 process.on('unhandledRejection', (reason) => {
   const msg = reason?.message || reason?.toString() || 'Error desconocido';
   if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-    console.log('âš ï¸ Error crÃ­tico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
+    console.log('🛑 Error critico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
   } else {
-    console.log('âš ï¸ Promesa rechazada sin manejar:', msg);
+    console.log('🛠️ Promesa rechazada sin manejar:', msg);
   }
 });
 
 process.on('uncaughtException', (err) => {
   const msg = err?.message || err?.toString() || 'Error desconocido';
   if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-    console.log('âš ï¸ Error crÃ­tico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
+    console.log('💱 Error critico de Baileys: Reinicia el bot o escanea el QR nuevamente.');
   } else {
-    console.log('âš ï¸ Error no manejado (excepciÃ³n):', msg);
+    console.log('‼️ Error no manejado (excepcion):', msg);
   }
 });
