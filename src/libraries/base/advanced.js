@@ -279,31 +279,67 @@ export const advancedUtils = {
     chats.metadata = metadata;
   },
 
-  async insertAllGroup(conn) {
-    const groups = await conn.groupFetchAllParticipating().catch((_) => null) || {};
-    for (const group in groups) conn.chats[group] = {...(conn.chats[group] || {}), id: group, subject: groups[group].subject, isChats: true, metadata: groups[group]};
-    return conn.chats;
+ async insertAllGroup(conn) {
+    try {
+      const groups = await conn.groupFetchAllParticipating().catch(() => null) || {};
+      
+      for (const group in groups) {
+        if (!conn.chats[group]) {
+          conn.chats[group] = {};
+        }
+        conn.chats[group] = {
+          ...conn.chats[group],
+          id: group,
+          subject: groups[group].subject,
+          isChats: true,
+          metadata: groups[group]
+        };
+        
+        if (global.setCachedGroupData) {
+          global.setCachedGroupData(group, {
+            metadata: groups[group],
+            participants: groups[group].participants || [],
+            isAdmin: false,
+            isRAdmin: false,
+            isBotAdmin: false
+          });
+        }
+      }
+      
+      return conn.chats;
+    } catch (e) {
+      console.error('Error en insertAllGroup:', e.message);
+      return conn.chats;
+    }
   },
-
-  getName(conn, jid = '', withoutContact = false) {
+ getName(conn, jid = '', withoutContact = false) {
     jid = conn.decodeJid(jid);
     withoutContact = conn.withoutContact || withoutContact;
-    let v;
+    
     if (jid.endsWith('@g.us')) {
       return new Promise(async (resolve) => {
-        v = conn.chats[jid] || {};
-        if (!(v.name || v.subject)) v = await conn.groupMetadata(jid) || {};
-        resolve(v.name || v.subject || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international'));
+        const cached = global.getCachedGroupData?.(jid);
+        let v = cached || conn.chats[jid] || {};
+        
+        if (!(v.name || v.subject)) {
+          try {
+            v = await conn.groupMetadata(jid) || {};
+          } catch (e) {
+            console.error('Error obteniendo metadata:', e.message);
+          }
+        }
+        
+        resolve(v.name || v.subject || jid);
       });
     } else {
-      v = jid === '0@s.whatsapp.net' ? {
-        jid,
-        vname: 'WhatsApp',
-      } : areJidsSameUser(jid, conn.user.id) ?
-        conn.user :
-        (conn.chats[jid] || {});
+      const v = jid === '0@s.whatsapp.net' 
+        ? { jid, vname: 'WhatsApp' }
+        : areJidsSameUser(jid, conn.user.id)
+          ? conn.user
+          : (conn.chats[jid] || {});
+      
+      return (withoutContact ? '' : v.name) || v.subject || v.vname || v.notify || v.verifiedName || jid;
     }
-    return (withoutContact ? '' : v.name) || v.subject || v.vname || v.notify || v.verifiedName || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international');
   },
 
   loadMessage(conn, messageID) {
