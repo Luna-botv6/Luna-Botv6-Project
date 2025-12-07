@@ -52,6 +52,12 @@ handler.all = async function (m, { conn }) {
   try {
     if (!m || m.fromMe || m.isBaileys || !m.id) return
 
+    
+    if (!conn?.user) {
+      console.log('[audios] ⚠️  Bot desconectado, ignorando')
+      return
+    }
+
     const text = (m.text || '').trim()
     if (!text) return
 
@@ -112,15 +118,32 @@ handler.all = async function (m, { conn }) {
     if (!fs.existsSync(filePath)) return
     if (isDuplicateAudio(m.id, matchedKeyword)) return
 
-    try {
+   try {
       await conn.sendPresenceUpdate('recording', m.chat)
       await new Promise(resolve => setTimeout(resolve, 1200))
+
+      
+      if (!conn?.user) {
+        console.log('[audios] ⚠️  Conexión perdida durante envío')
+        return
+      }
 
       await conn.sendFile(m.chat, filePath, 'audio.mp3', '', m, true, {
         mimetype: 'audio/mpeg'
       })
     } catch (sendError) {
-      console.error('Error enviando audio global:', sendError)
+      if (sendError.message.includes('Bot no conectado')) {
+        console.log('[audios] ⚠️  Bot desconectado - reintentando...')
+        
+        setTimeout(() => {
+          if (conn?.user) {
+            conn.sendFile(m.chat, filePath, 'audio.mp3', '', m, true, { mimetype: 'audio/mpeg' })
+              .catch(e => console.error('[audios] Error:', e.message))
+          }
+        }, 3000)
+      } else {
+        console.error('[audios] Error enviando:', sendError.message)
+      }
     }
   } catch (e) {
     console.error('Error en audios-globales.js:', e)
