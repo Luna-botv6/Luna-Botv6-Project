@@ -39,6 +39,48 @@ let pairingTimeout = null;
 let pairingStartTime = null;
 const PAIRING_TIMEOUT_DURATION = 120000;
 
+const messageQueue = [];
+global.isProcessing = false;
+let messageCount = 0;
+let lastMinuteReset = Date.now();
+const MAX_MESSAGES_PER_MINUTE = 20;
+
+function getRandomDelay() {
+  return Math.floor(Math.random() * (800 - 300 + 1) + 300);
+}
+
+async function processMessageQueue() {
+  if (global.isProcessing || messageQueue.length === 0) return;
+  
+  const now = Date.now();
+  if (now - lastMinuteReset >= 60000) {
+    messageCount = 0;
+    lastMinuteReset = now;
+  }
+  
+  if (messageCount >= MAX_MESSAGES_PER_MINUTE) {
+    setTimeout(processMessageQueue, 2000);
+    return;
+  }
+  
+  global.isProcessing = true;
+  const msg = messageQueue.shift();
+  messageCount++;
+  
+  try {
+    await global.conn.handler(msg);
+  } catch (err) {
+    secureLogger.error('ERROR procesando mensaje:', err);
+  }
+  
+  global.isProcessing = false;
+  
+  if (messageQueue.length > 0) {
+    const delay = getRandomDelay();
+    setTimeout(processMessageQueue, delay);
+  }
+}
+
 protoType();
 serialize();
 
@@ -93,7 +135,7 @@ global.videoList = [];
 global.videoListXXX = [];
 const __dirname = global.__dirname(import.meta.url);
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());
-global.prefix = new RegExp('^[' + (opts['prefix'] || '*/i!#$%+£¢€¥^°=¶∆×÷π√✓©®:;?&.\\-.@').replace(/[|\\{}()[\]^$+*?.\-\^]/g, '\\$&') + ']');
+global.prefix = new RegExp('^[' + (opts['prefix'] || '*/i!#$%+£¢€¥^°=¶†×÷π√✓©®:;?&.\\-.@').replace(/[|\\{}()[\]^$+*?.\-\^]/g, '\\$&') + ']');
 global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile(`${opts._[0] ? opts._[0] + '_' : ''}database.json`));
 
 global.loadDatabase = async function loadDatabase() {
@@ -255,11 +297,10 @@ const connectionOptions = {
 
 global.conn = makeWASocket(connectionOptions);
 
-// CRÍTICO: Listener para guardar credenciales automáticamente
 conn.ev.on('creds.update', saveCreds);
 
 setInterval(async () => {
-  if (global.conn?.user) {
+  if (global.conn?.user && !global.isProcessing) {
     try {
       await global.conn.sendPresenceUpdate('available');
     } catch (e) {
@@ -343,10 +384,10 @@ if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
                     if (codigo) {
                         codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo;
                         
-                        console.log(chalk.green('╔══════════════════════════════╗'));
+                        console.log(chalk.green('┌─────────────────────────────────────────────┐'));
                         console.log(chalk.green.bold('📱 CÓDIGO DE EMPAREJAMIENTO:'));
                         console.log(chalk.yellow.bold('   ' + codigo));
-                        console.log(chalk.green('╚══════════════════════════════╝'));
+                        console.log(chalk.green('└─────────────────────────────────────────────┘'));
                         console.log(chalk.cyan('[ ℹ️ ] Pasos para vincular:'));
                         console.log(chalk.cyan('1. Abre WhatsApp en tu teléfono'));
                         console.log(chalk.cyan('2. Ve a Configuración > Dispositivos vinculados'));
@@ -354,7 +395,7 @@ if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
                         console.log(chalk.cyan('4. Selecciona "Vincular con número de teléfono"'));
                         console.log(chalk.cyan('5. Ingresa el código de arriba'));
                         console.log(chalk.red.bold(`6. IMPORTANTE: Tienes ${Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000)} segundos restantes`));
-                        console.log(chalk.green('╚══════════════════════════════╝'));
+                        console.log(chalk.green('└─────────────────────────────────────────────┘'));
                         
                         break;
                     }
@@ -410,11 +451,11 @@ if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
                         const nuevoCodigo = await global.conn.requestPairingCode(numeroTelefono);
                         const codigoFormateado = nuevoCodigo?.match(/.{1,4}/g)?.join("-") || nuevoCodigo;
                         
-                        console.log(chalk.green('╔══════════════════════════════╗'));
+                        console.log(chalk.green('┌─────────────────────────────────────────────┐'));
                         console.log(chalk.green.bold('📱 NUEVO CÓDIGO DE EMPAREJAMIENTO:'));
                         console.log(chalk.yellow.bold('   ' + codigoFormateado));
                         console.log(chalk.red.bold(`⏰ Tiempo restante: ${tiempoRestante} segundos`));
-                        console.log(chalk.green('╚══════════════════════════════╝'));
+                        console.log(chalk.green('└─────────────────────────────────────────────┘'));
                         
                         codigoRenovado = true;
                         
@@ -530,9 +571,6 @@ let codigoSolicitado = false;
 
 async function connectionUpdate(update) {
   const { connection, lastDisconnect, isNewLogin, qr } = update;
-  if (lastDisconnect?.error) {
-    console.log(chalk.red('⚠️ Razón de desconexión:'), lastDisconnect.error?.message || lastDisconnect.error);
-  }
 
   stopped = connection;
   if (isNewLogin) conn.isInit = true;
@@ -629,7 +667,6 @@ global.reloadHandler = async function(restatConn) {
     } catch { }
     conn.ev.removeAllListeners();
     global.conn = makeWASocket(connectionOptions, {chats: oldChats});
-    // Volver a agregar el listener de credenciales después de recrear la conexión
     conn.ev.on('creds.update', saveCreds);
     store?.bind(conn);
     isInit = true;
@@ -643,7 +680,6 @@ global.reloadHandler = async function(restatConn) {
     conn.ev.off('connection.update', conn.connectionUpdate);
     conn.ev.off('creds.update', conn.credsUpdate);
   }
-
 
   conn.welcome = '👋 ¡Bienvenido/a!\n@user';
   conn.bye = '👋 ¡Hasta luego!\n@user';
@@ -670,19 +706,27 @@ global.reloadHandler = async function(restatConn) {
     const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0]);
   }
 
+conn.ev.removeAllListeners('messages.upsert');
 conn.ev.on('messages.upsert', async (msg) => {
-  try {
-    await conn.handler(msg);
-  } catch (err) {
-    secureLogger.error('ERROR en handler de mensajes:', err);
+  const messages = msg.messages;
+  
+  if (!messages || messages.length === 0) return;
+  
+  const fromMe = messages[0].key.fromMe;
+  
+  if (!fromMe) {
+    messageQueue.push(msg);
+    processMessageQueue();
   }
 });
+
 conn.ev.on('group-participants.update', conn.participantsUpdate);
 conn.ev.on('groups.update', conn.groupsUpdate);
 conn.ev.on('message.delete', conn.onDelete);
 conn.ev.on('call', conn.onCall);
 conn.ev.on('connection.update', conn.connectionUpdate);
 conn.ev.on('creds.update', conn.credsUpdate);
+
   if (restatConn || !global.mentionListenerInitialized) {
     try {
       console.log(chalk.yellow('[ 🤖 ] Inicializando listener de IA...'));

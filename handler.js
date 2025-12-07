@@ -1,6 +1,8 @@
 import { updateLastCommand } from './logBans.js';
 
-async function getGroupMetadataOptimized(conn, groupId, retries = 2) {
+const groupMetadataRequestCache = new Map();
+
+async function getGroupMetadataOptimized(conn, groupId, retries = 1) {
   let lastError;
   
   for (let attempt = 0; attempt < retries; attempt++) {
@@ -10,7 +12,6 @@ async function getGroupMetadataOptimized(conn, groupId, retries = 2) {
       }
       
       const metadata = await conn.groupMetadata(groupId);
-      
       if (metadata && metadata.participants) {
         return metadata;
       }
@@ -19,7 +20,7 @@ async function getGroupMetadataOptimized(conn, groupId, retries = 2) {
       console.log(`[Metadata] Intento ${attempt + 1}/${retries} fallido: ${e.message}`);
       
       if (attempt < retries - 1) {
-        await delay(300 * (attempt + 1));
+        await delay(500 * (attempt + 1));
       }
     }
   }
@@ -65,39 +66,57 @@ async function getGroupDataOptimized(conn, groupId, forceRefresh = false) {
       fromCache: true
     };
   }
-  
-  try {
-    const metadata = await getGroupMetadataOptimized(conn, groupId);
-    const participants = processParticipants(metadata);
-    
-    setCachedGroupData(groupId, {
-      metadata,
-      participants,
-      isAdmin: false,
-      isRAdmin: false,
-      isBotAdmin: false
-    });
-    
-    return {
-      metadata,
-      participants,
-      isAdmin: false,
-      isRAdmin: false,
-      isBotAdmin: false,
-      fromCache: false
-    };
-  } catch (e) {
-    console.error(`[GroupData] Error obteniendo datos:`, e.message);
-    return {
-      metadata: { participants: [], subject: 'Grupo' },
-      participants: [],
-      isAdmin: false,
-      isRAdmin: false,
-      isBotAdmin: false,
-      error: true
-    };
+
+  if (groupMetadataRequestCache.has(groupId)) {
+    return groupMetadataRequestCache.get(groupId);
   }
+
+  const requestPromise = (async () => {
+    try {
+      const metadata = await getGroupMetadataOptimized(conn, groupId);
+      const participants = processParticipants(metadata);
+      
+      setCachedGroupData(groupId, {
+        metadata,
+        participants,
+        isAdmin: false,
+        isRAdmin: false,
+        isBotAdmin: false
+      });
+      
+      const result = {
+        metadata,
+        participants,
+        isAdmin: false,
+        isRAdmin: false,
+        isBotAdmin: false,
+        fromCache: false
+      };
+
+      groupMetadataRequestCache.delete(groupId);
+      return result;
+    } catch (e) {
+      console.error(`[GroupData] Error obteniendo datos:`, e.message);
+      groupMetadataRequestCache.delete(groupId);
+      return {
+        metadata: { participants: [], subject: 'Grupo' },
+        participants: [],
+        isAdmin: false,
+        isRAdmin: false,
+        isBotAdmin: false,
+        error: true
+      };
+    }
+  })();
+
+  groupMetadataRequestCache.set(groupId, requestPromise);
+  return requestPromise;
 }
+
+const CACHE_TTL = 3 * 60 * 1000;
+const DUPLICATE_TIMEOUT = 3000;
+const MAX_CACHE_SIZE = 200;
+
 import { generateWAMessageFromContent } from "@whiskeysockets/baileys";
 import { smsg } from './src/libraries/simple.js';
 import { format } from 'util';
@@ -124,9 +143,6 @@ const recentParticipantEvents = new Map();
 const translationsCache = new Map();
 const customCommandsCache = new Map();
 
-const CACHE_TTL = 2 * 60 * 1000;
-const DUPLICATE_TIMEOUT = 3000;
-const MAX_CACHE_SIZE = 150;
 
 function getCachedGroupData(chatId) {
   const cached = groupCache.get(chatId);
@@ -216,9 +232,9 @@ function cleanupCache(cache, ttl, name = 'cache') {
     }
   }
   
-  if (cleaned > 0) {
-    console.log(chalk.gray(`⚡ Limpieza de ${name}: ${cleaned} entradas eliminadas`));
-  }
+  if (cleaned > 5) { 
+  console.log(chalk.gray(`⚡ Limpieza de ${name}: ${cleaned} entradas eliminadas`));
+}
 }
 
 setInterval(() => {
@@ -319,6 +335,34 @@ function logError(e, plugin = 'general') {
 let mconn;
 
 const { proto } = (await import("@whiskeysockets/baileys")).default;
+
+const commandExecutions = new Map();
+const COMMAND_COOLDOWN = 800;
+
+function isRecentCommand(sender, chat, command, text) {
+  const key = `${sender}_${chat}_${command}_${text?.substring(0, 30) || ''}`;
+  const now = Date.now();
+  
+  if (commandExecutions.has(key)) {
+    const lastTime = commandExecutions.get(key);
+    if (now - lastTime < COMMAND_COOLDOWN) {
+      return true;
+    }
+  }
+  
+  if (commandExecutions.size >= 200) {
+    const firstKey = commandExecutions.keys().next().value;
+    commandExecutions.delete(firstKey);
+  }
+  
+  commandExecutions.set(key, now);
+  
+  setTimeout(() => {
+    commandExecutions.delete(key);
+  }, COMMAND_COOLDOWN + 200);
+  
+  return false;
+}
 
 const isNumber = (x) => typeof x === 'number' && !isNaN(x);
 const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(function () {
@@ -447,7 +491,7 @@ export async function handler(chatUpdate) {
           antidelete: false,
           modohorny: true,
           autosticker: false,
-          audios: true,
+          audios: false,
           antiLink: false,
           antiLink2: false,
           antiviewonce: false,
@@ -483,7 +527,7 @@ export async function handler(chatUpdate) {
           antiPrivate: false,
           modejadibot: true,
           antispam: false,
-          audios_bot: true,
+          audios_bot: false,
           modoia: false
         };
         
@@ -507,6 +551,34 @@ export async function handler(chatUpdate) {
     if (opts['gconly'] && !m.chat.endsWith('g.us')) return;
     if (opts['swonly'] && m.chat !== 'status@broadcast') return;
     if (typeof m.text !== 'string') m.text = '';
+    const str2Regex = (str) => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
+const globalPrefix = this.prefix ? this.prefix : global.prefix;
+
+if (m.text && m.text.length > 0) {
+  const prefixMatch = (globalPrefix instanceof RegExp ?
+    [[globalPrefix.exec(m.text), globalPrefix]] :
+    Array.isArray(globalPrefix) ?
+      globalPrefix.map((p) => {
+        const re = p instanceof RegExp ? p : new RegExp(str2Regex(p));
+        return [re.exec(m.text), re];
+      }) :
+      typeof globalPrefix === 'string' ?
+        [[new RegExp(str2Regex(globalPrefix)).exec(m.text), new RegExp(str2Regex(globalPrefix))]] :
+        [[[], new RegExp]]
+  ).find((p) => p[1]);
+
+  if (prefixMatch && prefixMatch[0] && prefixMatch[0][0]) {
+    const usedPrefix = prefixMatch[0][0];
+    const noPrefix = m.text.replace(usedPrefix, '');
+    const [command] = noPrefix.trim().split` `.filter((v) => v);
+    const text = noPrefix.trim().split` `.slice(1).join` `;
+    
+    if (command && isRecentCommand(sender, chat, command.toLowerCase(), text)) {
+      console.log(`⏸️  [ANTI-SPAM] ${command} bloqueado de ${sender.split('@')[0]}`);
+      return;
+    }
+  }
+}
 
     if (m.message?.buttonsResponseMessage?.selectedButtonId) {
       m.text = m.message.buttonsResponseMessage.selectedButtonId;
@@ -1026,7 +1098,7 @@ export async function participantsUpdate({ id, participants, action }) {
             const responseb = await m.conn.groupParticipantsUpdate(id, [user], 'remove');
             if (responseb[0].status === '404') return;
             const fkontak2 = { 'key': { 'participants': '0@s.whatsapp.net', 'remoteJid': 'status@broadcast', 'fromMe': false, 'id': 'Halo' }, 'message': { 'contactMessage': { 'vcard': `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${user.split('@')[0]}:${user.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` } }, 'participant': '0@s.whatsapp.net' };
-            await m?.conn?.sendMessage(id, { text: `*[â—‰] @${m.conn.decodeJid(user).split('@')[0]} á´‡É´ á´‡sá´›á´‡ É¢Ê€á´œá´˜á´ É´á´ sá´‡ á´˜á´‡Ê€á´Éªá´›á´‡É´ É´á´œá´á´‡Ê€á´s á´€Ê€á´€Ê™á´‡s Ê Ê€á´€Ê€á´s, á´˜á´Ê€ ÊŸá´ Ç«á´œá´‡ sá´‡ á´›á´‡ sá´€á´„á´€Ê€á´€ á´…á´‡ÊŸ É¢Ê€á´œá´˜á´*`, mentions: [m.conn.decodeJid(user)] }, { quoted: fkontak2 });
+            await m?.conn?.sendMessage(id, { text: `*[•] @${m.conn.decodeJid(user).split('@')[0]} en este grupo no se permiten numeros arabes ni raros, por lo que sera sacado del grupo.*`, mentions: [m.conn.decodeJid(user)] }, { quoted: fkontak2 });
             return;
           }
           
@@ -1101,7 +1173,7 @@ export async function callUpdate(callUpdate) {
     if (nk.isGroup == false) {
       if (nk.status == 'offer') {
         const callmsg = await mconn?.conn?.reply(nk.from, `Hola *@${nk.from.split('@')[0]}*, las ${nk.isVideo ? 'videollamadas' : 'llamadas'} no estÃ¡n permitidas, serÃ¡s bloqueado.\n-\nSi accidentalmente llamaste pÃ³ngase en contacto con mi creador para que te desbloquee!`, false, { mentions: [nk.from] });
-        const vcard = `BEGIN:VCARD\nVERSION:3.0\nN:;ehl villano ðŸ’Ž;;;\nFN:ehl villanoðŸ’Ž\nORG:ehl villano ðŸ’Ž\nTITLE:\nitem1.TEL;waid=5493483466763:+549 348 346 6763\nitem1.X-ABLabel:ehl villano ðŸ’Ž\nX-WA-BIZ-DESCRIPTION:[â—‰] á´„á´É´á´›á´€á´„á´›á´€ á´€ á´‡sá´›á´‡ É´á´œá´ á´˜á´€Ê€á´€ á´„á´sá´€s Éªá´á´˜á´Ê€á´›á´€É´á´›á´‡s.\nX-WA-BIZ-NAME:ehl villano ðŸ’Ž\nEND:VCARD`;
+        const vcard = `BEGIN:VCARD\nVERSION:3.0\nN:;ehl villano;;;\nFN:ehl villano\nORG:ehl villano\nTITLE:\nitem1.TEL;waid=5493483466763:+549 348 346 6763\nitem1.X-ABLabel:Telefono\nX-WA-BIZ-DESCRIPTION:[•] Contacta a este numero para cosas importantes.\nX-WA-BIZ-NAME:ehl villano\nEND:VCARD`;
         await mconn.conn.sendMessage(nk.from, { contacts: { displayName: 'ehl villano ðŸ’Ž', contacts: [{ vcard }] } }, { quoted: callmsg });
         await mconn.conn.updateBlockStatus(nk.from, 'block');
       }
@@ -1110,34 +1182,48 @@ export async function callUpdate(callUpdate) {
 }
 
 export async function deleteUpdate(message) {
-  const datas = global;
-  const id = message?.participant;
-  const idioma = datas.db.data.users[id]?.language || global.defaultLenguaje;
-  const _translate = await loadTranslation(idioma);
-  const tradutor = _translate.handler.deleteUpdate;
-
-  let d = new Date(new Date + 3600000);
-  let date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
-  let time = d.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
-  
   try {
     const { fromMe, id, participant } = message;
     if (fromMe) return;
+    
+    
+    if (!mconn || !mconn.conn || !global.db) {
+     // console.log('[deleteUpdate] ⚠️  mconn/conn no disponible, ignorando');
+      return;
+    }
+
+    const datas = global;
+    const idioma = datas.db.data.users[participant]?.language || global.defaultLenguaje || 'es';
+    const _translate = await loadTranslation(idioma);
+    const tradutor = _translate.handler?.deleteUpdate || {};
+
+    let d = new Date(new Date + 3600000);
+    let date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
+    let time = d.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
+    
     let msg = mconn.conn.serializeM(mconn.conn.loadMessage(id));
-    let chat = global.db.data.chats[msg?.chat] || {};
+    
+    if (!msg || !msg.chat) {
+     // console.log('[deleteUpdate] Mensaje no encontrado');
+      return;
+    }
+    
+    let chat = global.db.data.chats[msg.chat] || {};
     if (!chat?.antidelete) return;
-    if (!msg) return;
     if (!msg?.isGroup) return;
-    const antideleteMessage = `${tradutor.texto1[0]}
-${tradutor.texto1[1]} @${participant.split`@`[0]}
-${tradutor.texto1[2]} ${time}
-${tradutor.texto1[3]} ${date}\n
-${tradutor.texto1[4]}
-${tradutor.texto1[5]}`.trim();
+    
+    const antideleteMessage = `${tradutor.texto1?.[0] || '🔄 Mensaje eliminado'}
+${tradutor.texto1?.[1] || 'Por:'} @${participant.split('@')[0]}
+${tradutor.texto1?.[2] || 'Hora:'} ${time}
+${tradutor.texto1?.[3] || 'Fecha:'} ${date}\n
+${tradutor.texto1?.[4] || 'Contenido guardado'}
+${tradutor.texto1?.[5] || ''}`.trim();
+    
     await mconn.conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [mconn.conn.decodeJid(participant)] }, { quoted: msg });
-    mconn.conn.copyNForward(msg.chat, msg).catch(e => console.log(e, msg));
+    mconn.conn.copyNForward(msg.chat, msg).catch(e => console.log('[deleteUpdate Error]:', e.message));
+    
   } catch (e) {
-    console.error(e);
+    console.error('[deleteUpdate Critical Error]:', e.message);
   }
 }
 
