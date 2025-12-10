@@ -858,6 +858,28 @@ Si Luna Bot te ha sido útil, considera:
 - 📢 Compartirlo con otros
 - ☕ [Apoyar al desarrollador](https://wa.me/5493483466763)
 
+- ---
+
+## ❤️ ¿Quieres donar?
+
+Si te gustaría apoyar el desarrollo de Luna Bot, puedes hacerlo de corazón (aunque no es necesario 😊).  
+Tu apoyo ayuda a mantener el proyecto vivo, actualizado y lleno de nuevas funciones.
+
+<div align="center">
+
+### 💳 Opciones de Donación
+
+[![PayPal](https://img.shields.io/badge/PayPal-Donar-003087?style=for-the-badge&logo=paypal&logoColor=white)](mailto:gercoto17@gmail.com)  
+**PayPal (correo directo):** gercoto17@gmail.com  
+
+[![Mercado Pago](https://img.shields.io/badge/Mercado%20Pago-Donar-00A8E0?style=for-the-badge&logo=mercadopago&logoColor=white)](#)  
+**Mercado Pago (usuario):** german.elias.23  
+
+**¡Gracias por tu apoyo! 🙌**
+
+</div>
+
+
 ---
 
 <div align="center">
