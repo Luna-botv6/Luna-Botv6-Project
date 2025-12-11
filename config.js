@@ -4,7 +4,7 @@ import {fileURLToPath} from 'url';
 import fs from 'fs'; 
 import moment from 'moment-timezone';
 
-global.botnumber = "5492604631960"
+global.botnumber = ""
 global.confirmCode = ""
 global.authFile = `MysticSession`;
 
@@ -16,21 +16,15 @@ global.isBaileysFail = false
 global.defaultLenguaje = 'es';
 
 global.lidOwners = [
-  "5492604849203",
-  "5492604631960",
-  "5493772406612",
-  "5492604057569",
-  "5493794297363"  
+  "70425199562980"
 ];
 
 global.owner = [
-  ['5492604849203', '5492604631960', true],
-  ['5493772406612', '5492604057569', true],
-  ['5493794297363', true],
+  ['5492604849203', '么Benja么', true],
 ];
 
-global.suittag = ['5493772406612', '5492604849203'];
-global.prems = ['5493772406612', '5492604849203'];
+global.suittag = ['5492604849203'];
+global.prems = ['5492604849203'];
 
 // API (INTERFAZ DE PROGRAMACIÓN DE APLICACIONES)
 global.BASE_API_DELIRIUS = "https://delirius-apiofc.vercel.app";
@@ -74,7 +68,7 @@ global.mysticbot = '';
 global.waitt = '*_[ ⏳ ] Cargando..._*';
 global.waittt = '*_[ ⏳ ] Cargando..._*';
 global.waitttt = '*_[ ⏳ ] Cargando..._*';
-global.nomorown = '5493483466763';
+global.nomorown = '5492604849203';
 global.pdoc = ['application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/msword', 'application/pdf', 'text/rtf'];
 global.cmenut = '❖––––––『';
 global.cmenub = '┊✦ ';
