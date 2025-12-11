@@ -3,8 +3,8 @@ import fs from 'fs';
 import path from 'path';
 
 let lastCommitSHA = '';
-const owner = 'Luna-botv6';
-const repo = 'Luna-Botv6-Project';
+const owner = 'ColapsusHD';
+const repo = 'AsakuraMaoBotV2.2-MD';
 const branch = 'main';
 const RATE_LIMIT_DELAY = 2000; // 2 segundos entre solicitudes para respetar límites de API
 const MAX_FILES_TO_CHECK = 10; // Máximo archivos a comparar para evitar saturar WhatsApp
