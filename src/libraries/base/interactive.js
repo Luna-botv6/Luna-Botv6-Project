@@ -7,8 +7,6 @@ import {
 } from '@whiskeysockets/baileys';
 import {randomBytes} from 'crypto';
 
-const getGroupCache = () => global.groupCache || new Map();
-
 export const interactiveUtils = {
   async sendButtonMessages(conn, jid, messages, quoted, options) {
     messages.length > 1 ? await this.sendCarousel(conn, jid, messages, quoted, options) : await this.sendNCarousel(
@@ -16,50 +14,55 @@ export const interactiveUtils = {
   },
 
   async sendNCarousel(conn, jid, text = '', footer = '', buffer, buttons, copy, urls, list, quoted, options) {
-    if (!conn?.user?.jid) throw new Error('Conexión no disponible');
-    if (!jid || typeof jid !== 'string') return null;
-
     let img, video;
-    
     if (buffer) {
-      try {
-        if (/^https?:\/\//i.test(buffer)) {
+      if (/^https?:\/\//i.test(buffer)) {
+        try {
           const response = await fetch(buffer);
           const contentType = response.headers.get('content-type');
-          
           if (/^image\//i.test(contentType)) {
-            img = await prepareWAMessageMedia(
-              {image: {url: buffer}},
-              {upload: conn.waUploadToServer, ...options}
-            );
+            img = await prepareWAMessageMedia({
+              image: {url: buffer}
+            }, {
+              upload: conn.waUploadToServer,
+              ...options
+            });
           } else if (/^video\//i.test(contentType)) {
-            video = await prepareWAMessageMedia(
-              {video: {url: buffer}},
-              {upload: conn.waUploadToServer, ...options}
-            );
+            video = await prepareWAMessageMedia({
+              video: {url: buffer}
+            }, {
+              upload: conn.waUploadToServer,
+              ...options
+            });
+          } else {
+            console.error("Incompatible MIME type:", contentType);
           }
-        } else {
-          const type = await conn.getFile(buffer);
-          
-          if (/^image\//i.test(type.mime)) {
-            img = await prepareWAMessageMedia(
-              {image: /^https?:\/\//i.test(buffer) ? {url: buffer} : type.data},
-              {upload: conn.waUploadToServer, ...options}
-            );
-          } else if (/^video\//i.test(type.mime)) {
-            video = await prepareWAMessageMedia(
-              {video: /^https?:\/\//i.test(buffer) ? {url: buffer} : type.data},
-              {upload: conn.waUploadToServer, ...options}
-            );
-          }
+        } catch (error) {
+          console.error("Failed to get MIME type:", error);
         }
-      } catch (error) {
-        console.error('Error procesando multimedia:', error.message);
+      } else {
+        try {
+          const type = await conn.getFile(buffer);
+          if (/^image\//i.test(type.mime)) {
+            img = await prepareWAMessageMedia({
+              image: (/^https?:\/\//i.test(buffer)) ? {url: buffer} : (type && type?.data)
+            }, {
+              upload: conn.waUploadToServer,
+              ...options
+            });
+          } else if (/^video\//i.test(type.mime)) {
+            video = await prepareWAMessageMedia({
+              video: (/^https?:\/\//i.test(buffer)) ? {url: buffer} : (type && type?.data)
+            }, {
+              upload: conn.waUploadToServer,
+              ...options
+            });
+          }
+        } catch (error) {
+          console.error("Failed to get file type:", error);
+        }
       }
     }
-
-    
-
     const dynamicButtons = buttons.map(btn => ({
       name: 'quick_reply',
       buttonParamsJson: JSON.stringify({
@@ -67,17 +70,14 @@ export const interactiveUtils = {
         id: btn[1]
       }),
     }));
-
-    if (copy && (typeof copy === 'string' || typeof copy === 'number')) {
-      dynamicButtons.push({
+    dynamicButtons.push(
+      (copy && (typeof copy === 'string' || typeof copy === 'number')) ? {
         name: 'cta_copy',
         buttonParamsJson: JSON.stringify({
-          display_text: 'Copiar',
+          display_text: 'Copy',
           copy_code: copy
         })
-      });
-    }
-
+      } : null);
     urls?.forEach(url => {
       dynamicButtons.push({
         name: 'cta_url',
@@ -88,7 +88,6 @@ export const interactiveUtils = {
         })
       });
     });
-
     list?.forEach(lister => {
       dynamicButtons.push({
         name: 'single_select',
@@ -97,11 +96,10 @@ export const interactiveUtils = {
           sections: lister[1]
         })
       });
-    });
-
+    })
     const interactiveMessage = {
       body: {text: text || ''},
-      footer: {text: footer || global.wm || 'Bot'},
+      footer: {text: footer || global.wm},
       header: {
         hasMediaAttachment: img?.imageMessage || video?.videoMessage ? true : false,
         imageMessage: img?.imageMessage || null,
@@ -111,8 +109,25 @@ export const interactiveUtils = {
         buttons: dynamicButtons.filter(Boolean),
         messageParamsJson: ''
       },
+      ...Object.assign({
+        mentions: typeof text === 'string' ? conn.parseMention(text || '@0') : [],
+        contextInfo: {
+          mentionedJid: typeof text === 'string' ? conn.parseMention(text || '@0') : [],
+        }
+      }, {
+        ...(options || {}),
+        ...(conn.temareply?.contextInfo && {
+          contextInfo: {
+            ...(options?.contextInfo || {}),
+            ...conn.temareply?.contextInfo,
+            externalAdReply: {
+              ...(options?.contextInfo?.externalAdReply || {}),
+              ...conn.temareply?.contextInfo?.externalAdReply,
+            },
+          },
+        })
+      })
     };
-    
     const messageContent = proto.Message.fromObject({
       viewOnceMessage: {
         message: {

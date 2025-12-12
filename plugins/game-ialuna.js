@@ -1,1 +1,310 @@
-const _0x623c7=_0x4b9f;function _0x4b9f(_0x59b13e,_0x5b399b){_0x59b13e=_0x59b13e-0x121;const _0x41aa65=_0x41aa();let _0x4b9ff1=_0x41aa65[_0x59b13e];return _0x4b9ff1;}(function(_0x579934,_0x291a62){const _0x1fda2a=_0x4b9f,_0x411b62=_0x579934();while(!![]){try{const _0x37f3a3=-parseInt(_0x1fda2a(0x131))/0x1*(parseInt(_0x1fda2a(0x137))/0x2)+-parseInt(_0x1fda2a(0x168))/0x3+parseInt(_0x1fda2a(0x17c))/0x4*(parseInt(_0x1fda2a(0x15d))/0x5)+parseInt(_0x1fda2a(0x124))/0x6*(parseInt(_0x1fda2a(0x14c))/0x7)+-parseInt(_0x1fda2a(0x150))/0x8*(parseInt(_0x1fda2a(0x123))/0x9)+-parseInt(_0x1fda2a(0x13b))/0xa+parseInt(_0x1fda2a(0x17f))/0xb*(parseInt(_0x1fda2a(0x180))/0xc);if(_0x37f3a3===_0x291a62)break;else _0x411b62['push'](_0x411b62['shift']());}catch(_0x2c2b82){_0x411b62['push'](_0x411b62['shift']());}}}(_0x41aa,0x21c9d));import _0x5b8168 from'axios';import _0xdfbd3a from'fs';import _0x4316e0 from'./downloader-play.js';function _0x41aa(){const _0x26a46f=['4hbPfju','quién\x20te\x20creó','contextInfo','qué\x20eres','2294750UhYWLX','includes','cómo\x20estás','buenas','sendPresenceUpdate','buenas\x20tardes','log','quién\x20te\x20hizo','buenos\x20días','iaLunaActive','fromMe','has','key','Error\x20crítico:','messages.upsert','replace','toLowerCase','182RFBoFx','messages','\x0a\x0a[Respuesta\x20truncada]','Eres\x20Luna-Botv6-Project,\x20un\x20asistente\x20inteligente,\x20amigable\x20y\x20profesional\x20creado\x20por\x20German\x20Miño.\x20Si\x20te\x20preguntan\x20sobre\x20tu\x20creador,\x20desarrollador,\x20programador\x20o\x20quien\x20te\x20hizo,\x20responde\x20que\x20fuiste\x20creado\x20por\x20German\x20Miño.\x20Responde\x20de\x20manera\x20útil\x20y\x20concisa\x20cuando\x20te\x20mencionen.\x20También\x20puedes\x20ayudar\x20con\x20clima\x20y\x20fútbol\x20argentino.','144CopRXs','thanks','@lid','caption','extendedTextMessage','🌙\x20Soy\x20Luna-Botv6-Project,\x20un\x20asistente\x20inteligente\x20creado\x20por\x20German\x20Miño.\x20Puedo\x20ayudarte\x20con\x20muchas\x20cosas\x20como\x20generar\x20imágenes,\x20descargar\x20música,\x20mostrar\x20el\x20clima,\x20información\x20de\x20fútbol\x20y\x20mucho\x20más.\x20¿En\x20qué\x20te\x20puedo\x20ayudar?\x20✨','Respuesta\x20vacía\x20de\x20Gemini','delete','🌙\x20¡Estoy\x20muy\x20bien,\x20gracias\x20por\x20preguntar!\x20Lista\x20para\x20ayudarte\x20en\x20lo\x20que\x20necesites.\x20¿Qué\x20te\x20gustaría\x20hacer?\x20😊','⚠️\x20API\x20de\x20Gemini\x20fuera\x20de\x20línea\x20-\x20Activando\x20modo\x20fallback','🌙\x20*Luna-Botv6-Project*','🌙\x20¡Hola!\x20Soy\x20Luna-Botv6-Project,\x20tu\x20asistente\x20inteligente\x20creado\x20por\x20German\x20Miño.\x20¿En\x20qué\x20puedo\x20ayudarte\x20hoy?\x20✨','sorry','35HhTXcy','status@broadcast','settings','message','text','some','size','remoteJid','thank\x20you','videoMessage','trim','108780GMgXDp','hola','who\x20are\x20you','@g.us','set','[IA]\x20⚠️\x20\x20Bloqueado:\x20Chat\x20privado\x20detectado\x20-\x20IA\x20desactivada\x20en\x20DM','data','Eres\x20Luna-Botv6-Project,\x20un\x20asistente\x20inteligente,\x20amigable\x20y\x20profesional\x20creado\x20por\x20German\x20Miño.\x20Mantén\x20conversaciones\x20naturales\x20y\x20útiles.\x20Si\x20te\x20preguntan\x20sobre\x20tu\x20creador,\x20desarrollador,\x20programador\x20o\x20quien\x20te\x20hizo,\x20responde\x20que\x20fuiste\x20creado\x20por\x20German\x20Miño.\x20Siempre\x20recuerda\x20que\x20eres\x20Luna-Botv6-Project.\x20También\x20puedes\x20ayudar\x20con\x20información\x20del\x20clima\x20y\x20fútbol\x20argentino.','user','@s.whatsapp.net','canHandle','quien\x20eres','sendMessage','length','split','how\x20are\x20you','❌\x20Error\x20API\x20Gemini:','content','error','quién\x20eres','1648RsDuZz','\x0a\x0aUsuario:\x20','mentionedJid','99RpkBon','434856PzzhMc','substring','hello','9972rVZhPq','32154qNnRWl','handle','tu\x20creador','🌙\x20Hola,\x20soy\x20Luna-Botv6-Project.\x20Mi\x20sistema\x20de\x20IA\x20está\x20temporalmente\x20fuera\x20de\x20línea,\x20pero\x20aún\x20puedo\x20ayudarte\x20con:\x0a\x0a•\x20🎵\x20Descargar\x20música\x20(solo\x20dime\x20el\x20nombre)\x0a•\x20🖼️\x20Generar\x20imágenes\x0a•\x20🌤️\x20Información\x20del\x20clima\x0a•\x20⚽\x20Información\x20de\x20fútbol\x20argentino\x0a•\x20📋\x20Mostrar\x20el\x20menú\x20de\x20comandos\x0a•\x20🌐\x20Mis\x20redes\x20sociales\x0a•\x20🔒\x20Abrir\x20o\x20cerrar\x20el\x20grupo\x0a\x0a¿Qué\x20necesitas?','@77060907253864','candidates','endsWith','que\x20eres','response','como\x20estas','entries','conversation','post','22142Kxebke','Hola','buenas\x20noches','🌙\x20Fui\x20creada\x20por\x20German\x20Miño,\x20un\x20desarrollador\x20muy\x20talentoso.\x20Él\x20me\x20diseñó\x20para\x20ser\x20tu\x20asistente\x20inteligente\x20y\x20ayudarte\x20en\x20todo\x20lo\x20que\x20pueda.\x20¿Te\x20gustaría\x20saber\x20más\x20sobre\x20mis\x20funciones?\x20✨','startsWith','quien\x20te\x20hizo'];_0x41aa=function(){return _0x26a46f;};return _0x41aa();}import _0x3aa0dd from'../plugins/lunaia/support-plugin.js';import _0x5eabb3 from'./menu_completo_actualizado.js';import{isVoiceMessage,handleVoiceMessage}from'./voice-handler.js';import _0x2aac35 from'../plugins/lunaia/weather-plugin.js';import _0x51c9e1 from'../plugins/lunaia/football-plugin.js';import _0x51247a from'../plugins/lunaia/social-plugin.js';import _0x1f5b11 from'../plugins/lunaia/image-plugin.js';import _0x265aa9 from'../plugins/lunaia/music-plugin.js';import _0xf39338 from'../plugins/lunaia/menu-plugin.js';import _0x19e8ba from'../plugins/lunaia/tagall-plugin.js';import _0x23e57a from'../plugins/lunaia/kick2-plugin.js';import _0x3c22ca from'../plugins/lunaia/grupo-plugin.js';import _0x4c00fa from'../plugins/lunaia/config-plugin.js';import _0x574a55 from'../plugins/lunaia/download-plugin.js';import _0x37114c from'../plugins/lunaia/conversation-plugin.js';const API_KEY='sintiempo',GEMINI_API_URL=_0x623c7(0x15c),LUNA_KEYWORDS=[_0x623c7(0x128)];let geminiApiStatus=!![];export default function mentionListener(_0x50c25e){const _0x1df967=_0x623c7,_0x66a4a8=new Map();let _0x364126=null;function _0x1b518a(_0x4848d0){const _0x27d671=_0x4b9f;return _0x4848d0['endsWith'](_0x27d671(0x16b));}function _0x4b4c2f(_0x15694c){const _0x514a38=_0x4b9f;return _0x15694c['endsWith'](_0x514a38(0x171))||_0x15694c[_0x514a38(0x12a)](_0x514a38(0x152));}function _0x39a1ae(_0x57b729){const _0x42cba5=_0x4b9f,_0x37c236=['/','.','#','!','*','+','-','=','>','<','?','&','%','$','~','^','|','\x5c',':',';','@'],_0x2d16a8=_0x57b729[_0x42cba5(0x167)]();return _0x37c236[_0x42cba5(0x162)](_0x65303d=>_0x2d16a8[_0x42cba5(0x135)](_0x65303d));}function _0x2ee501(_0x8a31a){return LUNA_KEYWORDS['some'](_0x111689=>_0x8a31a['includes'](_0x111689));}function _0x2654c3(_0x1f4d2c,_0x5b329a){const _0x54bfcc=_0x4b9f,_0x3f2aba=global['db']?.[_0x54bfcc(0x16e)]?.[_0x54bfcc(0x15f)]?.[_0x50c25e?.[_0x54bfcc(0x170)]?.['jid']];if(_0x3f2aba?.[_0x54bfcc(0x144)]===![])return![];const _0x447055=_0x1f4d2c[_0x54bfcc(0x147)]['remoteJid'];if(_0x4b4c2f(_0x447055))return console[_0x54bfcc(0x141)](_0x54bfcc(0x16d)),![];if(_0x4b4c2f(_0x447055)&&isVoiceMessage(_0x1f4d2c))return!![];if(_0x1b518a(_0x447055)){if(!_0x364126)return![];if(isVoiceMessage(_0x1f4d2c)){const _0x56f48c=_0x1f4d2c[_0x54bfcc(0x160)]?.[_0x54bfcc(0x154)]?.[_0x54bfcc(0x139)]?.[_0x54bfcc(0x17e)]?.['some'](_0x5178a3=>_0x5178a3['includes'](_0x364126));return _0x56f48c;}const _0x57a9d6=_0x5b329a[_0x54bfcc(0x13c)]('@'+_0x364126)||_0x1f4d2c[_0x54bfcc(0x160)][_0x54bfcc(0x154)]?.[_0x54bfcc(0x139)]?.[_0x54bfcc(0x17e)]?.['some'](_0x33e44b=>_0x33e44b[_0x54bfcc(0x13c)](_0x364126)),_0xf3da6c=_0x2ee501(_0x5b329a);return _0x57a9d6||_0xf3da6c;}return![];}function _0x2b6413(_0x558f7a,_0x36b745=![]){const _0x563e1d=_0x4b9f,_0x4e675f=_0x558f7a[_0x563e1d(0x14b)](),_0x35372=[_0x563e1d(0x169),'hi',_0x563e1d(0x122),_0x563e1d(0x13e),_0x563e1d(0x143),_0x563e1d(0x140),_0x563e1d(0x133)],_0x52bd91=[_0x563e1d(0x12d),_0x563e1d(0x13d),'que\x20tal','qué\x20tal',_0x563e1d(0x177)],_0x54eda2=['gracias',_0x563e1d(0x165),_0x563e1d(0x151),'muchas\x20gracias'],_0x10e122=[_0x563e1d(0x173),_0x563e1d(0x17b),_0x563e1d(0x12b),_0x563e1d(0x13a),_0x563e1d(0x16a)],_0x1bb582=[_0x563e1d(0x136),_0x563e1d(0x142),'quien\x20te\x20creo',_0x563e1d(0x138),_0x563e1d(0x126)];if(_0x35372['some'](_0x5e957a=>_0x4e675f[_0x563e1d(0x13c)](_0x5e957a)))return _0x563e1d(0x15b);if(_0x52bd91['some'](_0x5c3d11=>_0x4e675f[_0x563e1d(0x13c)](_0x5c3d11)))return _0x563e1d(0x158);if(_0x54eda2[_0x563e1d(0x162)](_0x20f77e=>_0x4e675f[_0x563e1d(0x13c)](_0x20f77e)))return'🌙\x20¡De\x20nada!\x20Es\x20un\x20placer\x20ayudarte.\x20Si\x20necesitas\x20algo\x20más,\x20solo\x20dímelo.\x20✨';if(_0x10e122['some'](_0x2ea847=>_0x4e675f[_0x563e1d(0x13c)](_0x2ea847)))return _0x563e1d(0x155);if(_0x1bb582[_0x563e1d(0x162)](_0x2a2c09=>_0x4e675f[_0x563e1d(0x13c)](_0x2a2c09)))return _0x563e1d(0x134);return _0x36b745?_0x563e1d(0x127):'🌙\x20Hola,\x20soy\x20Luna-Botv6-Project.\x20Mi\x20IA\x20está\x20temporalmente\x20offline,\x20pero\x20puedo\x20ayudarte\x20con\x20música,\x20imágenes,\x20clima,\x20fútbol\x20y\x20abrir/cerrar\x20grupo.\x20¿Qué\x20necesitas?';}async function _0x3f6beb(_0x4142f8,_0x5bd998=![],_0x1e4f8e=![]){const _0x5ca895=_0x4b9f;try{const _0x3ee1eb=_0x5bd998?'Eres\x20Luna-Botv6-Project,\x20un\x20asistente\x20especializado\x20en\x20crear\x20prompts\x20detallados\x20para\x20generacion\x20de\x20imagenes.\x20Tu\x20creador\x20es\x20German\x20Miño.\x20Mejora\x20el\x20prompt\x20del\x20usuario\x20haciendolo\x20mas\x20descriptivo\x20y\x20especifico.':_0x1e4f8e?_0x5ca895(0x16f):_0x5ca895(0x14f),_0x488bea={'contents':[{'parts':[{'text':_0x3ee1eb+_0x5ca895(0x17d)+_0x4142f8}]}],'generationConfig':{'temperature':0.7,'topK':0x28,'topP':0.95,'maxOutputTokens':_0x5bd998?0xc8:0x3e8}},_0x3ed7aa=await _0x5b8168[_0x5ca895(0x130)](GEMINI_API_URL,_0x488bea,{'timeout':0x3a98,'headers':{'Content-Type':'application/json','x-goog-api-key':API_KEY}});return!geminiApiStatus&&(geminiApiStatus=!![],console[_0x5ca895(0x141)]('✅\x20API\x20de\x20Gemini\x20restaurada')),_0x3ed7aa[_0x5ca895(0x16e)]?.[_0x5ca895(0x129)]?.[0x0]?.[_0x5ca895(0x179)]?.['parts']?.[0x0]?.[_0x5ca895(0x161)]||'';}catch(_0x5bb965){console[_0x5ca895(0x17a)](_0x5ca895(0x178),_0x5bb965[_0x5ca895(0x12c)]?.[_0x5ca895(0x16e)]||_0x5bb965['message']);geminiApiStatus&&(geminiApiStatus=![],console['log'](_0x5ca895(0x159)));throw new Error('Error\x20API\x20Gemini:\x20'+_0x5bb965[_0x5ca895(0x160)]);}}function _0x4566aa(_0x159d09,_0x5f5694){const _0xd72363=_0x4b9f;if(_0x5f5694&&_0x364126){let _0x735f39=_0x159d09[_0xd72363(0x14a)](new RegExp('@'+_0x364126,'g'),'')[_0xd72363(0x167)]();for(const _0x514272 of LUNA_KEYWORDS){if(_0x735f39[_0xd72363(0x14b)]()[_0xd72363(0x135)](_0x514272['toLowerCase']())){_0x735f39=_0x735f39[_0xd72363(0x121)](_0x514272[_0xd72363(0x175)])[_0xd72363(0x167)]();break;}}return _0x735f39||_0xd72363(0x132);}return _0x159d09['trim']()||_0xd72363(0x132);}try{_0x50c25e['ev']['on'](_0x1df967(0x149),async _0x495ba9=>{const _0xf39205=_0x1df967;try{if(!_0x495ba9?.['messages']?.[0x0]?.[_0xf39205(0x160)])return;const _0x3b915c=_0x495ba9[_0xf39205(0x14d)][0x0],_0x67e330=_0x3b915c[_0xf39205(0x147)][_0xf39205(0x164)];if(_0x3b915c[_0xf39205(0x147)][_0xf39205(0x145)])return;if(_0x67e330===_0xf39205(0x15e))return;const _0x13ee07=_0x3b915c[_0xf39205(0x147)]['id'],_0x4970dc=Date['now']();if(_0x66a4a8[_0xf39205(0x146)](_0x13ee07)){const _0x4ea3c7=_0x66a4a8['get'](_0x13ee07);if(_0x4970dc-_0x4ea3c7<0x2710)return;}_0x66a4a8[_0xf39205(0x16c)](_0x13ee07,_0x4970dc);if(_0x66a4a8[_0xf39205(0x163)]>0x64){const _0x1139aa=0x5*0x3c*0x3e8;for(const [_0x28a536,_0x5de0f2]of _0x66a4a8[_0xf39205(0x12e)]()){_0x4970dc-_0x5de0f2>_0x1139aa&&_0x66a4a8[_0xf39205(0x157)](_0x28a536);}}!_0x364126&&_0x50c25e[_0xf39205(0x170)]?.['id']&&(_0x364126=_0x50c25e[_0xf39205(0x170)]['id']['split']('@')[0x0][_0xf39205(0x176)](':')[0x0]);if(!_0x364126)return;if(isVoiceMessage(_0x3b915c)&&_0x2654c3(_0x3b915c,'')){await handleVoiceMessage(_0x50c25e,_0x3b915c,_0x67e330,_0x66a4a8);return;}const _0x3d596a=_0x3b915c[_0xf39205(0x160)][_0xf39205(0x12f)]||_0x3b915c[_0xf39205(0x160)][_0xf39205(0x154)]?.[_0xf39205(0x161)]||_0x3b915c['message']['imageMessage']?.['caption']||_0x3b915c[_0xf39205(0x160)][_0xf39205(0x166)]?.[_0xf39205(0x153)]||'';if(!_0x3d596a)return;if(!_0x2654c3(_0x3b915c,_0x3d596a))return;const _0x2c6e9a=_0x1b518a(_0x67e330),_0x7d3836=_0x4b4c2f(_0x67e330),_0x207e5d=_0x4566aa(_0x3d596a,_0x2c6e9a),_0x1d87f2={'conn':_0x50c25e,'msg':_0x3b915c,'jid':_0x67e330,'isGroup':_0x2c6e9a,'isPrivate':_0x7d3836};if(_0x4c00fa[_0xf39205(0x172)](_0x207e5d))await _0x4c00fa[_0xf39205(0x125)](_0x207e5d,_0x1d87f2);else{if(_0x574a55['canHandle'](_0x207e5d))await _0x574a55[_0xf39205(0x125)](_0x207e5d,_0x1d87f2);else{if(_0x23e57a[_0xf39205(0x172)](_0x207e5d))await _0x23e57a['handle'](_0x207e5d,_0x1d87f2);else{if(_0x19e8ba[_0xf39205(0x172)](_0x207e5d))await _0x19e8ba[_0xf39205(0x125)](_0x207e5d,_0x1d87f2);else{if(_0x51247a[_0xf39205(0x172)](_0x207e5d))await _0x51247a[_0xf39205(0x125)](_0x207e5d,_0x1d87f2);else{if(_0x3aa0dd['canHandle'](_0x207e5d))await _0x3aa0dd[_0xf39205(0x125)](_0x207e5d,_0x1d87f2);else{if(_0x2aac35[_0xf39205(0x172)](_0x207e5d))await _0x2aac35[_0xf39205(0x125)](_0x207e5d,_0x1d87f2);else{if(_0x51c9e1[_0xf39205(0x172)](_0x207e5d))await _0x51c9e1['handle'](_0x207e5d,_0x1d87f2);else{if(_0x1f5b11[_0xf39205(0x172)](_0x207e5d))await _0x1f5b11[_0xf39205(0x125)](_0x207e5d,_0x1d87f2,_0x3f6beb);else{if(_0x265aa9[_0xf39205(0x172)](_0x207e5d))await _0x265aa9[_0xf39205(0x125)](_0x207e5d,_0x1d87f2,_0x4316e0);else{if(_0xf39338[_0xf39205(0x172)](_0x207e5d))await _0xf39338[_0xf39205(0x125)](_0x207e5d,_0x1d87f2,_0x5eabb3);else{if(_0x3c22ca[_0xf39205(0x172)](_0x207e5d))await _0x3c22ca[_0xf39205(0x125)](_0x207e5d,_0x1d87f2);else try{const _0x1d2a53=await _0x3f6beb(_0x207e5d,![],_0x7d3836);await _0x50c25e[_0xf39205(0x13f)]('composing',_0x67e330),await new Promise(_0x17e015=>setTimeout(_0x17e015,0x320));if(!_0x1d2a53?.[_0xf39205(0x167)]())throw new Error(_0xf39205(0x156));let _0x5df743=_0x1d2a53;_0x5df743[_0xf39205(0x175)]>0xfa0&&(_0x5df743=_0x5df743[_0xf39205(0x121)](0x0,0xf6e)+_0xf39205(0x14e));const _0xae0194=_0xf39205(0x15a);await _0x50c25e['sendMessage'](_0x67e330,{'text':_0xae0194+'\x0a\x0a'+_0x5df743},{'quoted':_0x3b915c});}catch(_0x5adacb){console[_0xf39205(0x17a)]('API\x20Gemini\x20no\x20disponible\x20-\x20Usando\x20sistema\x20conversacional:',_0x5adacb[_0xf39205(0x160)]);if(_0x37114c[_0xf39205(0x172)](_0x207e5d))await _0x37114c[_0xf39205(0x125)](_0x207e5d,_0x1d87f2);else{const _0x4b1aba=_0x2b6413(_0x207e5d,_0x7d3836);await _0x50c25e[_0xf39205(0x174)](_0x67e330,{'text':_0x4b1aba},{'quoted':_0x3b915c});}}}}}}}}}}}}}}catch(_0x595366){console[_0xf39205(0x17a)](_0xf39205(0x148),_0x595366['message']);}});}catch(_0x3e2edf){console['error']('Error\x20inicialización:',_0x3e2edf['message']);}}
+import axios from 'axios';
+import fs from 'fs';
+import playHandler from './downloader-play.js';
+import supportPlugin from '../plugins/lunaia/support-plugin.js';
+import menuHandler from './menu_completo_actualizado.js';
+import { isVoiceMessage, handleVoiceMessage } from './voice-handler.js';
+import weatherPlugin from '../plugins/lunaia/weather-plugin.js';
+import footballPlugin from '../plugins/lunaia/football-plugin.js';
+import socialPlugin from '../plugins/lunaia/social-plugin.js';
+import imagePlugin from '../plugins/lunaia/image-plugin.js';
+import musicPlugin from '../plugins/lunaia/music-plugin.js';
+import menuPlugin from '../plugins/lunaia/menu-plugin.js';
+import tagallPlugin from '../plugins/lunaia/tagall-plugin.js';
+import kick2Plugin from '../plugins/lunaia/kick2-plugin.js';
+import grupoPlugin from '../plugins/lunaia/grupo-plugin.js';
+import configPlugin from '../plugins/lunaia/config-plugin.js';
+import downloadPlugin from '../plugins/lunaia/download-plugin.js';
+import conversationPlugin from '../plugins/lunaia/conversation-plugin.js';
+
+const API_KEY = "AIzaSyBMvQIzfjcVXtGZgasCM04V5KfKkmHmOQ8";
+
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent";
+
+const LUNA_KEYWORDS = ['@77060907253864'];
+
+let geminiApiStatus = true;
+
+export default function mentionListener(conn) {
+  const processedMessages = new Map();
+  let botNumber = null;
+
+  function isGroupChat(jid) {
+    return jid.endsWith('@g.us');
+  }
+
+  function isPrivateChat(jid) {
+    return jid.endsWith('@s.whatsapp.net') || jid.endsWith('@lid');
+  }
+
+  function isCommand(text) {
+    const commandPrefixes = ['/', '.', '#', '!', '*', '+', '-', '=', '>', '<', '?', '&', '%', '$', '~', '^', '|', '\\', ':', ';', '@'];
+    const trimmedText = text.trim();
+    return commandPrefixes.some(prefix => trimmedText.startsWith(prefix));
+  }
+
+  function containsLunaKeyword(text) {
+    return LUNA_KEYWORDS.some(keyword => text.includes(keyword));
+  }
+
+ function shouldProcessMessage(msg, rawText) {
+    const settings = global.db?.data?.settings?.[conn?.user?.jid];
+    if (settings?.iaLunaActive === false) {
+      return false;
+    }
+    
+    const jid = msg.key.remoteJid;
+    
+    
+    if (isPrivateChat(jid)) {
+      console.log('[IA] ⚠️  Bloqueado: Chat privado detectado - IA desactivada en DM');
+      return false;
+    }
+    
+    if (isPrivateChat(jid) && isVoiceMessage(msg)) {
+      return true;
+    }
+    if (isGroupChat(jid)) {
+      if (!botNumber) return false;
+      
+      if (isVoiceMessage(msg)) {
+        const isMentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid?.some(jid => 
+          jid.includes(botNumber));
+        return isMentioned;
+      }
+      
+      const isMentioned = rawText.includes(`@${botNumber}`) || 
+                         msg.message.extendedTextMessage?.contextInfo?.mentionedJid?.some(jid => 
+                           jid.includes(botNumber));
+      
+      const hasLunaKeyword = containsLunaKeyword(rawText);
+      
+      return isMentioned || hasLunaKeyword;
+    }
+    
+    return false;
+  }
+
+  function getFallbackResponse(text, isPrivate = false) {
+    const lowerText = text.toLowerCase();
+    
+    const greetings = ['hola', 'hi', 'hello', 'buenas', 'buenos días', 'buenas tardes', 'buenas noches'];
+    const howAreYou = ['como estas', 'cómo estás', 'que tal', 'qué tal', 'how are you'];
+    const thanks = ['gracias', 'thank you', 'thanks', 'muchas gracias'];
+    const whoAreYou = ['quien eres', 'quién eres', 'que eres', 'qué eres', 'who are you'];
+    const creator = ['quien te hizo', 'quién te hizo', 'quien te creo', 'quién te creó', 'tu creador'];
+    
+    if (greetings.some(greeting => lowerText.includes(greeting))) {
+      return '🌙 ¡Hola! Soy Luna-Botv6-Project, tu asistente inteligente creado por German Miño. ¿En qué puedo ayudarte hoy? ✨';
+    }
+    
+    if (howAreYou.some(phrase => lowerText.includes(phrase))) {
+      return '🌙 ¡Estoy muy bien, gracias por preguntar! Lista para ayudarte en lo que necesites. ¿Qué te gustaría hacer? 😊';
+    }
+    
+    if (thanks.some(thank => lowerText.includes(thank))) {
+      return '🌙 ¡De nada! Es un placer ayudarte. Si necesitas algo más, solo dímelo. ✨';
+    }
+    
+    if (whoAreYou.some(phrase => lowerText.includes(phrase))) {
+      return '🌙 Soy Luna-Botv6-Project, un asistente inteligente creado por German Miño. Puedo ayudarte con muchas cosas como generar imágenes, descargar música, mostrar el clima, información de fútbol y mucho más. ¿En qué te puedo ayudar? ✨';
+    }
+    
+    if (creator.some(phrase => lowerText.includes(phrase))) {
+      return '🌙 Fui creada por German Miño, un desarrollador muy talentoso. Él me diseñó para ser tu asistente inteligente y ayudarte en todo lo que pueda. ¿Te gustaría saber más sobre mis funciones? ✨';
+    }
+    
+    return isPrivate  
+  ? '🌙 Hola, soy Luna-Botv6-Project. Mi sistema de IA está temporalmente fuera de línea, pero aún puedo ayudarte con:\n\n• 🎵 Descargar música (solo dime el nombre)\n• 🖼️ Generar imágenes\n• 🌤️ Información del clima\n• ⚽ Información de fútbol argentino\n• 📋 Mostrar el menú de comandos\n• 🌐 Mis redes sociales\n• 🔒 Abrir o cerrar el grupo\n\n¿Qué necesitas?'
+  : '🌙 Hola, soy Luna-Botv6-Project. Mi IA está temporalmente offline, pero puedo ayudarte con música, imágenes, clima, fútbol y abrir/cerrar grupo. ¿Qué necesitas?';
+  }
+
+  async function callGeminiAPI(text, isImagePrompt = false, isPrivate = false) {
+    try {
+      const systemPrompt = isImagePrompt 
+        ? "Eres Luna-Botv6-Project, un asistente especializado en crear prompts detallados para generacion de imagenes. Tu creador es German Miño. Mejora el prompt del usuario haciendolo mas descriptivo y especifico."
+        : isPrivate 
+          ? "Eres Luna-Botv6-Project, un asistente inteligente, amigable y profesional creado por German Miño. Mantén conversaciones naturales y útiles. Si te preguntan sobre tu creador, desarrollador, programador o quien te hizo, responde que fuiste creado por German Miño. Siempre recuerda que eres Luna-Botv6-Project. También puedes ayudar con información del clima y fútbol argentino."
+          : "Eres Luna-Botv6-Project, un asistente inteligente, amigable y profesional creado por German Miño. Si te preguntan sobre tu creador, desarrollador, programador o quien te hizo, responde que fuiste creado por German Miño. Responde de manera útil y concisa cuando te mencionen. También puedes ayudar con clima y fútbol argentino.";
+
+      const requestBody = {
+        contents: [{
+          parts: [{
+            text: `${systemPrompt}\n\nUsuario: ${text}`
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: isImagePrompt ? 200 : 1000
+        }
+      };
+
+      const response = await axios.post(GEMINI_API_URL, requestBody, {
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+    'x-goog-api-key': API_KEY
+  }
+});
+
+
+      if (!geminiApiStatus) {
+        geminiApiStatus = true;
+        console.log('✅ API de Gemini restaurada');
+      }
+
+      return response.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    } catch (error) {
+      console.error(`❌ Error API Gemini:`, error.response?.data || error.message);
+      
+      if (geminiApiStatus) {
+        geminiApiStatus = false;
+        console.log('⚠️ API de Gemini fuera de línea - Activando modo fallback');
+      }
+      
+      throw new Error(`Error API Gemini: ${error.message}`);
+    }
+  }
+
+  function extractCleanText(rawText, isGroup) {
+    if (isGroup && botNumber) {
+      let cleanText = rawText.replace(new RegExp(`@${botNumber}`, 'g'), '').trim();
+      
+      for (const keyword of LUNA_KEYWORDS) {
+        if (cleanText.toLowerCase().startsWith(keyword.toLowerCase())) {
+          cleanText = cleanText.substring(keyword.length).trim();
+          break;
+        }
+      }
+      
+      return cleanText || 'Hola';
+    }
+    
+    return rawText.trim() || 'Hola';
+  }
+
+  try {
+    conn.ev.on('messages.upsert', async (chatUpdate) => {
+      try {
+        if (!chatUpdate?.messages?.[0]?.message) return;
+
+        const msg = chatUpdate.messages[0];
+        const jid = msg.key.remoteJid;
+        
+        if (msg.key.fromMe) return;
+        if (jid === 'status@broadcast') return;
+        
+        const msgId = msg.key.id;
+        const now = Date.now();
+
+        if (processedMessages.has(msgId)) {
+          const lastTime = processedMessages.get(msgId);
+          if (now - lastTime < 10000) return;
+        }
+
+        processedMessages.set(msgId, now);
+
+        if (processedMessages.size > 100) {
+          const timeout = 5 * 60 * 1000;
+          for (const [id, timestamp] of processedMessages.entries()) {
+            if (now - timestamp > timeout) {
+              processedMessages.delete(id);
+            }
+          }
+        }
+        
+        if (!botNumber && conn.user?.id) {
+          botNumber = conn.user.id.split('@')[0].split(':')[0];
+        }
+        if (!botNumber) return;
+
+        if (isVoiceMessage(msg) && shouldProcessMessage(msg, '')) {
+          await handleVoiceMessage(conn, msg, jid, processedMessages);
+          return;
+        }
+
+        const rawText = msg.message.conversation || 
+                       msg.message.extendedTextMessage?.text || 
+                       msg.message.imageMessage?.caption || 
+                       msg.message.videoMessage?.caption || '';
+        
+        if (!rawText) return;
+          
+        if (!shouldProcessMessage(msg, rawText)) return;
+
+        const isGroup = isGroupChat(jid);
+        const isPrivate = isPrivateChat(jid);
+        const inputText = extractCleanText(rawText, isGroup);
+        
+        const context = { conn, msg, jid, isGroup, isPrivate };
+
+if (configPlugin.canHandle(inputText)) {
+  await configPlugin.handle(inputText, context);
+} else if (downloadPlugin.canHandle(inputText)) {
+  await downloadPlugin.handle(inputText, context);
+} else if (kick2Plugin.canHandle(inputText)) {
+  await kick2Plugin.handle(inputText, context);
+} else if (tagallPlugin.canHandle(inputText)) {
+  await tagallPlugin.handle(inputText, context);
+} else if (socialPlugin.canHandle(inputText)) {
+  await socialPlugin.handle(inputText, context);
+ } else if (supportPlugin.canHandle(inputText)) {
+  await supportPlugin.handle(inputText, context);
+} else if (weatherPlugin.canHandle(inputText)) {
+  await weatherPlugin.handle(inputText, context);
+} else if (footballPlugin.canHandle(inputText)) {
+  await footballPlugin.handle(inputText, context);
+} else if (imagePlugin.canHandle(inputText)) {
+  await imagePlugin.handle(inputText, context, callGeminiAPI);
+} else if (musicPlugin.canHandle(inputText)) {
+  await musicPlugin.handle(inputText, context, playHandler);
+} else if (menuPlugin.canHandle(inputText)) {
+  await menuPlugin.handle(inputText, context, menuHandler);
+} else if (grupoPlugin.canHandle(inputText)) {
+  await grupoPlugin.handle(inputText, context);
+} else {
+  try {
+    const response = await callGeminiAPI(inputText, false, isPrivate);
+    await conn.sendPresenceUpdate('composing', jid);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    if (!response?.trim()) {
+      throw new Error('Respuesta vacía de Gemini');
+    }
+
+    let finalResponse = response;
+    if (finalResponse.length > 4000) {
+      finalResponse = finalResponse.substring(0, 3950) + '\n\n[Respuesta truncada]';
+    }
+
+    const botName = '🌙 *Luna-Botv6-Project*';
+    
+    await conn.sendMessage(jid, 
+      { text: `${botName}\n\n${finalResponse}` }, 
+      { quoted: msg });
+
+  } catch (apiError) {
+    console.error('API Gemini no disponible - Usando sistema conversacional:', apiError.message);
+    
+    if (conversationPlugin.canHandle(inputText)) {
+      await conversationPlugin.handle(inputText, context);
+    } else {
+      const fallbackResponse = getFallbackResponse(inputText, isPrivate);
+      await conn.sendMessage(jid, 
+        { text: fallbackResponse }, 
+        { quoted: msg });
+    }
+  }
+}
+
+      } catch (error) {
+        console.error('Error crítico:', error.message);
+      }
+    });
+
+  } catch (error) {
+    console.error('Error inicialización:', error.message);
+  }
+}
