@@ -6,12 +6,12 @@ handler.command = /^(rolcasino|casinoinfo|infoc)$/i
 handler.group = true;
 export default handler
 
-global.rolcasino = `🎰|Comandos Casino/RPG/Economia:
+global.rolcasino = `🎰| *Comandos Casino/RPG/Economía:*
 
-_*[BOT SUMIKA]*_
+_*[BOT "#"]*_
 • #bal - Ver tu balance.
 
-• #einfo - ver info de tu economía.
+• #einfo - Ver info de tu economía.
 
 • #work - Gana Futacoins trabajando.
 
@@ -25,40 +25,36 @@ _*[BOT SUMIKA]*_
 
 • #flip - Apostar Futacoins en un cara o cruz.
 
-• #pay [usuario] [cantidad de Futacoins] - Darle Futacoins a un usuario.
+• #pay [usuario] [cantidad] - Dar Futacoins.
 
-• #rt [rojo/negro] [cantidad de Futacoins] - Apuesta Futacoins en una ruleta.
+• #rt [rojo/negro] [cantidad] - Apuesta Futacoins en la ruleta.
 
-• #rob [usuario] - Intentar robar Futacoins a un usuario.
+• #rob [usuario] - Intentar robar Futacoins.
 
-• #d - Reclama tu recompensa diaria.
+• #d - Recompensa diaria.
 
-_° Mas comandos de Economía/Casino/RPG usando #menu y mira la sección Economy!._
+_° Más comandos usando #menu → sección Economy._
 
 _*[BOT ASAKURA]*_
-• .adventure - Comenzar un adventura.
+• .adventure - Comenzar una aventura.
 
-• .cazar - Caza algún objeto.
+• .slut - Prostituirte a cambio de monedas o perder en el intento.
 
-• .cofre - Abre un cofre.
+• .cazar - Cazar algún animal.
+
+• .cofre - Abrir un cofre.
 
 • .balance - Ver tu balance.
 
-• .claim - Reclamar objeto.
+• .deposit [cantidad o all si quieres depositar todo] - Depositar tus monedas al banco.
 
-• .work - Trabajar para ganar coins en Asakura.
+• .work - Trabajar para ganar coins.
 
-• .minar - Mina para obtener diamantes.
+• .minar - Obtener monedas.
 
-• .minar2 - Mina para obtener experiencia.
+• .robar [cantidad] [usuario] - Robar a un usuario.
 
-• .buy - Comprar algo en la tienda.
+• .crime - Cometer un crimen.
 
-• .robar [cantidad de coins] [usuario] - Robar a un usuario.
-
-• .crime - Cometer un crímen.
-
-• .transfer [coins/diamantes/experiencia] [cantidad de coins/diamantes/experiencia] [usuario] - Transferir a un usuario.
-
-_° Mas comando de Economía usando .menu y mira la sección de Economía!._
+_° Más comandos usando .menu → sección Economía._
 `
