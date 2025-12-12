@@ -1052,13 +1052,6 @@ export async function participantsUpdate({ id, participants, action }) {
             continue;
           }
           
-          let pp = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60';
-
-          try {
-            pp = await m?.conn?.profilePictureUrl(user, 'image');
-          } catch (e) {}
-          
-          const apii = await mconn?.conn?.getFile(pp);
           let antiArab = [];
           try {
             const antiArabData = await fs.promises.readFile('./src/antiArab.json', 'utf8');
@@ -1085,13 +1078,6 @@ export async function participantsUpdate({ id, participants, action }) {
                 .replace('@group', groupMetadata?.subject || 'Grupo')
                 .replace('@desc', groupMetadata?.desc?.toString() || '*SIN DESCRIPCIÃ“N*');
             }
-          } else if (normalizedAction === 'remove') {
-            if (chat.sBye && chat.sBye.trim() !== '') {
-              text = chat.sBye.replace('@user', '@' + user.split('@')[0]);
-            } else {
-              text = (tradutor.texto2 || m?.conn?.bye || 'AdiÃ³s @user')
-                .replace('@user', '@' + user.split('@')[0]);
-            }
           }
 
           if (userPrefix && chat.antiArab && botTt.restrict && isBotAdminNn && normalizedAction === 'add') {
@@ -1102,7 +1088,7 @@ export async function participantsUpdate({ id, participants, action }) {
             return;
           }
           
-          await m?.conn?.sendFile(id, apii.data, 'pp.jpg', text, null, false, { mentions: [user] });
+          await m?.conn?.sendMessage(id, { text, mentions: [user] });
         }
       }
       break;
