@@ -70,10 +70,4 @@ export default handler
 async function upscaleWithStellar(url) {
   const endpoint = `https://api.siputzx.my.id/api/iloveimg/upscale?image=${url}&scale=2`
 
-  const { data } = await axios.get(endpoint, {
-    responseType: "arraybuffer",
-    headers: { accept: "image/*" }
-  })
-
-  return Buffer.from(data)
 }
