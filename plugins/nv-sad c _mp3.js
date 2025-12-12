@@ -14,6 +14,7 @@ const handler = async (m, { conn }) => {
   }, { quoted: m });
 };
 
-handler.customPrefix = /^(:c|)$/i;
-handler.command = new RegExp;
+
+handler.customPrefix = /^:c$/i;
+handler.command = /^:c$/i;
 export default handler;
