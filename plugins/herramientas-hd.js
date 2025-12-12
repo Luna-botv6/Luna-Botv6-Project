@@ -1,73 +1,51 @@
-import fs from "fs"
 import axios from "axios"
 import uploadImage from "../src/libraries/uploadImage.js"
 
 const handler = async (m, { conn, usedPrefix, command }) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.herramientas_hd
-
   try {
-    // Detectar si la imagen viene citada o es la del mensaje actual
     let q = m.quoted ? m.quoted : m
-    let mime =
-      (q.msg || q).mimetype ||
-      q.message?.imageMessage?.mimetype ||
-      q.mimetype ||
-      q.mediaType ||
-      ""
+    let mime = (q.msg || q).mimetype || ""
 
-    if (!mime) throw `${tradutor.texto1} ${usedPrefix + command}*`
-    if (!/image\/(jpe?g|png)/.test(mime))
-      throw `${tradutor.texto2[0]} (${mime}) ${tradutor.texto2[1]}`
-
-    // Mensaje de procesando
-    m.reply(tradutor.texto3)
-
-    // Reacción ⏳
-    await conn.sendMessage(m.chat, {
-      react: { text: "⏳", key: m.key }
-    })
-
-    // Descargar imagen
-    let img
-    if (q.download) {
-      img = await q.download()
-    } else if (q.message?.imageMessage) {
-      img = await conn.downloadMediaMessage(q)
+    // Validar imagen
+    if (!mime || !mime.includes("image")) {
+      return m.reply(`✖️ *Envía o responde a una imagen para mejorarla en HD*\n\nEjemplo:\n${usedPrefix + command} (responde una imagen)`)
     }
 
-    if (!img) throw tradutor.texto4
+    // Enviar mensaje de proceso
+    let status = await conn.sendMessage(m.chat, { text: "⏳ *Mejorando imagen a HD... espera un momento*" }, { quoted: m })
 
-    // Subir imagen a servidor temporal
-    let url = await uploadImage(img)
+    // Descargar imagen
+    let imgBuffer = await q.download()
+    if (!imgBuffer) return m.reply("✖️ No pude descargar la imagen.")
 
-    // Procesar HD con Stellar
-    let result = await upscaleWithStellar(url)
+    // Subir imagen
+    let url = await uploadImage(imgBuffer)
 
-    // Enviar imagen mejorada
-    await conn.sendMessage(m.chat, { image: result }, { quoted: m })
+    // Llamar a la API
+    let apiURL = `https://api.siputzx.my.id/api/iloveimg/upscale?image=${url}&scale=2`
+    let { data } = await axios.get(apiURL, { responseType: "arraybuffer" })
 
-    // Reacción ✔️
-    await conn.sendMessage(m.chat, {
-      react: { text: "✔️", key: m.key }
-    })
+    // Enviar imagen HD
+    await conn.sendMessage(
+      m.chat,
+      { image: data, caption: "✅ *Imagen mejorada a HD correctamente.*" },
+      { quoted: m }
+    )
+
+    // Cambiar mensaje a check ✔
+    await conn.sendMessage(
+      m.chat,
+      { edit: status.key, text: "✔️ *Proceso completado*" }
+    )
 
   } catch (e) {
-    throw tradutor.texto4
+    console.log(e)
+    m.reply("✖️ Ocurrió un error al procesar la imagen.")
   }
 }
 
-handler.help = ["remini", "hd", "enhance"]
+handler.help = ["hd", "upscale"]
 handler.tags = ["ai", "tools"]
-handler.command = ["remini", "hd", "enhance"]
+handler.command = /^(hd|upscale|mejorar|enhance)$/i
+
 export default handler
-
-// =====================================================
-//      FUNCIÓN DE ESCALADO COMPATIBLE CON LUNA V6
-// =====================================================
-async function upscaleWithStellar(url) {
-  const endpoint = `https://api.siputzx.my.id/api/iloveimg/upscale?image=${url}&scale=2`
-
-}
