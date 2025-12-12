@@ -25,4 +25,4 @@ global.contenido = `*_✅|CONTENIDO PERMITIDO_*
 ✦ Toddler (Relación con bebés)
 ✦ Lolis/Shotas
 
-⭐| Recuerda que la temática tiene que ser más de Futanari..`
+⭐| Recuerda que la temática tiene que ser más de Futanari.`
