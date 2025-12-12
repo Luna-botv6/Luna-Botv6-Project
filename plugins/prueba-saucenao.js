@@ -57,7 +57,12 @@ return
 }
 
 const results = response.data.results;
-const primerResultado = results[0]
+
+if (!results || !Array.isArray(results) || results.length === 0) {
+  return m.reply("No se encontraron resultados para esta imagen.");
+}
+
+const primerResultado = results[0];
     
 let resultadoEnBruto = ''
 
