@@ -8,6 +8,6 @@ export default handler
 
 global.comunidad = `*GRUPO DE LA COMUNIDAD*
 
-_⚠️| Este grupo será solamente de avisos o noticias relacionada con los grupos de la comunidad Futabu, solo podran hablar los del Equipo de Staff y los miembros solo podran ver, usaremos este grupo ya que facilitara el ver mas rapido el mensaje ya que en varios grupos se habla demasiado y se pierden los mensajes._
+_⚠️| Este grupo será solamente de avisos o noticias relacionadas con los grupos de la comunidad Futabu. Solo podrá hablar el Equipo de Staff; los miembros solo podrán ver. Usaremos este grupo ya que facilita ver más rápido los mensajes importantes, ya que en varios grupos se habla demasiado y se pierden._
 
-Link: https://chat.whatsapp.com/DQvGBkJUBfsClBdrQtk8xw`
+Link: https://chat.whatsapp.com/IKCpRmuyrNBL41wb9J2kNO`
