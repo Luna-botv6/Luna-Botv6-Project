@@ -17,9 +17,9 @@ import configPlugin from '../plugins/lunaia/config-plugin.js';
 import downloadPlugin from '../plugins/lunaia/download-plugin.js';
 import conversationPlugin from '../plugins/lunaia/conversation-plugin.js';
 
-const API_KEY = "AIzaSyBMvQIzfjcVXtGZgasCM04V5KfKkmHmOQ8";
+const API_KEY = "ia";
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent";
+const GEMINI_API_URL = "ia";
 
 const LUNA_KEYWORDS = ['@77060907253864'];
 
