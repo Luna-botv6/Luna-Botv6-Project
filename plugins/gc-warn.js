@@ -29,17 +29,17 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
   let messageSent = false
 
   if (!messageSent) {
-    await m.reply(`⚠️ El usuario @${target.split('@')[0]} ha sido advertido.\n📄 Motivo: ${reason}\n📊 Advertencias: ${warns}/3`, null, { mentions: [target] })
+    await m.reply(`⚠️ El usuario @${target.split('@')[0]} ha sido advertido.\n📄 Motivo: ${reason}\n📊 Advertencias: ${warns}/6`, null, { mentions: [target] })
     messageSent = true
   }
 
-  if (warns >= 3) {
+  if (warns >= 6) {
     await resetWarnings(target)
     if (!messageSent) {
-      await m.reply(`🚷 El usuario @${target.split('@')[0]} fue expulsado por acumular 3 advertencias.`, null, { mentions: [target] })
+      await m.reply(`🚷 El usuario @${target.split('@')[0]} fue expulsado por acumular 6 advertencias.`, null, { mentions: [target] })
       messageSent = true
     } else {
-      await m.reply(`🚷 El usuario @${target.split('@')[0]} fue expulsado por acumular 3 advertencias.`, null, { mentions: [target] })
+      await m.reply(`🚷 El usuario @${target.split('@')[0]} fue expulsado por acumular 6 advertencias.`, null, { mentions: [target] })
     }
     await conn.groupParticipantsUpdate(m.chat, [finalCheck.id], 'remove')
   }

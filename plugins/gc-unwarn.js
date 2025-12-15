@@ -27,7 +27,7 @@ const handler = async (m, { conn, isOwner, usedPrefix, command }) => {
   let messageSent = false
 
   if (!messageSent) {
-    await m.reply(`♻️ Se eliminó una advertencia a @${target.split('@')[0]}.\n📊 Advertencias actuales: ${warns}/3`, null, { mentions: [target] })
+    await m.reply(`♻️ Se eliminó una advertencia a @${target.split('@')[0]}.\n📊 Advertencias actuales: ${warns}/6`, null, { mentions: [target] })
     messageSent = true
   }
 }

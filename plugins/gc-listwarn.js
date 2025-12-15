@@ -20,7 +20,7 @@ const handler = async (m, { conn, isOwner }) => {
   if (filtered.length === 0) return m.reply('✅ No hay usuarios con advertencias en este grupo.')
 
   let msg = '📋 *Lista de advertencias actuales:*\n\n'
-  for (const u of filtered) msg += `• @${u.id.split('@')[0]} — ${u.warns}/3\n`
+  for (const u of filtered) msg += `• @${u.id.split('@')[0]} — ${u.warns}/6\n`
 
   await conn.sendMessage(m.chat, { text: msg, mentions: filtered.map(u => u.id) })
 }

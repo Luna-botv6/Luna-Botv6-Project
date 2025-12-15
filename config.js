@@ -16,21 +16,15 @@ global.isBaileysFail = false
 global.defaultLenguaje = 'es';
 
 global.lidOwners = [
-  "128213531545849",
-  "29717298188532",
-  "5219994092751",
-  "5217421108292"
+  "70425199562980"
 ];
 
 global.owner = [
-  ['5493483466763', '👑 Ehl villano 👑', true],
-  ['50259727165', 'MOD-DECO', true],
-  ['5217551392489', 'MOD-Jaz', true],
-  ['5217773461176', 'MOD-ALEXA', true],
+  ['5492604849203', '么Benja么', true],
 ];
 
-global.suittag = ['5493483466763'];
-global.prems = ['5493483466763'];
+global.suittag = ['5492604849203'];
+global.prems = ['5492604849203'];
 
 // API (INTERFAZ DE PROGRAMACIÓN DE APLICACIONES)
 global.BASE_API_DELIRIUS = "https://delirius-apiofc.vercel.app";
@@ -41,11 +35,11 @@ global.neoxr = {
 };
 
 global.packname = 'Sticker';
-global.author = 'Luna-Botv6';
-global.wm = 'Luna-Botv6';
-global.titulowm = 'Luna-Botv6';
-global.titulowm2 = `Luna-Botv6`
-global.igfg = 'Luna-Botv6';
+global.author = 'ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑';
+global.wm = 'ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑';
+global.titulowm = 'ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑';
+global.titulowm2 = `ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑`
+global.igfg = 'ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑';
 global.wait = '*_[ ⏳ ] Cargando..._*';
 
 global.imagen1 = fs.readFileSync('./src/assets/images/menu/languages/es/menu.png');
@@ -65,16 +59,16 @@ global.mes = d.toLocaleDateString('es', {month: 'long'});
 global.año = d.toLocaleDateString('es', {year: 'numeric'});
 global.tiempo = d.toLocaleString('en-US', {hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true});
 //* ****************************
-global.wm2 = `${dia} ${fecha}\nLuna-Botv5`;
-global.gt = 'Luna-Botv6';
-global.mysticbot = 'Luna-Botv6';
+global.wm2 = `${dia} ${fecha}\nᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑`;
+global.gt = 'ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑';
+global.mysticbot = 'ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑';
 global.channel = '';
 global.md = '';
 global.mysticbot = '';
 global.waitt = '*_[ ⏳ ] Cargando..._*';
 global.waittt = '*_[ ⏳ ] Cargando..._*';
 global.waitttt = '*_[ ⏳ ] Cargando..._*';
-global.nomorown = '5493483466763';
+global.nomorown = '5492604849203';
 global.pdoc = ['application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/msword', 'application/pdf', 'text/rtf'];
 global.cmenut = '❖––––––『';
 global.cmenub = '┊✦ ';
@@ -89,8 +83,8 @@ global.htki = '*⭑•̩̩͙⊱•••• ☪*';
 global.htka = '*☪ ••••̩̩͙⊰•⭑*';
 global.comienzo = '• • ◕◕════';
 global.fin = '════◕◕ • •';
-global.botdate = `*[ 📅 ] Fecha:*  ${moment.tz('America/Mexico_City').format('DD/MM/YY')}`;
-global.bottime = `*[ ⏳ ] Hora:* ${moment.tz('America/Mexico_City').format('HH:mm:ss')}`;
+global.botdate = `*[ 📅 ] Fecha:*  ${moment.tz('America/Argentina/Mendoza').format('DD/MM/YY')}`;
+global.bottime = `*[ ⏳ ] Hora:* ${moment.tz('America/Argentina/Mendoza').format('HH:mm:ss')}`;
 global.fgif = { key: { participant: '0@s.whatsapp.net' }, message: { 'videoMessage': { 'title': wm, 'h': `Hmm`, 'seconds': '999999999', 'gifPlayback': 'true', 'caption': bottime, 'jpegThumbnail': fs.readFileSync('./src/assets/images/menu/languages/es/menu.png')}}};
 global.multiplier = 99;
 global.flaaa = [

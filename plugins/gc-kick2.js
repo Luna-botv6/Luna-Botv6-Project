@@ -1,93 +1,152 @@
-import * as fs from 'fs';
-const cooldowns = new Map();
+const groupMetadataCache = new Map();
+const lidCache = new Map();
 
-const handler = async (m, {isOwner, conn, text, participants, args, command, usedPrefix}) => {
-  const chatId = m.chat;
-  const cooldownTime = 2 * 60 * 1000;
-  const now = Date.now();
-  if (usedPrefix == 'a' || usedPrefix == 'A') return;
+const handler = async (m, {conn, participants, command, usedPrefix, text}) => {
+  const datas = global
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const tradutor = _translate.plugins.grupos_eliminar
 
-  const groupMetadata = await conn.groupMetadata(m.chat);
-  const groupAdmins = groupMetadata.participants.filter(p => p.admin !== null).map(p => p.id);
-  let realUserJid = m.sender;
-  if (m.sender.includes('@lid')) {
-    const participantData = groupMetadata.participants.find(p => p.lid === m.sender);
-    if (participantData && participantData.id) realUserJid = participantData.id;
-  }
-  const isUserAdmin = groupAdmins.includes(realUserJid);
-  if (!isUserAdmin && !isOwner) return m.reply('⚠️ Este comando solo puede ser usado por administradores del grupo.');
-
-  if (cooldowns.has(chatId)) {
-    const expirationTime = cooldowns.get(chatId) + cooldownTime;
-    if (now < expirationTime) {
-      const timeLeft = Math.ceil((expirationTime - now) / 1000);
-      const minutes = Math.floor(timeLeft / 60);
-      const seconds = timeLeft % 60;
-      return m.reply(`⏰ Debes esperar ${minutes}m ${seconds}s antes de usar este comando nuevamente.`);
+  if (!global.db.data.settings[conn.user.jid].restrict) throw `${tradutor.texto1[0]} (*_restrict_*), ${tradutor.texto1[1]}`;
+  
+  const kicktext = `${tradutor.texto2} _${usedPrefix + command} @${global.suittag}_`;
+  
+  const getMentionedUserAndReason = async () => {
+    let mentionedJid = null;
+    let reason = null;
+    const mentionedJids = await m.mentionedJid;
+    
+    if (mentionedJids && mentionedJids.length > 0) {
+      mentionedJid = mentionedJids[0];
+      if (text) {
+        const textAfterMention = text.replace(/@\d+/g, '').trim();
+        if (textAfterMention) {
+          reason = textAfterMention;
+        }
+      }
+    } else if (m.quoted && m.quoted.sender) {
+      mentionedJid = m.quoted.sender;
+      if (text && text.trim()) {
+        reason = text.trim();
+      }
+    } else if (m.message?.extendedTextMessage?.contextInfo) {
+      const contextInfo = m.message.extendedTextMessage.contextInfo;
+      if (contextInfo.mentionedJid && contextInfo.mentionedJid.length > 0) {
+        mentionedJid = contextInfo.mentionedJid[0];
+        if (text) {
+          const textAfterMention = text.replace(/@\d+/g, '').trim();
+          if (textAfterMention) {
+            reason = textAfterMention;
+          }
+        }
+      } else if (contextInfo.participant) {
+        mentionedJid = contextInfo.participant;
+        if (text && text.trim()) {
+          reason = text.trim();
+        }
+      }
     }
-  }
-  cooldowns.set(chatId, now);
-
-  const datas = global;
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
-  const tradutor = _translate.plugins.gc_kick2;
-
-  if (!global.db.data.settings[conn.user.jid]?.restrict) {
-    throw `${tradutor.texto1[0]} (enable restrict / disable restrict) ${tradutor.texto1[1]}`;
-  }
-
-  const kicktext = `${tradutor.texto2}\n*${usedPrefix + command} @${global.suittag}*`;
-  if (!m.mentionedJid?.[0] && !m.quoted && !text) return m.reply(kicktext, m.chat, { mentions: conn.parseMention(kicktext) });
-
-  const resolveLidToId = (jidOrLid) => {
-    if (!jidOrLid) return null;
-    if (!jidOrLid.includes('@lid')) return jidOrLid;
-    const pdata = groupMetadata.participants.find(p => p.lid === jidOrLid);
-    return pdata ? pdata.id : null;
+    
+    if (!mentionedJid) return { user: null, reason: null };
+    const resolvedJid = await resolveLidToRealJid(mentionedJid, conn, m.chat);
+    return { user: resolvedJid, reason: reason };
   };
-
-  let userToRemove = null;
-
-  if (m.mentionedJid && m.mentionedJid[0]) {
-    const mention = m.mentionedJid[0];
-    const maybe = resolveLidToId(mention);
-    userToRemove = maybe || mention;
-  } else if (m.quoted && m.quoted.sender) {
-    const quotedSender = m.quoted.sender;
-    const maybe = resolveLidToId(quotedSender);
-    userToRemove = maybe || quotedSender;
-  } else if (text) {
-    const cleanText = text.replace(/[^0-9]/g, '');
-    if (cleanText.length < 11 || cleanText.length > 15) return m.reply('*[❗] El número ingresado es incorrecto, por favor ingrese el número correcto.*');
-    userToRemove = cleanText + '@s.whatsapp.net';
+  
+  const { user: mentionedUser, reason: kickReason } = await getMentionedUserAndReason();
+  if (!mentionedUser) return m.reply(kicktext, m.chat, {mentions: conn.parseMention(kicktext)});
+  if (conn.user.jid.includes(mentionedUser)) return m.reply(tradutor.texto4);
+  
+  if (kickReason) {
+    const userTag = mentionedUser.split('@')[0];
+    const reasonMessage = `╭─⬣「 🚫 *ADVERTENCIA* 🚫 」⬣\n│\n├❯ *Usuario:* @${userTag}\n├❯ *Acción:* Expulsión del grupo\n├❯ *Motivo:* ${kickReason}\n├❯ *Admin:* @${m.sender.split('@')[0]}\n│\n╰─⬣ *¡Hasta luego!* ⬣`;
+    
+    await conn.sendMessage(m.chat, {
+      text: reasonMessage,
+      mentions: [mentionedUser, m.sender]
+    });
+    
+    await new Promise(resolve => setTimeout(resolve, 2000));
   }
-
-  if (!userToRemove) return m.reply(kicktext, m.chat, { mentions: conn.parseMention(kicktext) });
-  if (userToRemove === conn.user.jid) return m.reply('*🤖 No puedo expulsarme a mí mismo.*');
-
-  const isUserInGroup = participants.find(p => p.id === userToRemove);
-  if (!isUserInGroup) {
-    const maybeFromLid = groupMetadata.participants.find(p => p.lid === userToRemove);
-    if (maybeFromLid) {
-      userToRemove = maybeFromLid.id;
-    }
-  }
-
-  const finalCheck = participants.find(p => p.id === userToRemove);
-  if (!finalCheck) return m.reply('*[❗] La persona mencionada no está en el grupo.*');
-
+  
   try {
-    await conn.groupParticipantsUpdate(m.chat, [userToRemove], 'remove');
-    await m.reply(`✅ @${userToRemove.split('@')[0]} ha sido expulsado del grupo.`, null, { mentions: [userToRemove] });
-  } catch (err) {
-    console.error(err);
-    await m.reply('*[❗] No se pudo expulsar al usuario. Puede que sea admin o que WhatsApp no lo permita.*');
+    const response = await conn.groupParticipantsUpdate(m.chat, [mentionedUser], 'remove');
+    const userTag = mentionedUser.split('@')[0];
+    const exitoso1 = `${tradutor.texto5[0]} @${userTag} ${tradutor.texto5[1]}`;
+    const error1 = `${tradutor.texto6[0]} @${userTag} ${tradutor.texto6[1]}`;
+    const error2 = `${tradutor.texto7[0]} @${userTag} ${tradutor.texto7[1]}`;
+    
+    if (response[0]?.status === '200') {
+      m.reply(exitoso1, m.chat, {mentions: conn.parseMention(exitoso1)});
+    } else if (response[0]?.status === '406') {
+      m.reply(error1, m.chat, {mentions: conn.parseMention(error1)});
+    } else if (response[0]?.status === '404') {
+      m.reply(error2, m.chat, {mentions: conn.parseMention(error2)});
+    } else {
+      conn.sendMessage(m.chat, {text: `${tradutor.texto8}`, mentions: [m.sender], contextInfo: {forwardingScore: 999, isForwarded: true}}, {quoted: m});
+    }
+  } catch (error) {
+    conn.sendMessage(m.chat, {text: `${tradutor.texto8}`, mentions: [m.sender], contextInfo: {forwardingScore: 999, isForwarded: true}}, {quoted: m});
   }
 };
 
-handler.help = ['kick2 <@user>', 'echar2 <@user>'];
+handler.help = ['kick'];
 handler.tags = ['group'];
-handler.command = /^(kick|echar|hechar|sacar)$/i;
-handler.group = true;
+handler.command = /^(kick|ban|poñonoin|expulsar|eliminar|echar|sacar)$/i;
+handler.admin = handler.group = handler.botAdmin = true;
+
 export default handler;
+
+async function resolveLidToRealJid(lid, conn, groupChatId, maxRetries = 3, retryDelay = 1000) {
+    const inputJid = lid?.toString();
+    
+    if (!inputJid || !inputJid.endsWith("@lid") || !groupChatId?.endsWith("@g.us")) {
+        return inputJid?.includes("@") ? inputJid : `${inputJid}@s.whatsapp.net`;
+    }
+    
+    if (lidCache.has(inputJid)) return lidCache.get(inputJid);
+    
+    const lidToFind = inputJid.split("@")[0];
+    let attempts = 0;
+    
+    while (attempts < maxRetries) {
+        try {
+            let metadata;
+            if (groupMetadataCache.has(groupChatId)) {
+                metadata = groupMetadataCache.get(groupChatId);
+            } else {
+                metadata = await conn?.groupMetadata(groupChatId);
+                if (metadata) {
+                    groupMetadataCache.set(groupChatId, metadata);
+                    setTimeout(() => groupMetadataCache.delete(groupChatId), 300000);
+                }
+            }
+            
+            if (!metadata?.participants) throw new Error("No se obtuvieron participantes");
+            
+            for (const participant of metadata.participants) {
+                try {
+                    if (!participant?.jid) continue;
+                    const contactDetails = await conn?.onWhatsApp(participant.jid);
+                    if (!contactDetails?.[0]?.lid) continue;
+                    const possibleLid = contactDetails[0].lid.split("@")[0];
+                    if (possibleLid === lidToFind) {
+                        lidCache.set(inputJid, participant.jid);
+                        return participant.jid;
+                    }
+                } catch (e) { continue }
+            }
+            
+            lidCache.set(inputJid, inputJid);
+            return inputJid;
+            
+        } catch (error) {
+            if (++attempts >= maxRetries) {
+                lidCache.set(inputJid, inputJid);
+                return inputJid;
+            }
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        }
+    }
+    
+    return inputJid;
+}
