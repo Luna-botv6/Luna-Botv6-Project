@@ -3,8 +3,8 @@ import yts from 'yt-search';
 import fetch from 'node-fetch';
 
 const configContent = fs.readFileSync('./config.js', 'utf-8');
-if (!configContent.includes('Luna-Botv6')) {
-  throw new Error('Handler bloqueado: Luna-Botv6 no encontrado.');
+if (!configContent.includes('ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑')) {
+  throw new Error('Handler bloqueado: ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑 no encontrado.');
 }
 
 const BASE_URL = 'https://noobs-api.top';
@@ -52,7 +52,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         return conn.reply(m.chat, 'URL inválida', m);
       }
 
-      await conn.reply(m.chat, '🌙🤖 *LunaBot*\n🎶 Descargando su música… por favor espere un momento.', m);
+      await conn.reply(m.chat, '🌙🤖 *ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑*\n🎶 Descargando su música… por favor espere un momento.', m);
 
       const format = command === 'ytmp3' ? 'audio' : 'mp4';
       const apiUrl = `${BASE_URL}/dipto/ytDl3?link=${encodeURIComponent(videoId)}&format=${format}`;
@@ -116,7 +116,7 @@ handler.all = async function(m) {
         return;
       }
 
-      await m.reply('🌙🤖 *LunaBot*\n🎶 Descargando su música… por favor espere un momento.');
+      await m.reply('🌙🤖 *ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑*\n🎶 Descargando su música… por favor espere un momento.');
 
       const format = cmd === 'ytmp3' ? 'audio' : 'mp4';
       const apiUrl = `${BASE_URL}/dipto/ytDl3?link=${encodeURIComponent(videoId)}&format=${format}`;
