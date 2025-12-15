@@ -1,49 +1,38 @@
 import fs from 'fs'
 import { getConfig } from '../lib/funcConfig.js'
+import { getSinPrefijo } from '../lib/sinPrefijo.js'
 
 const handler = (m) => m
 
 const recentAudios = new Map()
-const MAX_AUDIO_CACHE = 100 
+const MAX_AUDIO_CACHE = 100
 const AUDIO_CACHE_TTL = 15000
 
 function cleanupAudioCache() {
   const now = Date.now()
-  let cleaned = 0
-  
   for (const [key, timestamp] of recentAudios.entries()) {
     if (now - timestamp > AUDIO_CACHE_TTL) {
       recentAudios.delete(key)
-      cleaned++
     }
   }
-  
-
   if (recentAudios.size > MAX_AUDIO_CACHE) {
-    const entriesToDelete = Math.ceil((recentAudios.size - MAX_AUDIO_CACHE) * 1.5)
-    let deleted = 0
+    const extra = Math.ceil((recentAudios.size - MAX_AUDIO_CACHE) * 1.5)
+    let del = 0
     for (const [key] of recentAudios.entries()) {
-      if (deleted >= entriesToDelete) break
+      if (del >= extra) break
       recentAudios.delete(key)
-      deleted++
+      del++
     }
-    cleaned += deleted
   }
-  
-  return cleaned
 }
 
 function isDuplicateAudio(messageId, trigger) {
   if (!messageId || !trigger) return false
   const key = `${messageId}_${trigger}`
-  
- 
   if (recentAudios.size % 50 === 0 && recentAudios.size > 0) {
     cleanupAudioCache()
   }
-  
   if (recentAudios.has(key)) return true
-  
   recentAudios.set(key, Date.now())
   return false
 }
@@ -51,21 +40,25 @@ function isDuplicateAudio(messageId, trigger) {
 handler.all = async function (m, { conn }) {
   try {
     if (!m || m.fromMe || m.isBaileys || !m.id) return
-
-    
-    if (!conn?.user) {
-      console.log('[audios] ⚠️  Bot desconectado, ignorando')
-      return
-    }
+    if (!conn?.user) return
 
     const text = (m.text || '').trim()
     if (!text) return
+
+    
+    const sinPrefijoActivo = getSinPrefijo(m.chat)
+    if (sinPrefijoActivo) return
+
+    const first = text.trim().split(/\s+/)[0]
+    const prefijos = ['.', '#', '/', '!', '?', '$', '%', '&', '*']
+    if (prefijos.includes(first[0])) return
+    if (m.isCommand) return
+    if (m.commandSinPrefijo) return
 
     if (text.length < 2) return
 
     const chat = getConfig(m.chat) || {}
     const settings = (global.db.data.settings && global.db.data.settings[conn.user.jid]) || {}
-
     if (chat.isBanned) return
 
     const audiosEnabled = chat.audios !== undefined ? chat.audios : true
@@ -83,7 +76,7 @@ handler.all = async function (m, { conn }) {
       'bebito fiu fiu|bff': '01J672XP5MW9J5APRSDFYRTTE9.mp3',
       'buenas noches|boanoite': '01J672YMA8AS2Z8YFMHB68GBQX.mp3',
       'buenas tardes|boatarde': '01J672ZCDK26GJZQ5GDP60TZ37.mp3',
-      'buenos dias|buenos dÃ­as': '01J6730WRS4KJEZ281N2KJR1SV.mp3',
+      'buenos dias|buenos días': '01J6730WRS4KJEZ281N2KJR1SV.mp3',
       'sexo|hora de sexo': 'AUD-20250531-WA0049.mp3',
       'gemidos|gemime|gime': '01J673B4CRSS9Z2CX6E4R8MZPZ.mp3',
       'audio hentai|audiohentai': '01J673BTPKK29A7CVJW9WKXE9T.mp3',
@@ -94,12 +87,10 @@ handler.all = async function (m, { conn }) {
       'yamete|yamete kudasai': '01J674DR0CB7BD43HHBN1CBBC8.mp3',
       'vivan los novios': '01J674D3S12JTFDETTNF12V4W8.mp3',
       'gatito|gato|oiia|oia|uiia|Gato|Gatito|Oiia|Oia|Uiia': 'gatoxd.mp3',
-      'A': '01J672JMF3RCG7BPJW4X2P94N2.mp3',
       'pasa pack': '01J6735MY23DV6ES9XHBP06K9R.mp3'
     }
 
     const lower = text.toLowerCase()
-
     let matchedKeyword = null
     let filePath = null
 
@@ -113,41 +104,24 @@ handler.all = async function (m, { conn }) {
       }
     }
 
-    if (!matchedKeyword || !filePath) return
-
+    if (!matchedKeyword) return
+    if (!filePath) return
     if (!fs.existsSync(filePath)) return
     if (isDuplicateAudio(m.id, matchedKeyword)) return
 
-   try {
-      await conn.sendPresenceUpdate('recording', m.chat)
-      await new Promise(resolve => setTimeout(resolve, 1200))
+    await conn.sendPresenceUpdate('recording', m.chat)
+    await new Promise(res => setTimeout(res, 1200))
 
-      
-      if (!conn?.user) {
-        console.log('[audios] ⚠️  Conexión perdida durante envío')
-        return
-      }
+    if (!conn?.user) return
 
-      await conn.sendFile(m.chat, filePath, 'audio.mp3', '', m, true, {
-        mimetype: 'audio/mpeg'
-      })
-    } catch (sendError) {
-      if (sendError.message.includes('Bot no conectado')) {
-        console.log('[audios] ⚠️  Bot desconectado - reintentando...')
-        
-        setTimeout(() => {
-          if (conn?.user) {
-            conn.sendFile(m.chat, filePath, 'audio.mp3', '', m, true, { mimetype: 'audio/mpeg' })
-              .catch(e => console.error('[audios] Error:', e.message))
-          }
-        }, 3000)
-      } else {
-        console.error('[audios] Error enviando:', sendError.message)
-      }
-    }
+    await conn.sendFile(m.chat, filePath, 'audio.mp3', '', m, true, {
+      mimetype: 'audio/mpeg'
+    })
   } catch (e) {
     console.error('Error en audios-globales.js:', e)
   }
+
+  return false
 }
 
 export default handler

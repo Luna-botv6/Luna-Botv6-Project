@@ -1,81 +1,121 @@
-import {generateWAMessageFromContent} from "@whiskeysockets/baileys";
-import * as fs from 'fs';
+import fs from 'fs';
 
-const cooldowns = new Map();
+const configContent = fs.readFileSync('./config.js', 'utf-8');
+if (!configContent.includes('Luna-Botv6')) {
+  throw new Error('Handler bloqueado: Luna-Botv6 no encontrado.');
+}
 
-const handler = async (m, {conn, text, participants, isOwner, isAdmin}) => {
-  const cooldownTime = 2 * 60 * 1000;
-  const now = Date.now();
-  
-  const groupMetadata = await conn.groupMetadata(m.chat);
-  const groupAdmins = groupMetadata.participants.filter(p => p.admin !== null).map(p => p.id);
-  
-  let realUserJid = m.sender;
-  
-  if (m.sender.includes('@lid')) {
-    const participantData = groupMetadata.participants.find(p => p.lid === m.sender);
-    if (participantData && participantData.id) {
-      realUserJid = participantData.id;
+import yts from 'yt-search';
+import fetch from 'node-fetch';
+
+const activeCommands = new Map();
+const BASE_URL = 'https://api.stellarwa.xyz';
+const API_KEY = 'paymonbest';
+
+let handler = async (m, { conn, text, usedPrefix, command }) => {
+  if (activeCommands.has(`${m.sender}_${m.chat}_${command}_${text}`)) {
+    console.log('[DEBUG] Comando ya en ejecución, omitiendo...');
+    return;
+  }
+
+  activeCommands.set(`${m.sender}_${m.chat}_${command}_${text}`, Date.now());
+
+  try {
+    console.log('[DEBUG] Iniciando comando play con texto:', text);
+
+    if (!text) {
+      activeCommands.delete(`${m.sender}_${m.chat}_${command}_${text}`);
+      return await conn.reply(m.chat, 'Escribe el nombre de la canción o URL', m);
     }
-  }
-  
-  const isUserAdmin = groupAdmins.includes(realUserJid);
-  
-  const senderJid = realUserJid.replace('@s.whatsapp.net', '');
-  const isLidOwner = global.lidOwners && global.lidOwners.includes(senderJid);
-  const isGlobalOwner = global.owner && global.owner.some(([num]) => num === senderJid);
-  
-  if (!isUserAdmin && !isOwner && !isLidOwner && !isGlobalOwner) {
-    return m.reply('Este comando solo puede ser usado por administradores del grupo.');
-  }
-  
-  if (!isOwner && !isLidOwner && !isGlobalOwner) {
-    const userCooldownKey = `${m.chat}_${m.sender}`;
+
+    console.log('[DEBUG] Buscando en YouTube...');
+    const search = await yts(text);
+    console.log('[DEBUG] Resultados de búsqueda:', search.videos.length);
     
-    if (cooldowns.has(userCooldownKey)) {
-      const expirationTime = cooldowns.get(userCooldownKey) + cooldownTime;
-      if (now < expirationTime) {
-        const timeLeft = Math.ceil((expirationTime - now) / 1000);
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        return m.reply(`Debes esperar ${minutes}m ${seconds}s antes de usar este comando nuevamente.`);
+    const video = search.videos[0];
+    
+    if (!video) {
+      activeCommands.delete(`${m.sender}_${m.chat}_${command}_${text}`);
+      return await conn.reply(m.chat, `No se encontró: ${text}`, m);
+    }
+
+    console.log('[DEBUG] Video encontrado:', video.title);
+    console.log('[DEBUG] Video ID:', video.videoId);
+
+    await conn.reply(m.chat, '🌙🤖 *LunaBot*\n🎶 Descargando su música… por favor espere un momento.', m);
+
+    const videoUrl = `https://youtu.be/${video.videoId}`;
+    const apiUrl = `${BASE_URL}/dl/ytmp3?url=${encodeURIComponent(videoUrl)}&quality=128&key=${API_KEY}`;
+    
+    console.log('[DEBUG] URL de API:', apiUrl);
+    console.log('[DEBUG] Haciendo petición a la API...');
+    
+    const response = await fetch(apiUrl);
+    console.log('[DEBUG] Status de respuesta:', response.status);
+    
+    const data = await response.json();
+    console.log('[DEBUG] Respuesta completa de la API:', JSON.stringify(data, null, 2));
+
+    if (!data.result || !data.result.download) {
+      console.log('[DEBUG] ERROR: No se encontró result.download en la respuesta');
+      console.log('[DEBUG] Estructura de data:', Object.keys(data));
+      if (data.result) {
+        console.log('[DEBUG] Estructura de data.result:', Object.keys(data.result));
       }
+      activeCommands.delete(`${m.sender}_${m.chat}_${command}_${text}`);
+      return await conn.reply(m.chat, '❌ No se pudo obtener el enlace de descarga\n\nRevisa la consola para más detalles.', m);
     }
-    cooldowns.set(userCooldownKey, now);
-  }
-  
-  const users = participants.map((u) => conn.decodeJid(u.id));
-  const quoted = m.quoted ? m.quoted : m;
-  const mime = (quoted.msg || quoted).mimetype || '';
-  const isMedia = /image|video|sticker|audio/.test(mime);
-  
-  let finalText = text || 'Hola :D';
-  
-  if (m.quoted) {
-    const quotedText = quoted.text || '';
-    if (quotedText && !isMedia) {
-      finalText = text ? `${quotedText}\n\n${text}` : quotedText;
-    }
-  }
-  
-  if (isMedia && quoted.mtype === 'imageMessage') {
-    const mediax = await quoted.download?.();
-    await conn.sendMessage(m.chat, {image: mediax, mentions: users, caption: finalText}, {quoted: m});
-  } else if (isMedia && quoted.mtype === 'videoMessage') {
-    const mediax = await quoted.download?.();
-    await conn.sendMessage(m.chat, {video: mediax, mentions: users, mimetype: 'video/mp4', caption: finalText}, {quoted: m});
-  } else if (isMedia && quoted.mtype === 'audioMessage') {
-    const mediax = await quoted.download?.();
-    await conn.sendMessage(m.chat, {audio: mediax, mentions: users, mimetype: 'audio/mpeg', fileName: `Hidetag.mp3`}, {quoted: m});
-  } else if (isMedia && quoted.mtype === 'stickerMessage') {
-    const mediax = await quoted.download?.();
-    await conn.sendMessage(m.chat, {sticker: mediax, mentions: users}, {quoted: m});
-  } else {
-    await conn.sendMessage(m.chat, {text: finalText, mentions: users}, {quoted: m});
+
+    console.log('[DEBUG] URL de descarga obtenida:', data.result.download);
+    console.log('[DEBUG] Enviando audio...');
+
+    await conn.sendMessage(
+      m.chat,
+      {
+        audio: { url: data.result.download },
+        fileName: (data.result.title || video.title || 'audio') + '.mp3',
+        mimetype: 'audio/mpeg'
+      },
+      { quoted: m }
+    );
+
+    console.log('[DEBUG] Audio enviado exitosamente');
+
+    setTimeout(() => {
+      activeCommands.delete(`${m.sender}_${m.chat}_${command}_${text}`);
+    }, 5000);
+
+  } catch (error) {
+    console.error('[DEBUG] ERROR CAPTURADO:');
+    console.error('[DEBUG] Mensaje:', error.message);
+    console.error('[DEBUG] Stack:', error.stack);
+    activeCommands.delete(`${m.sender}_${m.chat}_${command}_${text}`);
+    await conn.reply(m.chat, `❌ Hubo un error con la descarga\n\nError: ${error.message}`, m);
   }
 };
 
-handler.command = /^(hidetag|notificar|notify)$/i;
-handler.group = true;
+handler.command = ['play'];
+
+handler.before = async function(m) {
+  if (!m.text) return;
+  
+  const prefixes = ['/', '.', '#', '!'];
+  const usedPrefix = prefixes.find(p => m.text.startsWith(p));
+  if (!usedPrefix) return;
+  
+  const [cmd, ...args] = m.text.slice(usedPrefix.length).trim().split(' ');
+  const text = args.join(' ');
+  
+  if (handler.command.includes(cmd.toLowerCase())) {
+    const key = `${m.sender}_${m.chat}_${cmd}_${text}`;
+    
+    if (activeCommands.has(key)) {
+      const lastTime = activeCommands.get(key);
+      if (Date.now() - lastTime < 5000) {
+        return true;
+      }
+    }
+  }
+};
 
 export default handler;

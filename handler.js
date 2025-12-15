@@ -137,6 +137,8 @@ import ws from 'ws';
 import { setConfig } from './lib/funcConfig.js'
 import { setOwnerFunction } from './lib/owner-funciones.js'
 import { addExp, getUserStats, setUserStats } from './lib/stats.js'
+import {getSinPrefijo, setSinPrefijo, loadSinPrefijoData,saveSinPrefijoData,getAllSinPrefijo
+} from './lib/sinPrefijo.js';
 const groupCache = new Map();
 const recentMessages = new Map();
 const recentParticipantEvents = new Map();
@@ -553,8 +555,23 @@ export async function handler(chatUpdate) {
     if (typeof m.text !== 'string') m.text = '';
     const str2Regex = (str) => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
 const globalPrefix = this.prefix ? this.prefix : global.prefix;
+let sinPrefijoActivo = false;
 
 if (m.text && m.text.length > 0) {
+   
+  
+  sinPrefijoActivo = getSinPrefijo(m.chat);
+
+  if (sinPrefijoActivo) {
+    const partes = m.text.trim().split(/\s+/);
+    const posibleCmd = partes[0].toLowerCase();
+    const resto = partes.slice(1).join(" ");
+
+    m.commandSinPrefijo = posibleCmd;
+    m.argsSinPrefijo = partes.slice(1);
+    m.textoSinPrefijo = resto;
+  }
+
   const prefixMatch = (globalPrefix instanceof RegExp ?
     [[globalPrefix.exec(m.text), globalPrefix]] :
     Array.isArray(globalPrefix) ?
@@ -754,6 +771,56 @@ if (m.text && m.text.length > 0) {
       }
       
       if (typeof plugin !== 'function') continue;
+        
+        
+if (sinPrefijoActivo && m.commandSinPrefijo) {
+  const cmdSin = m.commandSinPrefijo;
+
+  const matchSin = (
+    plugin.command instanceof RegExp
+      ? plugin.command.test(cmdSin)
+      : Array.isArray(plugin.command)
+        ? plugin.command.includes(cmdSin)
+        : typeof plugin.command === "string"
+          ? plugin.command === cmdSin
+          : false
+  );
+
+  if (matchSin) {
+    m.plugin = name;
+    const extra = {
+      match: null,
+      usedPrefix: '',
+      noPrefix: m.text,
+      args: m.argsSinPrefijo,
+      command: cmdSin,
+      text: m.textoSinPrefijo,
+      conn: this,
+      participants,
+      groupMetadata,
+      isROwner,
+      isOwner,
+      isAdmin,
+      isBotAdmin,
+      isPrems,
+      chatUpdate,
+      __dirname: name.startsWith("custom-")
+        ? customCommandsDir
+        : ___dirname,
+      __filename,
+    };
+
+    try {
+      await plugin.call(this, m, extra);
+    } catch (e) {
+      m.error = e;
+      logError(e, name);
+    }
+
+    break; 
+  }
+}
+
       
       if ((usedPrefix = (match[0] || '')[0])) {
         const noPrefix = m.text.replace(usedPrefix, '');
