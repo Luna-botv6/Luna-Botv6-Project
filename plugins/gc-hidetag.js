@@ -1,8 +1,8 @@
 import fs from 'fs';
 
 const configContent = fs.readFileSync('./config.js', 'utf-8');
-if (!configContent.includes('Luna-Botv6')) {
-  throw new Error('Handler bloqueado: Luna-Botv6 no encontrado.');
+if (!configContent.includes('ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑')) {
+  throw new Error('Handler bloqueado: ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑 no encontrado.');
 }
 
 import yts from 'yt-search';
