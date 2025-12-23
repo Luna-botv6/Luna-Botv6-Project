@@ -9,21 +9,7 @@ const MAX_MESSAGE_LENGTH = 400;
 
 const nameCache = new Map();
 const phoneCache = new Map();
-const lidToJidCache = global.lidToJidCache || (global.lidToJidCache = new Map());
 const lidToNameCache = global.lidToNameCache || (global.lidToNameCache = new Map());
-
-function getRealJidFromLid(conn, lidJid, groupMetadata) {
-  if (!lidJid?.includes('@lid')) return lidJid;
-  
-  if (!groupMetadata?.participants) return lidJid;
-  
-  const participant = groupMetadata.participants.find(p => {
-    return p.lid === lidJid || p.id === lidJid;
-  });
-  
-  if (participant?.id) return participant.id;
-  return lidJid;
-}
 
 function formatPhoneNumber(jid) {
   if (!jid || typeof jid !== 'string') return 'Número desconocido';
@@ -73,17 +59,9 @@ function formatPhoneNumber(jid) {
 
 async function getCachedName(conn, jid) {
   try {
-    if (jid.includes('@g.us')) {
-      const name = await conn.getName(jid);
-      if (name && name.trim()) {
-        nameCache.set(jid, name);
-        return name;
-      }
-    } else {
-      if (nameCache.has(jid)) return nameCache.get(jid);
-    }
+    if (nameCache.has(jid)) return nameCache.get(jid);
     
-    const name = await conn.getName(jid);
+    const name = await conn.getName(jid).catch(() => null);
     const finalName = name && name.trim() ? name : (
       jid.includes('@g.us') ? 'Grupo sin nombre' : 'Usuario sin nombre'
     );
@@ -93,59 +71,6 @@ async function getCachedName(conn, jid) {
     const fallbackName = jid.includes('@g.us') ? 'Grupo sin nombre' : 'Usuario sin nombre';
     nameCache.set(jid, fallbackName);
     return fallbackName;
-  }
-}
-
-async function resolveLidToJid(conn, lidJid, chatJid, pushName, messageObj) {
-  try {
-    if (!lidJid?.includes('@lid')) return lidJid;
-    
-    if (lidToJidCache.has(lidJid)) {
-      return lidToJidCache.get(lidJid);
-    }
-
-    if (pushName && pushName.trim()) {
-      lidToNameCache.set(lidJid, pushName.trim());
-    }
-
-    if (chatJid && chatJid.includes('@g.us')) {
-      try {
-        const groupData = global.getCachedGroupData?.(chatJid);
-        const groupMetadata = groupData?.metadata || await conn.groupMetadata(chatJid).catch(() => null);
-        
-        if (groupMetadata?.participants) {
-          const realJid = getRealJidFromLid(conn, lidJid, groupMetadata);
-          if (realJid !== lidJid) {
-            lidToJidCache.set(lidJid, realJid);
-            return realJid;
-          }
-        }
-      } catch (groupError) {
-      }
-    }
-
-    const botJid = conn.user?.jid;
-    if (messageObj?.key?.fromMe && botJid) {
-      lidToJidCache.set(lidJid, botJid);
-      return botJid;
-    }
-
-    if (botJid && pushName) {
-      const cleanBotName = (conn.user?.name || '').toLowerCase().trim();
-      const cleanPushName = pushName.toLowerCase().trim();
-      
-      if (cleanBotName && cleanPushName && 
-          (cleanBotName.includes(cleanPushName) || cleanPushName.includes(cleanBotName))) {
-        lidToJidCache.set(lidJid, botJid);
-        return botJid;
-      }
-    }
-
-    lidToJidCache.set(lidJid, lidJid);
-    return lidJid;
-
-  } catch (error) {
-    return lidJid;
   }
 }
 
@@ -175,10 +100,6 @@ setInterval(() => {
     const keys = Array.from(phoneCache.keys()).slice(0, 250);
     keys.forEach(k => phoneCache.delete(k));
   }
-  if (lidToJidCache.size > 200) {
-    const keys = Array.from(lidToJidCache.keys()).slice(0, 100);
-    keys.forEach(k => lidToJidCache.delete(k));
-  }
   if (lidToNameCache.size > 200) {
     const keys = Array.from(lidToNameCache.keys()).slice(0, 100);
     keys.forEach(k => lidToNameCache.delete(k));
@@ -188,24 +109,6 @@ setInterval(() => {
 async function printMessage(m, conn = { user: {} }) {
   let senderJid = m.sender || m.key?.participant || m.participant || m.from || '';
   const chatJid = m.chat || m.key?.remoteJid || '';
-  
-  if (senderJid && senderJid.includes('@lid') && chatJid.includes('@g.us')) {
-    try {
-      const groupData = global.getCachedGroupData?.(chatJid);
-      const groupMetadata = groupData?.metadata || await conn.groupMetadata(chatJid).catch(() => null);
-      
-      if (groupMetadata?.participants) {
-        const realJid = getRealJidFromLid(conn, senderJid, groupMetadata);
-        if (realJid && realJid !== senderJid) {
-          senderJid = realJid;
-          if (m.pushName) {
-            lidToNameCache.set(senderJid, m.pushName);
-          }
-        }
-      }
-    } catch (e) {
-    }
-  }
   
   const [senderName, chatName] = await Promise.all([
     senderJid ? getCachedName(conn, senderJid) : Promise.resolve('Usuario desconocido'),
@@ -255,21 +158,21 @@ async function printMessage(m, conn = { user: {} }) {
 
   console.log(chalk.bold.cyanBright('╭⋙════ ⋆★⋆ ════ ⋘•>🌙 <•⋙════ ⋆★⋆ ════ ⋙╮'));
   console.log('');
-  console.log(chalk.bold.cyanBright('⎨') + chalk.bold.magentaBright('            ✧°˚ Luna-BotV6 ˚°✧         '));
+  console.log(chalk.bold.cyanBright('⎨') + chalk.bold.magentaBright('            ✧°ˆ Luna-BotV6 ˆ°✧         '));
   console.log('');
-  console.log(chalk.cyanBright('⎨') + ` ${chalk.redBright('→🤖 Luna-Bot:')} ${mePhone} ~ ${conn.user.name}${conn.user.jid !== global.conn?.user?.jid ? chalk.gray(' (Sub Bot)') : ''}`);
+  console.log(chalk.cyanBright('⎨') + ` ${chalk.redBright('↑🤖 Luna-Bot:')} ${mePhone} ~ ${conn.user.name}${conn.user.jid !== global.conn?.user?.jid ? chalk.gray(' (Sub Bot)') : ''}`);
   console.log('');
-  console.log(chalk.cyanBright('⎨') + ` ${chalk.yellow('→⏰ Hora:')} ${chalk.yellow(time)}`);
+  console.log(chalk.cyanBright('⎨') + ` ${chalk.yellow('↑° Hora:')} ${chalk.yellow(time)}`);
   console.log('');
-  console.log(chalk.cyanBright('⎨') + ` ${chalk.green('→📑 Tipo:')} ${chalk.green(stubType)}`);
+  console.log(chalk.cyanBright('⎨') + ` ${chalk.green('↑📋 Tipo:')} ${chalk.green(stubType)}`);
   console.log('');
-  console.log(chalk.cyanBright('⎨') + ` ${chalk.magenta('→📊 Tamaño:')} ${filesize} [${formatFileSize(filesize)}]`);
+  console.log(chalk.cyanBright('⎨') + ` ${chalk.magenta('↑📊 Tamaño:')} ${filesize} [${formatFileSize(filesize)}]`);
   console.log('');
-  console.log(chalk.cyanBright('⎨') + ` ${chalk.green('→📤 De:')} ${chalk.green(sender)}${lidInfo}`);
+  console.log(chalk.cyanBright('⎨') + ` ${chalk.green('↑📤 De:')} ${chalk.green(sender)}${lidInfo}`);
   console.log('');
-  console.log(chalk.cyanBright('⎨') + ` ${chalk.yellow('→📥 En:')} ${chalk.yellow(chatName)} (${chatJid})`);
+  console.log(chalk.cyanBright('⎨') + ` ${chalk.yellow('↑📥 En:')} ${chalk.yellow(chatName)} (${chatJid})`);
   console.log('');
-  console.log(chalk.cyanBright('⎨') + ` ${chalk.cyan('→💬 Tipo Msg:')} ${chalk.cyan(msgType)}`);
+  console.log(chalk.cyanBright('⎨') + ` ${chalk.cyan('↑💬 Tipo Msg:')} ${chalk.cyan(msgType)}`);
   console.log(chalk.bold.cyanBright('╰⋙════ ⋆★⋆ ════ ⋘•>🌙 <•⋙════ ⋆★⋆ ════ ⋙╯'));
 
   if (typeof m.text === 'string' && m.text) {
@@ -305,10 +208,11 @@ async function printMessage(m, conn = { user: {} }) {
         return { jid: user, name };
       });
 
-      const mentions = await Promise.all(mentionPromises);
-      mentions.forEach(({ jid, name }) => {
-        log = log.replace('@' + jid.split('@')[0], chalk.blueBright('@' + name));
-      });
+      Promise.all(mentionPromises).then(mentions => {
+        mentions.forEach(({ jid, name }) => {
+          log = log.replace('@' + jid.split('@')[0], chalk.blueBright('@' + name));
+        });
+      }).catch(() => {});
     }
 
     console.log(m.error != null ? chalk.red(log) : m.isCommand ? chalk.yellow(log) : log);
@@ -322,8 +226,9 @@ async function printMessage(m, conn = { user: {} }) {
       return chalk.gray(phone + (name && name !== 'Usuario sin nombre' ? ' ~' + name : ''));
     });
 
-    const names = await Promise.all(namePromises);
-    console.log(names.join(', '));
+    Promise.all(namePromises).then(names => {
+      console.log(names.join(', '));
+    }).catch(() => {});
   }
 
   if (/document/i.test(m.mtype)) {
