@@ -1,13 +1,12 @@
 import {generateWAMessageFromContent} from "@whiskeysockets/baileys";
 import * as fs from 'fs';
-
 const cooldowns = new Map();
-
-const handler = async (m, {conn, text, participants, isOwner, isAdmin}) => {
+const handler = async (m, {conn, text, isOwner, isAdmin}) => {
   const cooldownTime = 2 * 60 * 1000;
   const now = Date.now();
   
   const groupMetadata = await conn.groupMetadata(m.chat);
+  
   const groupAdmins = groupMetadata.participants.filter(p => p.admin !== null).map(p => p.id);
   
   let realUserJid = m.sender;
@@ -44,38 +43,69 @@ const handler = async (m, {conn, text, participants, isOwner, isAdmin}) => {
     cooldowns.set(userCooldownKey, now);
   }
   
-  const users = participants.map((u) => conn.decodeJid(u.id));
+  const users = groupMetadata.participants.map((u) => u.id);
+  
   const quoted = m.quoted ? m.quoted : m;
   const mime = (quoted.msg || quoted).mimetype || '';
   const isMedia = /image|video|sticker|audio/.test(mime);
   
   let finalText = text || 'Hola :D';
+  let finalUsers = [...users];
   
   if (m.quoted) {
-    const quotedText = quoted.text || '';
-    if (quotedText && !isMedia) {
+    let quotedText = quoted.text || '';
+    
+    if (quotedText) {
+      const mentionMatches = quotedText.match(/@\d+/g) || [];
+      
+      for (const match of mentionMatches) {
+        const userId = match.replace('@', '');
+        
+        const participant = groupMetadata.participants.find(p => {
+          const lidMatch = p.lid && p.lid.startsWith(userId);
+          const idMatch = p.id && p.id.includes(userId);
+          return lidMatch || idMatch;
+        });
+        
+        if (participant) {
+          const realNumber = participant.id.split('@')[0];
+          const jid = participant.id;
+          
+          quotedText = quotedText.replace(match, `@${realNumber}`);
+          finalUsers.push(jid);
+        } else {
+          const validJid = userId + '@s.whatsapp.net';
+          finalUsers.push(validJid);
+        }
+      }
+      
       finalText = text ? `${quotedText}\n\n${text}` : quotedText;
     }
   }
   
-  if (isMedia && quoted.mtype === 'imageMessage') {
-    const mediax = await quoted.download?.();
-    await conn.sendMessage(m.chat, {image: mediax, mentions: users, caption: finalText}, {quoted: m});
-  } else if (isMedia && quoted.mtype === 'videoMessage') {
-    const mediax = await quoted.download?.();
-    await conn.sendMessage(m.chat, {video: mediax, mentions: users, mimetype: 'video/mp4', caption: finalText}, {quoted: m});
-  } else if (isMedia && quoted.mtype === 'audioMessage') {
-    const mediax = await quoted.download?.();
-    await conn.sendMessage(m.chat, {audio: mediax, mentions: users, mimetype: 'audio/mpeg', fileName: `Hidetag.mp3`}, {quoted: m});
-  } else if (isMedia && quoted.mtype === 'stickerMessage') {
-    const mediax = await quoted.download?.();
-    await conn.sendMessage(m.chat, {sticker: mediax, mentions: users}, {quoted: m});
-  } else {
-    await conn.sendMessage(m.chat, {text: finalText, mentions: users}, {quoted: m});
+  const uniqueUsers = [...new Set(finalUsers)];
+  
+  try {
+    if (isMedia && quoted.mtype === 'imageMessage') {
+      const mediax = await quoted.download?.();
+      await conn.sendMessage(m.chat, {image: mediax, mentions: uniqueUsers, caption: finalText}, {quoted: m});
+    } else if (isMedia && quoted.mtype === 'videoMessage') {
+      const mediax = await quoted.download?.();
+      await conn.sendMessage(m.chat, {video: mediax, mentions: uniqueUsers, mimetype: 'video/mp4', caption: finalText}, {quoted: m});
+    } else if (isMedia && quoted.mtype === 'audioMessage') {
+      const mediax = await quoted.download?.();
+      await conn.sendMessage(m.chat, {audio: mediax, mentions: uniqueUsers, mimetype: 'audio/mpeg', fileName: `Hidetag.mp3`}, {quoted: m});
+    } else if (isMedia && quoted.mtype === 'stickerMessage') {
+      const mediax = await quoted.download?.();
+      await conn.sendMessage(m.chat, {sticker: mediax, mentions: uniqueUsers}, {quoted: m});
+    } else {
+      await conn.sendMessage(m.chat, {text: finalText, mentions: uniqueUsers}, {quoted: m});
+    }
+  } catch (e) {
+    console.error('Error enviando:', e.message);
+    await m.reply('Error al enviar el mensaje: ' + e.message);
   }
 };
-
 handler.command = /^(hidetag|notificar|notify|n)$/i;
 handler.group = true;
-
 export default handler;
