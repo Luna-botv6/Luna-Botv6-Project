@@ -434,26 +434,6 @@ export async function handler(chatUpdate) {
 
       if (opts['nyimak'] || (!m.fromMe && opts['self']) || (opts['pconly'] && m.chat.endsWith('g.us')) || (opts['gconly'] && !m.chat.endsWith('g.us')) || (opts['swonly'] && m.chat !== 'status@broadcast')) return;
 
-      let sinPrefijoActivo = false;
-      if (m.text?.length > 0) {
-        sinPrefijoActivo = getSinPrefijo(m.chat);
-        if (sinPrefijoActivo) {
-          const partes = m.text.trim().split(/\s+/);
-          m.commandSinPrefijo = partes[0].toLowerCase();
-          m.argsSinPrefijo = partes.slice(1);
-          m.textoSinPrefijo = partes.slice(1).join(" ");
-        }
-
-        const globalPrefix = this.prefix || global.prefix;
-        const usedPrefix = matchPrefix(m.text, globalPrefix);
-        if (usedPrefix) {
-          const noPrefix = m.text.replace(usedPrefix, '');
-          const [command] = noPrefix.trim().split` `.filter((v) => v);
-          const text = noPrefix.trim().split` `.slice(1).join` `;
-          
-          
-        }
-      }
 
       if (m.message?.buttonsResponseMessage?.selectedButtonId) {
         m.text = m.message.buttonsResponseMessage.selectedButtonId;
@@ -494,13 +474,77 @@ export async function handler(chatUpdate) {
       if (m.isBaileys && !m.message?.audioMessage) return;
       m.exp += Math.ceil(Math.random() * 10);
 
-      if (['NJX-', 'EVO', 'Lyru-', 'BAE5', 'B24E', '8SCO', 'FizzxyTheGreat-'].some(prefix => m.id.startsWith(prefix))) return;
+     const globalPrefix = this.prefix || global.prefix;
+const usedPrefix = matchPrefix(m.text, globalPrefix);
+const sinPrefijoActivo = getSinPrefijo(m.chat);
+const isCommandText = usedPrefix || (sinPrefijoActivo && m.text?.length > 0);
 
-   let groupMetadata = {};
-      let participants = [];
-      let isAdmin = false;
-      let isRAdmin = false;
-      let isBotAdmin = false;
+const isStickerMessage = m.message?.stickerMessage || (m.quoted && m.quoted.mtype === 'stickerMessage');
+const hasCommandSticker = isStickerMessage && global.db.data.sticker && Object.keys(global.db.data.sticker).length > 0;
+
+if (m.isGroup && !isCommandText && !hasCommandSticker && !m.isCommand) {
+  return;
+}
+
+
+let groupMetadata = {};
+let participants = [];
+let isAdmin = false;
+let isRAdmin = false;
+let isBotAdmin = false;
+let userGroup = {};
+let botGroup = {};
+
+if (m.isGroup) {
+  try {
+    const cachedData = getCachedGroupData(m.chat);
+    
+    if (cachedData) {
+      groupMetadata = cachedData.groupMetadata;
+      participants = cachedData.participants;
+      userGroup = cachedData.userGroup;
+      botGroup = cachedData.botGroup;
+      isAdmin = cachedData.isAdmin;
+      isRAdmin = cachedData.isRAdmin;
+      isBotAdmin = cachedData.isBotAdmin;
+    } else {
+      const metadata = this.chats?.[m.chat]?.metadata || await this.groupMetadata(m.chat).catch(_ => null);
+      
+      if (metadata) {
+        groupMetadata = metadata;
+        
+        participants = (metadata.participants || []).map(p => ({
+         id: p.id || p.jid,
+         jid: p.id || p.jid,
+         lid: p.lid,
+         admin: p.admin
+          }));
+
+        
+        userGroup = participants.find(u => this.decodeJid(u.jid) === m.sender) || {};
+        botGroup = participants.find(u => this.decodeJid(u.jid || u.id) === this.user.jid) || {};
+
+        
+        isRAdmin = userGroup?.admin === 'superadmin' || false;
+        isAdmin = isRAdmin || userGroup?.admin === 'admin' || false;
+        isBotAdmin = botGroup?.admin === 'admin' || botGroup?.admin === 'superadmin';
+
+        
+        setCachedGroupData(m.chat, {
+          groupMetadata,
+          participants,
+          userGroup,
+          botGroup,
+          isAdmin,
+          isRAdmin,
+          isBotAdmin
+        });
+      }
+    }
+  } catch (e) {
+    console.error(`Error obteniendo metadata del grupo: ${e.message}`);
+  }
+}
 
       const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins');
       const customCommandsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), './custom-commands');
@@ -873,15 +917,15 @@ export async function participantsUpdate({ id, participants, action }) {
     const normalizedAction = action === 'leave' ? 'remove' : action;
     
     let participantsList = [];
-    if (Array.isArray(participants)) {
-      participantsList = participants.map(p => typeof p === 'string' ? JSON.parse(p) : p);
-    } else if (typeof participants === 'string') {
-      try {
-        participantsList = [JSON.parse(participants)];
-      } catch (e) {
-        participantsList = [{ phoneNumber: participants }];
-      }
-    }
+if (Array.isArray(participants)) {
+  participantsList = participants.map(p => ({
+    id: typeof p === 'string' ? p : (p.id || p.jid)
+  }));
+} else if (typeof participants === 'string') {
+  participantsList = [{ id: participants }];
+}
+
+    
     
     switch (normalizedAction) {
       case 'add':
@@ -890,13 +934,12 @@ export async function participantsUpdate({ id, participants, action }) {
           const groupMetadata = m?.conn?.chats[id]?.metadata || await m?.conn?.groupMetadata(id).catch(_ => ({}));
           
           for (const participant of participantsList) {
-            const userJid = participant.phoneNumber || participant.id || '';
+            const userJid = participant.id || '';
+
             
             if (!userJid) continue;
             if (normalizedAction === 'remove' && userJid === m?.conn?.user?.jid) return;
             
-            console.log('DEBUG - userJid:', userJid);
-            console.log('DEBUG - action:', normalizedAction);
             
             let pp = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60';
 
