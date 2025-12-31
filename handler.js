@@ -139,7 +139,6 @@ import { setOwnerFunction } from './lib/owner-funciones.js'
 import { addExp, getUserStats, setUserStats } from './lib/stats.js'
 import {getSinPrefijo, setSinPrefijo, loadSinPrefijoData,saveSinPrefijoData,getAllSinPrefijo
 } from './lib/sinPrefijo.js';
-import { logPluginExecution, logSinPrefijoMatch, logBefore, logError, logDuplicate, logCommandCheck } from './lib/debug.js';
 const groupCache = new Map();
 const recentMessages = new Map();
 const recentParticipantEvents = new Map();
