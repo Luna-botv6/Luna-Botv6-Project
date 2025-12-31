@@ -464,7 +464,8 @@ const tradutor = global.translations?.[idioma]?.handler?.handler || {};
       const isMods = isOwner || global.mods?.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net')?.includes(m.sender);
       const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender]?.premiumTime > 0;
 
-      if (opts['queque'] && m.text && !(isMods || isPrems)) {
+      if (opts['queque'] && !m.isGroup && m.text && !(isMods || isPrems)) {
+
         const queque = this.msgqueque;
         const time = 1000 * 5;
         const previousID = queque[queque.length - 1];
@@ -485,10 +486,13 @@ const isCommandText = usedPrefix || (sinPrefijoActivo && m.text?.length > 0);
 
 const isStickerMessage = m.message?.stickerMessage || (m.quoted && m.quoted.mtype === 'stickerMessage');
 const hasCommandSticker = isStickerMessage && global.db.data.sticker && Object.keys(global.db.data.sticker).length > 0;
+const shouldLoadMetadata = m.isGroup && (isCommandText || hasCommandSticker);
+console.log('[META]', m.chat, shouldLoadMetadata);
 
-if (m.isGroup && !isCommandText && !hasCommandSticker && !m.isCommand) {
-  return;
+if (m.isGroup && !isCommandText && !hasCommandSticker) {
+  
 }
+
 
 
 let groupMetadata = {};
@@ -499,9 +503,11 @@ let isBotAdmin = false;
 let userGroup = {};
 let botGroup = {};
 
-if (m.isGroup) {
+if (shouldLoadMetadata) {
+
   try {
-    const cachedData = groupCache.get(m.chat);
+    const cachedData = getCachedGroupData(m.chat);
+
 
     
     if (cachedData) {
@@ -535,16 +541,17 @@ if (m.isGroup) {
         isBotAdmin = botGroup?.admin === 'admin' || botGroup?.admin === 'superadmin';
 
         
-        groupCache.set(m.chat, {
+        setCachedGroupData(m.chat, {
+  groupMetadata,
+  participants,
+  userGroup,
+  botGroup,
+  isAdmin,
+  isRAdmin,
+  isBotAdmin
+});
 
-          groupMetadata,
-          participants,
-          userGroup,
-          botGroup,
-          isAdmin,
-          isRAdmin,
-          isBotAdmin
-        });
+
       }
     }
   } catch (e) {
@@ -937,7 +944,9 @@ if (Array.isArray(participants)) {
       case 'add':
       case 'remove':
         if (chat.welcome && !chat?.isBanned) {
-          const groupMetadata = m?.conn?.chats[id]?.metadata || await m?.conn?.groupMetadata(id).catch(_ => ({}));
+          const cached = getCachedGroupData(id);
+const groupMetadata = cached?.groupMetadata || {};
+
           
           for (const participant of participantsList) {
             const userJid = participant.id || '';
