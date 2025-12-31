@@ -29,10 +29,6 @@ const recentParticipantEvents = new Map();
 const translationsCache = new Map();
 const customCommandsCache = new Map();
 
-const BOT_START = Date.now();
-const groupUpdateCooldown = new Map();
-
-
 const CACHE_TTL = 2 * 60 * 1000;
 const DUPLICATE_TIMEOUT = 3000;
 const MAX_CACHE_SIZE = 150;
@@ -433,8 +429,8 @@ export async function handler(chatUpdate) {
       }
 
       const idioma = global.db.data.users[sender]?.language || global.defaultLenguaje;
-const tradutor = global.translations?.[idioma]?.handler?.handler || {};
-
+      const _translate = await loadTranslation(idioma);
+      const tradutor = _translate.handler?.handler || {};
 
       if (opts['nyimak'] || (!m.fromMe && opts['self']) || (opts['pconly'] && m.chat.endsWith('g.us')) || (opts['gconly'] && !m.chat.endsWith('g.us')) || (opts['swonly'] && m.chat !== 'status@broadcast')) return;
 
@@ -464,8 +460,7 @@ const tradutor = global.translations?.[idioma]?.handler?.handler || {};
       const isMods = isOwner || global.mods?.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net')?.includes(m.sender);
       const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender]?.premiumTime > 0;
 
-      if (opts['queque'] && !m.isGroup && m.text && !(isMods || isPrems)) {
-
+      if (opts['queque'] && m.text && !(isMods || isPrems)) {
         const queque = this.msgqueque;
         const time = 1000 * 5;
         const previousID = queque[queque.length - 1];
@@ -486,14 +481,10 @@ const isCommandText = usedPrefix || (sinPrefijoActivo && m.text?.length > 0);
 
 const isStickerMessage = m.message?.stickerMessage || (m.quoted && m.quoted.mtype === 'stickerMessage');
 const hasCommandSticker = isStickerMessage && global.db.data.sticker && Object.keys(global.db.data.sticker).length > 0;
-const shouldLoadMetadata = m.isGroup && (isCommandText || hasCommandSticker);
-console.log('[META]', m.chat, shouldLoadMetadata);
 
 if (m.isGroup && !isCommandText && !hasCommandSticker) {
-  
+  return;
 }
-
-
 
 let groupMetadata = {};
 let participants = [];
@@ -503,12 +494,9 @@ let isBotAdmin = false;
 let userGroup = {};
 let botGroup = {};
 
-if (shouldLoadMetadata) {
-
+if (m.isGroup) {
   try {
     const cachedData = getCachedGroupData(m.chat);
-
-
     
     if (cachedData) {
       groupMetadata = cachedData.groupMetadata;
@@ -519,39 +507,34 @@ if (shouldLoadMetadata) {
       isRAdmin = cachedData.isRAdmin;
       isBotAdmin = cachedData.isBotAdmin;
     } else {
-      const metadata = this.chats?.[m.chat]?.metadata;
+      const metadata = this.chats?.[m.chat]?.metadata || await this.groupMetadata(m.chat).catch(_ => null);
       
       if (metadata) {
         groupMetadata = metadata;
         
         participants = (metadata.participants || []).map(p => ({
-         id: p.id || p.jid,
-         jid: p.id || p.jid,
-         lid: p.lid,
-         admin: p.admin
-          }));
-
+          id: p.jid,
+          jid: p.jid,
+          lid: p.lid,
+          admin: p.admin
+        }));
         
         userGroup = participants.find(u => this.decodeJid(u.jid) === m.sender) || {};
-        botGroup = participants.find(u => this.decodeJid(u.jid || u.id) === this.user.jid) || {};
-
+        botGroup = participants.find(u => this.decodeJid(u.jid) === this.user.jid) || {};
         
         isRAdmin = userGroup?.admin === 'superadmin' || false;
         isAdmin = isRAdmin || userGroup?.admin === 'admin' || false;
-        isBotAdmin = botGroup?.admin === 'admin' || botGroup?.admin === 'superadmin';
-
+        isBotAdmin = botGroup?.admin ? true : false;
         
         setCachedGroupData(m.chat, {
-  groupMetadata,
-  participants,
-  userGroup,
-  botGroup,
-  isAdmin,
-  isRAdmin,
-  isBotAdmin
-});
-
-
+          groupMetadata,
+          participants,
+          userGroup,
+          botGroup,
+          isAdmin,
+          isRAdmin,
+          isBotAdmin
+        });
       }
     }
   } catch (e) {
@@ -916,8 +899,8 @@ for (const [file, plugin] of customCommandsCache.entries()) {
 export async function participantsUpdate({ id, participants, action }) {
   try {
     const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
-    const tradutor = global.translations?.[idioma]?.handler?.handler || {};
-
+    const _translate = await loadTranslation(idioma);
+    const tradutor = _translate.handler.participantsUpdate;
 
     const m = mconn;
     if (opts['self']) return;
@@ -930,31 +913,30 @@ export async function participantsUpdate({ id, participants, action }) {
     const normalizedAction = action === 'leave' ? 'remove' : action;
     
     let participantsList = [];
-if (Array.isArray(participants)) {
-  participantsList = participants.map(p => ({
-    id: typeof p === 'string' ? p : (p.id || p.jid)
-  }));
-} else if (typeof participants === 'string') {
-  participantsList = [{ id: participants }];
-}
-
-    
+    if (Array.isArray(participants)) {
+      participantsList = participants.map(p => typeof p === 'string' ? JSON.parse(p) : p);
+    } else if (typeof participants === 'string') {
+      try {
+        participantsList = [JSON.parse(participants)];
+      } catch (e) {
+        participantsList = [{ phoneNumber: participants }];
+      }
+    }
     
     switch (normalizedAction) {
       case 'add':
       case 'remove':
         if (chat.welcome && !chat?.isBanned) {
-          const cached = getCachedGroupData(id);
-const groupMetadata = cached?.groupMetadata || {};
-
+          const groupMetadata = m?.conn?.chats[id]?.metadata || await m?.conn?.groupMetadata(id).catch(_ => ({}));
           
           for (const participant of participantsList) {
-            const userJid = participant.id || '';
-
+            const userJid = participant.phoneNumber || participant.id || '';
             
             if (!userJid) continue;
             if (normalizedAction === 'remove' && userJid === m?.conn?.user?.jid) return;
             
+            console.log('DEBUG - userJid:', userJid);
+            console.log('DEBUG - action:', normalizedAction);
             
             let pp = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60';
 
@@ -1064,48 +1046,33 @@ export async function groupsUpdate(groupsUpdate) {
     if (opts['self'] || !global.db.data || !mconn?.conn) return;
 
     const idioma = global.db.data.chats[groupsUpdate[0]?.id]?.language || global.defaultLenguaje;
-    const tradutor = global.translations?.[idioma]?.handler?.groupsUpdate || {};
-
-
+    const _translate = await loadTranslation(idioma);
+    const tradutor = _translate.handler?.participantsUpdate || {};
 
     for (const groupUpdate of groupsUpdate) {
-  try {
-    if (Date.now() - BOT_START < 25_000) continue;
+      try {
+        const { id, desc, subject, icon, revoke } = groupUpdate;
+        if (!id) continue;
 
+        groupCache.delete(id);
+        const chats = global.db.data.chats[id];
+        if (!chats?.detect) continue;
 
-    const { id, desc, subject, icon, revoke } = groupUpdate;
-    if (!id) continue;
+        let text = '';
+        if (desc) text = (chats?.sDesc || tradutor.texto5 || 'Description changed').replace('@desc', desc);
+        else if (subject) text = (chats?.sSubject || tradutor.texto6 || 'Subject changed').replace('@subject', subject);
+        else if (icon) text = (chats?.sIcon || tradutor.texto7 || 'Icon changed').replace('@icon', icon);
+        else if (revoke) text = (chats?.sRevoke || tradutor.texto8 || 'Link revoked').replace('@revoke', revoke);
 
-    const last = groupUpdateCooldown.get(id) || 0;
-    if (Date.now() - last < 10_000) continue;
-    groupUpdateCooldown.set(id, Date.now());
-
-    groupCache.delete(id);
-    const chats = global.db.data.chats[id];
-    if (!chats?.detect) continue;
-
-    let text = '';
-    if (desc) text = (chats?.sDesc || tradutor.texto5 || 'Description changed').replace('@desc', desc);
-    else if (subject) text = (chats?.sSubject || tradutor.texto6 || 'Subject changed').replace('@subject', subject);
-    else if (icon) text = (chats?.sIcon || tradutor.texto7 || 'Icon changed').replace('@icon', icon);
-    else if (revoke) text = (chats?.sRevoke || tradutor.texto8 || 'Link revoked').replace('@revoke', revoke);
-
-    if (text) {
-      await delay(1500);
-      await mconn?.conn?.sendMessage(
-        id,
-        { text, mentions: mconn?.conn?.parseMention(text) }
-      ).catch(e => {
-        if (e?.message !== 'rate-overlimit') {
-          console.error(`Error sending group update: ${e.message}`);
+        if (text) {
+          await mconn?.conn?.sendMessage(id, { text, mentions: mconn?.conn?.parseMention(text) }).catch(e => 
+            console.error(`Error sending group update: ${e.message}`)
+          );
         }
-      });
+      } catch (e) {
+        console.error(`Error processing group update: ${e.message}`);
+      }
     }
-  } catch (e) {
-    console.error(`Error processing group update: ${e.message}`);
-  }
-}
-
   } catch (e) {
     console.error(`Groups update error: ${e.message}`);
   }
