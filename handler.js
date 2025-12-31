@@ -429,8 +429,8 @@ export async function handler(chatUpdate) {
       }
 
       const idioma = global.db.data.users[sender]?.language || global.defaultLenguaje;
-      const _translate = await loadTranslation(idioma);
-      const tradutor = _translate.handler?.handler || {};
+const tradutor = global.translations?.[idioma]?.handler?.handler || {};
+
 
       if (opts['nyimak'] || (!m.fromMe && opts['self']) || (opts['pconly'] && m.chat.endsWith('g.us')) || (opts['gconly'] && !m.chat.endsWith('g.us')) || (opts['swonly'] && m.chat !== 'status@broadcast')) return;
 
@@ -497,7 +497,8 @@ let botGroup = {};
 
 if (m.isGroup) {
   try {
-    const cachedData = getCachedGroupData(m.chat);
+    const cachedData = groupCache.get(m.chat);
+
     
     if (cachedData) {
       groupMetadata = cachedData.groupMetadata;
@@ -508,7 +509,7 @@ if (m.isGroup) {
       isRAdmin = cachedData.isRAdmin;
       isBotAdmin = cachedData.isBotAdmin;
     } else {
-      const metadata = this.chats?.[m.chat]?.metadata || await this.groupMetadata(m.chat).catch(_ => null);
+      const metadata = this.chats?.[m.chat]?.metadata;
       
       if (metadata) {
         groupMetadata = metadata;
@@ -530,7 +531,8 @@ if (m.isGroup) {
         isBotAdmin = botGroup?.admin === 'admin' || botGroup?.admin === 'superadmin';
 
         
-        setCachedGroupData(m.chat, {
+        groupCache.set(m.chat, {
+
           groupMetadata,
           participants,
           userGroup,
@@ -903,8 +905,8 @@ for (const [file, plugin] of customCommandsCache.entries()) {
 export async function participantsUpdate({ id, participants, action }) {
   try {
     const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
-    const _translate = await loadTranslation(idioma);
-    const tradutor = _translate.handler.participantsUpdate;
+    const tradutor = global.translations?.[idioma]?.handler?.handler || {};
+
 
     const m = mconn;
     if (opts['self']) return;
