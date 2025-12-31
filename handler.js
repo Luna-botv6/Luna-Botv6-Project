@@ -29,6 +29,10 @@ const recentParticipantEvents = new Map();
 const translationsCache = new Map();
 const customCommandsCache = new Map();
 
+const BOT_START = Date.now();
+const groupUpdateCooldown = new Map();
+
+
 const CACHE_TTL = 2 * 60 * 1000;
 const DUPLICATE_TIMEOUT = 3000;
 const MAX_CACHE_SIZE = 150;
@@ -1051,33 +1055,48 @@ export async function groupsUpdate(groupsUpdate) {
     if (opts['self'] || !global.db.data || !mconn?.conn) return;
 
     const idioma = global.db.data.chats[groupsUpdate[0]?.id]?.language || global.defaultLenguaje;
-    const _translate = await loadTranslation(idioma);
-    const tradutor = _translate.handler?.participantsUpdate || {};
+    const tradutor = global.translations?.[idioma]?.handler?.groupsUpdate || {};
+
+
 
     for (const groupUpdate of groupsUpdate) {
-      try {
-        const { id, desc, subject, icon, revoke } = groupUpdate;
-        if (!id) continue;
+  try {
+    if (Date.now() - BOT_START < 25_000) continue;
 
-        groupCache.delete(id);
-        const chats = global.db.data.chats[id];
-        if (!chats?.detect) continue;
 
-        let text = '';
-        if (desc) text = (chats?.sDesc || tradutor.texto5 || 'Description changed').replace('@desc', desc);
-        else if (subject) text = (chats?.sSubject || tradutor.texto6 || 'Subject changed').replace('@subject', subject);
-        else if (icon) text = (chats?.sIcon || tradutor.texto7 || 'Icon changed').replace('@icon', icon);
-        else if (revoke) text = (chats?.sRevoke || tradutor.texto8 || 'Link revoked').replace('@revoke', revoke);
+    const { id, desc, subject, icon, revoke } = groupUpdate;
+    if (!id) continue;
 
-        if (text) {
-          await mconn?.conn?.sendMessage(id, { text, mentions: mconn?.conn?.parseMention(text) }).catch(e => 
-            console.error(`Error sending group update: ${e.message}`)
-          );
+    const last = groupUpdateCooldown.get(id) || 0;
+    if (Date.now() - last < 10_000) continue;
+    groupUpdateCooldown.set(id, Date.now());
+
+    groupCache.delete(id);
+    const chats = global.db.data.chats[id];
+    if (!chats?.detect) continue;
+
+    let text = '';
+    if (desc) text = (chats?.sDesc || tradutor.texto5 || 'Description changed').replace('@desc', desc);
+    else if (subject) text = (chats?.sSubject || tradutor.texto6 || 'Subject changed').replace('@subject', subject);
+    else if (icon) text = (chats?.sIcon || tradutor.texto7 || 'Icon changed').replace('@icon', icon);
+    else if (revoke) text = (chats?.sRevoke || tradutor.texto8 || 'Link revoked').replace('@revoke', revoke);
+
+    if (text) {
+      await delay(1500);
+      await mconn?.conn?.sendMessage(
+        id,
+        { text, mentions: mconn?.conn?.parseMention(text) }
+      ).catch(e => {
+        if (e?.message !== 'rate-overlimit') {
+          console.error(`Error sending group update: ${e.message}`);
         }
-      } catch (e) {
-        console.error(`Error processing group update: ${e.message}`);
-      }
+      });
     }
+  } catch (e) {
+    console.error(`Error processing group update: ${e.message}`);
+  }
+}
+
   } catch (e) {
     console.error(`Groups update error: ${e.message}`);
   }
