@@ -18,10 +18,14 @@ import mddd5 from 'md5';
 import { setOwnerFunction } from './lib/owner-funciones.js';
 import { addExp, getUserStats, setUserStats } from './lib/stats.js';
 import { getSinPrefijo, setSinPrefijo, loadSinPrefijoData, saveSinPrefijoData, getAllSinPrefijo } from './lib/sinPrefijo.js';
+import { isValidMessage, isDuplicate, extractMessageText, extractSenderAndChat, normalizeMessageText } from './lib/messageValidation.js';
+import { checkUserPermissions } from './lib/userPermissions.js';
+import { matchPrefix, parseCommandWithPrefix, checkCommandAcceptance, parseCommandText } from './lib/commandParser.js';
+import { ensureUserData, ensureBotSettings } from './lib/databaseManager.js';
+import { cleanupCache, startCacheCleanupInterval } from './lib/cacheManager.js';
 
 EventEmitter.defaultMaxListeners = 50;
 process.setMaxListeners(50);
-
 
 const groupCache = new Map();
 const recentMessages = new Map();
@@ -32,8 +36,6 @@ const customCommandsCache = new Map();
 const CACHE_TTL = 2 * 60 * 1000;
 const DUPLICATE_TIMEOUT = 3000;
 const MAX_CACHE_SIZE = 150;
-
-
 
 const groupMetadataRequestCache = new Map();
 const processedVoiceMessages = new Set();
@@ -52,6 +54,7 @@ global.translationsCache = translationsCache;
 global.customCommandsCache = customCommandsCache;
 global.getCachedGroupData = (chatId) => null;
 global.setCachedGroupData = (chatId, data) => {};
+
 const str2Regex = (str) => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
 const isNumber = (x) => typeof x === 'number' && !isNaN(x);
 const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(() => resolve(), ms));
@@ -66,8 +69,6 @@ function safeAsync(asyncFn, defaultValue = null) {
     }
   };
 }
-
-
 
 function getBotMetadata(conn) {
   const now = Date.now();
@@ -93,27 +94,6 @@ function getBotMetadata(conn) {
   };
 }
 
-function isDuplicate(messageId, sender, text) {
-  if (!messageId) return false;
-  
-  const uniqueKey = `${messageId}_${sender}_${text?.substring(0, 50) || ''}`;
-  
-  if (recentMessages.has(uniqueKey)) {
-    const timestamp = recentMessages.get(uniqueKey);
-    if (Date.now() - timestamp < DUPLICATE_TIMEOUT) {
-      return true; 
-    }
-  }
-  
-  if (recentMessages.size >= MAX_CACHE_SIZE) {
-    const firstKey = recentMessages.keys().next().value;
-    recentMessages.delete(firstKey);
-  }
-  
-  recentMessages.set(uniqueKey, Date.now());
-  return false;
-}
-
 async function loadTranslation(idioma) {
   const cached = translationsCache.get(idioma);
   if (cached) return cached;
@@ -130,7 +110,7 @@ async function loadTranslation(idioma) {
 
 async function loadCustomCommandsOnce(customCommandsDir) {
   if (!fs.existsSync(customCommandsDir)) return;
-  if (customCommandsCache.size > 0) return; 
+  if (customCommandsCache.size > 0) return;
   
   try {
     const files = await fs.promises.readdir(customCommandsDir);
@@ -138,7 +118,7 @@ async function loadCustomCommandsOnce(customCommandsDir) {
       const filePath = path.join(customCommandsDir, file);
       try {
         const mod = await import(`file://${filePath}?t=${Date.now()}`);
-        customCommandsCache.set(file, mod.default || mod); 
+        customCommandsCache.set(file, mod.default || mod);
       } catch (e) {
         console.log(`Error loading custom command ${file}: ${e.message}`);
       }
@@ -176,165 +156,7 @@ function logError(e, plugin = 'general') {
 let mconn;
 const { proto } = (await import("@whiskeysockets/baileys")).default;
 
-function cleanupCache(cache, ttl, name = 'cache') {
-  const now = Date.now();
-  let cleaned = 0;
-  const maxSize = MAX_CACHE_SIZE;
-  
-  if (cache.size > maxSize) {
-    const deleteCount = cache.size - maxSize;
-    const keys = Array.from(cache.keys()).slice(0, deleteCount);
-    keys.forEach(key => cache.delete(key));
-    cleaned += deleteCount;
-  }
-  
-  for (const [key, value] of cache.entries()) {
-    const timestamp = value?.timestamp || value;
-    if ((now - timestamp) > ttl) {
-      cache.delete(key);
-      cleaned++;
-    }
-  }
-  
-  if (cleaned > 0) {
-    console.log(chalk.gray(`⚡ Limpieza de ${name}: ${cleaned} entradas eliminadas`));
-  }
-}
-
-setInterval(() => {
-  cleanupCache(groupCache, CACHE_TTL, 'groupCache');
-  cleanupCache(recentMessages, DUPLICATE_TIMEOUT, 'recentMessages');
-  cleanupCache(recentParticipantEvents, 3000, 'participantEvents');
-  cleanupCache(translationsCache, 20 * 60 * 1000, 'translationsCache');
-  cleanupCache(customCommandsCache, 30 * 60 * 1000, 'customCommandsCache');
-  
-  if (processedVoiceMessages.size > MAX_CACHE_SIZE / 2) {
-    processedVoiceMessages.clear();
-  }
-}, 30000);
-
-function matchPrefix(text, prefix) {
-  if (!text) return null;
-  
-  const prefixes = prefix instanceof RegExp
-    ? [[prefix.exec(text), prefix]]
-    : Array.isArray(prefix)
-      ? prefix.map((p) => {
-          const re = p instanceof RegExp ? p : new RegExp(str2Regex(p));
-          return [re.exec(text), re];
-        })
-      : typeof prefix === 'string'
-        ? [[new RegExp(str2Regex(prefix)).exec(text), new RegExp(str2Regex(prefix))]]
-        : [[[], new RegExp]];
-
-  return prefixes.find((p) => p[1])?.[0]?.[0] || null;
-}
-
-async function ensureUserData(sender, chat) {
-  try {
-    if (!global.db.data.users[sender]) {
-      global.db.data.users[sender] = {};
-    }
-    if (!global.db.data.chats[chat]) {
-      global.db.data.chats[chat] = {};
-    }
-
-    const user = global.db.data.users[sender];
-    const userDefaults = {
-      wait: 0,
-      banned: false,
-      BannedReason: '',
-      Banneduser: false,
-      premium: false,
-      premiumTime: 0,
-      registered: false,
-      sewa: false,
-      skill: '',
-      language: 'es'
-    };
-
-    Object.keys(userDefaults).forEach(key => {
-      if (user[key] === undefined) user[key] = userDefaults[key];
-    });
-
-    const chatObj = global.db.data.chats[chat];
-    const chatDefaults = {
-      isBanned: false,
-      welcome: true,
-      detect: true,
-      detect2: false,
-      sWelcome: '',
-      sBye: '',
-      sPromote: '',
-      sDemote: '',
-      antidelete: false,
-      modohorny: true,
-      autosticker: false,
-      audios: false,
-      antiLink: false,
-      antiLink2: false,
-      antiviewonce: false,
-      antiToxic: false,
-      antiTraba: false,
-      antiArab: false,
-      antiArab2: false,
-      antiporno: false,
-      modoadmin: false,
-      simi: false,
-      game: true,
-      expired: 0,
-      language: 'es'
-    };
-
-    Object.keys(chatDefaults).forEach(key => {
-      if (chatObj[key] === undefined) chatObj[key] = chatDefaults[key];
-    });
-  } catch (e) {
-    console.error(`Error ensuring user data: ${e.message}`);
-  }
-}
-
-async function ensureBotSettings(botJid) {
-  try {
-    if (!global.db.data.settings) global.db.data.settings = {};
-    if (!global.db.data.settings[botJid]) {
-      global.db.data.settings[botJid] = {};
-    }
-
-    const settings = global.db.data.settings[botJid];
-    const settingsDefaults = {
-      self: false,
-      autoread: false,
-      autoread2: false,
-      restrict: false,
-      antiCall: false,
-      antiPrivate: false,
-      modejadibot: true,
-      antispam: false,
-      audios_bot: false,
-      modoia: false
-    };
-
-    Object.keys(settingsDefaults).forEach(key => {
-      if (settings[key] === undefined) settings[key] = settingsDefaults[key];
-    });
-  } catch (e) {
-    console.error(`Error ensuring bot settings: ${e.message}`);
-  }
-}
-
-function extractMessageText(m) {
-  return (
-    m.message?.conversation ||
-    m.message?.extendedTextMessage?.text ||
-    m.message?.imageMessage?.caption ||
-    m.message?.videoMessage?.caption ||
-    m.message?.buttonsResponseMessage?.selectedButtonId ||
-    m.message?.templateButtonReplyMessage?.selectedId ||
-    m.message?.listResponseMessage?.singleSelectReply?.selectedRowId ||
-    ''
-  );
-}
+startCacheCleanupInterval(groupCache, recentMessages, recentParticipantEvents, translationsCache, customCommandsCache, processedVoiceMessages, CACHE_TTL, DUPLICATE_TIMEOUT);
 
 export async function handler(chatUpdate) {
   try {
@@ -347,18 +169,13 @@ export async function handler(chatUpdate) {
     this.pushMessage(chatUpdate.messages).catch(console.error);
 
     let m = chatUpdate.messages[chatUpdate.messages.length - 1];
-    if (!m?.message || typeof m !== 'object') return;
-    if (m.key?.remoteJid?.endsWith('broadcast')) return;
-    if (m.key?.id && isDuplicate(m.key.id, m.key.participant || m.key.remoteJid, extractMessageText(m))) return;
-    if (m.isBaileys && !m.message?.audioMessage) return;
+    if (!isValidMessage(m)) return;
+    if (m.key?.id && isDuplicate(m.key.id, m.key.participant || m.key.remoteJid, extractMessageText(m), recentMessages, DUPLICATE_TIMEOUT, MAX_CACHE_SIZE)) return;
 
-    const sender = m.key?.fromMe ? this.user.jid : (m.key?.participant || m.participant || m.key?.remoteJid || '');
-    const chat = m.key?.remoteJid || '';
-
+    const { sender, chat } = extractSenderAndChat(m, this);
     if (!sender || !chat) return;
 
-    m.text = extractMessageText(m);
-    if (typeof m.text !== 'string') m.text = '';
+    m = normalizeMessageText(m);
 
     if (isVoiceMessage(m)) {
       const jid = m.key.remoteJid;
@@ -379,7 +196,7 @@ export async function handler(chatUpdate) {
       if (!plugin?.before || typeof plugin.before !== 'function') continue;
       try {
         if (!m?.sender) continue;
-        const isOwner = Array.isArray(global.owner) ? global.owner.some(([num]) => m.sender?.includes(num)) : false;
+        const { isOwner } = checkUserPermissions(m, this);
         const stop = await plugin.before.call(this, m, {
           conn: this,
           isOwner,
@@ -415,7 +232,6 @@ export async function handler(chatUpdate) {
 
       if (opts['nyimak'] || (!m.fromMe && opts['self']) || (opts['pconly'] && m.chat.endsWith('g.us')) || (opts['gconly'] && !m.chat.endsWith('g.us')) || (opts['swonly'] && m.chat !== 'status@broadcast')) return;
 
-
       if (m.message?.buttonsResponseMessage?.selectedButtonId) {
         m.text = m.message.buttonsResponseMessage.selectedButtonId;
       } else if (m.message?.templateButtonReplyMessage?.selectedId) {
@@ -431,15 +247,7 @@ export async function handler(chatUpdate) {
         }
       }
 
-      const senderJid = this.decodeJid(m.sender || '');
-      const senderNum = senderJid.replace(/[^0-9]/g, '');
-      const ownerNums = global.owner.map(([num]) => num);
-      const lidNums = global.lidOwners || [];
-
-      const isROwner = ownerNums.includes(senderNum) || lidNums.includes(senderNum);
-      const isOwner = isROwner || m.fromMe;
-      const isMods = isOwner || global.mods?.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net')?.includes(m.sender);
-      const isPrems = isROwner || isOwner || isMods || global.db.data.users[m.sender]?.premiumTime > 0;
+      const { isROwner, isOwner, isMods, isPrems } = checkUserPermissions(m, this);
 
       if (opts['queque'] && m.text && !(isMods || isPrems)) {
         const queque = this.msgqueque;
@@ -455,46 +263,41 @@ export async function handler(chatUpdate) {
       if (m.isBaileys && !m.message?.audioMessage) return;
       m.exp += Math.ceil(Math.random() * 10);
 
-     const globalPrefix = this.prefix || global.prefix;
-const usedPrefix = matchPrefix(m.text, globalPrefix);
-const sinPrefijoActivo = getSinPrefijo(m.chat);
-const isCommandText = usedPrefix || (sinPrefijoActivo && m.text?.length > 0);
+      const globalPrefix = this.prefix || global.prefix;
+      const { usedPrefix, sinPrefijoActivo, isCommandText, isStickerMessage, hasCommandSticker } = parseCommandText(m, globalPrefix, getSinPrefijo);
 
-const isStickerMessage = m.message?.stickerMessage || (m.quoted && m.quoted.mtype === 'stickerMessage');
-const hasCommandSticker = isStickerMessage && global.db.data.sticker && Object.keys(global.db.data.sticker).length > 0;
+      if (m.isGroup && !isCommandText && !hasCommandSticker) {
+        return;
+      }
 
-if (m.isGroup && !isCommandText && !hasCommandSticker) {
-  return;
-}
+      let groupMetadata = {};
+      let participants = [];
+      let isAdmin = false;
+      let isRAdmin = false;
+      let isBotAdmin = false;
+      let userGroup = {};
+      let botGroup = {};
 
-let groupMetadata = {};
-let participants = [];
-let isAdmin = false;
-let isRAdmin = false;
-let isBotAdmin = false;
-let userGroup = {};
-let botGroup = {};
-
-if (m.isGroup) {
-  const groupData = await getGroupMetadata(this, m.chat, groupCache, m.sender);
-  groupMetadata = groupData.groupMetadata;
-  participants = groupData.participants;
-  userGroup = groupData.userGroup;
-  botGroup = groupData.botGroup;
-  isAdmin = groupData.isAdmin;
-  isRAdmin = groupData.isRAdmin;
-  isBotAdmin = groupData.isBotAdmin;
-}
+      if (m.isGroup) {
+        const groupData = await getGroupMetadata(this, m.chat, groupCache, m.sender);
+        groupMetadata = groupData.groupMetadata;
+        participants = groupData.participants;
+        userGroup = groupData.userGroup;
+        botGroup = groupData.botGroup;
+        isAdmin = groupData.isAdmin;
+        isRAdmin = groupData.isRAdmin;
+        isBotAdmin = groupData.isBotAdmin;
+      }
 
       const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins');
       const customCommandsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), './custom-commands');
 
       const allPlugins = { ...global.plugins };
-await loadCustomCommandsOnce(customCommandsDir);
+      await loadCustomCommandsOnce(customCommandsDir);
 
-for (const [file, plugin] of customCommandsCache.entries()) {
-  allPlugins[`custom-${file}`] = plugin;
-}
+      for (const [file, plugin] of customCommandsCache.entries()) {
+        allPlugins[`custom-${file}`] = plugin;
+      }
 
       for (const name in allPlugins) {
         const plugin = allPlugins[name];
@@ -604,21 +407,10 @@ for (const [file, plugin] of customCommandsCache.entries()) {
         }
 
         if (prefixUsed) {
-          const noPrefix = m.text.replace(prefixUsed, '');
-          let [command, ...args] = noPrefix.trim().split` `.filter((v) => v);
-          args = args || [];
-          const _args = noPrefix.trim().split` `.slice(1);
-          const text = _args.join` `;
-          command = (command || '').toLowerCase();
+          const { command, args, _args, text, noPrefix } = parseCommandWithPrefix(m.text, prefixUsed);
 
           const fail = plugin.fail || global.dfail;
-          const isAccept = plugin.command instanceof RegExp
-            ? plugin.command.test(command)
-            : Array.isArray(plugin.command)
-              ? plugin.command.some((cmd) => cmd instanceof RegExp ? cmd.test(command) : cmd === command)
-              : typeof plugin.command === 'string'
-                ? plugin.command === command
-                : false;
+          const isAccept = checkCommandAcceptance(plugin, command);
 
           if (!isAccept) continue;
 
@@ -863,6 +655,7 @@ export async function participantsUpdate({ id, participants, action }) {
     console.error('participantsUpdate:', e.message);
   }
 }
+
 export async function groupsUpdate(groupsUpdate) {
   try {
     if (opts['self'] || !global.db.data || !mconn?.conn) return;
