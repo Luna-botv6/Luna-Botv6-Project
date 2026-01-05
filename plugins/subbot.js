@@ -10,7 +10,7 @@ const { CONNECTING } = ws;
 import { makeWASocket } from "../src/libraries/simple.js";
 import { Boom } from "@hapi/boom";
 import store from "../src/libraries/store.js";
-import { connectionManager } from "../lib/connection-manager.js";
+import { connectionManager } from "../lib/funcion/connection-manager.js";
 
 const SUBBOT_CONFIG = {
   messages: {

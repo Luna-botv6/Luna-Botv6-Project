@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import chalk from "chalk";
-import { connectionManager } from "../lib/connection-manager.js";
+import { connectionManager } from "../lib/funcion/connection-manager.js";
 
 const handler = (m) => m;
 
