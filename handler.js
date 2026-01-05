@@ -9,7 +9,6 @@ import { unwatchFile, watchFile } from 'fs';
 import fs from 'fs';
 import chalk from 'chalk';
 import ws from 'ws';
-import { getGroupMetadata, handleParticipantsUpdate } from './lib/groupMetadata.js';
 import mentionListener from './plugins/game-ialuna.js';
 import { isVoiceMessage, handleVoiceMessage } from './plugins/voice-handler.js';
 import { getConfig, setConfig } from './lib/funcConfig.js';
@@ -18,11 +17,14 @@ import mddd5 from 'md5';
 import { setOwnerFunction } from './lib/owner-funciones.js';
 import { addExp, getUserStats, setUserStats } from './lib/stats.js';
 import { getSinPrefijo, setSinPrefijo, loadSinPrefijoData, saveSinPrefijoData, getAllSinPrefijo } from './lib/sinPrefijo.js';
-import { isValidMessage, isDuplicate, extractMessageText, extractSenderAndChat, normalizeMessageText } from './lib/messageValidation.js';
-import { checkUserPermissions } from './lib/userPermissions.js';
-import { matchPrefix, parseCommandWithPrefix, checkCommandAcceptance, parseCommandText } from './lib/commandParser.js';
-import { ensureUserData, ensureBotSettings } from './lib/databaseManager.js';
-import { cleanupCache, startCacheCleanupInterval } from './lib/cacheManager.js';
+import { isValidMessage, isDuplicate, extractMessageText, extractSenderAndChat, normalizeMessageText } from './lib/funcion/messageValidation.js';
+import { checkUserPermissions } from './lib/funcion/userPermissions.js';
+import { matchPrefix, parseCommandWithPrefix, checkCommandAcceptance, parseCommandText } from './lib/funcion/commandParser.js';
+import { ensureUserData, ensureBotSettings } from './lib/funcion/databaseManager.js';
+import { cleanupCache, startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
+import { hasPrefix } from './lib/funcion/earlyFilter.js';
+import { limitCache } from './lib/funcion/cacheLimit.js';
+import { getGroupMetadata, handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
 
 EventEmitter.defaultMaxListeners = 50;
 process.setMaxListeners(50);
@@ -35,7 +37,8 @@ const customCommandsCache = new Map();
 
 const CACHE_TTL = 2 * 60 * 1000;
 const DUPLICATE_TIMEOUT = 3000;
-const MAX_CACHE_SIZE = 150;
+const MAX_CACHE_SIZE = 50;
+const MAX_VOICE_CACHE = 200;
 
 const groupMetadataRequestCache = new Map();
 const processedVoiceMessages = new Set();
@@ -157,6 +160,23 @@ let mconn;
 const { proto } = (await import("@whiskeysockets/baileys")).default;
 
 startCacheCleanupInterval(groupCache, recentMessages, recentParticipantEvents, translationsCache, customCommandsCache, processedVoiceMessages, CACHE_TTL, DUPLICATE_TIMEOUT);
+setInterval(() => {
+  try {
+    limitCache(groupCache, 30);
+    limitCache(recentMessages, 50);
+    limitCache(recentParticipantEvents, 30);
+    limitCache(translationsCache, 5);
+    
+    if (processedVoiceMessages.size > MAX_VOICE_CACHE) {
+      const toDelete = Array.from(processedVoiceMessages).slice(0, 100);
+      toDelete.forEach(id => processedVoiceMessages.delete(id));
+    }
+    
+    if (global.gc) global.gc();
+  } catch (e) {
+    console.error('Cache cleanup error:', e.message);
+  }
+}, 60000);
 
 export async function handler(chatUpdate) {
   try {
@@ -177,7 +197,13 @@ export async function handler(chatUpdate) {
 
     m = normalizeMessageText(m);
 
+    const globalPrefix = this.prefix || global.prefix;
+    if (m.isGroup && !hasPrefix(m.text, globalPrefix)) {
+      return;
+    }
+
     if (isVoiceMessage(m)) {
+
       const jid = m.key.remoteJid;
       const settings = global.db?.data?.settings?.[this?.user?.jid];
       if (settings?.iaLunaActive !== false) {
@@ -263,12 +289,7 @@ export async function handler(chatUpdate) {
       if (m.isBaileys && !m.message?.audioMessage) return;
       m.exp += Math.ceil(Math.random() * 10);
 
-      const globalPrefix = this.prefix || global.prefix;
       const { usedPrefix, sinPrefijoActivo, isCommandText, isStickerMessage, hasCommandSticker } = parseCommandText(m, globalPrefix, getSinPrefijo);
-
-      if (m.isGroup && !isCommandText && !hasCommandSticker) {
-        return;
-      }
 
       let groupMetadata = {};
       let participants = [];
@@ -277,17 +298,6 @@ export async function handler(chatUpdate) {
       let isBotAdmin = false;
       let userGroup = {};
       let botGroup = {};
-
-      if (m.isGroup) {
-        const groupData = await getGroupMetadata(this, m.chat, groupCache, m.sender);
-        groupMetadata = groupData.groupMetadata;
-        participants = groupData.participants;
-        userGroup = groupData.userGroup;
-        botGroup = groupData.botGroup;
-        isAdmin = groupData.isAdmin;
-        isRAdmin = groupData.isRAdmin;
-        isBotAdmin = groupData.isBotAdmin;
-      }
 
       const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins');
       const customCommandsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), './custom-commands');
@@ -299,7 +309,23 @@ export async function handler(chatUpdate) {
         allPlugins[`custom-${file}`] = plugin;
       }
 
+      if (m.isGroup && (usedPrefix || sinPrefijoActivo)) {
+        try {
+          const groupData = await getGroupMetadata(this, m.chat, groupCache, m.sender);
+          groupMetadata = groupData.groupMetadata;
+          participants = groupData.participants;
+          userGroup = groupData.userGroup;
+          botGroup = groupData.botGroup;
+          isAdmin = groupData.isAdmin;
+          isRAdmin = groupData.isRAdmin;
+          isBotAdmin = groupData.isBotAdmin;
+        } catch (e) {
+          console.error(`Error getting group metadata: ${e.message}`);
+        }
+      }
+
       for (const name in allPlugins) {
+        
         const plugin = allPlugins[name];
         if (!plugin || plugin.disabled) continue;
 
