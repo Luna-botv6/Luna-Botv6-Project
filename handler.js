@@ -198,9 +198,6 @@ export async function handler(chatUpdate) {
     m = normalizeMessageText(m);
 
     const globalPrefix = this.prefix || global.prefix;
-    if (m.isGroup && !hasPrefix(m.text, globalPrefix)) {
-      return;
-    }
 
     if (isVoiceMessage(m)) {
 
