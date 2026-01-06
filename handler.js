@@ -306,20 +306,43 @@ export async function handler(chatUpdate) {
         allPlugins[`custom-${file}`] = plugin;
       }
 
-      if (m.isGroup && (usedPrefix || sinPrefijoActivo)) {
-        try {
-          const groupData = await getGroupMetadata(this, m.chat, groupCache, m.sender);
-          groupMetadata = groupData.groupMetadata;
-          participants = groupData.participants;
-          userGroup = groupData.userGroup;
-          botGroup = groupData.botGroup;
-          isAdmin = groupData.isAdmin;
-          isRAdmin = groupData.isRAdmin;
-          isBotAdmin = groupData.isBotAdmin;
-        } catch (e) {
-          console.error(`Error getting group metadata: ${e.message}`);
-        }
+      if (m.isGroup) {
+  const needsGroupData = (plugin) => {
+    return plugin.group || plugin.admin || plugin.botAdmin;
+  };
+  
+  if (usedPrefix || sinPrefijoActivo) {
+    const pluginName = Object.keys(allPlugins).find(name => {
+      const p = allPlugins[name];
+      if (!p || p.disabled) return false;
+      const cmd = parseCommandWithPrefix(m.text, usedPrefix).command;
+      return checkCommandAcceptance(p, cmd);
+    });
+    
+    if (pluginName && needsGroupData(allPlugins[pluginName])) {
+      const cachedData = groupCache.get(m.chat);
+      if (cachedData && (Date.now() - cachedData.timestamp) < 300000) {
+        const gd = cachedData.data;
+        groupMetadata = gd.groupMetadata;
+        participants = gd.participants;
+        userGroup = gd.userGroup;
+        botGroup = gd.botGroup;
+        isAdmin = gd.isAdmin;
+        isRAdmin = gd.isRAdmin;
+        isBotAdmin = gd.isBotAdmin;
+      } else {
+        const groupData = await getGroupMetadata(this, m.chat, groupCache, m.sender);
+        groupMetadata = groupData.groupMetadata;
+        participants = groupData.participants;
+        userGroup = groupData.userGroup;
+        botGroup = groupData.botGroup;
+        isAdmin = groupData.isAdmin;
+        isRAdmin = groupData.isRAdmin;
+        isBotAdmin = groupData.isBotAdmin;
       }
+    }
+  }
+}
 
       for (const name in allPlugins) {
         
