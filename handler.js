@@ -4,98 +4,39 @@ import { smsg } from './src/libraries/simple.js';
 import { format } from 'util';
 import { fileURLToPath } from 'url';
 import path, { join } from 'path';
-import { EventEmitter } from 'events';
 import { unwatchFile, watchFile } from 'fs';
 import fs from 'fs';
 import chalk from 'chalk';
 import ws from 'ws';
-import mentionListener from './plugins/game-ialuna.js';
 import { isVoiceMessage, handleVoiceMessage } from './plugins/voice-handler.js';
-import { getConfig, setConfig } from './lib/funcConfig.js';
+import { getConfig } from './lib/funcConfig.js';
 import { readFile } from 'fs/promises';
-import mddd5 from 'md5';
-import { setOwnerFunction } from './lib/owner-funciones.js';
 import { addExp, getUserStats, setUserStats } from './lib/stats.js';
-import { getSinPrefijo, setSinPrefijo, loadSinPrefijoData, saveSinPrefijoData, getAllSinPrefijo } from './lib/sinPrefijo.js';
+import { getSinPrefijo } from './lib/sinPrefijo.js';
 import { isValidMessage, isDuplicate, extractMessageText, extractSenderAndChat, normalizeMessageText } from './lib/funcion/messageValidation.js';
 import { checkUserPermissions } from './lib/funcion/userPermissions.js';
 import { matchPrefix, parseCommandWithPrefix, checkCommandAcceptance, parseCommandText } from './lib/funcion/commandParser.js';
 import { ensureUserData, ensureBotSettings } from './lib/funcion/databaseManager.js';
-import { cleanupCache, startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
-import { hasPrefix } from './lib/funcion/earlyFilter.js';
+import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
-import { getGroupMetadata, handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
-
-EventEmitter.defaultMaxListeners = 50;
-process.setMaxListeners(50);
+import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
 
 const groupCache = new Map();
 const recentMessages = new Map();
 const recentParticipantEvents = new Map();
 const translationsCache = new Map();
 const customCommandsCache = new Map();
+const processedVoiceMessages = new Set();
 
 const CACHE_TTL = 2 * 60 * 1000;
 const DUPLICATE_TIMEOUT = 3000;
 const MAX_CACHE_SIZE = 50;
 const MAX_VOICE_CACHE = 200;
 
-const groupMetadataRequestCache = new Map();
-const processedVoiceMessages = new Set();
-
-const botMetadataCache = {
-  name: null,
-  number: null,
-  jid: null,
-  lastUpdate: 0
-};
-
 global.groupCache = groupCache;
-global.recentMessages = recentMessages;
-global.recentParticipantEvents = recentParticipantEvents;
-global.translationsCache = translationsCache;
-global.customCommandsCache = customCommandsCache;
-global.getCachedGroupData = (chatId) => null;
-global.setCachedGroupData = (chatId, data) => {};
 
-const str2Regex = (str) => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
 const isNumber = (x) => typeof x === 'number' && !isNaN(x);
 const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(() => resolve(), ms));
-
-function safeAsync(asyncFn, defaultValue = null) {
-  return async (...args) => {
-    try {
-      return await asyncFn(...args);
-    } catch (e) {
-      console.error(`Error in async operation: ${e.message}`);
-      return defaultValue;
-    }
-  };
-}
-
-function getBotMetadata(conn) {
-  const now = Date.now();
-  if (botMetadataCache.lastUpdate && (now - botMetadataCache.lastUpdate) < BOT_METADATA_TTL) {
-    return {
-      name: botMetadataCache.name || 'Luna-Bot',
-      number: botMetadataCache.number || 'Sin número',
-      jid: botMetadataCache.jid
-    };
-  }
-  try {
-    botMetadataCache.jid = conn?.user?.jid || conn?.user?.id;
-    botMetadataCache.number = conn?.user?.jid?.split('@')[0] || 'Sin número';
-    botMetadataCache.name = conn?.user?.name || conn?.user?.verifiedName || 'Luna-Bot';
-    botMetadataCache.lastUpdate = now;
-  } catch (e) {
-    console.error(`Error getting bot metadata: ${e.message}`);
-  }
-  return {
-    name: botMetadataCache.name || 'Luna-Bot',
-    number: botMetadataCache.number || 'Sin número',
-    jid: botMetadataCache.jid
-  };
-}
 
 async function loadTranslation(idioma) {
   const cached = translationsCache.get(idioma);
@@ -106,7 +47,6 @@ async function loadTranslation(idioma) {
     translationsCache.set(idioma, parsed);
     return parsed;
   } catch (e) {
-    console.error(`Error loading language ${idioma}: ${e.message}`);
     return {};
   }
 }
@@ -126,40 +66,19 @@ async function loadCustomCommandsOnce(customCommandsDir) {
         console.log(`Error loading custom command ${file}: ${e.message}`);
       }
     }
-  } catch (e) {
-    console.error(`Error loading custom commands directory: ${e.message}`);
-  }
-}
-
-function isRecentParticipantEvent(groupId, participant, action) {
-  const key = `${groupId}-${participant}-${action}`;
-  const now = Date.now();
-  
-  if (recentParticipantEvents.has(key)) {
-    const lastTime = recentParticipantEvents.get(key);
-    if (now - lastTime < 5000) {
-      return true;
-    }
-  }
-  
-  if (recentParticipantEvents.size >= MAX_CACHE_SIZE) {
-    const firstKey = recentParticipantEvents.keys().next().value;
-    recentParticipantEvents.delete(firstKey);
-  }
-  
-  recentParticipantEvents.set(key, now);
-  return false;
+  } catch (e) {}
 }
 
 function logError(e, plugin = 'general') {
   console.log(chalk.red(`\n💥 Error in: ${chalk.yellow(plugin)}`));
-  console.log(chalk.red(`📍 ${chalk.white(e?.message || e?.toString() || 'Unknown error')}`));
+  console.log(chalk.red(`🔍 ${chalk.white(e?.message || e?.toString() || 'Unknown error')}`));
 }
 
 let mconn;
 const { proto } = (await import("@whiskeysockets/baileys")).default;
 
 startCacheCleanupInterval(groupCache, recentMessages, recentParticipantEvents, translationsCache, customCommandsCache, processedVoiceMessages, CACHE_TTL, DUPLICATE_TIMEOUT);
+
 setInterval(() => {
   try {
     limitCache(groupCache, 30);
@@ -173,14 +92,11 @@ setInterval(() => {
     }
     
     if (global.gc) global.gc();
-  } catch (e) {
-    console.error('Cache cleanup error:', e.message);
-  }
+  } catch (e) {}
 }, 60000);
 
 export async function handler(chatUpdate) {
   try {
-    if (this.setMaxListeners) this.setMaxListeners(25);
     this.msgqueque = this.msgqueque || [];
     this.uptime = this.uptime || Date.now();
     
@@ -200,7 +116,6 @@ export async function handler(chatUpdate) {
     const globalPrefix = this.prefix || global.prefix;
 
     if (isVoiceMessage(m)) {
-
       const jid = m.key.remoteJid;
       const settings = global.db?.data?.settings?.[this?.user?.jid];
       if (settings?.iaLunaActive !== false) {
@@ -227,9 +142,7 @@ export async function handler(chatUpdate) {
           chatUpdate
         });
         if (stop) return;
-      } catch (e) {
-        console.error(`Error in before hook (${name}): ${e.message}`);
-      }
+      } catch (e) {}
     }
 
     try {
@@ -265,9 +178,7 @@ export async function handler(chatUpdate) {
         try {
           const id = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson)?.id;
           if (id) m.text = id;
-        } catch (e) {
-          console.error(`Error parsing interactive response: ${e.message}`);
-        }
+        } catch (e) {}
       }
 
       const { isROwner, isOwner, isMods, isPrems } = checkUserPermissions(m, this);
@@ -286,15 +197,7 @@ export async function handler(chatUpdate) {
       if (m.isBaileys && !m.message?.audioMessage) return;
       m.exp += Math.ceil(Math.random() * 10);
 
-      const { usedPrefix, sinPrefijoActivo, isCommandText, isStickerMessage, hasCommandSticker } = parseCommandText(m, globalPrefix, getSinPrefijo);
-
-      let groupMetadata = {};
-      let participants = [];
-      let isAdmin = false;
-      let isRAdmin = false;
-      let isBotAdmin = false;
-      let userGroup = {};
-      let botGroup = {};
+      const { usedPrefix, sinPrefijoActivo } = parseCommandText(m, globalPrefix, getSinPrefijo);
 
       const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins');
       const customCommandsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), './custom-commands');
@@ -306,46 +209,7 @@ export async function handler(chatUpdate) {
         allPlugins[`custom-${file}`] = plugin;
       }
 
-      if (m.isGroup) {
-  const needsGroupData = (plugin) => {
-    return plugin.group || plugin.admin || plugin.botAdmin;
-  };
-  
-  if (usedPrefix || sinPrefijoActivo) {
-    const pluginName = Object.keys(allPlugins).find(name => {
-      const p = allPlugins[name];
-      if (!p || p.disabled) return false;
-      const cmd = parseCommandWithPrefix(m.text, usedPrefix).command;
-      return checkCommandAcceptance(p, cmd);
-    });
-    
-    if (pluginName && needsGroupData(allPlugins[pluginName])) {
-      const cachedData = groupCache.get(m.chat);
-      if (cachedData && (Date.now() - cachedData.timestamp) < 300000) {
-        const gd = cachedData.data;
-        groupMetadata = gd.groupMetadata;
-        participants = gd.participants;
-        userGroup = gd.userGroup;
-        botGroup = gd.botGroup;
-        isAdmin = gd.isAdmin;
-        isRAdmin = gd.isRAdmin;
-        isBotAdmin = gd.isBotAdmin;
-      } else {
-        const groupData = await getGroupMetadata(this, m.chat, groupCache, m.sender);
-        groupMetadata = groupData.groupMetadata;
-        participants = groupData.participants;
-        userGroup = groupData.userGroup;
-        botGroup = groupData.botGroup;
-        isAdmin = groupData.isAdmin;
-        isRAdmin = groupData.isRAdmin;
-        isBotAdmin = groupData.isBotAdmin;
-      }
-    }
-  }
-}
-
       for (const name in allPlugins) {
-        
         const plugin = allPlugins[name];
         if (!plugin || plugin.disabled) continue;
 
@@ -387,23 +251,21 @@ export async function handler(chatUpdate) {
             if (await plugin.before.call(this, m, {
               match: [prefixUsed],
               conn: this,
-              participants,
-              groupMetadata,
+              participants: [],
+              groupMetadata: {},
               user: {},
               bot: {},
               isROwner,
               isOwner,
-              isRAdmin,
-              isAdmin,
-              isBotAdmin,
+              isRAdmin: false,
+              isAdmin: false,
+              isBotAdmin: false,
               isPrems,
               chatUpdate,
               __dirname: name.startsWith('custom-') ? customCommandsDir : ___dirname,
               __filename
             })) continue;
-          } catch (e) {
-            console.error(`Error in before hook: ${e.message}`);
-          }
+          } catch (e) {}
         }
 
         if (typeof plugin !== 'function') continue;
@@ -430,12 +292,12 @@ export async function handler(chatUpdate) {
               command: cmdSin,
               text: m.textoSinPrefijo,
               conn: this,
-              participants,
-              groupMetadata,
+              participants: [],
+              groupMetadata: {},
               isROwner,
               isOwner,
-              isAdmin,
-              isBotAdmin,
+              isAdmin: false,
+              isBotAdmin: false,
               isPrems,
               chatUpdate,
               __dirname: name.startsWith('custom-') ? customCommandsDir : ___dirname,
@@ -484,8 +346,6 @@ export async function handler(chatUpdate) {
               user.bannedMessageCount++;
             } else if (user.bannedMessageCount === 3) {
               user.bannedMessageSent = true;
-            } else {
-              continue;
             }
             continue;
           }
@@ -495,8 +355,7 @@ export async function handler(chatUpdate) {
             if (user.commandCount >= 2) {
               const remainingTime = Math.ceil((user.lastCommandTime + 5000 - Date.now()) / 1000);
               if (remainingTime > 0) {
-                const messageText = `*[⏱️] Wait* _${remainingTime} seconds_ *before using another command.*`;
-                m.reply(messageText);
+                m.reply(`*[⏱️] Wait* _${remainingTime} seconds_ *before using another command.*`);
                 continue;
               } else {
                 user.commandCount = 0;
@@ -508,7 +367,7 @@ export async function handler(chatUpdate) {
           }
 
           const adminMode = chat?.modoadmin;
-          if (adminMode && !isOwner && !isROwner && m.isGroup && !isAdmin && (plugin.admin || plugin.botAdmin || plugin.group)) {
+          if (adminMode && !isOwner && !isROwner && m.isGroup && (plugin.admin || plugin.botAdmin || plugin.group)) {
             continue;
           }
 
@@ -532,11 +391,11 @@ export async function handler(chatUpdate) {
             fail('group', m, this);
             continue;
           }
-          if (plugin.botAdmin && !isBotAdmin) {
+          if (plugin.botAdmin && m.isGroup) {
             fail('botAdmin', m, this);
             continue;
           }
-          if (plugin.admin && !isAdmin) {
+          if (plugin.admin && m.isGroup) {
             fail('admin', m, this);
             continue;
           }
@@ -575,15 +434,15 @@ export async function handler(chatUpdate) {
             command,
             text,
             conn: this,
-            participants,
-            groupMetadata,
+            participants: [],
+            groupMetadata: {},
             user,
             bot: {},
             isROwner,
             isOwner,
-            isRAdmin,
-            isAdmin,
-            isBotAdmin,
+            isRAdmin: false,
+            isAdmin: false,
+            isBotAdmin: false,
             isPrems,
             chatUpdate,
             __dirname: name.startsWith('custom-') ? customCommandsDir : ___dirname,
@@ -655,18 +514,9 @@ export async function handler(chatUpdate) {
           }
           global.db.data.stats = stats;
         }
-      } catch (e) {
-        console.error(`Error updating stats: ${e.message}`);
-      }
+      } catch (e) {}
 
-      try {
-        if (!opts['noprint']) {
-          const printModule = await import('./src/libraries/print.js');
-          await printModule.default?.(m, this);
-        }
-      } catch (e) {
-        console.log(`Print error:`, e.message);
-      }
+      
 
       const settingsREAD = global.db.data.settings[this.user.jid] || {};
       if (opts['autoread'] || settingsREAD?.autoread2) {
@@ -697,9 +547,7 @@ export async function participantsUpdate({ id, participants, action }) {
       opts,
       groupCache
     );
-  } catch (e) {
-    console.error('participantsUpdate:', e.message);
-  }
+  } catch (e) {}
 }
 
 export async function groupsUpdate(groupsUpdate) {
@@ -726,17 +574,11 @@ export async function groupsUpdate(groupsUpdate) {
         else if (revoke) text = (chats?.sRevoke || tradutor.texto8 || 'Link revoked').replace('@revoke', revoke);
 
         if (text) {
-          await mconn?.conn?.sendMessage(id, { text, mentions: mconn?.conn?.parseMention(text) }).catch(e => 
-            console.error(`Error sending group update: ${e.message}`)
-          );
+          await mconn?.conn?.sendMessage(id, { text, mentions: mconn?.conn?.parseMention(text) }).catch(() => {});
         }
-      } catch (e) {
-        console.error(`Error processing group update: ${e.message}`);
-      }
+      } catch (e) {}
     }
-  } catch (e) {
-    console.error(`Groups update error: ${e.message}`);
-  }
+  } catch (e) {}
 }
 
 export async function callUpdate(callUpdate) {
@@ -748,17 +590,12 @@ export async function callUpdate(callUpdate) {
       try {
         if (!nk.isGroup && nk.status === 'offer') {
           const msg = `Hello *@${nk.from.split('@')[0]}*, ${nk.isVideo ? 'video calls' : 'calls'} are not allowed. You will be blocked.\nContact my creator for unblock.`;
-          const callmsg = await mconn?.conn?.reply(nk.from, msg, false, { mentions: [nk.from] });
-
+          await mconn?.conn?.reply(nk.from, msg, false, { mentions: [nk.from] });
           await mconn.conn.updateBlockStatus(nk.from, 'block');
         }
-      } catch (e) {
-        console.error(`Error handling call: ${e.message}`);
-      }
+      } catch (e) {}
     }
-  } catch (e) {
-    console.error(`Call update error: ${e.message}`);
-  }
+  } catch (e) {}
 }
 
 export async function deleteUpdate(message) {
@@ -780,24 +617,16 @@ export async function deleteUpdate(message) {
     let chat = global.db.data.chats[msg.chat] || {};
     if (!chat?.antidelete) return;
 
-    const antideleteMessage = `${tradutor.texto1?.[0] || '📄 Message deleted'}\n${tradutor.texto1?.[1] || 'By'}: @${participant.split('@')[0]}\n${tradutor.texto1?.[2] || 'Time'}: ${time}\n${tradutor.texto1?.[3] || 'Date'}: ${date}`.trim();
+    const antideleteMessage = `${tradutor.texto1?.[0] || '🔄 Message deleted'}\n${tradutor.texto1?.[1] || 'By'}: @${participant.split('@')[0]}\n${tradutor.texto1?.[2] || 'Time'}: ${time}\n${tradutor.texto1?.[3] || 'Date'}: ${date}`.trim();
 
-    await mconn.conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [mconn.conn.decodeJid(participant)] }, { quoted: msg }).catch(e => 
-      console.error(`Error sending antidelete message: ${e.message}`)
-    );
-
-    await mconn.conn.copyNForward(msg.chat, msg).catch(e => 
-      console.error(`Error forwarding message: ${e.message}`)
-    );
-  } catch (e) {
-    console.error(`Delete update error: ${e.message}`);
-  }
+    await mconn.conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [mconn.conn.decodeJid(participant)] }, { quoted: msg }).catch(() => {});
+    await mconn.conn.copyNForward(msg.chat, msg).catch(() => {});
+  } catch (e) {}
 }
 
 global.dfail = async (type, m, conn) => {
   try {
-    const datas = global;
-    const idioma = datas.db.data.users[m.sender]?.language || global.defaultLenguaje;
+    const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
     const _translate = await loadTranslation(idioma);
     const tradutor = _translate.handler?.dfail || {};
 
@@ -817,13 +646,9 @@ global.dfail = async (type, m, conn) => {
     if (msg) {
       const aa = { quoted: m, userJid: conn.user.jid };
       const prep = generateWAMessageFromContent(m.chat, { extendedTextMessage: { text: msg, contextInfo: { externalAdReply: { title: tradutor.texto11?.[0], body: tradutor.texto11?.[1], thumbnail: global.imagen1, sourceUrl: tradutor.texto11?.[2] } } } }, aa);
-      await conn.relayMessage(m.chat, prep.message, { messageId: prep.key.id }).catch(e => 
-        console.error(`Error sending fail message: ${e.message}`)
-      );
+      await conn.relayMessage(m.chat, prep.message, { messageId: prep.key.id }).catch(() => {});
     }
-  } catch (e) {
-    console.error(`Dfail error: ${e.message}`);
-  }
+  } catch (e) {}
 };
 
 const file = global.__filename(import.meta.url, true);
@@ -831,32 +656,28 @@ watchFile(file, async () => {
   unwatchFile(file);
   console.log(chalk.redBright('Update handler.js'));
   if (global.reloadHandler) {
-    const result = await global.reloadHandler().catch(e => console.error(`Reload error: ${e.message}`));
+    const result = await global.reloadHandler().catch(() => {});
     if (result) console.log(result);
   }
 
   if (global.conns?.length > 0) {
     const users = [...new Set(global.conns.filter((conn) => conn?.user && conn?.ws?.socket?.readyState !== ws.CLOSED))];
     for (const userr of users) {
-      userr.subreloadHandler?.(false).catch(e => console.error(`Subreload error: ${e.message}`));
+      userr.subreloadHandler?.(false).catch(() => {});
     }
   }
 });
 
 process.on('unhandledRejection', (reason) => {
   const msg = reason?.message || reason?.toString() || 'Unknown error';
-  if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-    console.log('🛑 Critical Baileys error: Restart bot or scan QR again.');
-  } else {
+  if (!msg.includes('Unsupported state') && !msg.includes('unable to authenticate')) {
     console.error('🛠️ Unhandled rejection:', msg);
   }
 });
 
 process.on('uncaughtException', (err) => {
   const msg = err?.message || err?.toString() || 'Unknown error';
-  if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-    console.log('🔱 Critical Baileys error: Restart bot or scan QR again.');
-  } else {
+  if (!msg.includes('Unsupported state') && !msg.includes('unable to authenticate')) {
     console.error('⚠️ Uncaught exception:', msg);
   }
 });
