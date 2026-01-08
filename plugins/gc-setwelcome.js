@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { setConfig } from '../lib/funcConfig.js';
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const cooldowns = new Map();
 
@@ -9,22 +10,11 @@ const handler = async (m, { isOwner, conn, text, args, usedPrefix }) => {
   const now = Date.now();
 
   if (usedPrefix == 'a' || usedPrefix == 'A') return;
+  if (!m.isGroup) return m.reply('❌ Este comando solo funciona en grupos');
 
-  const groupMetadata = await conn.groupMetadata(m.chat);
-  const groupAdmins = groupMetadata.participants.filter(p => p.admin !== null).map(p => p.id);
+  const { isAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
 
-  let realUserJid = m.sender;
-
-  if (m.sender.includes('@lid')) {
-    const participantData = groupMetadata.participants.find(p => p.lid === m.sender);
-    if (participantData && participantData.id) {
-      realUserJid = participantData.id;
-    }
-  }
-
-  const isUserAdmin = groupAdmins.includes(realUserJid);
-
-  if (!isUserAdmin && !isOwner) {
+  if (!isAdmin && !isOwner) {
     return m.reply('⚠️ Este comando solo puede ser usado por administradores del grupo.');
   }
 
@@ -46,15 +36,15 @@ const handler = async (m, { isOwner, conn, text, args, usedPrefix }) => {
     global.db.data.chats[m.chat].sWelcome = text;
     await setConfig(m.chat, { sWelcome: text });
     m.reply(tradutor.texto1);
+    cooldowns.set(chatId, now);
   } else {
     throw `${tradutor.texto2[0]}\n*- @user (mención)*\n*- @group (nombre de grupo)*\n*- @desc (description de grupo)*`;
   }
-
-  cooldowns.set(chatId, now);
 };
 
 handler.help = ['setwelcome <text>'];
 handler.tags = ['group'];
 handler.command = /^(setwelcome)$/i;
 handler.group = true;
+
 export default handler;
