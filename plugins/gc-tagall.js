@@ -23,6 +23,7 @@ const handler = async (m, { conn, args, isOwner }) => {
         return m.reply(`⏰ Debes esperar ${Math.floor(left / 60000)}m ${Math.floor((left % 60000) / 1000)}s antes de usar este comando nuevamente.`);
       }
     }
+
     cooldowns.set(chatId, now);
 
     const resolveLid = jid => {
@@ -47,16 +48,17 @@ const handler = async (m, { conn, args, isOwner }) => {
 
     let teks = `┏━━━ ⸢ Tag All ⸣ ━━━\n`;
     teks += `${messageText}\n\n`;
-
+    
     for (const jid of mentionSet) {
       teks += `┣➥ @${jid.split('@')[0]}\n`;
     }
-
+    
     teks += `┗━━━━━━━━━━━━━━━━\n`;
     teks += `*└* Luna-Botv6 - 𝐁𝐨𝐭\n\n*▌│█║▌║▌║║▌║▌║▌║█*`;
 
     await conn.sendMessage(chatId, { text: teks, mentions: [...mentionSet] });
   } catch (e) {
+    console.error(e);
     await m.reply('❌ Error al ejecutar el comando.');
   }
 };
