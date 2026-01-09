@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { setConfig } from '../lib/funcConfig.js';
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 
 const handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   if (usedPrefix === 'a' || usedPrefix === 'A') return;
@@ -42,7 +42,7 @@ const handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
   if (!state) {
     return m.reply(`
-*[❗] FORMATO ERRÓNEO*
+*[◉] FORMATO ERRÓNEO*
 ${tradutor.texto1[0]}
 
 *Ejemplos:*
@@ -54,6 +54,8 @@ ${tradutor.texto1[0]}
   try {
     await conn.groupSettingUpdate(m.chat, state);
     setConfig(m.chat, { groupMode: state === 'announcement' ? 'cerrado' : 'abierto' });
+
+    clearGroupCache(m.chat);
 
     await m.reply(
       `✅ Estado del grupo cambiado a: *${state === 'announcement' ? '🔒 CERRADO' : '🔓 ABIERTO'}*`

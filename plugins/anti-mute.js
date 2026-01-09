@@ -4,7 +4,7 @@ export const all = async (m, { conn }) => {
   try {
     if (!m.isGroup) return;
     if (m.fromMe) return;
-    if (!global.muted) return;
+    if (!global.muted || global.muted.length === 0) return;
 
     let sender = m.sender;
 
@@ -19,7 +19,5 @@ export const all = async (m, { conn }) => {
     if (global.muted.includes(muteKey)) {
       await conn.sendMessage(m.chat, { delete: m.key });
     }
-  } catch (e) {
-    console.error('Error mute listener:', e.message);
-  }
+  } catch (e) {}
 };

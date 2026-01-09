@@ -3,12 +3,12 @@ import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { prepareWAMessageMedia, generateWAMessageFromContent } from '@whiskeysockets/baileys';
 
 const handler = async (m, { conn }) => {
-  if (!m.isGroup) return m.reply('*[❗] Este comando solo funciona en grupos.*');
+  if (!m.isGroup) return m.reply('*[◉] Este comando solo funciona en grupos.*');
 
   const { groupMetadata, isAdmin, isBotAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
 
-  if (!isAdmin) return m.reply('*[❗] Solo los administradores pueden usar este comando.*');
-  if (!isBotAdmin) return m.reply('*[❗] El bot necesita ser administrador para mostrar el enlace.*');
+  if (!isAdmin) return m.reply('*[◉] Solo los administradores pueden usar este comando.*');
+  if (!isBotAdmin) return m.reply('*[◉] El bot necesita ser administrador para mostrar el enlace.*');
 
   const datas = global;
   const idioma = datas.db?.data?.users[m.sender]?.language || global.defaultLenguaje || 'es';
@@ -62,7 +62,6 @@ const handler = async (m, { conn }) => {
 
     conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id });
   } catch {
-    // Fallback simple si falla el interactive
     conn.reply(m.chat, `https://chat.whatsapp.com/${linkcode}`, m, {
       contextInfo: {
         externalAdReply: {
@@ -86,4 +85,3 @@ handler.command = /^(link(gro?up)?)$/i;
 handler.group = true;
 
 export default handler;
-

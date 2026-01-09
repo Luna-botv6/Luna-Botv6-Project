@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 
 const cooldowns = new Map();
 
@@ -58,7 +58,7 @@ const handler = async (m, { isOwner, conn, text, participants, command, usedPref
     } else if (text) {
       const num = text.replace(/[^0-9]/g, '');
       if (num.length < 11 || num.length > 15) {
-        return m.reply('*[❗] El número ingresado es incorrecto.*');
+        return m.reply('*[◉] El número ingresado es incorrecto.*');
       }
       userToRemove = num + '@s.whatsapp.net';
     }
@@ -73,16 +73,19 @@ const handler = async (m, { isOwner, conn, text, participants, command, usedPref
 
     const exists = groupParticipants.find(p => p.id === userToRemove);
     if (!exists) {
-      return m.reply('*[❗] La persona mencionada no está en el grupo.*');
+      return m.reply('*[◉] La persona mencionada no está en el grupo.*');
     }
 
     await conn.groupParticipantsUpdate(chatId, [userToRemove], 'remove');
+    
+    clearGroupCache(chatId);
+    
     await m.reply(`✅ @${userToRemove.split('@')[0]} ha sido expulsado del grupo.`, null, {
       mentions: [userToRemove]
     });
   } catch (e) {
     console.error(e);
-    await m.reply('*[❗] No se pudo expulsar al usuario. Puede que sea admin o WhatsApp no lo permita.*');
+    await m.reply('*[◉] No se pudo expulsar al usuario. Puede que sea admin o WhatsApp no lo permita.*');
   }
 };
 
@@ -92,4 +95,3 @@ handler.command = /^(kick|echar|hechar|sacar)$/i;
 handler.group = true;
 
 export default handler;
-

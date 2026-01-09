@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 if (!global.muted) global.muted = [];
@@ -7,8 +6,7 @@ const handler = async (m, { conn, usedPrefix, isOwner, command }) => {
   try {
     if (!m.isGroup) return m.reply('*[⚠] Este comando solo funciona en grupos.*');
 
-    const { participants, isAdmin, isBotAdmin } =
-      await getGroupDataForPlugin(conn, m.chat, m.sender);
+    const { participants, isAdmin, isBotAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
 
     if (!isBotAdmin) {
       return m.reply('*[⚠] El bot debe ser administrador para usar este comando.*');
@@ -55,17 +53,13 @@ const handler = async (m, { conn, usedPrefix, isOwner, command }) => {
     if (command === 'mute' || command === 'silenciar') {
       if (isMuted) return m.reply('*[⚠] Este usuario ya está silenciado*');
       global.muted.push(muteKey);
-      await m.reply(`*✓ @${user.split('@')[0]} ha sido silenciado*`, null, {
-        mentions: [user]
-      });
+      await m.reply(`*✓ @${user.split('@')[0]} ha sido silenciado*`, null, { mentions: [user] });
     }
 
     if (command === 'unmute' || command === 'dessilenciar') {
       if (!isMuted) return m.reply('*[⚠] Este usuario no está silenciado*');
       global.muted.splice(global.muted.indexOf(muteKey), 1);
-      await m.reply(`*✓ @${user.split('@')[0]} ha sido dessilenciado*`, null, {
-        mentions: [user]
-      });
+      await m.reply(`*✓ @${user.split('@')[0]} ha sido dessilenciado*`, null, { mentions: [user] });
     }
   } catch (e) {
     console.error('[ERROR MUTE]', e);

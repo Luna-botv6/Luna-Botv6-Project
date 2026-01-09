@@ -2,22 +2,22 @@ import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const handler = async (m, { conn, isOwner }) => {
   if (!m.isGroup) {
-    return m.reply('*[❗] Este comando solo puede usarse en grupos.*');
+    return m.reply('*[◉] Este comando solo puede usarse en grupos.*');
   }
 
   const { groupMetadata, isAdmin, isBotAdmin } =
     await getGroupDataForPlugin(conn, m.chat, m.sender);
 
   if (!isAdmin && !isOwner) {
-    return m.reply('*[❗] Solo los administradores pueden usar este comando.*');
+    return m.reply('*[◉] Solo los administradores pueden usar este comando.*');
   }
 
   if (!isBotAdmin) {
-    return m.reply('*[❗] El bot necesita ser administrador para eliminar mensajes.*');
+    return m.reply('*[◉] El bot necesita ser administrador para eliminar mensajes.*');
   }
 
   if (!m.quoted) {
-    return m.reply('*[❗] Debes citar un mensaje para eliminarlo.*');
+    return m.reply('*[◉] Debes citar un mensaje para eliminarlo.*');
   }
 
   const resolveLidToId = (jidOrLid) => {
@@ -40,7 +40,7 @@ const handler = async (m, { conn, isOwner }) => {
     m.message?.extendedTextMessage?.contextInfo?.participant;
 
   if (!messageId || !participant) {
-    return m.reply('*[❗] No se pudo eliminar el mensaje.*');
+    return m.reply('*[◉] No se pudo eliminar el mensaje.*');
   }
 
   try {
@@ -55,7 +55,7 @@ const handler = async (m, { conn, isOwner }) => {
   } catch (e) {
     console.error(e);
     await m.reply(
-      '*[❗] No se pudo eliminar el mensaje. Asegúrate de que el bot sea administrador.*'
+      '*[◉] No se pudo eliminar el mensaje. Asegúrate de que el bot sea administrador.*'
     );
   }
 };
