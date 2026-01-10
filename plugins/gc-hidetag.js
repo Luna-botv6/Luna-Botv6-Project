@@ -55,6 +55,21 @@ const handler = async (m, { conn, text, isOwner }) => {
       finalText = 'Hola :D';
     }
 
+    if (quoted && quoted !== m && quoted.mentionedJid?.length) {
+      for (const lid of quoted.mentionedJid) {
+        const real = resolveLid(lid);
+        if (!real) continue;
+
+        mentionSet.add(real);
+        const num = real.split('@')[0];
+        const lidPattern = lid.includes('@lid') ? lid.split('@')[0] : null;
+        
+        if (lidPattern) {
+          finalText = finalText.replace(new RegExp(`@${lidPattern}`, 'g'), `@${num}`);
+        }
+      }
+    }
+
     if (m.mentionedJid?.length) {
       for (const lid of m.mentionedJid) {
         const real = resolveLid(lid);
