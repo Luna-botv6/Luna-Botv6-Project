@@ -41,7 +41,19 @@ const handler = async (m, { conn, text, isOwner }) => {
     const mentionSet = new Set();
     participants.forEach(p => mentionSet.add(conn.decodeJid(p.id)));
 
-    let finalText = text || 'Hola :D';
+    const quoted = m.quoted || m;
+    const mime = (quoted.msg || quoted).mimetype || '';
+    const isMedia = /image|video|sticker|audio/.test(mime);
+
+    let finalText = text || '';
+
+    if (!finalText && quoted && quoted !== m) {
+      finalText = quoted.text || quoted.caption || quoted.body || '';
+    }
+
+    if (!finalText) {
+      finalText = 'Hola :D';
+    }
 
     if (m.mentionedJid?.length) {
       for (const lid of m.mentionedJid) {
@@ -55,10 +67,6 @@ const handler = async (m, { conn, text, isOwner }) => {
     }
 
     const mentions = [...mentionSet];
-
-    const quoted = m.quoted || m;
-    const mime = (quoted.msg || quoted).mimetype || '';
-    const isMedia = /image|video|sticker|audio/.test(mime);
 
     if (isMedia && quoted.mtype === 'imageMessage') {
       const media = await quoted.download();
