@@ -8,6 +8,7 @@ import { unwatchFile, watchFile } from 'fs';
 import fs from 'fs';
 import chalk from 'chalk';
 import ws from 'ws';
+import { EventEmitter } from 'events';
 import { isVoiceMessage, handleVoiceMessage } from './plugins/voice-handler.js';
 import { getConfig } from './lib/funcConfig.js';
 import { readFile } from 'fs/promises';
@@ -20,6 +21,8 @@ import { ensureUserData, ensureBotSettings } from './lib/funcion/databaseManager
 import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
+
+EventEmitter.defaultMaxListeners = 20;
 
 const groupCache = new Map();
 const recentMessages = new Map();
@@ -63,15 +66,15 @@ async function loadCustomCommandsOnce(customCommandsDir) {
         const mod = await import(`file://${filePath}?t=${Date.now()}`);
         customCommandsCache.set(file, mod.default || mod);
       } catch (e) {
-        console.log(`Error loading custom command ${file}: ${e.message}`);
+        console.log(`Error al cargar comando personalizado ${file}: ${e.message}`);
       }
     }
   } catch (e) {}
 }
 
 function logError(e, plugin = 'general') {
-  console.log(chalk.red(`\n💥 Error in: ${chalk.yellow(plugin)}`));
-  console.log(chalk.red(`🔍 ${chalk.white(e?.message || e?.toString() || 'Unknown error')}`));
+  console.log(chalk.red(`\n💥 Error en: ${chalk.yellow(plugin)}`));
+  console.log(chalk.red(`📝 ${chalk.white(e?.message || e?.toString() || 'Error desconocido')}`));
 }
 
 let mconn;
@@ -120,7 +123,7 @@ export async function handler(chatUpdate) {
       const settings = global.db?.data?.settings?.[this?.user?.jid];
       if (settings?.iaLunaActive !== false) {
         await handleVoiceMessage(this, m, jid, processedVoiceMessages).catch(e => 
-          console.error(`Voice message error: ${e.message}`)
+          console.error(`Error en mensaje de voz: ${e.message}`)
         );
         return;
       }
@@ -341,7 +344,7 @@ export async function handler(chatUpdate) {
             user.bannedMessageCount = user.bannedMessageCount || 0;
             if (user.bannedMessageCount < 3) {
               const messageNumber = user.bannedMessageCount + 1;
-              const messageText = `${tradutor.texto1?.[0] || 'You are banned'}\n${tradutor.texto1?.[1] || 'Message'} ${messageNumber}/3\n${user.bannedReason ? `${tradutor.texto1?.[2] || 'Reason'}: ${user.bannedReason}` : `${tradutor.texto1?.[3] || 'No reason'}`}\n${tradutor.texto1?.[4] || 'Contact support'}`.trim();
+              const messageText = `${tradutor.texto1?.[0] || 'Estás baneado'}\n${tradutor.texto1?.[1] || 'Mensaje'} ${messageNumber}/3\n${user.bannedReason ? `${tradutor.texto1?.[2] || 'Razón'}: ${user.bannedReason}` : `${tradutor.texto1?.[3] || 'Sin razón especificada'}`}\n${tradutor.texto1?.[4] || 'Contacta al soporte'}`.trim();
               m.reply(messageText);
               user.bannedMessageCount++;
             } else if (user.bannedMessageCount === 3) {
@@ -355,7 +358,7 @@ export async function handler(chatUpdate) {
             if (user.commandCount >= 2) {
               const remainingTime = Math.ceil((user.lastCommandTime + 5000 - Date.now()) / 1000);
               if (remainingTime > 0) {
-                m.reply(`*[⏱️] Wait* _${remainingTime} seconds_ *before using another command.*`);
+                m.reply(`*[⏱️] Espera* _${remainingTime} segundos_ *antes de usar otro comando.*`);
                 continue;
               } else {
                 user.commandCount = 0;
@@ -411,17 +414,17 @@ export async function handler(chatUpdate) {
           m.isCommand = true;
           const xp = 'exp' in plugin ? parseInt(plugin.exp) : 17;
           if (xp > 200) {
-            m.reply('Ngecit -_-');
+            m.reply('Haciendo trampa -_-');
           } else {
             m.exp += xp;
           }
 
           if (!isPrems && plugin.limit && global.db.data.users[m.sender]?.limit < plugin.limit) {
-            m.reply(`${tradutor.texto2 || 'Limit exceeded'} _${this.prefix}buyall_`);
+            m.reply(`${tradutor.texto2 || 'Límite excedido'} _${this.prefix}buyall_`);
             continue;
           }
           if (plugin.level > user?.level) {
-            m.reply(`${tradutor.texto3?.[0] || 'Level'} ${plugin.level} ${tradutor.texto3?.[1] || 'required'} ${user?.level || 0}, ${tradutor.texto3?.[2] || 'Use'} ${this.prefix}lvl ${tradutor.texto3?.[3] || 'to upgrade'}`);
+            m.reply(`${tradutor.texto3?.[0] || 'Nivel'} ${plugin.level} ${tradutor.texto3?.[1] || 'requerido'} ${user?.level || 0}, ${tradutor.texto3?.[2] || 'Usa'} ${this.prefix}lvl ${tradutor.texto3?.[3] || 'para subir de nivel'}`);
             continue;
           }
 
@@ -460,7 +463,7 @@ export async function handler(chatUpdate) {
             if (e) {
               let text = format(e);
               for (const key of Object.values(global.APIKeys || {})) {
-                text = text.replace(new RegExp(key, 'g'), '#HIDDEN#');
+                text = text.replace(new RegExp(key, 'g'), '#OCULTO#');
               }
               await m.reply(text).catch(() => {});
             }
@@ -473,7 +476,7 @@ export async function handler(chatUpdate) {
               }
             }
             if (m.limit) {
-              m.reply(`${tradutor.texto4?.[0] || 'Limit used'} ${m.limit} ${tradutor.texto4?.[1] || 'times'}`);
+              m.reply(`${tradutor.texto4?.[0] || 'Límite usado'} ${m.limit} ${tradutor.texto4?.[1] || 'veces'}`);
             }
           }
           break;
@@ -568,10 +571,10 @@ export async function groupsUpdate(groupsUpdate) {
         if (!chats?.detect) continue;
 
         let text = '';
-        if (desc) text = (chats?.sDesc || tradutor.texto5 || 'Description changed').replace('@desc', desc);
-        else if (subject) text = (chats?.sSubject || tradutor.texto6 || 'Subject changed').replace('@subject', subject);
-        else if (icon) text = (chats?.sIcon || tradutor.texto7 || 'Icon changed').replace('@icon', icon);
-        else if (revoke) text = (chats?.sRevoke || tradutor.texto8 || 'Link revoked').replace('@revoke', revoke);
+        if (desc) text = (chats?.sDesc || tradutor.texto5 || 'Descripción cambiada').replace('@desc', desc);
+        else if (subject) text = (chats?.sSubject || tradutor.texto6 || 'Nombre cambiado').replace('@subject', subject);
+        else if (icon) text = (chats?.sIcon || tradutor.texto7 || 'Ícono cambiado').replace('@icon', icon);
+        else if (revoke) text = (chats?.sRevoke || tradutor.texto8 || 'Enlace revocado').replace('@revoke', revoke);
 
         if (text) {
           await mconn?.conn?.sendMessage(id, { text, mentions: mconn?.conn?.parseMention(text) }).catch(() => {});
@@ -589,7 +592,7 @@ export async function callUpdate(callUpdate) {
     for (const nk of callUpdate) {
       try {
         if (!nk.isGroup && nk.status === 'offer') {
-          const msg = `Hello *@${nk.from.split('@')[0]}*, ${nk.isVideo ? 'video calls' : 'calls'} are not allowed. You will be blocked.\nContact my creator for unblock.`;
+          const msg = `Hola *@${nk.from.split('@')[0]}*, ${nk.isVideo ? 'las videollamadas' : 'las llamadas'} no están permitidas. Serás bloqueado.\nContacta a mi creador para ser desbloqueado.`;
           await mconn?.conn?.reply(nk.from, msg, false, { mentions: [nk.from] });
           await mconn.conn.updateBlockStatus(nk.from, 'block');
         }
@@ -617,7 +620,7 @@ export async function deleteUpdate(message) {
     let chat = global.db.data.chats[msg.chat] || {};
     if (!chat?.antidelete) return;
 
-    const antideleteMessage = `${tradutor.texto1?.[0] || '🔄 Message deleted'}\n${tradutor.texto1?.[1] || 'By'}: @${participant.split('@')[0]}\n${tradutor.texto1?.[2] || 'Time'}: ${time}\n${tradutor.texto1?.[3] || 'Date'}: ${date}`.trim();
+    const antideleteMessage = `${tradutor.texto1?.[0] || '🔄 Mensaje eliminado'}\n${tradutor.texto1?.[1] || 'Por'}: @${participant.split('@')[0]}\n${tradutor.texto1?.[2] || 'Hora'}: ${time}\n${tradutor.texto1?.[3] || 'Fecha'}: ${date}`.trim();
 
     await mconn.conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [mconn.conn.decodeJid(participant)] }, { quoted: msg }).catch(() => {});
     await mconn.conn.copyNForward(msg.chat, msg).catch(() => {});
@@ -654,7 +657,7 @@ global.dfail = async (type, m, conn) => {
 const file = global.__filename(import.meta.url, true);
 watchFile(file, async () => {
   unwatchFile(file);
-  console.log(chalk.redBright('Update handler.js'));
+  console.log(chalk.redBright('Actualización en handler.js'));
   if (global.reloadHandler) {
     const result = await global.reloadHandler().catch(() => {});
     if (result) console.log(result);
@@ -669,15 +672,87 @@ watchFile(file, async () => {
 });
 
 process.on('unhandledRejection', (reason) => {
-  const msg = reason?.message || reason?.toString() || 'Unknown error';
-  if (!msg.includes('Unsupported state') && !msg.includes('unable to authenticate')) {
-    console.error('🛠️ Unhandled rejection:', msg);
+  const msg = reason?.message || reason?.toString() || 'Error desconocido';
+  
+  if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
+    return;
   }
+  
+  if (msg.includes('presence') || msg.includes('sending presence') || msg.includes('enviando presencia')) {
+    console.log(chalk.yellow('\n⚠️ ============================================'));
+    console.log(chalk.yellow('❌ BOT BANEADO - NO SE VOLVERÁ A CONECTAR'));
+    console.log(chalk.yellow('============================================'));
+    console.log(chalk.white('📋 Solución:'));
+    console.log(chalk.white('1. Elimina la carpeta "MysticSession"'));
+    console.log(chalk.white('2. Vuelve a vincular el bot escaneando el QR'));
+    console.log(chalk.yellow('============================================\n'));
+    return;
+  }
+  
+  if (msg.includes('Connection') || msg.includes('Conexión') || msg.includes('WebSocket')) {
+    console.log(chalk.yellow('\n⚠️ ============================================'));
+    console.log(chalk.yellow('🔌 ERROR DE CONEXIÓN'));
+    console.log(chalk.yellow('============================================'));
+    console.log(chalk.white('📋 Posibles soluciones:'));
+    console.log(chalk.white('1. Verifica tu conexión a internet'));
+    console.log(chalk.white('2. Reinicia el servidor: npm start'));
+    console.log(chalk.white('3. Si persiste, vuelve a vincular el bot'));
+    console.log(chalk.yellow('============================================\n'));
+    return;
+  }
+  
+  console.log(chalk.red('\n🛠️ ============================================'));
+  console.log(chalk.red('ERROR NO MANEJADO'));
+  console.log(chalk.red('============================================'));
+  console.log(chalk.white(`📝 Mensaje: ${msg}`));
+  console.log(chalk.white('📋 Acción recomendada:'));
+  console.log(chalk.white('1. Reinicia el servidor con: npm start'));
+  console.log(chalk.white('2. Si el error persiste, revisa los logs'));
+  console.log(chalk.red('============================================\n'));
 });
 
 process.on('uncaughtException', (err) => {
-  const msg = err?.message || err?.toString() || 'Unknown error';
-  if (!msg.includes('Unsupported state') && !msg.includes('unable to authenticate')) {
-    console.error('⚠️ Uncaught exception:', msg);
+  const msg = err?.message || err?.toString() || 'Error desconocido';
+  
+  if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
+    return;
   }
+  
+  if (msg.includes('authenticate') || msg.includes('autenticación') || msg.includes('QR')) {
+    console.log(chalk.yellow('\n⚠️ ============================================'));
+    console.log(chalk.yellow('❌ ERROR DE AUTENTICACIÓN'));
+    console.log(chalk.yellow('============================================'));
+    console.log(chalk.white('📋 La vinculación no se completó correctamente'));
+    console.log(chalk.white('Solución:'));
+    console.log(chalk.white('1. Detén el servidor (Ctrl + C)'));
+    console.log(chalk.white('2. Elimina la carpeta "MysticSession"'));
+    console.log(chalk.white('3. Reinicia: npm start'));
+    console.log(chalk.white('4. Escanea el código QR nuevamente'));
+    console.log(chalk.yellow('============================================\n'));
+    return;
+  }
+  
+  if (msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT') || msg.includes('ENOTFOUND')) {
+    console.log(chalk.yellow('\n⚠️ ============================================'));
+    console.log(chalk.yellow('🌐 ERROR DE RED'));
+    console.log(chalk.yellow('============================================'));
+    console.log(chalk.white('📋 Problema de conexión a internet detectado'));
+    console.log(chalk.white('Solución:'));
+    console.log(chalk.white('1. Verifica tu conexión a internet'));
+    console.log(chalk.white('2. Espera unos segundos y reinicia el bot'));
+    console.log(chalk.white('3. El bot se reconectará automáticamente'));
+    console.log(chalk.yellow('============================================\n'));
+    return;
+  }
+  
+  console.log(chalk.red('\n⚠️ ============================================'));
+  console.log(chalk.red('EXCEPCIÓN CRÍTICA NO CAPTURADA'));
+  console.log(chalk.red('============================================'));
+  console.log(chalk.white(`📝 Mensaje: ${msg}`));
+  console.log(chalk.white(`📍 Stack: ${err?.stack?.split('\n')[1]?.trim() || 'No disponible'}`));
+  console.log(chalk.white('📋 Acción URGENTE:'));
+  console.log(chalk.white('1. REINICIA el servidor inmediatamente'));
+  console.log(chalk.white('2. Si el error se repite, revisa el código'));
+  console.log(chalk.white('3. Considera restaurar desde un backup'));
+  console.log(chalk.red('============================================\n'));
 });
