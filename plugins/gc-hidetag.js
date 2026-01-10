@@ -55,17 +55,27 @@ const handler = async (m, { conn, text, isOwner }) => {
       finalText = 'Hola :D';
     }
 
-    if (quoted && quoted !== m && quoted.mentionedJid?.length) {
-      for (const lid of quoted.mentionedJid) {
-        const real = resolveLid(lid);
-        if (!real) continue;
-
-        mentionSet.add(real);
-        const num = real.split('@')[0];
-        const lidPattern = lid.includes('@lid') ? lid.split('@')[0] : null;
-        
-        if (lidPattern) {
-          finalText = finalText.replace(new RegExp(`@${lidPattern}`, 'g'), `@${num}`);
+    const mentionPattern = /@(\d+)/g;
+    let match;
+    const numbersInText = [];
+    
+    while ((match = mentionPattern.exec(finalText)) !== null) {
+      numbersInText.push(match[1]);
+    }
+    
+    if (numbersInText.length > 0) {
+      for (const numInText of numbersInText) {
+        for (const p of participants) {
+          const pId = conn.decodeJid(p.id);
+          const pNum = pId.split('@')[0];
+          const pLid = p.lid ? p.lid.split('@')[0] : null;
+          
+          if (pNum === numInText || pLid === numInText) {
+            mentionSet.add(pId);
+            const regex = new RegExp(`@${numInText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
+            finalText = finalText.replace(regex, `@${pNum}`);
+            break;
+          }
         }
       }
     }
