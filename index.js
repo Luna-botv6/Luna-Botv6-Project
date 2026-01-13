@@ -1,30 +1,3 @@
-import os from 'os';
-
-const totalMemoryGB = os.totalmem() / (1024 ** 3);
-const memoryLimitMB = Math.floor(totalMemoryGB * 0.80 * 1024);
-
-if (!process.env.MEMORY_CONFIGURED) {
-  const { spawn } = await import('child_process');
-  process.env.MEMORY_CONFIGURED = 'true';
-  
-  const args = [
-    `--max-old-space-size=${memoryLimitMB}`,
-    '--expose-gc',
-    ...process.argv.slice(1)
-  ];
-  
-  console.log(`🚀 RAM Total: ${totalMemoryGB.toFixed(2)}GB`);
-  console.log(`📊 Límite configurado: ${memoryLimitMB}MB (${(memoryLimitMB/1024).toFixed(2)}GB - 80%)`);
-  
-  const child = spawn(process.execPath, args, {
-    stdio: 'inherit',
-    env: process.env
-  });
-  
-  child.on('exit', (code) => process.exit(code));
-  process.exit(0);
-}
-
 import { join, dirname } from 'path';
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
