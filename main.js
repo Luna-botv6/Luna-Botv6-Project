@@ -31,7 +31,7 @@ import { isCleanerEnabled } from './lib/cleaner-config.js';
 import { startAutoCleanService } from './auto-cleaner.js';
 import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.js';
 import mentionListener from './plugins/game-ialuna.js';
-
+import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
 let stopped = 'close';  
@@ -672,21 +672,13 @@ global.reloadHandler = async function(restatConn) {
     conn.ev.off('creds.update', conn.credsUpdate);
   }
 
-  conn.welcome = '👋 ¡Bienvenido/a!\n@user';
-  conn.bye = '👋 ¡Hasta luego!\n@user';
-  conn.spromote = '*[ ℹ️ ] @user Fue promovido a administrador.*';
-  conn.sdemote = '*[ ℹ️ ] @user Fue degradado de administrador.*';
-  
-  conn.sIcon = '*[ ℹ️ ] Se ha cambiado la foto de perfil del grupo.*';
-  conn.sRevoke = '*[ ℹ️ ] El enlace de invitación al grupo ha sido restablecido.*';
 
   conn.handler = handler.handler.bind(global.conn);
-  conn.participantsUpdate = handler.participantsUpdate.bind(global.conn);
-  conn.groupsUpdate = handler.groupsUpdate.bind(global.conn);
-  conn.onDelete = handler.deleteUpdate.bind(global.conn);
-  conn.onCall = handler.callUpdate.bind(global.conn);
-  conn.connectionUpdate = connectionUpdate.bind(global.conn);
-  conn.credsUpdate = saveCreds.bind(global.conn, true);
+conn.participantsUpdate = handler.participantsUpdate.bind(global.conn);
+conn.onDelete = handler.deleteUpdate.bind(global.conn);
+conn.onCall = handler.callUpdate.bind(global.conn);
+conn.connectionUpdate = connectionUpdate.bind(global.conn);
+conn.credsUpdate = saveCreds.bind(global.conn, true);
 
   const currentDateTime = new Date();
   const messageDateTime = new Date(conn.ev);
@@ -705,7 +697,6 @@ conn.ev.on('messages.upsert', async (msg) => {
 });
 
 conn.ev.on('group-participants.update', conn.participantsUpdate);
-conn.ev.on('groups.update', conn.groupsUpdate);
 conn.ev.on('message.delete', conn.onDelete);
 conn.ev.on('call', conn.onCall);
 conn.ev.on('connection.update', conn.connectionUpdate);
@@ -773,7 +764,7 @@ global.reload = async (_ev, filename) => {
 Object.freeze(global.reload);
 watch(pluginFolder, global.reload);
 await global.reloadHandler();
-
+manejarEventosGrupo(conn);
 async function _quickTest() {
   const test = await Promise.all([
     spawn('ffmpeg'),

@@ -74,7 +74,7 @@ async function loadCustomCommandsOnce(customCommandsDir) {
 
 function logError(e, plugin = 'general') {
   console.log(chalk.red(`\n💥 Error en: ${chalk.yellow(plugin)}`));
-  console.log(chalk.red(`📝 ${chalk.white(e?.message || e?.toString() || 'Error desconocido')}`));
+  console.log(chalk.red(`📄 ${chalk.white(e?.message || e?.toString() || 'Error desconocido')}`));
 }
 
 let mconn;
@@ -519,8 +519,6 @@ export async function handler(chatUpdate) {
         }
       } catch (e) {}
 
-      
-
       const settingsREAD = global.db.data.settings[this.user.jid] || {};
       if (opts['autoread'] || settingsREAD?.autoread2) {
         this.readMessages([m.key]).catch(() => {});
@@ -550,37 +548,6 @@ export async function participantsUpdate({ id, participants, action }) {
       opts,
       groupCache
     );
-  } catch (e) {}
-}
-
-export async function groupsUpdate(groupsUpdate) {
-  try {
-    if (opts['self'] || !global.db.data || !mconn?.conn) return;
-
-    const idioma = global.db.data.chats[groupsUpdate[0]?.id]?.language || global.defaultLenguaje;
-    const _translate = await loadTranslation(idioma);
-    const tradutor = _translate.handler?.participantsUpdate || {};
-
-    for (const groupUpdate of groupsUpdate) {
-      try {
-        const { id, desc, subject, icon, revoke } = groupUpdate;
-        if (!id) continue;
-
-        groupCache.delete(id);
-        const chats = global.db.data.chats[id];
-        if (!chats?.detect) continue;
-
-        let text = '';
-        if (desc) text = (chats?.sDesc || tradutor.texto5 || 'Descripción cambiada').replace('@desc', desc);
-        else if (subject) text = (chats?.sSubject || tradutor.texto6 || 'Nombre cambiado').replace('@subject', subject);
-        else if (icon) text = (chats?.sIcon || tradutor.texto7 || 'Ícono cambiado').replace('@icon', icon);
-        else if (revoke) text = (chats?.sRevoke || tradutor.texto8 || 'Enlace revocado').replace('@revoke', revoke);
-
-        if (text) {
-          await mconn?.conn?.sendMessage(id, { text, mentions: mconn?.conn?.parseMention(text) }).catch(() => {});
-        }
-      } catch (e) {}
-    }
   } catch (e) {}
 }
 
@@ -704,7 +671,7 @@ process.on('unhandledRejection', (reason) => {
   console.log(chalk.red('\n🛠️ ============================================'));
   console.log(chalk.red('ERROR NO MANEJADO'));
   console.log(chalk.red('============================================'));
-  console.log(chalk.white(`📝 Mensaje: ${msg}`));
+  console.log(chalk.white(`📄 Mensaje: ${msg}`));
   console.log(chalk.white('📋 Acción recomendada:'));
   console.log(chalk.white('1. Reinicia el servidor con: npm start'));
   console.log(chalk.white('2. Si el error persiste, revisa los logs'));
@@ -732,7 +699,7 @@ process.on('uncaughtException', (err) => {
     return;
   }
   
-  if (msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT') || msg.includes('ENOTFOUND')) {
+   if (msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT') || msg.includes('ENOTFOUND')) {
     console.log(chalk.yellow('\n⚠️ ============================================'));
     console.log(chalk.yellow('🌐 ERROR DE RED'));
     console.log(chalk.yellow('============================================'));
