@@ -1,121 +1,120 @@
 import fs from 'fs';
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
-const configContent = fs.readFileSync('./config.js', 'utf-8');
-if (!configContent.includes('ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑')) {
-  throw new Error('Handler bloqueado: ᴀꜱᴀᴋᴜʀᴀ ᴍᴀᴏ ʙᴏᴛ 👑 no encontrado.');
-}
+const cooldowns = new Map();
 
-import yts from 'yt-search';
-import fetch from 'node-fetch';
-
-const activeCommands = new Map();
-const BASE_URL = 'https://api.stellarwa.xyz';
-const API_KEY = 'paymonbest';
-
-let handler = async (m, { conn, text, usedPrefix, command }) => {
-  if (activeCommands.has(`${m.sender}_${m.chat}_${command}_${text}`)) {
-    console.log('[DEBUG] Comando ya en ejecución, omitiendo...');
-    return;
-  }
-
-  activeCommands.set(`${m.sender}_${m.chat}_${command}_${text}`, Date.now());
-
+const handler = async (m, { conn, text, isOwner }) => {
   try {
-    console.log('[DEBUG] Iniciando comando play con texto:', text);
+    if (!m.isGroup) return m.reply('❌ Este comando solo funciona en grupos');
 
-    if (!text) {
-      activeCommands.delete(`${m.sender}_${m.chat}_${command}_${text}`);
-      return await conn.reply(m.chat, 'Escribe el nombre de la canción o URL', m);
+    const { participants, isAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
+
+    const senderNum = conn.decodeJid(m.sender).replace('@s.whatsapp.net', '');
+    const isLidOwner = global.lidOwners?.includes(senderNum);
+    const isGlobalOwner = global.owner?.some(([num]) => num === senderNum);
+
+    if (!isAdmin && !isOwner && !isLidOwner && !isGlobalOwner) {
+      return m.reply('Este comando solo puede ser usado por administradores del grupo.');
     }
 
-    console.log('[DEBUG] Buscando en YouTube...');
-    const search = await yts(text);
-    console.log('[DEBUG] Resultados de búsqueda:', search.videos.length);
-    
-    const video = search.videos[0];
-    
-    if (!video) {
-      activeCommands.delete(`${m.sender}_${m.chat}_${command}_${text}`);
-      return await conn.reply(m.chat, `No se encontró: ${text}`, m);
-    }
+    const cooldownTime = 2 * 60 * 1000;
+    const now = Date.now();
 
-    console.log('[DEBUG] Video encontrado:', video.title);
-    console.log('[DEBUG] Video ID:', video.videoId);
-
-    await conn.reply(m.chat, '🌙🤖 *LunaBot*\n🎶 Descargando su música… por favor espere un momento.', m);
-
-    const videoUrl = `https://youtu.be/${video.videoId}`;
-    const apiUrl = `${BASE_URL}/dl/ytmp3?url=${encodeURIComponent(videoUrl)}&quality=128&key=${API_KEY}`;
-    
-    console.log('[DEBUG] URL de API:', apiUrl);
-    console.log('[DEBUG] Haciendo petición a la API...');
-    
-    const response = await fetch(apiUrl);
-    console.log('[DEBUG] Status de respuesta:', response.status);
-    
-    const data = await response.json();
-    console.log('[DEBUG] Respuesta completa de la API:', JSON.stringify(data, null, 2));
-
-    if (!data.result || !data.result.download) {
-      console.log('[DEBUG] ERROR: No se encontró result.download en la respuesta');
-      console.log('[DEBUG] Estructura de data:', Object.keys(data));
-      if (data.result) {
-        console.log('[DEBUG] Estructura de data.result:', Object.keys(data.result));
+    if (!isOwner && !isLidOwner && !isGlobalOwner) {
+      const key = `${m.chat}_${m.sender}`;
+      if (cooldowns.has(key)) {
+        const expire = cooldowns.get(key) + cooldownTime;
+        if (now < expire) {
+          const left = expire - now;
+          return m.reply(`Debes esperar ${Math.floor(left / 60000)}m ${Math.floor((left % 60000) / 1000)}s`);
+        }
       }
-      activeCommands.delete(`${m.sender}_${m.chat}_${command}_${text}`);
-      return await conn.reply(m.chat, '❌ No se pudo obtener el enlace de descarga\n\nRevisa la consola para más detalles.', m);
+      cooldowns.set(key, now);
     }
 
-    console.log('[DEBUG] URL de descarga obtenida:', data.result.download);
-    console.log('[DEBUG] Enviando audio...');
+    const resolveLid = jid => {
+      if (!jid?.includes('@lid')) return conn.decodeJid(jid);
+      const p = participants.find(x => x.lid === jid);
+      return p ? conn.decodeJid(p.id) : null;
+    };
 
-    await conn.sendMessage(
-      m.chat,
-      {
-        audio: { url: data.result.download },
-        fileName: (data.result.title || video.title || 'audio') + '.mp3',
-        mimetype: 'audio/mpeg'
-      },
-      { quoted: m }
-    );
+    const mentionSet = new Set();
+    participants.forEach(p => mentionSet.add(conn.decodeJid(p.id)));
 
-    console.log('[DEBUG] Audio enviado exitosamente');
+    const quoted = m.quoted || m;
+    const mime = (quoted.msg || quoted).mimetype || '';
+    const isMedia = /image|video|sticker|audio/.test(mime);
 
-    setTimeout(() => {
-      activeCommands.delete(`${m.sender}_${m.chat}_${command}_${text}`);
-    }, 5000);
+    let finalText = text || '';
 
-  } catch (error) {
-    console.error('[DEBUG] ERROR CAPTURADO:');
-    console.error('[DEBUG] Mensaje:', error.message);
-    console.error('[DEBUG] Stack:', error.stack);
-    activeCommands.delete(`${m.sender}_${m.chat}_${command}_${text}`);
-    await conn.reply(m.chat, `❌ Hubo un error con la descarga\n\nError: ${error.message}`, m);
+    if (!finalText && quoted && quoted !== m) {
+      finalText = quoted.text || quoted.caption || quoted.body || '';
+    }
+
+    if (!finalText) {
+      finalText = 'Hola :D';
+    }
+
+    const mentionPattern = /@(\d+)/g;
+    let match;
+    const numbersInText = [];
+    
+    while ((match = mentionPattern.exec(finalText)) !== null) {
+      numbersInText.push(match[1]);
+    }
+    
+    if (numbersInText.length > 0) {
+      for (const numInText of numbersInText) {
+        for (const p of participants) {
+          const pId = conn.decodeJid(p.id);
+          const pNum = pId.split('@')[0];
+          const pLid = p.lid ? p.lid.split('@')[0] : null;
+          
+          if (pNum === numInText || pLid === numInText) {
+            mentionSet.add(pId);
+            const regex = new RegExp(`@${numInText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
+            finalText = finalText.replace(regex, `@${pNum}`);
+            break;
+          }
+        }
+      }
+    }
+
+    if (m.mentionedJid?.length) {
+      for (const lid of m.mentionedJid) {
+        const real = resolveLid(lid);
+        if (!real) continue;
+
+        mentionSet.add(real);
+        const num = real.split('@')[0];
+        finalText = finalText.replace(/@\S+/, `@${num}`);
+      }
+    }
+
+    const mentions = [...mentionSet];
+
+    if (isMedia && quoted.mtype === 'imageMessage') {
+      const media = await quoted.download();
+      await conn.sendMessage(m.chat, { image: media, caption: finalText, mentions }, { quoted: m });
+    } else if (isMedia && quoted.mtype === 'videoMessage') {
+      const media = await quoted.download();
+      await conn.sendMessage(m.chat, { video: media, caption: finalText, mentions }, { quoted: m });
+    } else if (isMedia && quoted.mtype === 'audioMessage') {
+      const media = await quoted.download();
+      await conn.sendMessage(m.chat, { audio: media, mimetype: 'audio/mpeg', mentions }, { quoted: m });
+    } else if (isMedia && quoted.mtype === 'stickerMessage') {
+      const media = await quoted.download();
+      await conn.sendMessage(m.chat, { sticker: media, mentions }, { quoted: m });
+    } else {
+      await conn.sendMessage(m.chat, { text: finalText, mentions }, { quoted: m });
+    }
+  } catch (e) {
+    await m.reply('❌ Error al ejecutar el comando.');
   }
 };
 
-handler.command = ['play'];
-
-handler.before = async function(m) {
-  if (!m.text) return;
-  
-  const prefixes = ['/', '.', '#', '!'];
-  const usedPrefix = prefixes.find(p => m.text.startsWith(p));
-  if (!usedPrefix) return;
-  
-  const [cmd, ...args] = m.text.slice(usedPrefix.length).trim().split(' ');
-  const text = args.join(' ');
-  
-  if (handler.command.includes(cmd.toLowerCase())) {
-    const key = `${m.sender}_${m.chat}_${cmd}_${text}`;
-    
-    if (activeCommands.has(key)) {
-      const lastTime = activeCommands.get(key);
-      if (Date.now() - lastTime < 5000) {
-        return true;
-      }
-    }
-  }
-};
+handler.command = /^(hidetag|notificar|notify|n)$/i;
+handler.tags = ['group'];
+handler.group = true;
 
 export default handler;

@@ -39,48 +39,6 @@ let pairingTimeout = null;
 let pairingStartTime = null;
 const PAIRING_TIMEOUT_DURATION = 120000;
 
-const messageQueue = [];
-global.isProcessing = false;
-let messageCount = 0;
-let lastMinuteReset = Date.now();
-const MAX_MESSAGES_PER_MINUTE = 20;
-
-function getRandomDelay() {
-  return Math.floor(Math.random() * (800 - 300 + 1) + 300);
-}
-
-async function processMessageQueue() {
-  if (global.isProcessing || messageQueue.length === 0) return;
-  
-  const now = Date.now();
-  if (now - lastMinuteReset >= 60000) {
-    messageCount = 0;
-    lastMinuteReset = now;
-  }
-  
-  if (messageCount >= MAX_MESSAGES_PER_MINUTE) {
-    setTimeout(processMessageQueue, 2000);
-    return;
-  }
-  
-  global.isProcessing = true;
-  const msg = messageQueue.shift();
-  messageCount++;
-  
-  try {
-    await global.conn.handler(msg);
-  } catch (err) {
-    secureLogger.error('ERROR procesando mensaje:', err);
-  }
-  
-  global.isProcessing = false;
-  
-  if (messageQueue.length > 0) {
-    const delay = getRandomDelay();
-    setTimeout(processMessageQueue, delay);
-  }
-}
-
 protoType();
 serialize();
 
@@ -296,6 +254,39 @@ const connectionOptions = {
 };
 
 global.conn = makeWASocket(connectionOptions);
+import printMessage from './src/libraries/print.js';
+
+const originalSendMessage = global.conn.sendMessage.bind(global.conn);
+
+global.conn.sendMessage = async function (jid, content, options = {}) {
+  const result = await originalSendMessage(jid, content, options);
+
+  try {
+    const fakeMsg = {
+      key: {
+        fromMe: true,
+        remoteJid: jid
+      },
+      fromMe: true,
+      sender: global.conn.user?.jid,
+      chat: jid,
+      mtype: Object.keys(content || {})[0] || 'unknown',
+      messageTimestamp: Math.floor(Date.now() / 1000),
+      text:
+        content?.text ||
+        content?.caption ||
+        content?.conversation ||
+        null,
+      msg: content
+    };
+
+    await printMessage(fakeMsg, global.conn);
+  } catch (e) {
+    console.error('[Print Bot Error]', e.message);
+  }
+
+  return result;
+};
 
 conn.ev.on('creds.update', saveCreds);
 
@@ -685,8 +676,7 @@ global.reloadHandler = async function(restatConn) {
   conn.bye = '👋 ¡Hasta luego!\n@user';
   conn.spromote = '*[ ℹ️ ] @user Fue promovido a administrador.*';
   conn.sdemote = '*[ ℹ️ ] @user Fue degradado de administrador.*';
-  conn.sDesc = '*[ ℹ️ ] La descripción del grupo ha sido modificada.*';
-  conn.sSubject = '*[ ℹ️ ] El nombre del grupo ha sido modificado.*';
+  
   conn.sIcon = '*[ ℹ️ ] Se ha cambiado la foto de perfil del grupo.*';
   conn.sRevoke = '*[ ℹ️ ] El enlace de invitación al grupo ha sido restablecido.*';
 
@@ -706,17 +696,11 @@ global.reloadHandler = async function(restatConn) {
     const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0]);
   }
 
-conn.ev.removeAllListeners('messages.upsert');
 conn.ev.on('messages.upsert', async (msg) => {
-  const messages = msg.messages;
-  
-  if (!messages || messages.length === 0) return;
-  
-  const fromMe = messages[0].key.fromMe;
-  
-  if (!fromMe) {
-    messageQueue.push(msg);
-    processMessageQueue();
+  try {
+    await conn.handler(msg);
+  } catch (err) {
+    secureLogger.error('ERROR en handler de mensajes:', err);
   }
 });
 

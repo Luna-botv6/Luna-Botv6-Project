@@ -1,4 +1,4 @@
-import { connectionManager } from "../lib/connection-manager.js";
+import { connectionManager } from "../lib/funcion/connection-manager.js";
 import fs from "fs";
 import path from "path";
 import chalk from "chalk";

@@ -1,74 +1,69 @@
 import fs from 'fs';
-import { setConfig } from '../lib/funcConfig.js'; 
+import { setConfig } from '../lib/funcConfig.js';
+import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 
 const handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
-  if (usedPrefix == 'a' || usedPrefix == 'A') return;
-  
-  const groupMetadata = await conn.groupMetadata(m.chat);
-  const groupAdmins = groupMetadata.participants.filter(p => p.admin !== null).map(p => p.id);
-  
-  let realUserJid = m.sender;
-  
-  if (m.sender.includes('@lid')) {
-    const participantData = groupMetadata.participants.find(p => p.lid === m.sender);
-    if (participantData && participantData.id) {
-      realUserJid = participantData.id;
-    }
-  }
-  
-  const isUserAdmin = groupAdmins.includes(realUserJid);
-  
-  if (!isUserAdmin && !isOwner) {
+  if (usedPrefix === 'a' || usedPrefix === 'A') return;
+  if (!m.isGroup) return;
+
+  const { isAdmin, isBotAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
+
+  if (!isAdmin && !isOwner) {
     return m.reply('*[❌] Solo los administradores pueden usar este comando.*');
+  }
+
+  if (!isBotAdmin) {
+    return m.reply('*[❌] El bot necesita ser administrador para cambiar el estado del grupo.*');
   }
 
   const datas = global;
   const idioma = datas.db?.data?.users[m.sender]?.language || global.defaultLenguaje || 'es';
+
   let tradutor;
   try {
     const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
-    tradutor = _translate.plugins.gc_config || { texto1: ["Modo de grupo cambiado"] };
+    tradutor = _translate.plugins.gc_config || { texto1: ['Modo de grupo cambiado'] };
   } catch {
-    tradutor = { texto1: ["Modo de grupo cambiado"] };
+    tradutor = { texto1: ['Modo de grupo cambiado'] };
   }
 
   const option = (args[0] || '').toLowerCase();
 
   const states = {
-    'open': 'not_announcement',
-    'close': 'announcement',
-    'abierto': 'not_announcement',
-    'cerrado': 'announcement',
-    'abrir': 'not_announcement',
-    'cerrar': 'announcement',
+    open: 'not_announcement',
+    close: 'announcement',
+    abierto: 'not_announcement',
+    cerrado: 'announcement',
+    abrir: 'not_announcement',
+    cerrar: 'announcement'
   };
 
-  const isClose = states[option];
+  const state = states[option];
 
-  if (!isClose) {
+  if (!state) {
     return m.reply(`
-*[❗] FORMATO ERRÓNEO!!*
+*[◉] FORMATO ERRÓNEO*
 ${tradutor.texto1[0]}
-*Ejemplos de uso:*
+
+*Ejemplos:*
 > ${usedPrefix + command} abrir
 > ${usedPrefix + command} cerrar
 `.trim());
   }
 
-  let updated = false;
   try {
-    await conn.groupSettingUpdate(m.chat, isClose);
-    updated = true;
-  } catch {
-    updated = false;
-  }
+    await conn.groupSettingUpdate(m.chat, state);
+    setConfig(m.chat, { groupMode: state === 'announcement' ? 'cerrado' : 'abierto' });
 
-  setConfig(m.chat, { groupMode: isClose === 'announcement' ? 'cerrado' : 'abierto' });
+    clearGroupCache(m.chat);
 
-  if (updated) {
-    m.reply(`✅ Estado del grupo cambiado a: *${isClose === 'announcement' ? '🔒 CERRADO' : '🔓 ABIERTO'}*`);
-  } else {
-    m.reply(`❌ No pude cambiar el estado del grupo.\n\nEl bot necesita ser *administrador*.`);
+    await m.reply(
+      `✅ Estado del grupo cambiado a: *${state === 'announcement' ? '🔒 CERRADO' : '🔓 ABIERTO'}*`
+    );
+  } catch (e) {
+    await m.reply(
+      `❌ No pude cambiar el estado del grupo.\n\nEl bot necesita ser *administrador*.`
+    );
   }
 };
 
