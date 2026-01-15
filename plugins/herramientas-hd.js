@@ -1,53 +1,64 @@
-import FormData from "form-data";
-import Jimp from "jimp";
+import axios from "axios"
+import FormData from "form-data"
+import uploadImage from "../src/libraries/uploadImage.js"
 
+const handler = async (m, { conn, usedPrefix, command }) => {
+  try {
+    let q = m.quoted ? m.quoted : m
+    let mime = (q.msg || q).mimetype || ""
 
-const handler = async (m, {conn, usedPrefix, command}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.herramientas_hd
-
- try {    
-  let q = m.quoted ? m.quoted : m;
-  let mime = (q.msg || q).mimetype || q.mediaType || "";
-  if (!mime) throw `${tradutor.texto1} ${usedPrefix + command}*`;
-  if (!/image\/(jpe?g|png)/.test(mime)) throw `${tradutor.texto2[0]} (${mime}) ${tradutor.texto2[1]}`;
-  m.reply(tradutor.texto3);
-  let img = await q.download?.();
-  let pr = await remini(img, "enhance");
-  conn.sendMessage(m.chat, {image: pr}, {quoted: m});
- } catch {
-  throw tradutor.texto4;
- }
-};
-handler.help = ["remini", "hd", "enhance"];
-handler.tags = ["ai", "tools"];
-handler.command = ["remini", "hd", "enhance"];
-export default handler;
-
-async function remini(imageData, operation) {
-  return new Promise(async (resolve, reject) => {
-    const availableOperations = ["enhance", "recolor", "dehaze"];
-    if (availableOperations.includes(operation)) {
-      operation = operation;
-    } else {
-      operation = availableOperations[0];
+    if (!mime || !mime.includes("image")) {
+      return m.reply(`✖️ *Envía o responde una imagen para mejorarla en HD.*`)
     }
-    const baseUrl = "https://inferenceengine.vyro.ai/" + operation + ".vyro";
-    const formData = new FormData();
-    formData.append("image", Buffer.from(imageData), {filename: "enhance_image_body.jpg", contentType: "image/jpeg"});
-    formData.append("model_version", 1, {"Content-Transfer-Encoding": "binary", contentType: "multipart/form-data; charset=utf-8"});
-    formData.submit({url: baseUrl, host: "inferenceengine.vyro.ai", path: "/" + operation, protocol: "https:", headers: {"User-Agent": "okhttp/4.9.3", Connection: "Keep-Alive", "Accept-Encoding": "gzip"}},
-      function (err, res) {
-        if (err) reject(err);
-        const chunks = [];
-        res.on("data", function (chunk) {chunks.push(chunk)});
-        res.on("end", function () {resolve(Buffer.concat(chunks))});
-        res.on("error", function (err) {
-        reject(err);
-        });
-      },
-    );
-  });
+
+    // Mensaje de procesamiento
+    let status = await conn.sendMessage(m.chat, { text: "⏳ *Procesando imagen en HD...*" }, { quoted: m })
+
+    // Descargar imagen
+    let img = await q.download()
+    if (!img) return m.reply("✖️ No pude descargar la imagen.")
+
+    // Preparar formulario para POST
+    let form = new FormData()
+    form.append("image", img, {
+      filename: "image.jpg",
+      contentType: mime
+    })
+    form.append("scale", 4)
+
+    // Llamada API
+    const { data } = await axios.post(
+      "https://api.siputzx.my.id/api/iloveimg/upscale",
+      form,
+      {
+        headers: {
+          ...form.getHeaders()
+        },
+        responseType: "arraybuffer"
+      }
+    )
+
+    // Enviar imagen HD
+    await conn.sendMessage(
+      m.chat,
+      { image: data, caption: "✅ *Imagen mejorada a HD.*" },
+      { quoted: m }
+    )
+
+    // Cambiar mensaje a check ✔
+    await conn.sendMessage(
+      m.chat,
+      { edit: status.key, text: "✔️ *Proceso completado*" }
+    )
+
+  } catch (e) {
+    console.log(e)
+    m.reply("✖️ Ocurrió un error procesando la imagen.")
+  }
 }
+
+handler.help = ["hd", "upscale"]
+handler.tags = ["tools"]
+handler.command = /^(hd|upscale|enhance)$/i
+
+export default handler

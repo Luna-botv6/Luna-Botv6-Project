@@ -3853,8 +3853,8 @@
         "participantsUpdate": {
             "texto1": "👋 ¡Bienvenido/a!\n@user",
             "texto2": "👋 ¡Hasta luego!\n@user",
-            "texto3": "*[ ℹ️ ] @user Fue promovido a administrador.*",
-            "texto4": "*[ ℹ️ ] @user Fue degradado de administrador.*",
+            "texto3": "*[ ℹ️ ] @user Fue promovido a administrador por @by.*",
+            "texto4": "*[ ℹ️ ] @user Fue degradado de administrador por @by.*",
             "texto5": "*[ ℹ️ ] La descripción del grupo ha sido modificada.*",
             "texto6": "*[ ℹ️ ] El nombre del grupo ha sido modificado.*",
             "texto7": "*[ ℹ️ ] Se ha cambiado la foto de perfil del grupo.*",
