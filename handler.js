@@ -369,10 +369,16 @@ export async function handler(chatUpdate) {
             user.commandCount = 1;
           }
 
-          const adminMode = chat?.modoadmin;
-          if (adminMode && !isOwner && !isROwner && m.isGroup && (plugin.admin || plugin.botAdmin || plugin.group)) {
-            continue;
-          }
+          if (m.isGroup && chat?.modoadmin && !isOwner && !isROwner) {
+  let userIsAdmin = false;
+  try {
+    const { getGroupDataForPlugin } = await import('./lib/funcion/pluginHelper.js');
+    const groupData = await getGroupDataForPlugin(this, m.chat, m.sender);
+    userIsAdmin = groupData.isAdmin;
+  } catch (e) {}
+  
+  if (!userIsAdmin) continue;
+}
 
           if (plugin.rowner && !isROwner) {
             fail('rowner', m, this);
