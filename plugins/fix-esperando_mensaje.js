@@ -45,12 +45,23 @@ const handler = async (m, { conn, usedPrefix }) => {
     const groupId = chatId.replace('@g.us', '').replace('@s.whatsapp.net', '');
     const files = await fs.readdir(sessionPath);
     
-    const groupFiles = files.filter(file => 
-      file.includes(groupId) || 
-      (file.startsWith('sender-key-') && file.includes(groupId)) ||
-      (file.startsWith('session-') && file.includes(groupId)) ||
-      (file.startsWith('app-state-sync-key-') && file.includes(groupId))
-    );
+    const patterns = [
+      'pre-key-',
+      'sender-key-',
+      'app-state-sync-key-',
+      'session-',
+      'device-list-',
+      'lid-mapping-',
+      'app-state-sync-version-'
+    ];
+    
+    const groupFiles = files.filter(file => {
+      if (file === 'creds.json') return false;
+      
+      if (file.includes(groupId)) return true;
+      
+      return patterns.some(pattern => file.startsWith(pattern) && file.includes(groupId));
+    });
 
     let deleted = 0;
 
