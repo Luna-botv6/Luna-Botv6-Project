@@ -11,11 +11,10 @@ import {
 
 const CONFIG = {
   SESSION_DIR: './MysticSession',
-  BATCH_SIZE: 20,
-  BATCH_DELAY: 150,
+  BATCH_SIZE: 25,
+  BATCH_DELAY: 100,
   OLD_FILES_THRESHOLD: 3600000,
   PROTECTED_FILES: new Set(['creds.json']),
-  KEY_PREFIXES: ['pre-key-', 'sender-key-', 'app-state-sync-key-'],
   CHECK_INTERVAL: 1800000
 };
 
@@ -48,26 +47,39 @@ async function deleteFilesInBatches(dir, fileFilter, batchSize = CONFIG.BATCH_SI
     deleted += results.filter(r => r.status === 'fulfilled').length;
     
     if (i + batchSize < targets.length) {
-      await new Promise(resolve => setImmediate(resolve));
       await new Promise(resolve => setTimeout(resolve, delay));
     }
-  }
-
-  if (deleted > 0) {
-    console.log(chalk.green(`🗑️  [auto-cleaner] ${deleted} archivos eliminados`));
   }
 
   return deleted;
 }
 
-async function purgeSessionKeys() {
+async function cleanAllSessionFiles() {
+  if (!existsSync(CONFIG.SESSION_DIR)) return 0;
+
   return await deleteFilesInBatches(
     CONFIG.SESSION_DIR,
-    async file => CONFIG.KEY_PREFIXES.some(prefix => file.startsWith(prefix))
+    async file => {
+      if (CONFIG.PROTECTED_FILES.has(file)) return false;
+      
+      if (file.endsWith('.json')) return true;
+      
+      const patterns = [
+        'pre-key-',
+        'sender-key-',
+        'app-state-sync-key-',
+        'session-',
+        'device-list-',
+        'lid-mapping-',
+        'app-state-sync-version-'
+      ];
+      
+      return patterns.some(pattern => file.startsWith(pattern));
+    }
   );
 }
 
-async function purgeOldFiles() {
+async function cleanOldFiles() {
   if (!existsSync(CONFIG.SESSION_DIR)) return 0;
   
   const threshold = Date.now() - CONFIG.OLD_FILES_THRESHOLD;
@@ -96,25 +108,28 @@ async function performAutoClean() {
   isRunning = true;
 
   try {
-    console.log(chalk.cyan('🤖 [auto-cleaner] Iniciando limpieza en segundo plano...'));
+    console.log(chalk.cyan('🤖 [auto-cleaner] Iniciando limpieza automática...'));
     
     const startTime = Date.now();
     
-    const keysDeleted = await purgeSessionKeys();
-    await new Promise(resolve => setImmediate(resolve));
+    const sessionFilesDeleted = await cleanAllSessionFiles();
     
-    const oldFilesDeleted = await purgeOldFiles();
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    const oldFilesDeleted = await cleanOldFiles();
     
     updateLastCleanTime();
     
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    const total = keysDeleted + oldFilesDeleted;
+    const total = sessionFilesDeleted + oldFilesDeleted;
     
     if (total > 0) {
       const config = getAutoCleanConfig();
       const nextClean = new Date(Date.now() + (config.intervalHours * 3600000));
       console.log(chalk.green(`✅ [auto-cleaner] ${total} archivos eliminados en ${duration}s`));
       console.log(chalk.cyan(`⏰ [auto-cleaner] Próxima limpieza: ${nextClean.toLocaleString()}`));
+    } else {
+      console.log(chalk.blue(`ℹ️  [auto-cleaner] No hay archivos para limpiar`));
     }
   } catch (error) {
     console.error(chalk.red(`❌ [auto-cleaner] Error: ${error.message}`));
@@ -173,4 +188,8 @@ export function getCleanupStatus() {
     nextCleanTime: getNextAutoCleanTime(),
     minutesUntilNextClean: timeUntil ? Math.ceil(timeUntil / 60000) : null
   };
+}
+
+export async function forceCleanNow() {
+  await performAutoClean();
 }
