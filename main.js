@@ -562,6 +562,10 @@ let codigoSolicitado = false;
 
 async function connectionUpdate(update) {
   const { connection, lastDisconnect, isNewLogin, qr } = update;
+  
+  if (connection === 'close') {
+    console.log(chalk.red('[ ✖ ] Conexión cerrada'));
+  }
 
   stopped = connection;
   if (isNewLogin) conn.isInit = true;
@@ -580,9 +584,20 @@ async function connectionUpdate(update) {
     }
   }
 
-  if (connection === 'open') {
+if (connection === 'open') {
+    stopped = 'open';
     console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
-    console.log(chalk.green('[ ℹ️ ] Bot iniciado exitosamente'));
+    console.log(chalk.green('[ ℹ️ ] Reinicializando listeners...'));
+    
+    setTimeout(async () => {
+      try {
+        await global.reloadHandler(false);
+        console.log(chalk.green('[ ✅ ] Listeners reinicializados'));
+      } catch (e) {
+        console.error(chalk.red('[ ✖ ] Error reinicializando listeners:'), e.message);
+      }
+    }, 2000);
+    
     setTimeout(async () => {
       try {
         const { autoreconnectSubbots } = await import('./plugins/subbot-reconeccion.js');
@@ -606,15 +621,28 @@ async function connectionUpdate(update) {
   }
 
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-  if (reason == 405) {
-    await fs.unlinkSync("./MysticSession/" + "creds.json");
-    console.log(chalk.bold.redBright(`[ ⚠ ] Conexión reemplazada, Por favor espere un momento me voy a reiniciar...\nSi aparecen error vuelve a iniciar con : npm start`));
-    process.send('reset');
+if (reason === 405) {
+    console.log(chalk.yellow('[ ⚠ ] Sesión reemplazada detectada'));
+    console.log(chalk.yellow('[ ⚠ ] Reconectando sin borrar credenciales...'));
+    setTimeout(async () => { 
+      await global.reloadHandler(true).catch(console.error); 
+    }, 3000);
+    return;
   }
 
-  if (connection === 'close') {
+if (connection === 'close') {
     if (reason === DisconnectReason.badSession) {
-      conn.logger.error(`[ ⚠ ] Sesión incorrecta, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
+      console.log(chalk.red('[ ✖ ] Sesión corrupta detectada'));
+      console.log(chalk.yellow('[ ⚠ ] Limpiando sesión...'));
+      try {
+        const authPath = `./${global.authFile}`;
+        if (fs.existsSync(authPath)) {
+          await fs.promises.rm(authPath, { recursive: true, force: true });
+        }
+      } catch (e) {}
+      console.log(chalk.yellow('[ ⚠ ] Por favor reinicia con: npm start'));
+      setTimeout(() => process.exit(1), 2000);
+      return;
     } else if (reason === DisconnectReason.connectionClosed) {
       conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando en 2 segundos...`);
       setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
@@ -644,63 +672,54 @@ let isInit = true;
 
 let handler = await import('./handler.js');
 global.reloadHandler = async function(restatConn) {
-  
   try {
     const Handler = await import(`./handler.js?update=${Date.now()}`).catch(console.error);
     if (Object.keys(Handler || {}).length) handler = Handler;
   } catch (e) {
     console.error(e);
   }
+  
   if (restatConn) {
     const oldChats = global.conn.chats;
     try {
       global.conn.ws.close();
     } catch { }
+    
     conn.ev.removeAllListeners();
     global.conn = makeWASocket(connectionOptions, {chats: oldChats});
-    conn.ev.on('creds.update', saveCreds);
-    store?.bind(conn);
+    
     isInit = true;
   }
+  
   if (!isInit) {
     conn.ev.off('messages.upsert', conn.handler);
     conn.ev.off('group-participants.update', conn.participantsUpdate);
-    conn.ev.off('groups.update', conn.groupsUpdate);
     conn.ev.off('message.delete', conn.onDelete);
     conn.ev.off('call', conn.onCall);
     conn.ev.off('connection.update', conn.connectionUpdate);
     conn.ev.off('creds.update', conn.credsUpdate);
   }
 
-
   conn.handler = handler.handler.bind(global.conn);
-conn.participantsUpdate = handler.participantsUpdate.bind(global.conn);
-conn.onDelete = handler.deleteUpdate.bind(global.conn);
-conn.onCall = handler.callUpdate.bind(global.conn);
-conn.connectionUpdate = connectionUpdate.bind(global.conn);
-conn.credsUpdate = saveCreds.bind(global.conn, true);
-
-  const currentDateTime = new Date();
-  const messageDateTime = new Date(conn.ev);
-  if (currentDateTime >= messageDateTime) {
-    const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0]);
-  } else {
-    const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0]);
-  }
+  conn.participantsUpdate = handler.participantsUpdate.bind(global.conn);
+  conn.onDelete = handler.deleteUpdate.bind(global.conn);
+  conn.onCall = handler.callUpdate.bind(global.conn);
+  conn.connectionUpdate = connectionUpdate.bind(global.conn);
+  conn.credsUpdate = saveCreds.bind(global.conn, true);
 
 conn.ev.on('messages.upsert', async (msg) => {
-  try {
-    await conn.handler(msg);
-  } catch (err) {
-    secureLogger.error('ERROR en handler de mensajes:', err);
-  }
-});
+    try {
+      await conn.handler(msg);
+    } catch (err) {
+      console.error('ERROR en handler de mensajes:', err.message);
+    }
+  });
 
-conn.ev.on('group-participants.update', conn.participantsUpdate);
-conn.ev.on('message.delete', conn.onDelete);
-conn.ev.on('call', conn.onCall);
-conn.ev.on('connection.update', conn.connectionUpdate);
-conn.ev.on('creds.update', conn.credsUpdate);
+  conn.ev.on('group-participants.update', conn.participantsUpdate);
+  conn.ev.on('message.delete', conn.onDelete);
+  conn.ev.on('call', conn.onCall);
+  conn.ev.on('connection.update', conn.connectionUpdate);
+  conn.ev.on('creds.update', conn.credsUpdate);
 
   if (restatConn || !global.mentionListenerInitialized) {
     try {
@@ -713,8 +732,10 @@ conn.ev.on('creds.update', conn.credsUpdate);
       global.mentionListenerInitialized = false;
     }
   }
-isInit = false;
-return true;
+  
+  isInit = false;
+  console.log(chalk.green('[ ✅ ] Handler recargado correctamente'));
+  return true;
 };
 
 const pluginFolder = global.__dirname(join(__dirname, './plugins/index'));

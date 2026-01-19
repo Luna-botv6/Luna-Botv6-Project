@@ -100,6 +100,9 @@ setInterval(() => {
 
 export async function handler(chatUpdate) {
   try {
+    if (!this?.user?.jid) {
+      return;
+    }
     this.msgqueque = this.msgqueque || [];
     this.uptime = this.uptime || Date.now();
     
