@@ -106,7 +106,16 @@ export async function handler(chatUpdate) {
     this.msgqueque = this.msgqueque || [];
     this.uptime = this.uptime || Date.now();
     
-    if (!chatUpdate?.messages?.length) return;
+if (!chatUpdate?.messages?.length) return;
+
+    const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+    const validMessages = chatUpdate.messages.filter(msg => {
+      const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
+      return msgTimestamp >= (connectionTime - 60000);
+    });
+
+    if (validMessages.length === 0) return;
+    chatUpdate.messages = validMessages;
 
     this.pushMessage(chatUpdate.messages).catch(console.error);
 
