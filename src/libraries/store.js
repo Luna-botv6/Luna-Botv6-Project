@@ -39,8 +39,16 @@ function makeInMemoryStore() {
         return chats[jid].metadata;
     }
 
-    function upsertMessage(jid, message, type = 'append') {
+function upsertMessage(jid, message, type = 'append') {
         jid = jid?.decodeJid?.();
+        
+        const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+        const msgTimestamp = (message.messageTimestamp || 0) * 1000;
+        
+        if (msgTimestamp < connectionTime - 60000) {
+            return;
+        }
+        
         if (!(jid in messages)) messages[jid] = [];
         delete message.message?.messageContextInfo;
         delete message.message?.senderKeyDistributionMessage;
@@ -52,11 +60,17 @@ function makeInMemoryStore() {
     function bind(conn) {
         if (!conn.chats) conn.chats = {};
 
-        conn.ev.on('messages.upsert', ({ messages: newMessages, type }) => {
+conn.ev.on('messages.upsert', ({ messages: newMessages, type }) => {
             if (['append', 'notify'].includes(type)) {
+                const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+                
                 for (const msg of newMessages) {
                     const jid = msg.key.remoteJid?.decodeJid?.();
                     if (!jid || isJidBroadcast(jid)) continue;
+                    
+                    const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
+                    if (msgTimestamp < connectionTime - 60000) continue;
+                    
                     upsertMessage(jid, proto.WebMessageInfo.fromObject(msg), type);
                 }
             }
