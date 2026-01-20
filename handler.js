@@ -108,14 +108,15 @@ export async function handler(chatUpdate) {
     
 if (!chatUpdate?.messages?.length) return;
 
-    const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
-    const validMessages = chatUpdate.messages.filter(msg => {
-      const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
-      return msgTimestamp >= (connectionTime - 60000);
-    });
+const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
 
-    if (validMessages.length === 0) return;
-    chatUpdate.messages = validMessages;
+const validMessages = chatUpdate.messages.filter(msg => {
+  const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
+  return msgTimestamp >= connectionTime;
+});
+
+if (validMessages.length === 0) return;
+chatUpdate.messages = validMessages;
 
     this.pushMessage(chatUpdate.messages).catch(console.error);
 

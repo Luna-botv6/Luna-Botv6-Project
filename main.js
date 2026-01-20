@@ -214,23 +214,22 @@ const connectionOptions = {
 
     version,
 
-    getMessage: async (key) => {
-        const now = Date.now();
-        const msgTimestamp = (key.messageTimestamp || 0) * 1000;
-        const connectionTime = global.timestamp?.connect?.getTime() || now;
-        
-        if (msgTimestamp < connectionTime - 60000) {
-            return { conversation: '' };
-        }
+getMessage: async (key) => {
+    const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+    const msgTimestamp = (key.messageTimestamp || 0) * 1000;
+    
+    if (msgTimestamp < connectionTime) {
+        return { conversation: '' };
+    }
 
-        try {
-            let jid = jidNormalizedUser(key.remoteJid);
-            let msg = await store.loadMessage(jid, key.id);
-            return msg?.message || "";
-        } catch (e) {
-            return '';
-        }
-    },
+    try {
+        let jid = jidNormalizedUser(key.remoteJid);
+        let msg = await store.loadMessage(jid, key.id);
+        return msg?.message || "";
+    } catch (e) {
+        return '';
+    }
+},
 
     patchMessageBeforeSending: async (message) => {
         return message;
