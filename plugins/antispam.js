@@ -109,33 +109,13 @@ export async function before(m, { isCommand, conn }) {
     data.lastWarnTime = now
     
     if (data.warns >= warningsLimit) {
-      const [ownerJid] = global.owner[0]
-      const ownerFullJid = `${ownerJid}@s.whatsapp.net`
-      
       const users = global.db.data.users
       if (!users[sender]) {
         users[sender] = {}
       }
       users[sender].banned = true
       
-      await conn.sendMessage(ownerFullJid, {
-        text: `🚨 Anti-Spam Activado
-
-Usuario: @${senderNum}
-Acción: Bloqueado y baneado por spam
-Contexto: ${isGroup ? 'Grupo' : 'Chat privado'}
-${isGroup && groupName ? `Grupo: ${groupName}` : ''}
-ID: ${sender}
-
-📊 Estadísticas:
-• Advertencias: ${data.warns}/${warningsLimit}
-• Mensajes totales: ${data.totalMessages}
-• Último conteo: ${data.count} mensajes en ${INTERVAL_MS/1000}s
-
-⚠️ El usuario ya no podrá usar comandos del bot.
-📝 Logs guardados en: logs_bans/`,
-        mentions: [sender]
-      })
+      const ownerContact = global.owner?.[0] ? (Array.isArray(global.owner[0]) ? global.owner[0][0] : global.owner[0]) : 'owner'
       
       const mensajeBan = `⛔ Has sido bloqueado y baneado por spam.
 
@@ -146,7 +126,7 @@ ID: ${sender}
 El bot ya no responderá a tus comandos.
 
 Si crees que fue un error, contacta al owner:
-📱 wa.me/${ownerJid}`
+📱 wa.me/${ownerContact}`
 
       await conn.sendMessage(m.chat, { text: mensajeBan }, { quoted: m })
       
