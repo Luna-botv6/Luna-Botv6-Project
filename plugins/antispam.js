@@ -1,11 +1,13 @@
 import { loadAntiSpam, saveAntiSpam } from '../lib/antispamDB.js'
+import { logSpamWarning, logSpamBan, logOwnerSpam } from '../lib/antispamLogger.js'
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
 
-// Configuración más permisiva
-const SPAM_THRESHOLD = 12      // Aumentado de 6 a 12 mensajes
-const INTERVAL_MS = 30 * 1000  // Aumentado de 20 a 30 segundos
-const MESSAGE_LENGTH_LIMIT = 6000  // Aumentado de 4000 a 6000 caracteres
-const WARNINGS_BEFORE_BAN = 5  // Aumentado de 3 a 5 advertencias
-const WARNING_COOLDOWN = 2 * 60 * 1000  // 2 minutos de cooldown entre advertencias
+const SPAM_THRESHOLD = 12
+const INTERVAL_MS = 30 * 1000
+const MESSAGE_LENGTH_LIMIT = 6000
+const WARNINGS_BEFORE_BAN_GROUP = 3
+const WARNINGS_BEFORE_BAN_PRIVATE = 1
+const WARNING_COOLDOWN = 2 * 60 * 1000
 
 global.antispamActivo = true
 
@@ -18,14 +20,23 @@ const frasesOwnerSpam = [
   '👽 Los bots también tenemos límites... ¡pero tú eres intocable!',
 ]
 
+function getRealSender(sender, conn) {
+  if (sender.includes('@lid')) {
+    const decoded = conn.decodeJid(sender);
+    return decoded || sender;
+  }
+  return sender;
+}
+
 export async function before(m, { isCommand, conn }) {
   if (!global.antispamActivo || !m.sender || m.isBaileys || m.fromMe || !m.text) return
   
-  const sender = m.sender
+  const sender = getRealSender(m.sender, conn)
   const senderNum = sender.split('@')[0]
   const isOwner = global.owner.some(([num]) => senderNum === num) || global.lidOwners.includes(senderNum)
   const now = Date.now()
   const isLargo = m.text.length > MESSAGE_LENGTH_LIMIT
+  const isGroup = m.chat.endsWith('@g.us')
   
   const antispam = loadAntiSpam()
   antispam[sender] = antispam[sender] || { 
@@ -33,17 +44,25 @@ export async function before(m, { isCommand, conn }) {
     lastTime: 0, 
     warns: 0, 
     lastWarnTime: 0,
-    totalMessages: 0
+    totalMessages: 0,
+    comandos: [],
+    firstDetection: Date.now()
   }
   const data = antispam[sender]
   
-  // Solo contar mensajes que empiecen con / o que sean largos, ignorar el resto
   if (!m.text.startsWith('/') && !isLargo) return
   
-  // Incrementar contador total de mensajes para estadísticas
   data.totalMessages += 1
   
-  // Si estamos dentro del intervalo, incrementar conteo, sino resetear a 1
+  if (m.text.startsWith('/')) {
+    const comando = m.text.split(' ')[0]
+    if (!data.comandos) data.comandos = []
+    data.comandos.push(`${comando} (${new Date().toLocaleTimeString('es-ES')})`)
+    if (data.comandos.length > 50) {
+      data.comandos = data.comandos.slice(-50)
+    }
+  }
+  
   if (now - data.lastTime < INTERVAL_MS) {
     data.count += 1
   } else {
@@ -51,54 +70,90 @@ export async function before(m, { isCommand, conn }) {
   }
   data.lastTime = now
   
-  // Manejo especial para owners
+  let groupName = null
+  if (isGroup) {
+    try {
+      const groupData = await getGroupDataForPlugin(conn, m.chat, sender)
+      groupName = groupData.groupMetadata?.subject || null
+    } catch (e) {}
+  }
+  
+  const context = {
+    isGroup,
+    chatId: m.chat,
+    groupName,
+    intervalSeconds: INTERVAL_MS / 1000,
+    warningsLimit: isGroup ? WARNINGS_BEFORE_BAN_GROUP : WARNINGS_BEFORE_BAN_PRIVATE
+  }
+  
   if (isOwner) {
     if (data.count > SPAM_THRESHOLD || isLargo) {
       const frase = frasesOwnerSpam[Math.floor(Math.random() * frasesOwnerSpam.length)]
-      await conn.sendMessage(sender, { text: frase })
+      await conn.sendMessage(m.chat, { text: frase }, { quoted: m })
+      
+      logOwnerSpam(sender, data.comandos || [], context)
     }
     saveAntiSpam(antispam)
     return
   }
   
-  // Sistema de advertencias más permisivo
+  const warningsLimit = context.warningsLimit
+  
   if (data.count > SPAM_THRESHOLD || isLargo) {
-    // Verificar cooldown de advertencias (no advertir muy seguido)
     if (now - data.lastWarnTime < WARNING_COOLDOWN) {
       saveAntiSpam(antispam)
-      return // No dar advertencia si está en cooldown
+      return
     }
     
     data.warns += 1
     data.lastWarnTime = now
     
-    if (data.warns >= WARNINGS_BEFORE_BAN) {
-      // Bloqueo y ban después de más advertencias
+    if (data.warns >= warningsLimit) {
       const [ownerJid] = global.owner[0]
       const ownerFullJid = `${ownerJid}@s.whatsapp.net`
       
-      // Aplicar BAN al usuario
       const users = global.db.data.users
       if (!users[sender]) {
         users[sender] = {}
       }
       users[sender].banned = true
       
-      // Notificar al owner con más información
       await conn.sendMessage(ownerFullJid, {
-        text: `🚨 Anti-Spam Activado\n\nEl usuario @${senderNum} fue bloqueado y baneado por spam.\nID: ${sender}\n\n📊 Estadísticas:\n• Advertencias: ${data.warns}/${WARNINGS_BEFORE_BAN}\n• Mensajes totales detectados: ${data.totalMessages}\n• Último conteo: ${data.count} mensajes en ${INTERVAL_MS/1000}s\n\n⚠️ El usuario ya no podrá usar comandos del bot.`,
+        text: `🚨 Anti-Spam Activado
+
+Usuario: @${senderNum}
+Acción: Bloqueado y baneado por spam
+Contexto: ${isGroup ? 'Grupo' : 'Chat privado'}
+${isGroup && groupName ? `Grupo: ${groupName}` : ''}
+ID: ${sender}
+
+📊 Estadísticas:
+• Advertencias: ${data.warns}/${warningsLimit}
+• Mensajes totales: ${data.totalMessages}
+• Último conteo: ${data.count} mensajes en ${INTERVAL_MS/1000}s
+
+⚠️ El usuario ya no podrá usar comandos del bot.
+📝 Logs guardados en: logs_bans/`,
         mentions: [sender]
       })
       
-      // Notificar al usuario
-      await conn.sendMessage(sender, {
-        text: `⛔ Has sido bloqueado y baneado por enviar demasiados comandos seguidos.\n\n❌ Recibiste ${data.warns} advertencias y ya no podrás usar los comandos del bot.\n\n📋 Motivo: Exceso de comandos (${data.count} comandos en ${INTERVAL_MS/1000} segundos)\n\nSi crees que fue un error, contacta con el owner:\n📱 wa.me/${ownerJid}`
-      })
+      const mensajeBan = `⛔ Has sido bloqueado y baneado por spam.
+
+❌ Advertencias recibidas: ${data.warns}/${warningsLimit}
+📋 Motivo: Exceso de comandos (${data.count} en ${INTERVAL_MS/1000}s)
+📍 Ubicación: ${isGroup ? 'Grupo' : 'Chat privado'}
+
+El bot ya no responderá a tus comandos.
+
+Si crees que fue un error, contacta al owner:
+📱 wa.me/${ownerJid}`
+
+      await conn.sendMessage(m.chat, { text: mensajeBan }, { quoted: m })
       
-      // Bloquear al usuario
+      logSpamBan(sender, data, data.comandos || [], context)
+      
       await conn.updateBlockStatus(sender, 'block')
       
-      // Guardar en la base de datos de baneados
       global.db.data.baneados = global.db.data.baneados || {}
       global.db.data.baneados[sender] = {
         motivo: 'spam automatico',
@@ -106,20 +161,31 @@ export async function before(m, { isCommand, conn }) {
         bloqueadoPor: 'antispam',
         advertencias: data.warns,
         mensajesTotales: data.totalMessages,
-        ultimoConteo: data.count
+        ultimoConteo: data.count,
+        contexto: isGroup ? 'grupo' : 'privado',
+        comandos: data.comandos || []
       }
       
-      // Limpiar datos del antispam para este usuario
       delete antispam[sender]
       saveAntiSpam(antispam)
       return !0
       
     } else {
-      // Advertencia más informativa
-      const tiempoRestante = Math.ceil((WARNING_COOLDOWN - (now - data.lastWarnTime)) / 1000)
-      await conn.sendMessage(sender, {
-        text: `🚨 Advertencia ${data.warns}/${WARNINGS_BEFORE_BAN} de spam\n\n⚠️ Detectamos ${data.count} comandos en ${INTERVAL_MS/1000} segundos.\n\n📝 Límites actuales:\n• Máximo ${SPAM_THRESHOLD} comandos por cada ${INTERVAL_MS/1000} segundos\n• Máximo ${MESSAGE_LENGTH_LIMIT} caracteres por mensaje\n\n⏰ Espera un momento antes de continuar usando comandos.\n\n❌ Si recibes ${WARNINGS_BEFORE_BAN} advertencias serás bloqueado permanentemente.`
-      })
+      const mensajeAdvertencia = `🚨 Advertencia ${data.warns}/${warningsLimit} de spam
+
+⚠️ Detectamos ${data.count} comandos en ${INTERVAL_MS/1000} segundos.
+
+📝 Límites actuales:
+• Máximo ${SPAM_THRESHOLD} comandos por cada ${INTERVAL_MS/1000} segundos
+• Máximo ${MESSAGE_LENGTH_LIMIT} caracteres por mensaje
+
+⏰ Espera un momento antes de continuar usando comandos.
+
+❌ Si recibes ${warningsLimit} advertencias serás bloqueado permanentemente.`
+
+      await conn.sendMessage(m.chat, { text: mensajeAdvertencia }, { quoted: m })
+      
+      logSpamWarning(sender, data, data.comandos || [], context)
     }
   }
   
