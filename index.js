@@ -74,19 +74,31 @@ if (check.needsRelaunch) {
   const RESTART_WINDOW = 120000;
   let firstRestartTime = null;
   let monitorInterval = null;
+  let logMonitorInterval = null;
   let isRestarting = false;
 
+  const logFilePath = '/tmp/bot-stderr.log';
+  
   function startChild() {
     if (isRestarting) return;
     
+    if (fs.existsSync(logFilePath)) {
+      try {
+        fs.unlinkSync(logFilePath);
+      } catch (e) {}
+    }
+    
+    const logStream = fs.createWriteStream(logFilePath, { flags: 'a' });
+    
     child = spawn('node', args, {
-      stdio: ['inherit', 'pipe', 'pipe'],
+      stdio: ['inherit', 'inherit', 'pipe'],
       shell: false,
       env: {
         ...process.env,
         MEMORY_LIMIT_MB: check.memoryLimitMB.toString(),
         TOTAL_MEMORY_MB: check.totalMemoryMB.toString(),
-        RELAUNCHED: 'true'
+        RELAUNCHED: 'true',
+        FORCE_COLOR: '1'
       }
     });
 
@@ -97,33 +109,42 @@ if (check.needsRelaunch) {
       'Mark-Compact'
     ];
 
-    function handleOutput(data) {
-      const output = data.toString();
-      if (errorPatterns.some(pattern => output.includes(pattern)) && !isRestarting) {
-        isRestarting = true;
-        console.log(chalk.hex('#FFD700').bold('\n🔄 ¡Sistema reiniciando para estabilizar la memoria RAM! 💫\n'));
-        if (monitorInterval) {
-          clearInterval(monitorInterval);
-          monitorInterval = null;
-        }
-        child.kill('SIGTERM');
-      }
-      return output;
-    }
-
-    child.stdout.on('data', (data) => {
-      process.stdout.write(handleOutput(data));
-    });
-
     child.stderr.on('data', (data) => {
-      process.stderr.write(handleOutput(data));
+      process.stderr.write(data);
+      logStream.write(data);
     });
+
+    logMonitorInterval = setInterval(() => {
+      if (!fs.existsSync(logFilePath)) return;
+      
+      try {
+        const logContent = fs.readFileSync(logFilePath, 'utf8');
+        const lastLines = logContent.split('\n').slice(-100).join('\n');
+        
+        if (errorPatterns.some(pattern => lastLines.includes(pattern)) && !isRestarting) {
+          isRestarting = true;
+          console.log(chalk.hex('#FFD700').bold('\n🔄 ¡Sistema reiniciando para estabilizar la memoria RAM! 💫\n'));
+          if (monitorInterval) {
+            clearInterval(monitorInterval);
+            monitorInterval = null;
+          }
+          if (logMonitorInterval) {
+            clearInterval(logMonitorInterval);
+            logMonitorInterval = null;
+          }
+          logStream.end();
+          child.kill('SIGTERM');
+        }
+      } catch (error) {}
+    }, 2000);
 
     monitorInterval = setInterval(() => {
       if (!child || !child.pid) return;
       
       try {
         const memUsagePath = `/proc/${child.pid}/statm`;
+        if (!fs.existsSync(memUsagePath)) return;
+        
         const statm = fs.readFileSync(memUsagePath, 'utf8').split(' ');
         const usedMemoryMB = Math.floor((parseInt(statm[1]) * 4096) / (1024 * 1024));
         const memoryPercent = (usedMemoryMB / check.totalMemoryMB) * 100;
@@ -135,6 +156,11 @@ if (check.needsRelaunch) {
             clearInterval(monitorInterval);
             monitorInterval = null;
           }
+          if (logMonitorInterval) {
+            clearInterval(logMonitorInterval);
+            logMonitorInterval = null;
+          }
+          logStream.end();
           child.kill('SIGTERM');
         }
       } catch (error) {}
@@ -145,6 +171,11 @@ if (check.needsRelaunch) {
         clearInterval(monitorInterval);
         monitorInterval = null;
       }
+      if (logMonitorInterval) {
+        clearInterval(logMonitorInterval);
+        logMonitorInterval = null;
+      }
+      logStream.end();
 
       const now = Date.now();
 
@@ -178,6 +209,11 @@ if (check.needsRelaunch) {
         clearInterval(monitorInterval);
         monitorInterval = null;
       }
+      if (logMonitorInterval) {
+        clearInterval(logMonitorInterval);
+        logMonitorInterval = null;
+      }
+      logStream.end();
       setTimeout(() => {
         startChild();
       }, 3000);
@@ -190,12 +226,18 @@ if (check.needsRelaunch) {
     if (monitorInterval) {
       clearInterval(monitorInterval);
     }
+    if (logMonitorInterval) {
+      clearInterval(logMonitorInterval);
+    }
     if (child) child.kill('SIGINT');
   });
 
   process.on('SIGTERM', () => {
     if (monitorInterval) {
       clearInterval(monitorInterval);
+    }
+    if (logMonitorInterval) {
+      clearInterval(logMonitorInterval);
     }
     if (child) child.kill('SIGTERM');
   });
@@ -211,6 +253,14 @@ if (check.needsRelaunch) {
   process.on('exit', () => {
     if (monitorInterval) {
       clearInterval(monitorInterval);
+    }
+    if (logMonitorInterval) {
+      clearInterval(logMonitorInterval);
+    }
+    if (fs.existsSync(logFilePath)) {
+      try {
+        fs.unlinkSync(logFilePath);
+      } catch (e) {}
     }
   });
 
