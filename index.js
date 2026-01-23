@@ -4,6 +4,7 @@ import { dirname } from 'path';
 import fs from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import chalk from 'chalk';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -43,7 +44,7 @@ async function getRealMemory() {
 
 async function checkIfNeedsRelaunch() {
   const totalMemoryMB = await getRealMemory();
-  const memoryLimitMB = Math.floor(totalMemoryMB * 0.95);
+  const memoryLimitMB = Math.floor(totalMemoryMB * 0.85);
   const currentLimit = parseInt(process.env.MEMORY_LIMIT_MB || '0');
   
   if (currentLimit === 0 || Math.abs(currentLimit - memoryLimitMB) > 50) {
@@ -69,13 +70,17 @@ if (check.needsRelaunch) {
 
   let child = null;
   let restartCount = 0;
-  const MAX_RESTART = 5;
-  const RESTART_WINDOW = 60000;
+  const MAX_RESTART = 10;
+  const RESTART_WINDOW = 120000;
   let firstRestartTime = null;
+  let monitorInterval = null;
+  let isRestarting = false;
 
   function startChild() {
+    if (isRestarting) return;
+    
     child = spawn('node', args, {
-      stdio: 'inherit',
+      stdio: ['inherit', 'pipe', 'pipe'],
       shell: false,
       env: {
         ...process.env,
@@ -85,7 +90,62 @@ if (check.needsRelaunch) {
       }
     });
 
+    const errorPatterns = [
+      'allocation failure',
+      'JavaScript heap out of memory',
+      'FATAL ERROR',
+      'Mark-Compact'
+    ];
+
+    function handleOutput(data) {
+      const output = data.toString();
+      if (errorPatterns.some(pattern => output.includes(pattern)) && !isRestarting) {
+        isRestarting = true;
+        console.log(chalk.hex('#FFD700').bold('\n🔄 ¡Sistema reiniciando para estabilizar la memoria RAM! 💫\n'));
+        if (monitorInterval) {
+          clearInterval(monitorInterval);
+          monitorInterval = null;
+        }
+        child.kill('SIGTERM');
+      }
+      return output;
+    }
+
+    child.stdout.on('data', (data) => {
+      process.stdout.write(handleOutput(data));
+    });
+
+    child.stderr.on('data', (data) => {
+      process.stderr.write(handleOutput(data));
+    });
+
+    monitorInterval = setInterval(() => {
+      if (!child || !child.pid) return;
+      
+      try {
+        const memUsagePath = `/proc/${child.pid}/statm`;
+        const statm = fs.readFileSync(memUsagePath, 'utf8').split(' ');
+        const usedMemoryMB = Math.floor((parseInt(statm[1]) * 4096) / (1024 * 1024));
+        const memoryPercent = (usedMemoryMB / check.totalMemoryMB) * 100;
+        
+        if (memoryPercent >= 92 && !isRestarting) {
+          isRestarting = true;
+          console.log(chalk.hex('#FFD700').bold('\n🔄 ¡Sistema reiniciando para estabilizar la memoria RAM! 💫\n'));
+          if (monitorInterval) {
+            clearInterval(monitorInterval);
+            monitorInterval = null;
+          }
+          child.kill('SIGTERM');
+        }
+      } catch (error) {}
+    }, 10000);
+
     child.on('exit', (code, signal) => {
+      if (monitorInterval) {
+        clearInterval(monitorInterval);
+        monitorInterval = null;
+      }
+
       const now = Date.now();
 
       if (!firstRestartTime || (now - firstRestartTime) > RESTART_WINDOW) {
@@ -96,36 +156,47 @@ if (check.needsRelaunch) {
       restartCount++;
 
       if (restartCount >= MAX_RESTART) {
-        console.error(`\n❌ ${MAX_RESTART} reinicios en 1 minuto. Deteniendo para evitar loop infinito.\n`);
+        console.error(`\n❌ ${MAX_RESTART} reinicios en 2 minutos. Deteniendo para evitar loop infinito.\n`);
         process.exit(1);
       }
 
-      if (signal === 'SIGINT' || signal === 'SIGTERM' || code === 0) {
+      if (signal === 'SIGINT' || code === 0) {
         process.exit(code || 0);
       }
 
-      console.log(`\n⚠️  Bot caído (código: ${code || 'unknown'}). Reiniciando... (${restartCount}/${MAX_RESTART})\n`);
+      console.log(`\n⚡ Reiniciando sistema... (${restartCount}/${MAX_RESTART})\n`);
       
       setTimeout(() => {
+        isRestarting = false;
         startChild();
-      }, 3000);
+      }, 2000);
     });
 
     child.on('error', (error) => {
       console.error('❌ Error en proceso hijo:', error.message);
+      if (monitorInterval) {
+        clearInterval(monitorInterval);
+        monitorInterval = null;
+      }
       setTimeout(() => {
         startChild();
-      }, 5000);
+      }, 3000);
     });
   }
 
   startChild();
 
   process.on('SIGINT', () => {
+    if (monitorInterval) {
+      clearInterval(monitorInterval);
+    }
     if (child) child.kill('SIGINT');
   });
 
   process.on('SIGTERM', () => {
+    if (monitorInterval) {
+      clearInterval(monitorInterval);
+    }
     if (child) child.kill('SIGTERM');
   });
 
@@ -135,6 +206,12 @@ if (check.needsRelaunch) {
 
   process.on('unhandledRejection', (reason) => {
     console.error('❌ Promise rechazada:', reason);
+  });
+
+  process.on('exit', () => {
+    if (monitorInterval) {
+      clearInterval(monitorInterval);
+    }
   });
 
 } else {
