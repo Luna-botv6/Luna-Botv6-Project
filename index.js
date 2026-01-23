@@ -57,9 +57,9 @@ async function checkIfNeedsRelaunch() {
 const check = await checkIfNeedsRelaunch();
 
 if (check.needsRelaunch) {
-  console.log('\n⚠️  Detectado inicio sin configuración de memoria óptima');
-  console.log(`📊 RAM Servidor: ${(check.totalMemoryMB / 1024).toFixed(2)}GB (${check.totalMemoryMB}MB)`);
-  console.log(`🎯 Relanzando con límite: ${(check.memoryLimitMB / 1024).toFixed(2)}GB (${check.memoryLimitMB}MB)\n`);
+  console.log(chalk.yellow('\n⚠️  Detectado inicio sin configuración de memoria óptima'));
+  console.log(chalk.cyan(`📊 RAM Servidor: ${(check.totalMemoryMB / 1024).toFixed(2)}GB (${check.totalMemoryMB}MB)`));
+  console.log(chalk.green(`🎯 Relanzando con límite: ${(check.memoryLimitMB / 1024).toFixed(2)}GB (${check.memoryLimitMB}MB)\n`));
 
   const args = [
     `--max-old-space-size=${check.memoryLimitMB}`,
@@ -156,7 +156,7 @@ if (check.needsRelaunch) {
       restartCount++;
 
       if (restartCount >= MAX_RESTART) {
-        console.error(`\n❌ ${MAX_RESTART} reinicios en 2 minutos. Deteniendo para evitar loop infinito.\n`);
+        console.error(chalk.red(`\n❌ ${MAX_RESTART} reinicios en 2 minutos. Deteniendo para evitar loop infinito.\n`));
         process.exit(1);
       }
 
@@ -164,7 +164,7 @@ if (check.needsRelaunch) {
         process.exit(code || 0);
       }
 
-      console.log(`\n⚡ Reiniciando sistema... (${restartCount}/${MAX_RESTART})\n`);
+      console.log(chalk.yellow(`\n⚡ Reiniciando sistema... (${restartCount}/${MAX_RESTART})\n`));
       
       setTimeout(() => {
         isRestarting = false;
@@ -173,7 +173,7 @@ if (check.needsRelaunch) {
     });
 
     child.on('error', (error) => {
-      console.error('❌ Error en proceso hijo:', error.message);
+      console.error(chalk.red('❌ Error en proceso hijo:'), error.message);
       if (monitorInterval) {
         clearInterval(monitorInterval);
         monitorInterval = null;
@@ -201,11 +201,11 @@ if (check.needsRelaunch) {
   });
 
   process.on('uncaughtException', (error) => {
-    console.error('❌ Error no capturado:', error.message);
+    console.error(chalk.red('❌ Error no capturado:'), error.message);
   });
 
   process.on('unhandledRejection', (reason) => {
-    console.error('❌ Promise rechazada:', reason);
+    console.error(chalk.red('❌ Promise rechazada:'), reason);
   });
 
   process.on('exit', () => {
@@ -218,7 +218,7 @@ if (check.needsRelaunch) {
   try {
     await import('./index-main.js');
   } catch (error) {
-    console.error('❌ Error cargando index-main.js:', error.message);
+    console.error(chalk.red('❌ Error cargando index-main.js:'), error.message);
     process.exit(1);
   }
 }
