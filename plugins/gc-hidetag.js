@@ -6,7 +6,7 @@ const cooldowns = new Map();
 const handler = async (m, { conn, text, isOwner }) => {
   try {
     if (!conn?.user?.jid) {
-      return m.reply('⚠️ Sesión no válida. El bot no está conectado correctamente.');
+      return m.reply('⚠️ Sesión no válida. El bot no está conectado correctamente. Intenta nuevamente en unos segundos.');
     }
 
     if (!m.isGroup) return m.reply('❌ Este comando solo funciona en grupos');
