@@ -20,6 +20,10 @@ async function safeSetConfig(chatId, config) {
 }
 
 const handler = async (m, {conn, usedPrefix, command, args}) => {
+  if (!conn?.user?.jid) {
+    return m.reply('⚠️ Sesión no válida. El bot no está conectado correctamente. Intenta nuevamente en unos segundos.');
+  }
+
   let isOwner = false;
   let isAdmin = false;
   let isROwner = false;
@@ -54,7 +58,7 @@ const handler = async (m, {conn, usedPrefix, command, args}) => {
 - ${usedPrefix + command} antilink2
 - Solo grupos y admins
 
-🔒 *RESTRICT*
+🔐 *RESTRICT*
 - Restringe acciones del bot
 - ${usedPrefix + command} restrict
 - Solo owner - Afecta todo el bot
@@ -104,12 +108,12 @@ const handler = async (m, {conn, usedPrefix, command, args}) => {
 - ${usedPrefix + command} audios_bot
 - Solo owner - Afecta todo el bot
 
-🚯 *ANTISPAM*
+🎯 *ANTISPAM*
 - Previene spam de comandos
 - ${usedPrefix + command} antispam
 - Solo owner - Límite de 2 comandos/10s
 
-🔐 *ANTIPRIVADO*
+📝 *ANTIPRIVADO*
 - Bloquea mensajes privados
 - ${usedPrefix + command} antiprivado
 - Solo owner - Owners pueden escribir
@@ -119,12 +123,12 @@ const handler = async (m, {conn, usedPrefix, command, args}) => {
 - ${usedPrefix + command} modopublico
 - Solo owner - Permite que todos usen el bot
 
-👁️ *VIERWIMAGE*
+👀 *VIERWIMAGE*
 - Captura imágenes/videos de vista única
 - ${usedPrefix + command} vierwimage
 - Solo owner - Los view once se reenvían al owner
 
-🏢 *MODOGRUPOS*
+🢀 *MODOGRUPOS*
 - Solo permite grupos autorizados
 - ${usedPrefix + command} modogrupos
 - Solo owner - El bot sale de grupos no autorizados
