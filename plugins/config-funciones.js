@@ -29,11 +29,43 @@ const handler = async (m, {conn, usedPrefix, command, args}) => {
   let isROwner = false;
 
   const realNum = m.sender.replace(/[^0-9]/g, '');
-  const ownerNums = global.owner.map(([num]) => num);
   
-  if (ownerNums.includes(realNum)) {
+  let ownerNumbers = [];
+  
+  if (global.owner && Array.isArray(global.owner)) {
+    for (const ownerEntry of global.owner) {
+      let ownerNum = '';
+      
+      if (Array.isArray(ownerEntry)) {
+        ownerNum = ownerEntry[0] || '';
+      } else {
+        ownerNum = ownerEntry || '';
+      }
+      
+      const cleanNum = ownerNum.toString().replace(/[^0-9]/g, '');
+      if (cleanNum) {
+        ownerNumbers.push(cleanNum);
+      }
+    }
+  }
+  
+  if (global.lidOwners && Array.isArray(global.lidOwners)) {
+    for (const lidOwner of global.lidOwners) {
+      const cleanNum = lidOwner.toString().replace(/[^0-9]/g, '');
+      if (cleanNum && !ownerNumbers.includes(cleanNum)) {
+        ownerNumbers.push(cleanNum);
+      }
+    }
+  }
+  
+  if (ownerNumbers.includes(realNum)) {
     isROwner = true;
     isOwner = true;
+  }
+  
+  if (!isOwner && m.sender === conn?.user?.jid) {
+    isOwner = true;
+    isROwner = true;
   }
 
   if (m.isGroup) {
