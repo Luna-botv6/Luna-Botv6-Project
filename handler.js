@@ -345,7 +345,7 @@ chatUpdate.messages = validMessages;
             this.sendPresenceUpdate('composing', m.chat).catch(() => {});
           }
 
-          const chat = global.db.data.chats[m.chat] || getConfig(m.chat);
+          const chat = getConfig(m.chat);
           const user = global.db.data.users[m.sender] || {};
           const botSpam = global.db.data.settings[this.user.jid] || {};
 
