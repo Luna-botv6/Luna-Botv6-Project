@@ -184,7 +184,7 @@ const LunaBot = {
 
 <!-- Badges animados -->
 <p>
-  <img src="https://img.shields.io/badge/📅%20Fecha-10%20Sep%202025-5B21B6?style=for-the-badge&logo=calendar&logoColor=white" alt="Fecha"/>
+  <img src="https://img.shields.io/badge/📅%01Fecha-02%20Feb%202026-5B21B6?style=for-the-badge&logo=calendar&logoColor=white" alt="Fecha"/>
   <img src="https://img.shields.io/badge/📞%20Oficial-%2B54%209%20348%20351%201079-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="Teléfono"/>
 </p>
 
