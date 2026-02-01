@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { getConfig } from '../lib/funcConfig.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
@@ -53,20 +52,21 @@ async function getAdmins(conn, chatId) {
   }
 }
 
-const handler = async (m, { conn, isAdmin, isOwner }) => {
+const handler = async (m, { conn }) => {
   try {
     if (!m.isGroup || !m.text) return;
     
     const config = getConfig(m.chat);
     if (!config.antiLink && !config.antiLink2) return;
     
-    if (isAdmin || isOwner) return;
+    const groupData = await getGroupDataForPlugin(conn, m.chat, m.sender);
+    const { isAdmin } = groupData;
+    
+    if (isAdmin) return;
     
     if (!hasLink(m.text)) return;
     
-    const groupData = await getGroupDataForPlugin(conn, m.chat, conn.user.jid);
     const isBotAdmin = groupData.isBotAdmin;
-    
     const warningCount = addWarning(m.chat, m.sender);
     
     let messageDeleted = false;
@@ -75,7 +75,7 @@ const handler = async (m, { conn, isAdmin, isOwner }) => {
         await conn.sendMessage(m.chat, { delete: m.key });
         messageDeleted = true;
       } catch (error) {
-        console.error('Error eliminando mensaje:', error.message);
+        // Error silencioso
       }
     }
     
@@ -87,7 +87,7 @@ const handler = async (m, { conn, isAdmin, isOwner }) => {
           await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
           userBanned = true;
         } catch (error) {
-          console.error('Error baneando usuario:', error.message);
+          // Error silencioso
         }
       }
       
@@ -179,11 +179,7 @@ ${warningCount === MAX_WARNINGS - 1 ?
     }
     
   } catch (error) {
-    console.error('ERROR en antilinks:', error);
-    
-    await conn.sendMessage(m.chat, {
-      text: `❌ **ERROR EN SISTEMA ANTILINKS**\n\nError: ${error.message}\n\n🔧 *Contacta al administrador del bot.*`
-    });
+    // Error silencioso
   }
 };
 
