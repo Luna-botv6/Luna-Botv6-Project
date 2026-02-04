@@ -6,7 +6,7 @@ const cooldowns = new Map();
 const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
   try {
     if (usedPrefix == 'a' || usedPrefix == 'A') return;
-    if (!m.isGroup) return m.reply('❌ Este comando solo funciona en grupos');
+    if (!m.isGroup) return m.reply('⌠Este comando solo funciona en grupos');
 
     const chatId = m.chat;
     const senderId = m.sender;
@@ -53,48 +53,75 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
 
     const kicktext = `${tradutor.texto2 || 'Debes mencionar a un usuario'}\n*${usedPrefix + command} @${global.suittag?.[0] || 'usuario'}*`;
 
-    const resolveLid = (jid) => {
+    const resolveLidToJid = (jid) => {
       if (!jid) return null;
-      if (!jid.includes('@lid')) return jid;
-      const p = groupParticipants.find(u => u.lid === jid);
-      return p?.id || null;
+      
+      if (jid.includes('@lid')) {
+        const participant = groupParticipants.find(p => p.lid === jid);
+        if (participant && participant.id) {
+          return participant.id;
+        }
+        return null;
+      }
+      
+      return jid;
     };
 
-    let userToRemove = null;
+    const findParticipantByJid = (jid) => {
+      if (!jid) return null;
+      
+      const decodedJid = conn.decodeJid(jid);
+      
+      return groupParticipants.find(p => {
+        const participantJid = conn.decodeJid(p.id);
+        return participantJid === decodedJid;
+      });
+    };
+
+    let targetJid = null;
 
     if (m.mentionedJid?.[0]) {
-      userToRemove = resolveLid(m.mentionedJid[0]) || m.mentionedJid[0];
+      targetJid = resolveLidToJid(m.mentionedJid[0]) || m.mentionedJid[0];
     } else if (m.quoted?.sender) {
-      userToRemove = resolveLid(m.quoted.sender) || m.quoted.sender;
+      targetJid = resolveLidToJid(m.quoted.sender) || m.quoted.sender;
     } else if (text) {
       const num = text.replace(/[^0-9]/g, '');
       if (num.length < 11 || num.length > 15) {
         return m.reply('*[◉] El número ingresado es incorrecto.*');
       }
-      userToRemove = num + '@s.whatsapp.net';
+      targetJid = num + '@s.whatsapp.net';
     }
 
-    if (!userToRemove) {
+    if (!targetJid) {
       return m.reply(kicktext, m.chat, { mentions: conn.parseMention(kicktext) });
     }
 
-    if (userToRemove === conn.user.jid) {
+    const botJid = conn.decodeJid(conn.user.jid);
+    const decodedTargetJid = conn.decodeJid(targetJid);
+    
+    if (decodedTargetJid === botJid) {
       return m.reply('*🤖 No puedo expulsarme a mí mismo.*');
     }
 
-    const decodedUserToRemove = conn.decodeJid(userToRemove);
-    const exists = groupParticipants.find(p => conn.decodeJid(p.id) === decodedUserToRemove);
+    const targetParticipant = findParticipantByJid(targetJid);
     
-    if (!exists) {
+    if (!targetParticipant) {
       return m.reply('*[◉] La persona mencionada no está en el grupo.*');
     }
 
-    await conn.groupParticipantsUpdate(chatId, [userToRemove], 'remove');
+    if (targetParticipant.admin === 'admin' || targetParticipant.admin === 'superadmin') {
+      return m.reply('*[◉] No puedo expulsar a un administrador del grupo.*');
+    }
+
+    const jidToKick = targetParticipant.id;
+
+    await conn.groupParticipantsUpdate(chatId, [jidToKick], 'remove');
     
     clearGroupCache(chatId);
     
-    await m.reply(`✅ @${userToRemove.split('@')[0]} ha sido expulsado del grupo.`, null, {
-      mentions: [userToRemove]
+    const displayNumber = jidToKick.split('@')[0];
+    await m.reply(`✅ @${displayNumber} ha sido expulsado del grupo.`, null, {
+      mentions: [jidToKick]
     });
   } catch (e) {
     console.error('Error en kick:', e);
