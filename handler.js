@@ -22,7 +22,7 @@ import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
 
-EventEmitter.defaultMaxListeners = 20;
+EventEmitter.defaultMaxListeners = 30;
 
 const groupCache = new Map();
 const recentMessages = new Map();
@@ -195,7 +195,19 @@ chatUpdate.messages = validMessages;
           const id = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson)?.id;
           if (id) m.text = id;
         } catch (e) {}
+      } else {
+        const isMentioned = m.message?.extendedTextMessage?.contextInfo?.mentionedJid?.includes(this.user.jid);
+        const isQuotedMention = m.message?.extendedTextMessage?.contextInfo?.participant === this.user.jid;
+        if (isMentioned || isQuotedMention) {
+          m.mentionedJid = m.mentionedJid || [];
+          if (!m.mentionedJid.includes(this.user.jid)) {
+            m.mentionedJid.push(this.user.jid);
+          }
+          m.isMentionedBot = true;
+        }
       }
+
+      if (typeof m.text !== 'string') m.text = '';
 
       const { isROwner, isOwner, isMods, isPrems } = checkUserPermissions(m, this);
 
@@ -657,88 +669,46 @@ watchFile(file, async () => {
   }
 });
 
-process.on('unhandledRejection', (reason) => {
-  const msg = reason?.message || reason?.toString() || 'Error desconocido';
-  
-  if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-    return;
-  }
-  
-  if (msg.includes('presence') || msg.includes('sending presence') || msg.includes('enviando presencia')) {
-    console.log(chalk.yellow('\n⚠️ ============================================'));
-    console.log(chalk.yellow('❌ BOT BANEADO - NO SE VOLVERÁ A CONECTAR'));
-    console.log(chalk.yellow('============================================'));
-    console.log(chalk.white('📋 Solución:'));
-    console.log(chalk.white('1. Elimina la carpeta "MysticSession"'));
-    console.log(chalk.white('2. Vuelve a vincular el bot escaneando el QR'));
-    console.log(chalk.yellow('============================================\n'));
-    return;
-  }
-  
-  if (msg.includes('Connection') || msg.includes('Conexión') || msg.includes('WebSocket')) {
-    console.log(chalk.yellow('\n⚠️ ============================================'));
-    console.log(chalk.yellow('🔌 ERROR DE CONEXIÓN'));
-    console.log(chalk.yellow('============================================'));
-    console.log(chalk.white('📋 Posibles soluciones:'));
-    console.log(chalk.white('1. Verifica tu conexión a internet'));
-    console.log(chalk.white('2. Reinicia el servidor: npm start'));
-    console.log(chalk.white('3. Si persiste, vuelve a vincular el bot'));
-    console.log(chalk.yellow('============================================\n'));
-    return;
-  }
-  
-  console.log(chalk.red('\n🛠️ ============================================'));
-  console.log(chalk.red('ERROR NO MANEJADO'));
-  console.log(chalk.red('============================================'));
-  console.log(chalk.white(`📄 Mensaje: ${msg}`));
-  console.log(chalk.white('📋 Acción recomendada:'));
-  console.log(chalk.white('1. Reinicia el servidor con: npm start'));
-  console.log(chalk.white('2. Si el error persiste, revisa los logs'));
-  console.log(chalk.red('============================================\n'));
-});
+if (!global._errorHandlersRegistered) {
+  global._errorHandlersRegistered = true;
 
-process.on('uncaughtException', (err) => {
-  const msg = err?.message || err?.toString() || 'Error desconocido';
-  
-  if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-    return;
-  }
-  
-  if (msg.includes('authenticate') || msg.includes('autenticación') || msg.includes('QR')) {
-    console.log(chalk.yellow('\n⚠️ ============================================'));
-    console.log(chalk.yellow('❌ ERROR DE AUTENTICACIÓN'));
-    console.log(chalk.yellow('============================================'));
-    console.log(chalk.white('📋 La vinculación no se completó correctamente'));
-    console.log(chalk.white('Solución:'));
-    console.log(chalk.white('1. Detén el servidor (Ctrl + C)'));
-    console.log(chalk.white('2. Elimina la carpeta "MysticSession"'));
-    console.log(chalk.white('3. Reinicia: npm start'));
-    console.log(chalk.white('4. Escanea el código QR nuevamente'));
-    console.log(chalk.yellow('============================================\n'));
-    return;
-  }
-  
-   if (msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT') || msg.includes('ENOTFOUND')) {
-    console.log(chalk.yellow('\n⚠️ ============================================'));
-    console.log(chalk.yellow('🌐 ERROR DE RED'));
-    console.log(chalk.yellow('============================================'));
-    console.log(chalk.white('📋 Problema de conexión a internet detectado'));
-    console.log(chalk.white('Solución:'));
-    console.log(chalk.white('1. Verifica tu conexión a internet'));
-    console.log(chalk.white('2. Espera unos segundos y reinicia el bot'));
-    console.log(chalk.white('3. El bot se reconectará automáticamente'));
-    console.log(chalk.yellow('============================================\n'));
-    return;
-  }
-  
-  console.log(chalk.red('\n⚠️ ============================================'));
-  console.log(chalk.red('EXCEPCIÓN CRÍTICA NO CAPTURADA'));
-  console.log(chalk.red('============================================'));
-  console.log(chalk.white(`📝 Mensaje: ${msg}`));
-  console.log(chalk.white(`📍 Stack: ${err?.stack?.split('\n')[1]?.trim() || 'No disponible'}`));
-  console.log(chalk.white('📋 Acción URGENTE:'));
-  console.log(chalk.white('1. REINICIA el servidor inmediatamente'));
-  console.log(chalk.white('2. Si el error se repite, revisa el código'));
-  console.log(chalk.white('3. Considera restaurar desde un backup'));
-  console.log(chalk.red('============================================\n'));
-});
+  process.on('unhandledRejection', (reason) => {
+    const msg = reason?.message || reason?.toString() || 'Error desconocido';
+    
+    if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
+      return;
+    }
+    
+    if (msg.includes('presence') || msg.includes('sending presence') || msg.includes('enviando presencia')) {
+      console.log(chalk.yellow('⚠️ BOT BANEADO - Elimina "MysticSession" y vuelve a vincular'));
+      return;
+    }
+    
+    if (msg.includes('Connection') || msg.includes('Conexión') || msg.includes('WebSocket')) {
+      console.log(chalk.yellow('⚠️ Error de conexión - Verifica tu internet'));
+      return;
+    }
+    
+    console.log(chalk.red(`🛠️ ERROR: ${msg}`));
+  });
+
+  process.on('uncaughtException', (err) => {
+    const msg = err?.message || err?.toString() || 'Error desconocido';
+    
+    if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
+      return;
+    }
+    
+    if (msg.includes('authenticate') || msg.includes('autenticación') || msg.includes('QR')) {
+      console.log(chalk.yellow('⚠️ Error de autenticación - Elimina "MysticSession" y reinicia'));
+      return;
+    }
+    
+    if (msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT') || msg.includes('ENOTFOUND')) {
+      console.log(chalk.yellow('⚠️ Error de red - Verifica tu conexión'));
+      return;
+    }
+    
+    console.log(chalk.red(`⚠️ EXCEPCIÓN CRÍTICA: ${msg}`));
+  });
+}
