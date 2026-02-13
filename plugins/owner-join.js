@@ -188,10 +188,7 @@ const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, com
       
       await delay(6000);
 
-      const mainOwner = '5493483466763@s.whatsapp.net';
-      
-      try {
-        const msg = `🔔 *Nueva Solicitud de Grupo*\n\n` +
+      const msg = `🔔 *Nueva Solicitud de Grupo*\n\n` +
           `👤 @${senderNumber}\n` +
           `📱 ${senderNumber}\n` +
           `🔗 ${link}\n` +
@@ -202,13 +199,25 @@ const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, com
           `❌ ${usedPrefix}denegar ${requestId}\n\n` +
           `ℹ️ Revisa que el grupo no se use para spam ni actividades que puedan infringir las políticas de WhatsApp.`;
 
-        await conn.sendMessage(mainOwner, {
-          text: msg,
-          mentions: [m.sender]
-        });
-        
-      } catch (error) {
-        console.error('Error notificando owner:', error.message);
+      const lidOwnersList = (global.lidOwners || []).map(x => String(x).replace(/[^0-9]/g, ''));
+
+      const ownersToNotify = (global.owner || [])
+        .map(([num]) => String(num).replace(/[^0-9]/g, ''))
+        .filter(num => num.length >= 10 && !lidOwnersList.includes(num));
+
+      for (const ownerNum of ownersToNotify) {
+        try {
+          const ownerJid = `${ownerNum}@s.whatsapp.net`;
+          await new Promise((resolve, reject) => {
+            conn.sendMessage(ownerJid, { text: msg, mentions: [m.sender] })
+              .then(resolve)
+              .catch(reject);
+            setTimeout(() => reject(new Error('Timeout')), 5000);
+          });
+        } catch (error) {
+          console.error(`Error notificando owner ${ownerNum}:`, error.message);
+        }
+        await delay(3000);
       }
     }
   } catch (error) {

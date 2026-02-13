@@ -90,7 +90,6 @@ export async function before(m, { isCommand, conn }) {
     if (data.count > SPAM_THRESHOLD || isLargo) {
       const frase = frasesOwnerSpam[Math.floor(Math.random() * frasesOwnerSpam.length)]
       await conn.sendMessage(m.chat, { text: frase }, { quoted: m })
-      
       logOwnerSpam(sender, data.comandos || [], context)
     }
     saveAntiSpam(antispam)
@@ -109,13 +108,53 @@ export async function before(m, { isCommand, conn }) {
     data.lastWarnTime = now
     
     if (data.warns >= warningsLimit) {
+      const [ownerJid] = global.owner[0]
+      
       const users = global.db.data.users
       if (!users[sender]) {
         users[sender] = {}
       }
       users[sender].banned = true
-      
-      const ownerContact = global.owner?.[0] ? (Array.isArray(global.owner[0]) ? global.owner[0][0] : global.owner[0]) : 'owner'
+
+      try {
+        const lidOwnersList = (global.lidOwners || []).map(x => String(x).replace(/[^0-9]/g, ''));
+        const ownersToNotify = (global.owner || [])
+          .map(([num]) => String(num).replace(/[^0-9]/g, ''))
+          .filter(num => num.length >= 10 && !lidOwnersList.includes(num));
+
+        const ownerMsg = `🚨 Anti-Spam Activado
+
+Usuario: @${senderNum}
+Acción: Bloqueado y baneado por spam
+Contexto: ${isGroup ? 'Grupo' : 'Chat privado'}
+${isGroup && groupName ? `Grupo: ${groupName}` : ''}
+ID: ${sender}
+
+📊 Estadísticas:
+• Advertencias: ${data.warns}/${warningsLimit}
+• Mensajes totales: ${data.totalMessages}
+• Último conteo: ${data.count} mensajes en ${INTERVAL_MS/1000}s
+
+⚠️ El usuario ya no podrá usar comandos del bot.
+📝 Logs guardados en: logs_bans/`
+
+        for (const ownerNum of ownersToNotify) {
+          try {
+            const jidOwner = `${ownerNum}@s.whatsapp.net`;
+            await new Promise((resolve, reject) => {
+              conn.sendMessage(jidOwner, { text: ownerMsg, mentions: [sender] })
+                .then(resolve)
+                .catch(reject);
+              setTimeout(() => reject(new Error('Timeout')), 5000);
+            });
+          } catch (e) {
+            console.error(`Error notificando owner ${ownerNum} antispam:`, e.message);
+          }
+          await new Promise(r => setTimeout(r, 3000));
+        }
+      } catch (e) {
+        console.error('Error notificando owners antispam:', e.message);
+      }
       
       const mensajeBan = `⛔ Has sido bloqueado y baneado por spam.
 
@@ -126,7 +165,7 @@ export async function before(m, { isCommand, conn }) {
 El bot ya no responderá a tus comandos.
 
 Si crees que fue un error, contacta al owner:
-📱 wa.me/${ownerContact}`
+📱 wa.me/${ownerJid}`
 
       await conn.sendMessage(m.chat, { text: mensajeBan }, { quoted: m })
       
