@@ -488,7 +488,7 @@ chatUpdate.messages = validMessages;
             if (!isPrems) {
               m.limit = m.limit || plugin.limit || false;
             }
-          } catch (e) {
+} catch (e) {
             m.error = e;
             logError(e, m?.plugin || 'handler');
             if (e) {
@@ -496,7 +496,7 @@ chatUpdate.messages = validMessages;
               for (const key of Object.values(global.APIKeys || {})) {
                 text = text.replace(new RegExp(key, 'g'), '#OCULTO#');
               }
-              await m.reply(text).catch(() => {});
+              if (text && text.trim()) await m.reply(text).catch(() => {});
             }
           } finally {
             if (typeof plugin.after === 'function') {

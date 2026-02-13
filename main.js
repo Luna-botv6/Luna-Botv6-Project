@@ -219,9 +219,9 @@ getMessage: async (key) => {
     const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
     const msgTimestamp = (key.messageTimestamp || 0) * 1000;
     
-    if (msgTimestamp < connectionTime) {
-        return { conversation: '' };
-    }
+if (msgTimestamp < connectionTime) {
+    return null;
+}
 
     try {
         let jid = jidNormalizedUser(key.remoteJid);
@@ -266,6 +266,10 @@ import printMessage from './src/libraries/print.js';
 const originalSendMessage = global.conn.sendMessage.bind(global.conn);
 
 global.conn.sendMessage = async function (jid, content, options = {}) {
+  const msgText = content?.text ?? content?.caption ?? content?.conversation ?? null;
+  if (msgText !== null && typeof msgText === 'string' && msgText.trim() === '') {
+    return null;
+  }
   const result = await originalSendMessage(jid, content, options);
 
   try {
