@@ -199,11 +199,9 @@ const handler = async (m, {conn, text, isMods, isOwner, isPrems, usedPrefix, com
           `❌ ${usedPrefix}denegar ${requestId}\n\n` +
           `ℹ️ Revisa que el grupo no se use para spam ni actividades que puedan infringir las políticas de WhatsApp.`;
 
-      const lidOwnersList = (global.lidOwners || []).map(x => String(x).replace(/[^0-9]/g, ''));
-
       const ownersToNotify = (global.owner || [])
         .map(([num]) => String(num).replace(/[^0-9]/g, ''))
-        .filter(num => num.length >= 10 && !lidOwnersList.includes(num));
+        .filter(num => num.length >= 10);
 
       for (const ownerNum of ownersToNotify) {
         try {

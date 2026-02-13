@@ -117,10 +117,9 @@ export async function before(m, { isCommand, conn }) {
       users[sender].banned = true
 
       try {
-        const lidOwnersList = (global.lidOwners || []).map(x => String(x).replace(/[^0-9]/g, ''));
         const ownersToNotify = (global.owner || [])
           .map(([num]) => String(num).replace(/[^0-9]/g, ''))
-          .filter(num => num.length >= 10 && !lidOwnersList.includes(num));
+          .filter(num => num.length >= 10);
 
         const ownerMsg = `🚨 Anti-Spam Activado
 
