@@ -78,6 +78,7 @@ function logError(e, plugin = 'general') {
 }
 
 let mconn;
+let currentConn;
 const { proto } = (await import("@whiskeysockets/baileys")).default;
 
 startCacheCleanupInterval(groupCache, recentMessages, recentParticipantEvents, translationsCache, customCommandsCache, processedVoiceMessages, CACHE_TTL, DUPLICATE_TIMEOUT);
@@ -103,6 +104,7 @@ export async function handler(chatUpdate) {
     if (!this?.user?.jid) {
       return;
     }
+    currentConn = this;
     this.msgqueque = this.msgqueque || [];
     this.uptime = this.uptime || Date.now();
     
@@ -562,12 +564,15 @@ chatUpdate.messages = validMessages;
 
 export async function participantsUpdate({ id, participants, action }) {
   try {
+    const conn = currentConn || mconn?.conn || mconn;
+    if (!conn?.user?.jid) return;
+
     const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
     const _translate = await loadTranslation(idioma);
     const tradutor = _translate.handler.participantsUpdate;
 
     await handleParticipantsUpdate(
-      mconn,
+      conn,
       id,
       participants,
       action,
@@ -584,15 +589,16 @@ export async function participantsUpdate({ id, participants, action }) {
 
 export async function callUpdate(callUpdate) {
   try {
-    const isAnticall = global?.db?.data?.settings[mconn?.conn?.user?.jid]?.antiCall;
-    if (!isAnticall || !mconn?.conn) return;
+    const conn = currentConn || mconn?.conn;
+    const isAnticall = global?.db?.data?.settings[conn?.user?.jid]?.antiCall;
+    if (!isAnticall || !conn) return;
 
     for (const nk of callUpdate) {
       try {
         if (!nk.isGroup && nk.status === 'offer') {
           const msg = `Hola *@${nk.from.split('@')[0]}*, ${nk.isVideo ? 'las videollamadas' : 'las llamadas'} no están permitidas. Serás bloqueado.\nContacta a mi creador para ser desbloqueado.`;
-          await mconn?.conn?.reply(nk.from, msg, false, { mentions: [nk.from] });
-          await mconn.conn.updateBlockStatus(nk.from, 'block');
+          await conn.reply(nk.from, msg, false, { mentions: [nk.from] });
+          await conn.updateBlockStatus(nk.from, 'block');
         }
       } catch (e) {}
     }
@@ -602,7 +608,8 @@ export async function callUpdate(callUpdate) {
 export async function deleteUpdate(message) {
   try {
     const { fromMe, id, participant } = message;
-    if (fromMe || !mconn?.conn || !global.db) return;
+    const conn = currentConn || mconn?.conn;
+    if (fromMe || !conn || !global.db) return;
 
     const idioma = global.db.data.users[participant]?.language || global.defaultLenguaje || 'es';
     const _translate = await loadTranslation(idioma);
@@ -612,7 +619,7 @@ export async function deleteUpdate(message) {
     let date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
     let time = d.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
 
-    let msg = mconn.conn.serializeM(mconn.conn.loadMessage(id));
+    let msg = conn.serializeM(conn.loadMessage(id));
     if (!msg?.chat || !msg?.isGroup) return;
 
     let chat = global.db.data.chats[msg.chat] || {};
@@ -620,8 +627,8 @@ export async function deleteUpdate(message) {
 
     const antideleteMessage = `${tradutor.texto1?.[0] || '🔄 Mensaje eliminado'}\n${tradutor.texto1?.[1] || 'Por'}: @${participant.split('@')[0]}\n${tradutor.texto1?.[2] || 'Hora'}: ${time}\n${tradutor.texto1?.[3] || 'Fecha'}: ${date}`.trim();
 
-    await mconn.conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [mconn.conn.decodeJid(participant)] }, { quoted: msg }).catch(() => {});
-    await mconn.conn.copyNForward(msg.chat, msg).catch(() => {});
+    await conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [conn.decodeJid(participant)] }, { quoted: msg }).catch(() => {});
+    await conn.copyNForward(msg.chat, msg).catch(() => {});
   } catch (e) {}
 }
 
