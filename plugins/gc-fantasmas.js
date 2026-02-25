@@ -1,4 +1,5 @@
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { isLidJid, resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -45,7 +46,19 @@ const persistir = () => {
 
 cargarEnMemoria();
 
-setInterval(() => {
+function safeSetInterval(fn, delay) {
+  const MAX = 2147483647;
+  if (delay > MAX) {
+    setTimeout(() => {
+      fn();
+      safeSetInterval(fn, delay);
+    }, MAX);
+  } else {
+    setInterval(fn, delay);
+  }
+}
+
+safeSetInterval(() => {
   activos.clear();
   guardarDB({});
 }, 30 * 24 * 60 * 60 * 1000);
@@ -94,7 +107,12 @@ const handler = async (m, { isOwner, conn, text, usedPrefix }) => {
 
   const fantasmas = participants
     .slice(0, limit)
-    .filter(u => !u.admin && !grupoActivos.has(u.id.split('@')[0]))
+    .filter(u => {
+      if (u.admin) return false;
+      const rawId = u.id || '';
+      const numero = rawId.split('@')[0];
+      return !grupoActivos.has(numero);
+    })
     .map(u => ({
       jid: u.id,
       numero: u.id.split('@')[0],
@@ -117,7 +135,16 @@ const handler = async (m, { isOwner, conn, text, usedPrefix }) => {
 handler.all = async function (m) {
   try {
     if (!m.isGroup || !m.sender) return;
-    const numero = m.sender.split('@')[0];
+
+    let numero;
+    if (isLidJid(m.sender)) {
+      const resolved = await resolveJidToPhone(m.sender, this, m.chat);
+      if (!resolved) return;
+      numero = resolved;
+    } else {
+      numero = m.sender.split('@')[0];
+    }
+
     if (!activos.has(m.chat)) activos.set(m.chat, new Map());
     activos.get(m.chat).set(numero, Date.now());
   } catch (e) {}
