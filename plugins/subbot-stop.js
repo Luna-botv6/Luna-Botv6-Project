@@ -3,10 +3,32 @@ import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 
+function findSubbotIdByPhone(phoneNumber) {
+  const subBotDir = "./sub-lunabot/";
+  if (!fs.existsSync(subBotDir)) return null;
+
+  const dirs = fs.readdirSync(subBotDir);
+
+  if (dirs.includes(phoneNumber)) return phoneNumber;
+
+  for (const dirName of dirs) {
+    const credsPath = path.join(subBotDir, dirName, "creds.json");
+    if (!fs.existsSync(credsPath)) continue;
+    try {
+      const creds = JSON.parse(fs.readFileSync(credsPath, "utf8"));
+      if (!creds.me?.jid) continue;
+      const credsPhone = creds.me.jid.split("@")[0];
+      if (credsPhone === phoneNumber) return dirName;
+    } catch (e) {}
+  }
+
+  return null;
+}
+
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender;
 
-  let id;
+  let resolvedPhone;
   if (m.isGroup) {
     const groupMetadata = conn.chats[m.chat]?.metadata ||
       await conn.groupMetadata(m.chat).catch(_ => null) || {};
@@ -16,18 +38,23 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       u.id === who ||
       u.lid === who
     );
-    id = (participantData?.id || who).split('@')[0];
+    resolvedPhone = (participantData?.id || who).split('@')[0];
   } else {
-    id = who.split('@')[0];
+    resolvedPhone = who.split('@')[0];
   }
 
-  if (!id) {
+  if (!resolvedPhone) {
     return m.reply("❌ No se pudo resolver tu número real.");
   }
 
-  let subbotPath = path.join(`./sub-lunabot/`, id);
+  const id = findSubbotIdByPhone(resolvedPhone);
+  const subbotPath = path.join(`./sub-lunabot/`, id || resolvedPhone);
 
   if (command === "stopbot" || command === "stop") {
+    if (!id) {
+      return m.reply("❌ No tienes un SubBot activo para detener.");
+    }
+
     const socket = connectionManager.getSocket(id);
 
     if (!socket) {
@@ -60,7 +87,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   }
 
   if (command === "deletebot" || command === "delbot") {
-    if (!fs.existsSync(subbotPath)) {
+    if (!id || !fs.existsSync(subbotPath)) {
       return m.reply("❌ No tienes una sesión de SubBot para eliminar.");
     }
 
