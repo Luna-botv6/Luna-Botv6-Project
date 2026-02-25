@@ -5,7 +5,26 @@ import chalk from "chalk";
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender;
-  let id = `${who.split`@`[0]}`;
+
+  let id;
+  if (m.isGroup) {
+    const groupMetadata = conn.chats[m.chat]?.metadata ||
+      await conn.groupMetadata(m.chat).catch(_ => null) || {};
+    const participants = groupMetadata.participants || [];
+    const participantData = participants.find(u =>
+      conn.decodeJid(u.id) === who ||
+      u.id === who ||
+      u.lid === who
+    );
+    id = (participantData?.id || who).split('@')[0];
+  } else {
+    id = who.split('@')[0];
+  }
+
+  if (!id) {
+    return m.reply("❌ No se pudo resolver tu número real.");
+  }
+
   let subbotPath = path.join(`./sub-lunabot/`, id);
 
   if (command === "stopbot" || command === "stop") {

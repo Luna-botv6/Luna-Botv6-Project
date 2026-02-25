@@ -5,9 +5,7 @@ import { connectionManager } from "../lib/funcion/connection-manager.js";
 
 const handler = (m) => m;
 
-
 handler.all = async function (m, { conn }) {
-
   return !0;
 };
 
@@ -61,21 +59,9 @@ export async function autoreconnectSubbots(mainConn) {
               userPath,
               sessionAge: Math.round(sessionAge / 1000 / 60 / 60),
             });
-            console.log(
-              chalk.green(
-                `✅ Sesión válida: ${userId} (${Math.round(
-                  sessionAge / 1000 / 60 / 60
-                )}h)`
-              )
-            );
+            console.log(chalk.green(`✅ Sesión válida: ${userId} (${Math.round(sessionAge / 1000 / 60 / 60)}h)`));
           } else {
-            console.log(
-              chalk.yellow(
-                `🗑️ Sesión expirada: ${userId} (${Math.round(
-                  sessionAge / 1000 / 60 / 60 / 24
-                )} días)`
-              )
-            );
+            console.log(chalk.yellow(`🗑️ Sesión expirada: ${userId} (${Math.round(sessionAge / 1000 / 60 / 60 / 24)} días)`));
             fs.rmSync(userPath, { recursive: true, force: true });
           }
         } else {
@@ -83,9 +69,7 @@ export async function autoreconnectSubbots(mainConn) {
           const keyCount = Object.keys(creds || {}).length;
 
           if (!creds || (credSize < 50 && keyCount <= 2)) {
-            console.log(
-              chalk.yellow(`🗑️ Sesión vacía eliminada: ${userId}`)
-            );
+            console.log(chalk.yellow(`🗑️ Sesión vacía eliminada: ${userId}`));
             fs.rmSync(userPath, { recursive: true, force: true });
           }
         }
@@ -96,15 +80,11 @@ export async function autoreconnectSubbots(mainConn) {
           const rawData = fs.readFileSync(credsPath, "utf8");
           if (rawData.length < 10) {
             fs.rmSync(userPath, { recursive: true, force: true });
-            console.log(
-              chalk.yellow(`🗑️ Archivo corrupto eliminado: ${userId}`)
-            );
+            console.log(chalk.yellow(`🗑️ Archivo corrupto eliminado: ${userId}`));
           }
         } catch (e) {
           fs.rmSync(userPath, { recursive: true, force: true });
-          console.log(
-            chalk.yellow(`🗑️ Archivo ilegible eliminado: ${userId}`)
-          );
+          console.log(chalk.yellow(`🗑️ Archivo ilegible eliminado: ${userId}`));
         }
       }
     }
@@ -114,14 +94,11 @@ export async function autoreconnectSubbots(mainConn) {
       return;
     }
 
-    console.log(
-      chalk.blue(`📋 Sesiones encontradas: ${validSessions.length}`)
-    );
+    console.log(chalk.blue(`📋 Sesiones encontradas: ${validSessions.length}`));
 
     try {
       const imported = await import("./subbot.js");
-      const initializeSubBot =
-        imported.initializeSubBot || imported.default?.initializeSubBot;
+      const initializeSubBot = imported.initializeSubBot || imported.default?.initializeSubBot;
 
       if (!initializeSubBot) {
         console.log(chalk.red("❌ Error: No se pudo importar el módulo"));
@@ -130,52 +107,28 @@ export async function autoreconnectSubbots(mainConn) {
 
       for (const session of validSessions) {
         try {
-          console.log(
-            chalk.blue(
-              `🔄 Restaurando: ${session.userId} (${session.sessionAge}h)`
-            )
-          );
+          console.log(chalk.blue(`🔄 Restaurando: ${session.userId} (${session.sessionAge}h)`));
 
           const mockMessage = createMockMessage(mainConn, session.userId);
 
-          await simulateSerbot(
-            mockMessage,
-            mainConn,
-            initializeSubBot,
-            session.userPath
-          );
+          await simulateSerbot(mockMessage, mainConn, initializeSubBot, session.userPath);
 
           await new Promise((resolve) => setTimeout(resolve, 3000));
         } catch (error) {
-          console.error(
-            chalk.red(`❌ Error restaurando ${session.userId}`)
-          );
+          console.error(chalk.red(`❌ Error restaurando ${session.userId}`));
         }
       }
     } catch (importError) {
-      console.error(
-        chalk.red(`❌ Error importando módulo: ${importError.message}`)
-      );
+      console.error(chalk.red(`❌ Error importando módulo: ${importError.message}`));
       return;
     }
 
     setTimeout(async () => {
       try {
-        const restoredCount = connectionManager
-          ? connectionManager.getActiveConnectionCount()
-          : 0;
-
-        console.log(
-          chalk.green(
-            `✅ Restauración completada: ${restoredCount}/${validSessions.length} SubBots activos`
-          )
-        );
+        const restoredCount = connectionManager ? connectionManager.getActiveConnectionCount() : 0;
+        console.log(chalk.green(`✅ Restauración completada: ${restoredCount}/${validSessions.length} SubBots activos`));
       } catch (error) {
-        console.log(
-          chalk.green(
-            `✅ Proceso completado: ${validSessions.length} sesiones procesadas`
-          )
-        );
+        console.log(chalk.green(`✅ Proceso completado: ${validSessions.length} sesiones procesadas`));
       }
     }, 10000);
   } catch (error) {
@@ -212,12 +165,7 @@ function createMockMessage(mainConn, userId) {
   };
 }
 
-async function simulateSerbot(
-  mockMessage,
-  mainConn,
-  initializeSubBot,
-  userPath
-) {
+async function simulateSerbot(mockMessage, mainConn, initializeSubBot, userPath) {
   const userId = path.basename(userPath);
 
   if (!global.db) {
@@ -244,6 +192,7 @@ async function simulateSerbot(
     args: [],
     usedPrefix: "/",
     command: "serbot",
+    senderPhone: userId,
   };
 
   try {
@@ -304,9 +253,7 @@ export async function validateAndCleanSessions() {
 
             if (sessionAge > maxAge) {
               shouldDelete = true;
-              reason = `expirado (${Math.round(
-                sessionAge / 1000 / 60 / 60 / 24
-              )} días)`;
+              reason = `expirado (${Math.round(sessionAge / 1000 / 60 / 60 / 24)} días)`;
             }
           }
         } catch (error) {
@@ -326,9 +273,7 @@ export async function validateAndCleanSessions() {
       if (shouldDelete) {
         try {
           fs.rmSync(userPath, { recursive: true, force: true });
-          console.log(
-            chalk.yellow(`🗑️ Sesión eliminada: ${userId} (${reason})`)
-          );
+          console.log(chalk.yellow(`🗑️ Sesión eliminada: ${userId} (${reason})`));
           cleanedCount++;
         } catch (error) {
           console.log(chalk.red(`❌ Error eliminando ${userId}`));
@@ -337,16 +282,11 @@ export async function validateAndCleanSessions() {
     }
 
     if (cleanedCount > 0) {
-      console.log(
-        chalk.green(
-          `✅ Limpieza completada: ${cleanedCount} sesiones eliminadas`
-        )
-      );
+      console.log(chalk.green(`✅ Limpieza completada: ${cleanedCount} sesiones eliminadas`));
     }
   } catch (error) {
     console.error(chalk.red("❌ Error en validación de sesiones"));
   }
 }
-
 
 setInterval(validateAndCleanSessions, 60 * 60 * 1000);
