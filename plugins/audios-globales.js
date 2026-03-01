@@ -1,69 +1,61 @@
-import fs from 'fs'
+import fetch from 'node-fetch'
+import ffmpeg from 'fluent-ffmpeg'
+import { Readable } from 'stream'
+import { PassThrough } from 'stream'
 import { getConfig } from '../lib/funcConfig.js'
 import { getSinPrefijo } from '../lib/sinPrefijo.js'
 
+const BASE = 'https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/audio'
+
 const handler = (m) => m
-
-const recentAudios = new Map()
-const MAX_AUDIO_CACHE = 100
-const AUDIO_CACHE_TTL = 15000
-
-function cleanupAudioCache() {
-  const now = Date.now()
-  for (const [key, timestamp] of recentAudios.entries()) {
-    if (now - timestamp > AUDIO_CACHE_TTL) {
-      recentAudios.delete(key)
-    }
-  }
-  if (recentAudios.size > MAX_AUDIO_CACHE) {
-    const extra = Math.ceil((recentAudios.size - MAX_AUDIO_CACHE) * 1.5)
-    let del = 0
-    for (const [key] of recentAudios.entries()) {
-      if (del >= extra) break
-      recentAudios.delete(key)
-      del++
-    }
-  }
-}
-
-function isDuplicateAudio(messageId, trigger) {
-  if (!messageId || !trigger) return false
-  const key = `${messageId}_${trigger}`
-  if (recentAudios.size % 50 === 0 && recentAudios.size > 0) {
-    cleanupAudioCache()
-  }
-  if (recentAudios.has(key)) return true
-  recentAudios.set(key, Date.now())
-  return false
-}
 
 handler.all = async function (m, { conn }) {
   try {
-    if (!m || m.fromMe || m.isBaileys || !m.id) return
-    if (!conn?.user) return
+    if (!m || m.fromMe || m.isBaileys || !m.id) {
+      return
+    }
+    if (!conn?.user) {
+      return
+    }
+    if (!m.chat.endsWith('@g.us')) {
+      return
+    }
 
     const text = (m.text || '').trim()
-    if (!text) return
+    if (!text) {
+      return
+    }
 
-    
+
     const sinPrefijoActivo = getSinPrefijo(m.chat)
-    if (sinPrefijoActivo) return
+    if (sinPrefijoActivo) {
+      return
+    }
 
     const first = text.trim().split(/\s+/)[0]
     const prefijos = ['.', '#', '/', '!', '?', '$', '%', '&', '*']
-    if (prefijos.includes(first[0])) return
-    if (m.isCommand) return
-    if (m.commandSinPrefijo) return
+    if (prefijos.includes(first[0])) {
+      return
+    }
+    if (m.isCommand) {
+      return
+    }
+    if (m.commandSinPrefijo) {
+      return
+    }
 
-    if (text.length < 2) return
+    if (text.length < 2) {
+      return
+    }
 
     const chat = getConfig(m.chat) || {}
-    const settings = (global.db.data.settings && global.db.data.settings[conn.user.jid]) || {}
-    if (chat.isBanned) return
-
     const audiosEnabled = chat.audios !== undefined ? chat.audios : true
-    const audiosBotEnabled = settings.audios_bot !== undefined ? settings.audios_bot : true
-    if (!audiosEnabled || !audiosBotEnabled) return
+    if (chat.isBanned) {
+      return
+    }
+    if (!audiosEnabled) {
+      return
+    }
 
     const audios = {
       'hola': '01J673CQ9ZE93TRQKCKN9Q8Z0M.mp3',
@@ -71,7 +63,7 @@ handler.all = async function (m, { conn }) {
       'anadieleimporta|a nadie le importa': '01J6734W48PG8EA14QW517QR2K.mp3',
       'araara|ara ara': '01J672TYT2TFVG5NT5QVPJ8XHX.mp3',
       'miarda de bot|mierda de bot|mearda de bot': '01J673T2Q92H3A0AW5B8RHA2N0.mp3',
-      'baÃ±ate': '01J672VZBZ488TCVYA7KBB3TFG.mp3',
+      'bañate': '01J672VZBZ488TCVYA7KBB3TFG.mp3',
       'baneado': '01J672WYXHW6JM3T8PCNQHH6MN.mp3',
       'bebito fiu fiu|bff': '01J672XP5MW9J5APRSDFYRTTE9.mp3',
       'buenas noches|boanoite': '01J672YMA8AS2Z8YFMHB68GBQX.mp3',
@@ -86,42 +78,73 @@ handler.all = async function (m, { conn }) {
       'uwu': '01J674A7N7KNER6GY6FCYTTZSR.mp3',
       'yamete|yamete kudasai': '01J674DR0CB7BD43HHBN1CBBC8.mp3',
       'vivan los novios': '01J674D3S12JTFDETTNF12V4W8.mp3',
-      'gatito|gato|oiia|oia|uiia|Gato|Gatito|Oiia|Oia|Uiia': 'gatoxd.mp3',
+      'gatito|gato|oiia|oia|uiia': 'gatoxd.mp3',
       'pasa pack': '01J6735MY23DV6ES9XHBP06K9R.mp3'
     }
 
     const lower = text.toLowerCase()
-    let matchedKeyword = null
-    let filePath = null
+    let matchedFile = null
 
     for (const [trigger, file] of Object.entries(audios)) {
       const keywords = trigger.split('|')
-      const found = keywords.find(k => lower.includes(k))
-      if (found) {
-        matchedKeyword = found
-        filePath = `./src/assets/audio/${file}`
+      if (keywords.find(k => lower.includes(k))) {
+        matchedFile = file
         break
       }
     }
 
-    if (!matchedKeyword) return
-    if (!filePath) return
-    if (!fs.existsSync(filePath)) return
-    if (isDuplicateAudio(m.id, matchedKeyword)) return
+    if (!matchedFile) {
+      return
+    }
+
+
+    const audioUrl = `${BASE}/${encodeURIComponent(matchedFile)}`
+
+    const res = await fetch(audioUrl)
+    if (!res.ok) {
+      return
+    }
+
+
+    const mp3Buffer = Buffer.from(await res.arrayBuffer())
+
+    const oggBuffer = await convertToOgg(mp3Buffer)
 
     await conn.sendPresenceUpdate('recording', m.chat)
     await new Promise(res => setTimeout(res, 1200))
 
-    if (!conn?.user) return
+    if (!conn?.user) {
+      return
+    }
 
-    await conn.sendFile(m.chat, filePath, 'audio.mp3', '', m, true, {
-      mimetype: 'audio/mpeg'
-    })
+    await conn.sendMessage(m.chat, { audio: oggBuffer, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: m })
+
   } catch (e) {
-    console.error('Error en audios-globales.js:', e)
+    console.error('[AUDIO-DEBUG] 💥 Error inesperado:', e)
   }
 
   return false
+}
+
+function convertToOgg(mp3Buffer) {
+  return new Promise((resolve, reject) => {
+    const input = new Readable()
+    input.push(mp3Buffer)
+    input.push(null)
+
+    const output = new PassThrough()
+    const chunks = []
+    output.on('data', chunk => chunks.push(chunk))
+    output.on('end', () => resolve(Buffer.concat(chunks)))
+    output.on('error', reject)
+
+    ffmpeg(input)
+      .inputFormat('mp3')
+      .audioCodec('libopus')
+      .format('ogg')
+      .on('error', reject)
+      .pipe(output)
+  })
 }
 
 export default handler
