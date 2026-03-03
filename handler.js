@@ -490,7 +490,7 @@ chatUpdate.messages = validMessages;
             if (!isPrems) {
               m.limit = m.limit || plugin.limit || false;
             }
-} catch (e) {
+          } catch (e) {
             m.error = e;
             logError(e, m?.plugin || 'handler');
             if (e) {
@@ -511,6 +511,7 @@ chatUpdate.messages = validMessages;
             if (m.limit) {
               m.reply(`${tradutor.texto4?.[0] || 'Límite usado'} ${m.limit} ${tradutor.texto4?.[1] || 'veces'}`);
             }
+            if (global.gc) global.gc();
           }
           break;
         }
@@ -556,6 +557,8 @@ chatUpdate.messages = validMessages;
       if (opts['autoread'] || settingsREAD?.autoread2) {
         this.readMessages([m.key]).catch(() => {});
       }
+
+      m = null;
     }
   } catch (e) {
     logError(e, 'main_handler');
