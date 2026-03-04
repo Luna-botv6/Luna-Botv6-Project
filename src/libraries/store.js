@@ -1,8 +1,10 @@
 const { BufferJSON, proto, isJidBroadcast, WAMessageStubType, updateMessageWithReceipt, updateMessageWithReaction, jidNormalizedUser } = (await import('@whiskeysockets/baileys')).default;
 
 const TIME_TO_DATA_STALE = 5 * 60 * 1000;
+const MAX_MESSAGES_PER_JID = 20;
+const MAX_JIDS = 300;
+const CLEANUP_INTERVAL = 10 * 60 * 1000;
 
-// Helper function para verificar si es un JID de grupo
 function isJidGroup(jid) {
     return jid?.endsWith?.('@g.us') || false;
 }
@@ -39,7 +41,7 @@ function makeInMemoryStore() {
         return chats[jid].metadata;
     }
 
-function upsertMessage(jid, message, type = 'append') {
+    function upsertMessage(jid, message, type = 'append') {
         jid = jid?.decodeJid?.();
         
         const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
@@ -54,8 +56,27 @@ function upsertMessage(jid, message, type = 'append') {
         delete message.message?.senderKeyDistributionMessage;
         const msg = loadMessage(jid, message.key.id);
         if (msg) Object.assign(msg, message);
-        else type === 'append' ? messages[jid].push(message) : messages[jid].unshift(message);
+        else {
+            type === 'append' ? messages[jid].push(message) : messages[jid].unshift(message);
+            if (messages[jid].length > MAX_MESSAGES_PER_JID) {
+                messages[jid] = messages[jid].slice(-MAX_MESSAGES_PER_JID);
+            }
+        }
     }
+
+    function cleanupStaleData() {
+        const jidList = Object.keys(messages);
+        if (jidList.length > MAX_JIDS) {
+            const toDelete = jidList.slice(0, jidList.length - MAX_JIDS);
+            for (const jid of toDelete) delete messages[jid];
+        }
+
+        for (const jid in chats) {
+            if (chats[jid].presences) delete chats[jid].presences;
+        }
+    }
+
+    setInterval(cleanupStaleData, CLEANUP_INTERVAL);
 
     function bind(conn) {
         if (!conn.chats) conn.chats = {};
@@ -135,7 +156,7 @@ conn.ev.on('messages.upsert', ({ messages: newMessages, type }) => {
         conn.ev.on('presence.update', ({ id, presences: updates }) => {
             const jid = id.decodeJid();
             if (!(jid in chats)) chats[jid] = { id: jid };
-            Object.assign(chats[jid], { presences: { ...chats[jid].presences, ...updates } });
+            chats[jid].presences = updates;
         });
 
         conn.ev.on('message-reaction.update', updates => {
