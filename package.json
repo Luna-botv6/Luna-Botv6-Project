@@ -1,4 +1,4 @@
-  {
+{
   "name": "Luna-Botv6-Project",
   "version": "1.0.0",
   "description": "Versión de LunaBotV6: WhatsApp bot",
@@ -46,7 +46,9 @@
     "url-regex-safe": "^3.0.0",
     "jimp": "^0.22.12",
     "ruhend-scraper": "^9.0.8",
-    "yt-search": "^2.10.3"
+    "omggif": "^1.0.10",
+    "yt-search": "^2.10.3",
+    "mumaker": "^2.0.0"
   },
   "optionalDependencies": {
     "wa-sticker-formatter": "^4.3.2"
@@ -56,4 +58,3 @@
     "eslint-config-google": "^0.14.0"
   }
 }
-
