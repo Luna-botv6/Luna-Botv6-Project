@@ -21,6 +21,7 @@ import { ensureUserData, ensureBotSettings } from './lib/funcion/databaseManager
 import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
+import { gcIfNeeded } from './lib/gcHelper.js';
 
 EventEmitter.defaultMaxListeners = 30;
 
@@ -95,7 +96,7 @@ setInterval(() => {
       toDelete.forEach(id => processedVoiceMessages.delete(id));
     }
     
-    if (global.gc) global.gc();
+    gcIfNeeded('intervalo-60s');
   } catch (e) {}
 }, 60000);
 
@@ -511,7 +512,7 @@ chatUpdate.messages = validMessages;
             if (m.limit) {
               m.reply(`${tradutor.texto4?.[0] || 'Límite usado'} ${m.limit} ${tradutor.texto4?.[1] || 'veces'}`);
             }
-            if (global.gc) global.gc();
+             gcIfNeeded(m?.plugin || 'plugin');
           }
           break;
         }

@@ -263,41 +263,41 @@ if (msgTimestamp < connectionTime) {
 global.conn = makeWASocket(connectionOptions);
 import printMessage from './src/libraries/print.js';
 
-const originalSendMessage = global.conn.sendMessage.bind(global.conn);
-
-global.conn.sendMessage = async function (jid, content, options = {}) {
-  const msgText = content?.text ?? content?.caption ?? content?.conversation ?? null;
-  if (msgText !== null && typeof msgText === 'string' && msgText.trim() === '') {
-    return null;
-  }
-  const result = await originalSendMessage(jid, content, options);
-
-  try {
-    const fakeMsg = {
-      key: {
+function applyPrintWrapper(conn) {
+  const originalSendMessage = conn.sendMessage.bind(conn);
+  conn.sendMessage = async function (jid, content, options = {}) {
+    const msgText = content?.text ?? content?.caption ?? content?.conversation ?? null;
+    if (msgText !== null && typeof msgText === 'string' && msgText.trim() === '') {
+      return null;
+    }
+    const result = await originalSendMessage(jid, content, options);
+    try {
+      const fakeMsg = {
+        key: {
+          fromMe: true,
+          remoteJid: jid
+        },
         fromMe: true,
-        remoteJid: jid
-      },
-      fromMe: true,
-      sender: global.conn.user?.jid,
-      chat: jid,
-      mtype: Object.keys(content || {})[0] || 'unknown',
-      messageTimestamp: Math.floor(Date.now() / 1000),
-      text:
-        content?.text ||
-        content?.caption ||
-        content?.conversation ||
-        null,
-      msg: content
-    };
+        sender: conn.user?.jid,
+        chat: jid,
+        mtype: Object.keys(content || {})[0] || 'unknown',
+        messageTimestamp: Math.floor(Date.now() / 1000),
+        text:
+          content?.text ||
+          content?.caption ||
+          content?.conversation ||
+          null,
+        msg: content
+      };
+      await printMessage(fakeMsg, conn);
+    } catch (e) {
+      console.error('[Print Bot Error]', e.message);
+    }
+    return result;
+  };
+}
 
-    await printMessage(fakeMsg, global.conn);
-  } catch (e) {
-    console.error('[Print Bot Error]', e.message);
-  }
-
-  return result;
-};
+applyPrintWrapper(global.conn);
 
 conn.ev.on('creds.update', saveCreds);
 
@@ -698,6 +698,7 @@ global.reloadHandler = async function(restatConn) {
     
     conn.ev.removeAllListeners();
     global.conn = makeWASocket(connectionOptions, {chats: oldChats});
+    applyPrintWrapper(global.conn);
     
     isInit = true;
   }
