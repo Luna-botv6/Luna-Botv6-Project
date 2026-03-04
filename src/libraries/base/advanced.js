@@ -259,14 +259,8 @@ export const advancedUtils = {
       case WAMessageStubType.GROUP_CHANGE_ICON:
         emitGroupUpdate({icon: m.messageStubParameters[0]});
         break;
-      default: {
-        console.log({
-          messageStubType: m.messageStubType,
-          messageStubParameters: m.messageStubParameters,
-          type: WAMessageStubType[m.messageStubType],
-        });
+      default:
         break;
-      }
     }
     const isGroup = chat.endsWith('@g.us');
     if (!isGroup) return;
