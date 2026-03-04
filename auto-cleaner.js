@@ -20,6 +20,7 @@ const CONFIG = {
 
 let isRunning = false;
 let cleanupInterval = null;
+let groupCleanInterval = null;
 
 async function deleteFilesInBatches(dir, fileFilter, batchSize = CONFIG.BATCH_SIZE, delay = CONFIG.BATCH_DELAY) {
   if (!existsSync(dir)) return 0;
@@ -82,6 +83,38 @@ async function cleanOldFiles() {
       }
     }
   );
+}
+
+async function cleanStaleGroups() {
+  try {
+    if (!global.conn?.user?.jid) return;
+
+    const botJid = global.conn.decodeJid(global.conn.user.jid);
+    const chats = global.conn.chats;
+    if (!chats) return;
+
+    const groupsObj = await global.conn.groupFetchAllParticipating().catch(() => null);
+    if (!groupsObj) return;
+
+    const activeJids = new Set(Object.keys(groupsObj));
+    let removed = 0;
+
+    for (const jid of Object.keys(chats)) {
+      if (!jid.endsWith('@g.us')) continue;
+      if (!activeJids.has(jid)) {
+        delete chats[jid];
+        removed++;
+      }
+    }
+
+    if (removed > 0) {
+      console.log(chalk.green(`✅ [auto-cleaner] ${removed} grupos obsoletos eliminados del caché`));
+    } else {
+      console.log(chalk.blue(`ℹ️  [auto-cleaner] Caché de grupos limpio, sin obsoletos`));
+    }
+  } catch (err) {
+    console.error(chalk.red(`❌ [auto-cleaner] Error limpiando grupos: ${err.message}`));
+  }
 }
 
 async function performAutoClean() {
@@ -151,6 +184,31 @@ export function stopAutoCleanService() {
     clearInterval(cleanupInterval);
     cleanupInterval = null;
     console.log(chalk.yellow('🛑 [auto-cleaner] Servicio detenido'));
+  }
+}
+
+export function startGroupCleanService() {
+  if (groupCleanInterval) {
+    console.log(chalk.yellow('⚠️  [auto-cleaner] Limpieza de grupos ya iniciada'));
+    return;
+  }
+
+  console.log(chalk.cyan.bold('🚀 [auto-cleaner] Limpieza de grupos obsoletos cada 30 min iniciada'));
+
+  setTimeout(() => cleanStaleGroups(), 60000);
+
+  groupCleanInterval = setInterval(() => {
+    cleanStaleGroups();
+  }, 1800000);
+
+  groupCleanInterval.unref();
+}
+
+export function stopGroupCleanService() {
+  if (groupCleanInterval) {
+    clearInterval(groupCleanInterval);
+    groupCleanInterval = null;
+    console.log(chalk.yellow('🛑 [auto-cleaner] Limpieza de grupos detenida'));
   }
 }
 

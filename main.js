@@ -28,7 +28,7 @@ import NodeCache from 'node-cache';
 import { restaurarConfiguraciones } from './lib/funcConfig.js';
 import { getOwnerFunction } from './lib/owner-funciones.js';
 import { isCleanerEnabled } from './lib/cleaner-config.js';
-import { startAutoCleanService } from './auto-cleaner.js';
+import { startAutoCleanService, startGroupCleanService } from './auto-cleaner.js';
 import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.js';
 import mentionListener from './plugins/game-ialuna.js';
 import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
@@ -798,6 +798,7 @@ Object.freeze(global.reload);
 watch(pluginFolder, global.reload);
 await global.reloadHandler();
 manejarEventosGrupo(conn);
+startGroupCleanService();
 async function _quickTest() {
   const test = await Promise.all([
     spawn('ffmpeg'),
