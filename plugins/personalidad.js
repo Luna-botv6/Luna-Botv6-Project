@@ -24,26 +24,26 @@ const PORCENTAJES = [
 
 const pick = list => list[Math.floor(Math.random() * list.length)]
 
+const resolveLid = async (jid, conn, m) => {
+  if (!jid.includes('@lid') || !m.isGroup) return jid
+  const { participants } = await getGroupDataForPlugin(conn, m.chat, m.sender)
+  return participants.find(p => p.lid === jid)?.id || jid
+}
+
 var handler = async (m, { conn, text }) => {
   let nombre = text?.trim()
   let mentions = []
 
   if (m.mentionedJid?.length) {
-    const jid = m.mentionedJid[0]
-    mentions = [jid]
-    if (!nombre || nombre.replace(/@\d+/g, '').trim() === '') {
-      nombre = conn.getName?.(jid) || jid.replace(/@.+/, '')
-    }
+    const realJid = await resolveLid(m.mentionedJid[0], conn, m)
+    mentions = [realJid]
+    nombre = `@${realJid.split('@')[0]}`
   }
 
   if (!nombre) {
-    return conn.reply(
-      m.chat,
-      '🚩 *Ingrese el nombre de alguna persona*\n\n' +
-      '› Ejemplo: *!personalidad Luffy*\n' +
-      '› O etiqueta: *!personalidad @usuario*',
-      m, rcanal
-    )
+    const realSender = await resolveLid(m.sender, conn, m)
+    mentions = [realSender]
+    nombre = `@${realSender.split('@')[0]}`
   }
 
   const genero = pick([
