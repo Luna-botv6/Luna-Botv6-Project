@@ -1,14 +1,15 @@
 import fs from 'fs'
-import { getUserStats, removeMoney, getMoney } from '../lib/stats.js'
+import { removeMoney, getMoney } from '../lib/stats.js'
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
 
-const handler = async (m, { conn, text }) => {
+const handler = async (m, { conn, text, isOwner, isROwner }) => {
   try {
-    // Verificar si global y sus propiedades existen
-    const datas = global || {}
-    const dbData = datas.db?.data?.users?.[m.sender] || {}
+    const isLidOwner = global.lidOwners?.includes(m.sender) || false
+    if (!isOwner && !isROwner && !isLidOwner) throw 'Este comando es solo para los *propietarios del bot*.'
+
+    const dbData = global.db?.data?.users?.[m.sender] || {}
     const idioma = dbData.language || global.defaultLenguaje || 'es'
-    
-    // Cargar las traducciones de forma segura
+
     let tradutor = {}
     try {
       const languageFile = `./src/languages/${idioma}.json`
@@ -16,80 +17,65 @@ const handler = async (m, { conn, text }) => {
         const _translate = JSON.parse(fs.readFileSync(languageFile))
         tradutor = _translate.plugins?.owner_quitarmoney || {}
       }
-    } catch (error) {
-      console.log('Error al cargar traducciones:', error)
+    } catch (e) {}
+
+    const t = (key, def) => tradutor[key] || def
+
+    let rawJid = m.isGroup ? (m.mentionedJid?.[0] || null) : m.chat
+    if (!rawJid) throw t('texto1', '❌ Menciona a alguien o usa el comando en privado')
+
+    let who = rawJid
+    if (rawJid.includes('@lid') && m.isGroup) {
+      const { participants } = await getGroupDataForPlugin(conn, m.chat, m.sender)
+      const found = participants.find(p => p.lid === rawJid)
+      if (found?.id) who = found.id
     }
 
-    // Textos por defecto en caso de que no existan las traducciones
-    const defaultTexts = {
-      texto1: "❌ Menciona a alguien o usa el comando en privado",
-      texto2: "❌ Ingresa la cantidad de diamantes a quitar",
-      texto3: "❌ Solo se permiten números",
-      texto4: "❌ La cantidad debe ser mayor a 0",
-      texto5: [
-        "✅ Diamantes quitados exitosamente",
-        "💎 Diamantes quitados:"
-      ]
+    let senderJid = m.sender
+    if (m.sender.includes('@lid') && m.isGroup) {
+      const { participants } = await getGroupDataForPlugin(conn, m.chat, m.sender)
+      const found = participants.find(p => p.lid === m.sender)
+      if (found?.id) senderJid = found.id
     }
 
-    // Usar textos por defecto si no existen las traducciones
-    const texts = {
-      texto1: tradutor.texto1 || defaultTexts.texto1,
-      texto2: tradutor.texto2 || defaultTexts.texto2,
-      texto3: tradutor.texto3 || defaultTexts.texto3,
-      texto4: tradutor.texto4 || defaultTexts.texto4,
-      texto5: tradutor.texto5 || defaultTexts.texto5
-    }
+    const txt = text ? text.replace('@' + rawJid.split('@')[0], '').trim() : ''
+    if (!txt) throw t('texto2', '❌ Ingresa la cantidad de diamantes a quitar')
+    if (isNaN(txt)) throw t('texto3', '❌ Solo se permiten números')
 
-    // Determinar el usuario objetivo
-    let who;
-    if (m.isGroup) {
-      who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : null;
-    } else {
-      who = m.chat;
-    }
-    
-    if (!who) throw texts.texto1;
+    const moneyAmount = parseInt(txt)
+    if (moneyAmount < 1) throw t('texto4', '❌ La cantidad debe ser mayor a 0')
 
-    // Obtener el texto sin la mención
-    const txt = text ? text.replace('@' + who.split`@`[0], '').trim() : '';
-    if (!txt) throw texts.texto2;
-    if (isNaN(txt)) throw texts.texto3;
+    const moneyBefore = getMoney(who)
+    removeMoney(who, moneyAmount)
+    const moneyAfter = getMoney(who)
+    const actualRemoved = moneyBefore - moneyAfter
 
-    const moneyAmount = parseInt(txt);
-    
-    if (moneyAmount < 1) throw texts.texto4;
+    const fmt = n => n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n
 
-    // Obtener dinero actual antes de quitar
-    const moneyBefore = getMoney(who);
-
-    // Quitar dinero usando la función removeMoney del stats.js
-    removeMoney(who, moneyAmount);
-
-    // Obtener dinero actual después de quitar
-    const moneyAfter = getMoney(who);
-    const actualRemoved = moneyBefore - moneyAfter;
-
-    // Responder con confirmación
-    m.reply(`≡ ${texts.texto5[0]}
-┌──────────────
-▢ ${texts.texto5[1]} ${actualRemoved}
-▢ 💰 Diamantes restantes: ${moneyAfter}
-${moneyBefore < moneyAmount ? '▢ ⚠️ El usuario no tenía suficientes diamantes' : ''}
-└──────────────`);
+    m.reply(
+      `╭━━━〔 *💎 Diamantes Quitados* 〕━━━⬣\n` +
+      `┃ *👤 Para:* @${who.split('@')[0]}\n` +
+      `┃ *👑 Por:* @${senderJid.split('@')[0]}\n` +
+      `┃\n` +
+      `┃ *✨ Diamantes quitados:* -${fmt(actualRemoved)}\n` +
+      `┃\n` +
+      `┃ *💎 Diamantes anteriores:* ${fmt(moneyBefore)}\n` +
+      `┃ *💎 Diamantes actuales:* ${fmt(moneyAfter)}\n` +
+      (moneyBefore < moneyAmount ? `┃ *⚠️ No tenía suficientes diamantes*\n` : '') +
+      `╰━━━━━━━━━━━━━━━━━━━━⬣`,
+      null,
+      { mentions: [who, senderJid] }
+    )
 
   } catch (error) {
-    // Manejo de errores
-    if (typeof error === 'string') {
-      m.reply(error);
-    } else {
-      console.error('Error en owner-quitarMoney:', error);
-      m.reply('❌ Ocurrió un error al procesar el comando');
+    if (typeof error === 'string') m.reply(error)
+    else {
+      console.error('Error en owner-quitarMoney:', error)
+      m.reply('❌ Ocurrió un error al procesar el comando')
     }
   }
-};
+}
 
-handler.command = ['quitardiamantes', 'removemoney', 'quitarmoney', 'removerd', 'quitard'];
-handler.rowner = true; // Solo owners pueden usar este comando
-
-export default handler;
+handler.command = ['quitardiamantes', 'removemoney', 'quitarmoney', 'removerd', 'quitard']
+handler.rowner = true
+export default handler

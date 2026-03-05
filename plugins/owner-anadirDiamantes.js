@@ -1,8 +1,6 @@
 import fs from 'fs'
-import { getUserStats, setUserStats } from '../lib/stats.js'
+import { addMoney, getMoney } from '../lib/stats.js'
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
-
-const pajak = 0
 
 const handler = async (m, { conn, text, isOwner, isROwner }) => {
   try {
@@ -17,7 +15,7 @@ const handler = async (m, { conn, text, isOwner, isROwner }) => {
       const languageFile = `./src/languages/${idioma}.json`
       if (fs.existsSync(languageFile)) {
         const _translate = JSON.parse(fs.readFileSync(languageFile))
-        tradutor = _translate.plugins?.onwer_anadirlimit || {}
+        tradutor = _translate.plugins?.owner_anadirdiamantes || {}
       }
     } catch (e) {}
 
@@ -41,27 +39,27 @@ const handler = async (m, { conn, text, isOwner, isROwner }) => {
     }
 
     const txt = text ? text.replace('@' + rawJid.split('@')[0], '').trim() : ''
-    if (!txt) throw t('texto2', '⌛ Ingresa la cantidad de límite a añadir')
+    if (!txt) throw t('texto2', '⌛ Ingresa la cantidad de diamantes a añadir')
     if (isNaN(txt)) throw t('texto3', '⌛ Solo se permiten números')
 
-    const dmt = parseInt(txt)
-    const limit = dmt + Math.ceil(dmt * pajak)
-    if (limit < 1) throw t('texto4', '⌛ La cantidad debe ser mayor a 0')
+    const amount = parseInt(txt)
+    if (amount < 1) throw t('texto4', '⌛ La cantidad debe ser mayor a 0')
 
-    const userStats = getUserStats(who)
-    const limitBefore = userStats.limit
-    userStats.limit += dmt
-    setUserStats(who, userStats)
+    const before = getMoney(who)
+    addMoney(who, amount)
+    const after = getMoney(who)
+
+    const fmt = n => n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n
 
     m.reply(
-      `╭━━━〔 *📊 Límite Añadido* 〕━━━⬣\n` +
+      `╭━〔 *💎 Diamantes Añadidos* ━⬣\n` +
       `┃ *👤 Para:* @${who.split('@')[0]}\n` +
       `┃ *👑 Por:* @${senderJid.split('@')[0]}\n` +
       `┃\n` +
-      `┃ *✨ Límite añadido:* +${dmt}\n` +
+      `┃ *✨ Diamantes añadidos:* +${fmt(amount)}\n` +
       `┃\n` +
-      `┃ *📊 Límite anterior:* ${limitBefore}\n` +
-      `┃ *📊 Límite actual:* ${userStats.limit}\n` +
+      `┃ *💎 Diamantes anteriores:* ${fmt(before)}\n` +
+      `┃ *💎 Diamantes actuales:* ${fmt(after)}\n` +
       `╰━━━━━━━━━━━━━━━━━━━━⬣`,
       null,
       { mentions: [who, senderJid] }
@@ -70,12 +68,12 @@ const handler = async (m, { conn, text, isOwner, isROwner }) => {
   } catch (error) {
     if (typeof error === 'string') m.reply(error)
     else {
-      console.error('Error en owner-anadirLimit:', error)
+      console.error('Error en owner-anadirDiamantes:', error)
       m.reply('⌛ Ocurrió un error al procesar el comando')
     }
   }
 }
 
-handler.command = ['addlimit', 'añadirlimit']
+handler.command = ['añadirdiamantes', 'addd', 'dard', 'dardiamantes']
 handler.rowner = true
 export default handler
