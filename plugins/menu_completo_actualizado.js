@@ -36,13 +36,6 @@ const handler = async (m, { conn, usedPrefix, isPrems }) => {
 ╰━━━━━━━━━━━━━━━━━━╯
 ${readMore}
 
-╭━『🎭 MENUS ESPECIALES』━╮
-┃ 🎭 ${usedPrefix}menuanimes
-┃ 🌍 ${usedPrefix}lang
-┃ 🎵 ${usedPrefix}menuaudios
-┃ 🎶 ${usedPrefix}efectosaudio
-╰━━━━━━━━━━━━━━━━━━━━╯
-
 ╭━━━『 ℹ️ INFO DEL BOT 』━━━╮
 ┃ 📜 ${usedPrefix}terminosycondiciones
 ┃ 👨‍👩‍👧 ${usedPrefix}grupos
