@@ -1,29 +1,79 @@
-import similarity from 'similarity';
+import similarity from 'similarity'
 
+const THRESHOLD = 0.72
+const TIMEOUT = 60000
 
-const threshold = 0.72;
-const handler = (m) => m;
-handler.before = async function(m) {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.game_acertijo_resp
+const normalize = str => str
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .trim()
 
-  const id = m.chat;
-  if (!m.quoted || !m.quoted.fromMe || !m.quoted.isBaileys || !/^ⷮ/i.test(m.quoted.text)) return !0;
-  this.tekateki = this.tekateki ? this.tekateki : {};
-  if (!(id in this.tekateki)) return m.reply(tradutor.texto1);
-  if (m.quoted.id == this.tekateki[id][0].id) {
-    const json = JSON.parse(JSON.stringify(this.tekateki[id][1]));
-    if (m.text.toLowerCase() == json.response.toLowerCase().trim()) {
-      global.db.data.users[m.sender].exp += this.tekateki[id][2];
-      m.reply(`${tradutor.texto2}\n+${this.tekateki[id][2]} Exp`);
-      clearTimeout(this.tekateki[id][3]);
-      delete this.tekateki[id];
-    } else if (similarity(m.text.toLowerCase(), json.response.toLowerCase().trim()) >= threshold) m.reply(tradutor.texto3);
-    else m.reply(tradutor.texto4);
+const buildCaption = (question, secsLeft, hint) =>
+  `╭━━━「 🧩 *ACERTIJO* 」━━━╮\n` +
+  `┃\n` +
+  `┃ 🤔 *${question}*\n` +
+  (hint ? `┃ ${hint}\n` : '') +
+  `┃\n` +
+  `┃ ⏱ *Tiempo restante* › ${secsLeft}s\n` +
+  `┃ 🏆 *Premio* › +500 Exp\n` +
+  `┃\n` +
+  `┃ 💬 Responde *citando este mensaje*\n` +
+  `┃\n` +
+  `╰━━━━━━━━━━━━━━━━━━━━━━━╯`
+
+const handler = (m) => m
+handler.all = async function (m, { conn }) {
+  try {
+    if (!m || m.fromMe || !m.text || !m.chat) return
+
+    const id = m.chat
+    if (!this.tekateki || !(id in this.tekateki)) return
+    if (!m.quoted) return
+    if (!m.quoted.text?.includes('╭━━━「 🧩')) return
+
+    const [sentMsg, json, poin, timer, startTime] = this.tekateki[id]
+    const respuesta = normalize(json.response)
+    const intento = normalize(m.text)
+    const secsLeft = Math.max(0, Math.ceil((TIMEOUT - (Date.now() - startTime)) / 1000))
+
+    if (intento === respuesta) {
+      global.db.data.users[m.sender].exp += poin
+      clearTimeout(timer)
+      delete this.tekateki[id]
+
+      const ganador = m.sender
+      const msg =
+        `╭━━━「 🎉 *¡CORRECTO!* 」━━━╮\n` +
+        `┃\n` +
+        `┃ ✅ *Respuesta* › ${json.response}\n` +
+        `┃ 👤 *Ganador* › @${ganador.split('@')[0]}\n` +
+        `┃ 🏆 *Exp ganada* › +${poin}\n` +
+        `┃\n` +
+        `╰━━━━━━━━━━━━━━━━━━━━━━━╯`
+
+      await conn.sendMessage(id, { text: msg, mentions: [ganador] }, { quoted: sentMsg })
+      return
+    }
+
+    if (similarity(intento, respuesta) >= THRESHOLD) {
+      const newMsg = await conn.sendMessage(id,
+        { text: buildCaption(json.question, secsLeft, `🔥 ¡Casi! Empieza por "${json.response[0].toUpperCase()}"`) },
+        { quoted: sentMsg }
+      )
+      this.tekateki[id][0] = newMsg
+      return
+    }
+
+    const newMsg = await conn.sendMessage(id,
+      { text: `❌ *Incorrecto*\n` + buildCaption(json.question, secsLeft) },
+      { quoted: sentMsg }
+    )
+    this.tekateki[id][0] = newMsg
+  } catch (e) {
+    console.error('[ACERTIJO-RESP] 💥 Error:', e)
   }
-  return !0;
-};
-handler.exp = 0;
-export default handler;
+}
+
+handler.exp = 0
+export default handler
