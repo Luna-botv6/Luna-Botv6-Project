@@ -51,7 +51,7 @@ const LunaBot = {
     "⚡ Respuestas rápidas y eficientes"
   ],
   estado: "🔥 ACTIVO",
-  version: "6.0"
+  version: "6.0.0"
 };
 ---
 
