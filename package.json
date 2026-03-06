@@ -48,6 +48,7 @@
     "ruhend-scraper": "^9.0.8",
     "omggif": "^1.0.10",
     "yt-search": "^2.10.3",
+    "mathjs": "^13.0.0",
     "mumaker": "^2.0.0"
   },
   "optionalDependencies": {
