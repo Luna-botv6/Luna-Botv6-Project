@@ -130,6 +130,17 @@ chatUpdate.messages = validMessages;
     const { sender, chat } = extractSenderAndChat(m, this);
     if (!sender || !chat) return;
 
+    const _mute = global.db?.data?.mutes?.[chat + '_' + sender];
+    if (_mute && (!_mute.until || Date.now() < _mute.until)) {
+      const _ownerNums = (global.owner || []).map(o => String(Array.isArray(o) ? o[0] : o));
+      const _lidOwners = (global.lidOwners || []).map(x => String(x));
+      const _isOwner = _ownerNums.some(n => sender.includes(n)) || _lidOwners.some(n => sender.includes(n));
+      if (!_isOwner) {
+        this.sendMessage(chat, { delete: m.key }).catch(() => {});
+        return;
+      }
+    }
+
     m = normalizeMessageText(m);
 
     const globalPrefix = this.prefix || global.prefix;
