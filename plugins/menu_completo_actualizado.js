@@ -46,7 +46,7 @@ ${readMore}
 ┃ 💻 ${usedPrefix}script
 ┃ ✉️ ${usedPrefix}reporte <texto>
 ┃ 🔗 ${usedPrefix}join <link>
-┃ 🛠️ ${usedPrefix}fixmsgespera
+┃ 🛠️ ${usedPrefix}lchat <sincroniza>
 ╰━━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━『 🎮 JUEGOS 』━━━╮
@@ -107,18 +107,7 @@ ${readMore}
 
 ╭━━━『 🎵 DESCARGAS 』━━━╮
 ┃ 🎵 ${usedPrefix}play <txt>
-┃ 🎵 ${usedPrefix}play2 <txt>
-┃ 🎵 ${usedPrefix}play.1 <txt>
-┃ 🎵 ${usedPrefix}play.2 <txt>
-┃ 📄 ${usedPrefix}playdoc <txt>
-┃ 📄 ${usedPrefix}playdoc2 <txt>
 ┃ 📻 ${usedPrefix}playlist <txt>
-┃ 📹 ${usedPrefix}ytshort <url>
-┃ 🎧 ${usedPrefix}ytmp3 <url>
-┃ 📄 ${usedPrefix}ytmp3doc <url>
-┃ 🎬 ${usedPrefix}ytmp4 <url>
-┃ 📄 ${usedPrefix}ytmp4doc <url>
-┃ 📄 ${usedPrefix}videodoc <url>
 ┃ 🎶 ${usedPrefix}spotify <txt>
 ┃ 📘 ${usedPrefix}facebook <url>
 ┃ 📸 ${usedPrefix}instagram <url>
@@ -132,7 +121,6 @@ ${readMore}
 ┃ ☁️ ${usedPrefix}gdrive <url>
 ┃ 🐦 ${usedPrefix}twitter <url>
 ┃ 📞 ${usedPrefix}ringtone <txt>
-┃ 🌐 ${usedPrefix}soundcloud <txt>
 ┃ 👠 ${usedPrefix}stickerpack <url>
 ┃ 🖼️ ${usedPrefix}wallpaper <txt>
 ╰━━━━━━━━━━━━━━━━━━━╯
@@ -237,9 +225,7 @@ ${readMore}
 
 ╭━『 🛠️ HERRAMIENTAS 』━╮
 ┃ 🔍 ${usedPrefix}inspect <wagc_url>
-┃ 🗑️ ${usedPrefix}delchatgpt
 ┃ 🎨 ${usedPrefix}dall-e <txt>
-┃ 📱 ${usedPrefix}spamwa <num|txt|cant>
 ┃ 🖼️ ${usedPrefix}tamaño <cant> <img/video>
 ┃ 👁️ ${usedPrefix}readviewonce <img/video>
 ┃ 🌤️ ${usedPrefix}clima <país> <ciudad>
@@ -321,6 +307,7 @@ ${readMore}
 ┃ 🎁 ${usedPrefix}wm <packname> <autor>
 ┃ 🎨 ${usedPrefix}stickermarker <efecto> <img>
 ┃ ✨ ${usedPrefix}stickerfilter <efecto> <img>
+┃ 🥳 ${usedPrefix}animoji <emoji>
 ╰━━━━━━━━━━━━━━━━━━━━━━╯
 
 ╭━『 🌈 TEXTO ANIMADO ATTP 』━╮
