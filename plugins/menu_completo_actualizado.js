@@ -38,11 +38,11 @@ ${readMore}
 
 ╭━━━『 ℹ️ INFO DEL BOT 』━━━╮
 ┃ 📜 ${usedPrefix}terminosycondiciones
-┃ 👨‍👩‍👧 ${usedPrefix}grupos
-┃ 📊 ${usedPrefix}estado
+┃ 👨‍👩‍👧 ${usedPrefix}grupos <canal oficial>
+┃ 📊 ${usedPrefix}estado <información>
 ┃ 🤖 ${usedPrefix}infobot
-┃ ⚡ ${usedPrefix}speedtest
-┃ 👑 ${usedPrefix}owner
+┃ ⚡ ${usedPrefix}speedtest <velocidad>
+┃ 👑 ${usedPrefix}owner <mi credor>
 ┃ 💻 ${usedPrefix}script
 ┃ ✉️ ${usedPrefix}reporte <texto>
 ┃ 🔗 ${usedPrefix}join <link>
