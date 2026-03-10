@@ -53,76 +53,49 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
 
     const kicktext = `${tradutor.texto2 || 'Debes mencionar a un usuario'}\n*${usedPrefix + command} @${global.suittag?.[0] || 'usuario'}*`;
 
-    const resolveLidToJid = (jid) => {
+    // Resuelve cualquier JID o LID al JID real del participante
+    const resolveParticipant = (jid) => {
       if (!jid) return null;
-      
-      if (jid.includes('@lid')) {
-        const participant = groupParticipants.find(p => p.lid === jid);
-        if (participant && participant.id) {
-          return participant.id;
-        }
-        return null;
-      }
-      
-      return jid;
+      const num = jid.replace(/[^0-9]/g, '');
+      // 1. match exacto por id
+      let p = groupParticipants.find(p => p.id === jid);
+      if (p) return p;
+      // 2. match exacto por lid
+      p = groupParticipants.find(p => p.lid === jid);
+      if (p) return p;
+      // 3. match por numero en id o lid (cubre LID, JID con sufijo :XX, etc)
+      p = groupParticipants.find(p =>
+        (p.id  || '').replace(/[^0-9]/g, '') === num ||
+        (p.lid || '').replace(/[^0-9]/g, '') === num
+      );
+      return p || null;
     };
 
-    const findParticipantByJid = (jid) => {
-      if (!jid) return null;
-      
-      const decodedJid = conn.decodeJid(jid);
-      
-      return groupParticipants.find(p => {
-        const participantJid = conn.decodeJid(p.id);
-        return participantJid === decodedJid;
-      });
-    };
-
-    let targetJid = null;
-
-    if (m.mentionedJid?.[0]) {
-      targetJid = resolveLidToJid(m.mentionedJid[0]) || m.mentionedJid[0];
-    } else if (m.quoted?.sender) {
-      targetJid = resolveLidToJid(m.quoted.sender) || m.quoted.sender;
-    } else if (text) {
+    // Buscar participante desde mención, respuesta o número
+    let rawJid = null;
+    if (m.mentionedJid?.[0])  rawJid = m.mentionedJid[0];
+    else if (m.quoted?.sender) rawJid = m.quoted.sender;
+    else if (text) {
       const num = text.replace(/[^0-9]/g, '');
-      if (num.length < 11 || num.length > 15) {
-        return m.reply('*[◉] El número ingresado es incorrecto.*');
-      }
-      targetJid = num + '@s.whatsapp.net';
+      if (num.length < 11 || num.length > 15) return m.reply('*[◉] El número ingresado es incorrecto.*');
+      rawJid = num + '@s.whatsapp.net';
     }
 
-    if (!targetJid) {
-      return m.reply(kicktext, m.chat, { mentions: conn.parseMention(kicktext) });
-    }
+    if (!rawJid) return m.reply(kicktext, m.chat, { mentions: conn.parseMention(kicktext) });
 
-    const botJid = conn.decodeJid(conn.user.jid);
-    const decodedTargetJid = conn.decodeJid(targetJid);
-    
-    if (decodedTargetJid === botJid) {
-      return m.reply('*🤖 No puedo expulsarme a mí mismo.*');
-    }
-
-    const targetParticipant = findParticipantByJid(targetJid);
-    
-    if (!targetParticipant) {
-      return m.reply('*[◉] La persona mencionada no está en el grupo.*');
-    }
-
-    if (targetParticipant.admin === 'admin' || targetParticipant.admin === 'superadmin') {
-      return m.reply('*[◉] No puedo expulsar a un administrador del grupo.*');
-    }
+    const targetParticipant = resolveParticipant(rawJid);
+    if (!targetParticipant) return m.reply('*[◉] La persona mencionada no está en el grupo.*');
 
     const jidToKick = targetParticipant.id;
+    const botNum = (conn.user.jid || '').replace(/[^0-9]/g, '');
+    if (jidToKick.replace(/[^0-9]/g, '') === botNum) return m.reply('*🤖 No puedo expulsarme a mí mismo.*');
+    if (targetParticipant.admin === 'admin' || targetParticipant.admin === 'superadmin') return m.reply('*[◉] No puedo expulsar a un administrador del grupo.*');
 
     await conn.groupParticipantsUpdate(chatId, [jidToKick], 'remove');
-    
     clearGroupCache(chatId);
-    
+
     const displayNumber = jidToKick.split('@')[0];
-    await m.reply(`✅ @${displayNumber} ha sido expulsado del grupo.`, null, {
-      mentions: [jidToKick]
-    });
+    await m.reply('✅ @' + displayNumber + ' ha sido expulsado del grupo.', null, { mentions: [jidToKick] });
   } catch (e) {
     console.error('Error en kick:', e);
     await m.reply('*[◉] No se pudo expulsar al usuario. Puede que sea admin o WhatsApp no lo permita.*');
