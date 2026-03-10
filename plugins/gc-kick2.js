@@ -48,7 +48,7 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
     }
 
     if (!global.db.data.settings[conn.user.jid]?.restrict) {
-      throw `${tradutor.texto1?.[0] || 'Necesitas habilitar restrict'} (enable restrict / disable restrict) ${tradutor.texto1?.[1] || 'para usar este comando'}`;
+      return m.reply('*[!] Necesitas habilitar restrict para usar este comando.*' + '\n\n' + '_Usa: enable restrict_');
     }
 
     const kicktext = `${tradutor.texto2 || 'Debes mencionar a un usuario'}\n*${usedPrefix + command} @${global.suittag?.[0] || 'usuario'}*`;
