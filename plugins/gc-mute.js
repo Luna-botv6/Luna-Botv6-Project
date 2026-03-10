@@ -68,21 +68,33 @@ export async function muteUser({ conn, chat, user, mutedBy, minutes, participant
 
 export async function unmuteUser({ chat, user, participants }) {
   const db = getMutesDB();
-  const muteKey = `${chat}_${user}`;
-  if (!db[muteKey]) return false;
-  delete db[muteKey];
-  const pEntry = (participants || []).find(p => p.id === user);
-  if (pEntry?.lid) delete db[`${chat}_${pEntry.lid}`];
-  return true;
+  let removed = false;
+  // Delete JID key
+  const jidKey = `${chat}_${user}`;
+  if (db[jidKey]) { delete db[jidKey]; removed = true; }
+  // Delete LID key via participants
+  const pEntry = (participants || []).find(p => p.id === user || p.lid === user);
+  if (pEntry?.lid) { const lidKey = `${chat}_${pEntry.lid}`; if (db[lidKey]) { delete db[lidKey]; removed = true; } }
+  if (pEntry?.id)  { const idKey  = `${chat}_${pEntry.id}`;  if (db[idKey])  { delete db[idKey];  removed = true; } }
+  // Also scan all keys for this group that contain the user number
+  const userNum = user.replace(/[^0-9]/g, '');
+  for (const key of Object.keys(db)) {
+    if (key.startsWith(chat + '_') && key.replace(/[^0-9]/g, '').includes(userNum)) {
+      delete db[key]; removed = true;
+    }
+  }
+  return removed;
 }
 
 export function isUserMuted(chat, user) {
   const db = getMutesDB();
-  const keys = [`${chat}_${user}`];
-  for (const k of keys) {
-    const entry = db[k];
+  const userNum = user.replace(/[^0-9]/g, '');
+  for (const key of Object.keys(db)) {
+    if (!key.startsWith(chat + '_')) continue;
+    if (!key.replace(/[^0-9]/g, '').includes(userNum)) continue;
+    const entry = db[key];
     if (!entry) continue;
-    if (entry.until && Date.now() > entry.until) { delete db[k]; continue; }
+    if (entry.until && Date.now() > entry.until) { delete db[key]; continue; }
     return true;
   }
   return false;
@@ -148,7 +160,8 @@ const handler = async (m, { conn, usedPrefix, isOwner, command }) => {
     if (isMuteCmd) {
       if (isUserMuted(m.chat, user)) return m.reply(`*[⚠] ${userTag} ya está silenciado.*`);
 
-      const timeResult = parseTime(m.text || '');
+      const textSinMenciones = (m.text || '').replace(/@\d+/g, '').trim();
+      const timeResult = parseTime(textSinMenciones);
 
       if (timeResult?.ambiguous) {
         return m.reply(
@@ -164,20 +177,23 @@ const handler = async (m, { conn, usedPrefix, isOwner, command }) => {
         participants,
       });
 
-      const timeMsg = timeResult?.minutes
-        ? `por *${duration}*`
-        : `sin horario de desmuteo ⏳\n\n_Si querés silenciarlo por un tiempo escribí:_\n• _${usedPrefix}${command} @usuario por 30 minutos_\n• _${usedPrefix}${command} @usuario por 1 hora_`;
+      const duracionStr = timeResult?.minutes ? duration : 'Sin limite de tiempo';
 
       await conn.sendMessage(m.chat, {
-        text: `🔇 ${adminTag} silenció a ${userTag} ${timeMsg}`,
+        text: '🔇 *Silencio activado*' + '\n\n' + '👤 Usuario: ' + userTag + '\n' + '👮 Por: ' + adminTag + '\n' + '⏳ Duracion: *' + duracionStr + '*',
         mentions: [m.sender, user],
       });
 
     } else if (isUnmuteCmd) {
-      const removed = await unmuteUser({ chat: m.chat, user });
-      if (!removed) return m.reply(`*[⚠] ${userTag} no está silenciado.*`);
+      const removed = await unmuteUser({ chat: m.chat, user, participants });
+      if (!removed) return m.reply(`*[⚠]* ${userTag} no está silenciado.`);
       await conn.sendMessage(m.chat, {
-        text: `🔊 ${adminTag} desilenció a ${userTag}`,
+        text: `🔊 *Silencio desactivado*
+
+👤 Usuario: ${userTag}
+👮 Por: ${adminTag}
+
+_Ya puede escribir en el grupo._`,
         mentions: [m.sender, user],
       });
     }
