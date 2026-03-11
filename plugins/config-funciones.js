@@ -123,9 +123,15 @@ const handler = async (m, {conn, usedPrefix, command, args}) => {
   }
 
   const scopeText = config.bot || config.file ? 'TODO EL BOT' : 'ESTE CHAT';
-  const msg = `*====[ ⚙️ CONFIGURACIÓN ACTUALIZADA ⚙️ ]====*\n\n${isEnable ? '✅' : '❌'} *Función:* _${type}_\n*Estado:* _${isEnable ? 'ACTIVADA' : 'DESACTIVADA'}_\n*Alcance:* _${scopeText}_\n\n*================================*`;
+const msg = `✧─── ☾ 𝗖𝗢𝗡𝗙𝗜𝗚 𝗟𝗨𝗡𝗔 ☽ ───✧
+
+${isEnable ? '✅' : '❌'} • *Función:* _${type}_
+🔘 • *Estado:* _${isEnable ? 'ACTIVADA' : 'DESACTIVADA'}_
+🌐 • *Alcance:* _${scopeText}_
+
+✨──────────────────✨`;
   
-  conn.sendMessage(m.chat, {text: msg}, {quoted: m});
+conn.sendMessage(m.chat, {text: msg}, {quoted: m});
 };
 
 handler.command = /^((en|dis)able|(tru|fals)e|(turn)?[01])$/i;
