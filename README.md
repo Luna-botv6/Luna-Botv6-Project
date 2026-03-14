@@ -275,6 +275,343 @@ const LunaBot = {
 
 ---
 
+
+---
+
+<div align="center">
+
+<img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&weight=900&size=32&pause=1000&color=4DA6FF&center=true&vCenter=true&width=700&lines=🤖+LUNA+IA+—+Inteligencia+Artificial;🌙+Hablale+Natural+·+Sin+Comandos;✨+Ella+Te+Entiende+Siempre" alt="Luna IA" />
+
+<br>
+
+![IA Core](https://img.shields.io/badge/🧠-MOTOR_NLP_PROPIO-4DA6FF?style=for-the-badge&logo=openai&logoColor=white&labelColor=0d1b3e)
+![No Prefix](https://img.shields.io/badge/💬-SIN_PREFIJOS-7BC8FF?style=for-the-badge&logo=whatsapp&logoColor=white&labelColor=0a2240)
+![Always On](https://img.shields.io/badge/⚡-SIEMPRE_ACTIVA-50DC78?style=for-the-badge&logo=statuspage&logoColor=white&labelColor=0a3320)
+![LID Safe](https://img.shields.io/badge/🛡️-LID_COMPATIBLE-FF6B9D?style=for-the-badge&logo=shield&logoColor=white&labelColor=3d0a20)
+
+<br>
+
+> *Luna tiene una IA conversacional integrada directamente en el grupo.*
+> *No necesitás recordar comandos — solo mencionala y hablale natural.*
+
+<br>
+
+```js
+const LunaIA = {
+  activacion:  "@Luna + lo que necesites",
+  entiende:    "frases naturales en español",
+  responde:    "en tiempo real dentro del grupo",
+  compatible:  "LID · @s.whatsapp.net · números normales",
+  juegos:      ["Veo Veo 👁️", "Ahorcado 🎮"],
+  moderacion:  ["Mute 🔇", "Kick 👢", "Ban 🚫"],
+  config:      "activa/desactiva funciones hablando",
+  extras:      ["Clima 🌤️", "Imágenes IA 🖼️", "Matemáticas 🧮", "Música 🎵"],
+};
+```
+
+</div>
+
+---
+
+## 🤖 Luna IA — Documentación Completa
+
+<div align="center">
+
+### ⚡ ¿Cómo activarla?
+
+</div>
+
+Mencioná a Luna en el grupo usando su `@tag` seguido de lo que necesitás. Así de simple.
+
+```
+@Luna [lo que quieras]
+```
+
+> **No hay prefijos como `.` o `/` — es una conversación real.**
+
+---
+
+<div align="center">
+
+### 👁️ Veo Veo
+
+![VeoVeo](https://img.shields.io/badge/👁️-VEO_VEO-008B8B?style=for-the-badge&logo=eye&logoColor=white&labelColor=003d3d)
+![Recompensas](https://img.shields.io/badge/🏆-RECOMPENSAS_XP-FFD700?style=for-the-badge&logo=star&logoColor=black&labelColor=5a3e00)
+
+</div>
+
+Luna elige un objeto secreto y vos tenés **3 minutos** para adivinarlo. Ganás XP y 💎 según la categoría.
+
+| Frase | Acción |
+|-------|--------|
+| `@Luna veo veo` | Inicia el juego |
+| `@Luna juguemos al veo veo` | Inicia el juego |
+| `@Luna dame una pista` | Pide una pista |
+| `@Luna cancela el juego` | Cancela la partida |
+| `@Luna es una taza` | Intento de respuesta |
+
+```
+🌙  Me viene una imagen...
+📂  Categoría: COCINA
+🗨️  lo usás todos los días para tomar café
+⏰  3 minutos · pedí pista cuando quieras
+```
+
+| Categoría | XP | 💎 |
+|-----------|----|----|
+| Cocina / Baño / Habitación | 300–600 | 50 |
+| Animales / Frutas / Ropa | 400–800 | 75 |
+| Objetos / Transporte | 600–1500 | 125 |
+| 🔴 Difícil | 1500–3000 | 300 |
+
+---
+
+<div align="center">
+
+### 🎮 Ahorcado
+
+![Ahorcado](https://img.shields.io/badge/🎮-AHORCADO-FF4500?style=for-the-badge&logo=gamepad&logoColor=white&labelColor=5a1a00)
+![Dificultad](https://img.shields.io/badge/⚙️-3_DIFICULTADES-8B5CF6?style=for-the-badge&logo=settings&logoColor=white&labelColor=3b1d8a)
+
+</div>
+
+El clásico de siempre. Adiviná la palabra letra por letra antes de completar el dibujo. **Pista automática en el último intento.**
+
+| Frase | Acción |
+|-------|--------|
+| `@Luna ahorcado facil` | Inicia fácil |
+| `@Luna ahorcado medio` | Inicia medio |
+| `@Luna ahorcado dificil` | Inicia difícil |
+| `@Luna dame una pista` | Pide pista manualmente |
+| `@Luna cancela el ahorcado` | Cancela la partida |
+| `a` *(una sola letra)* | Propone esa letra |
+
+```
+   +---+
+   |   |
+   O   |
+  /|\  |
+       |
+  =========
+
+_ _ _ _ _ _ _ _   (8 letras)
+Intentos: 4/6  ·  ⏰ 3 minutos
+```
+
+| Dificultad | XP | 💎 |
+|------------|----|----|
+| 🟢 Fácil | 400 | 50 |
+| 🟡 Medio | 800 | 100 |
+| 🔴 Difícil | 2000 | 250 |
+
+---
+
+<div align="center">
+
+### 🔇 Moderación desde la IA
+
+![Mute](https://img.shields.io/badge/🔇-MUTE_SYSTEM-4DA6FF?style=for-the-badge&logo=microphone-slash&logoColor=white&labelColor=0d1b3e)
+![Kick](https://img.shields.io/badge/👢-EXPULSAR-FF6B9D?style=for-the-badge&logo=user-minus&logoColor=white&labelColor=3d0a20)
+![Ban](https://img.shields.io/badge/🚫-BAN_SYSTEM-EC4899?style=for-the-badge&logo=forbidden&logoColor=white&labelColor=5a0020)
+
+</div>
+
+Moderá el grupo sin salir de la conversación. Solo el **owner y admins** pueden usar estos comandos.
+
+#### 🔇 Silenciar usuarios
+
+| Frase | Efecto |
+|-------|--------|
+| `@Luna mutea a @usuario` | Silencio permanente |
+| `@Luna mutea a @usuario 30 min` | Silencio por 30 minutos |
+| `@Luna mutea a @usuario 2 horas` | Silencio por 2 horas |
+| `@Luna silencia a @usuario` | Silencio permanente |
+| `@Luna desmutea a @usuario` | Quita el silencio |
+| `@Luna ya puede hablar @usuario` | Quita el silencio |
+
+#### 👢 Expulsar usuarios
+
+| Frase | Efecto |
+|-------|--------|
+| `@Luna expulsa a @usuario` | Expulsa del grupo |
+| `@Luna echa a @usuario` | Expulsa del grupo |
+| `@Luna saca a @usuario` | Expulsa del grupo |
+| `@Luna kickea a @usuario` | Expulsa del grupo |
+
+> ⚠️ El bot necesita ser **admin** del grupo para expulsar. El owner tiene inmunidad total.
+
+#### 🚫 Banear usuarios y chats
+
+| Frase | Efecto |
+|-------|--------|
+| `@Luna banea a @usuario` | Banea al usuario del bot |
+| `@Luna desbanea a @usuario` | Desbanea al usuario |
+| `@Luna banea este chat` | El bot deja de responder en el grupo |
+| `@Luna desbanea este chat` | El bot vuelve a responder |
+
+> 🔐 Solo el **owner** puede banear chats y usuarios.
+
+---
+
+<div align="center">
+
+### ⚙️ Configurar el grupo con palabras
+
+![Config](https://img.shields.io/badge/⚙️-CONFIG_NATURAL-50DC78?style=for-the-badge&logo=settings&logoColor=white&labelColor=0a3320)
+
+</div>
+
+Activá y desactivá funciones del grupo hablándole a Luna. Sin recordar comandos técnicos.
+
+| Frase | Función |
+|-------|---------|
+| `@Luna activa el modoadmin` | Solo admins usan el bot |
+| `@Luna activa el antilink` | Bloquea enlaces |
+| `@Luna activa la bienvenida` | Mensaje de bienvenida |
+| `@Luna activa el antidelete` | Guarda mensajes eliminados |
+| `@Luna activa el antitoxic` | Filtra palabras ofensivas |
+| `@Luna activa el autosticker` | Sticker automático |
+| `@Luna activa el antispam` | Bloquea spam |
+| `@Luna activa el restrict` | Modo restringido (owner) |
+| `@Luna desactiva el [función]` | Desactiva cualquier función |
+| `@Luna activa` *(sin especificar)* | Muestra el menú completo |
+
+#### Abrir / Cerrar el grupo
+
+| Frase | Efecto |
+|-------|--------|
+| `@Luna abre el grupo` | Todos pueden escribir |
+| `@Luna cierra el grupo` | Solo admins pueden escribir |
+
+#### Invocar a todos
+
+| Frase | Efecto |
+|-------|--------|
+| `@Luna invoca a todos` | Menciona a todos los participantes |
+| `@Luna mencionar todos` | Menciona a todos los participantes |
+
+---
+
+<div align="center">
+
+### 🎵 Descargas desde la IA
+
+![Music](https://img.shields.io/badge/🎵-DESCARGAS-FF6B9D?style=for-the-badge&logo=spotify&logoColor=white&labelColor=3d0a20)
+
+</div>
+
+| Frase | Efecto |
+|-------|--------|
+| `@Luna descarga la música de Tini` | Descarga audio de YouTube |
+| `@Luna bajame la canción de Bizarrap` | Descarga audio |
+| `@Luna playlist Shakira` | Lista de canciones del artista |
+| `[link de TikTok]` | Descarga automática |
+| `[link de Facebook]` | Descarga automática |
+| `[link de Instagram]` | Descarga automática |
+
+---
+
+<div align="center">
+
+### 🖼️ Generar imágenes con IA
+
+![Images](https://img.shields.io/badge/🖼️-IMÁGENES_IA-8B5CF6?style=for-the-badge&logo=image&logoColor=white&labelColor=3b1d8a)
+
+</div>
+
+| Frase | Efecto |
+|-------|--------|
+| `@Luna genera una imagen de un dragón` | Genera imagen con IA |
+| `@Luna crea una foto de ciudad futurista` | Genera imagen con IA |
+| `@Luna genera un dibujo de montaña` | Genera imagen con IA |
+| `@Luna crea un arte de espacio` | Genera imagen con IA |
+
+---
+
+<div align="center">
+
+### 🧮 Matemáticas
+
+![Math](https://img.shields.io/badge/🧮-MATEMÁTICAS-FCD34D?style=for-the-badge&logo=calculator&logoColor=black&labelColor=5a3e00)
+
+</div>
+
+| Frase | Tipo |
+|-------|------|
+| `@Luna cuánto es 2 + 2` | Operación básica |
+| `@Luna calcula 150 * 3` | Operación básica |
+| `@Luna la mitad de 5000` | División rápida |
+| `@Luna 20% de 800` | Porcentaje |
+| `@Luna derivada de x^3` | Cálculo |
+| `@Luna promedio de 4, 7, 9` | Estadística |
+| `@Luna 2x + 7 = 11` | Ecuación |
+
+---
+
+<div align="center">
+
+### 🌤️ Clima
+
+![Weather](https://img.shields.io/badge/🌤️-CLIMA_GLOBAL-10B981?style=for-the-badge&logo=cloud&logoColor=white&labelColor=065F46)
+
+</div>
+
+| Frase | Efecto |
+|-------|--------|
+| `@Luna clima de Buenos Aires` | Clima actual + pronóstico |
+| `@Luna tiempo en Madrid` | Clima actual + pronóstico |
+| `@Luna temperatura en Bogotá` | Temperatura actual |
+| `@Luna va a llover en Lima` | Probabilidad de lluvia |
+
+---
+
+<div align="center">
+
+### 💬 Soporte e información
+
+![Support](https://img.shields.io/badge/💬-SOPORTE-4DA6FF?style=for-the-badge&logo=help&logoColor=white&labelColor=0d1b3e)
+
+</div>
+
+| Frase | Respuesta |
+|-------|-----------|
+| `@Luna cómo instalo en Termux` | Guía de instalación Android |
+| `@Luna cómo instalo en Boxmine` | Guía de instalación Boxmine |
+| `@Luna cómo instalo en Windows` | Guía de instalación Windows |
+| `@Luna contacto oficial` | Datos de contacto del creador |
+| `@Luna quién te hizo` | Info del creador |
+| `@Luna qué podés hacer` | Lista de funciones |
+
+---
+
+<div align="center">
+
+### 🗣️ Charla libre
+
+Luna tiene un motor NLP propio con stemming y bigramas. Entiende emociones, contexto y humor.
+
+| Lo que decís | Lo que entiende |
+|-------------|-----------------|
+| `@Luna cómo estás` | Saludo / estado |
+| `@Luna estoy triste` | Contención emocional |
+| `@Luna contame un chiste` | Humor |
+| `@Luna dame un consejo` | Consejos |
+| `@Luna dile a @usuario que...` | Recados |
+| `@Luna messi o ronaldo` | Respuesta 100% argentina 🇦🇷 |
+
+<br>
+
+> [!TIP]
+> **✨ Tip:** Podés ver el menú completo de la IA en cualquier momento con el comando `.iamenu`
+
+<br>
+
+![Footer IA](https://capsule-render.vercel.app/api?type=waving&color=4DA6FF,7BC8FF,50DC78&height=80&section=footer)
+
+</div>
+
+---
+
 ## 🌟 Características
 
 ## 🚀💫 **¡NOVEDAD EMOCIONANTE!** ✨🎉
