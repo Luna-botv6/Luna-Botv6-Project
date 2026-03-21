@@ -1,148 +1,129 @@
-import { readdirSync, unlinkSync, existsSync, promises as fs, rmSync, readFileSync, statSync } from 'fs';
+import { promises as fs, existsSync } from 'fs';
 import path from 'path';
+import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 
-// Cache para evitar spam del comando
-const userCooldown = new Map();
-const COOLDOWN_TIME = 30000; // 30 segundos entre usos por usuario
+const cooldowns = new Map();
 
 const handler = async (m, { conn, usedPrefix }) => {
-  const datas = global;
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(readFileSync(`./src/languages/${idioma}.json`));
-  const tradutor = _translate.plugins.fix_esperando_mensage;
-
-  if (global.conn.user.jid !== conn.user.jid) {
-    return conn.sendMessage(m.chat, {text: tradutor.texto1}, {quoted: m});
-  }
-
- 
-  const userId = m.sender;
-  const now = Date.now();
-  const lastUsed = userCooldown.get(userId);
-  
-  if (lastUsed && (now - lastUsed) < COOLDOWN_TIME) {
-    const remainingTime = Math.ceil((COOLDOWN_TIME - (now - lastUsed)) / 1000);
-    return conn.sendMessage(m.chat, {
-      text: `⏳ Espera ${remainingTime} segundos antes de usar este comando nuevamente.`
-    }, {quoted: m});
-  }
-
-  userCooldown.set(userId, now);
-
-  const sessionPath = './MysticSession/';
-  
-  if (!existsSync(sessionPath)) {
-    return conn.sendMessage(m.chat, {text: '📁 La carpeta de sesión no existe.'}, {quoted: m});
-  }
-
   try {
+    const chatId = m.chat;
+    const userId = m.sender;
+    const now = Date.now();
+    const cooldownTime = 30000;
 
-    await conn.sendMessage(m.chat, {text: '🧹 Iniciando limpieza de archivos de sesión...'}, {quoted: m});
-
-    const files = await fs.readdir(sessionPath);
-    
-    const filesToDelete = files.filter(file => {
-      // No eliminar archivos críticos
-      if (file === 'creds.json' || file === 'app-state-sync-version-critical_block.json') {
-        return false;
-      }
-      
-      // Eliminar archivos específicos de claves y estados
-      return (
-        file.startsWith('pre-key-') ||
-        file.startsWith('sender-key-') ||
-        file.startsWith('app-state-sync-key-') ||
-        file.startsWith('session-') ||
-        file.endsWith('.json')
-      );
-    });
-
-    if (filesToDelete.length === 0) {
-      return conn.sendMessage(m.chat, {text: '✅ No se encontraron archivos para limpiar.'}, {quoted: m});
-    }
-
-    let deletedCount = 0;
-    const batchSize = 10; // Procesar archivos en lotes pequeños
-    const delay = 100; // Pequeña pausa entre lotes (100ms)
-
-    // Procesar archivos en lotes para evitar sobrecarga
-    for (let i = 0; i < filesToDelete.length; i += batchSize) {
-      const batch = filesToDelete.slice(i, i + batchSize);
-      
-      await Promise.all(batch.map(async (file) => {
-        try {
-          const filePath = path.join(sessionPath, file);
-          await fs.unlink(filePath);
-          deletedCount++;
-        } catch (err) {
-          console.error(`Error eliminando ${file}:`, err.message);
-        }
-      }));
-
-      // Pausa pequeña entre lotes para no sobrecargar el sistema
-      if (i + batchSize < filesToDelete.length) {
-        await new Promise(resolve => setTimeout(resolve, delay));
+    if (m.isGroup) {
+      const { isAdmin } = await getGroupDataForPlugin(conn, chatId, userId);
+      if (!isAdmin && global.conn.user.jid !== conn.user.jid) {
+        return m.reply('⚠️ Solo administradores pueden usar este comando.');
       }
     }
 
-    // Limpiar archivos antiguos (más de 1 hora)
-    const oneHourAgo = Date.now() - (60 * 60 * 1000);
-    const allFiles = await fs.readdir(sessionPath);
+    const lastUsed = cooldowns.get(chatId);
+    if (lastUsed && (now - lastUsed) < cooldownTime) {
+      const remaining = Math.ceil((cooldownTime - (now - lastUsed)) / 1000);
+      return m.reply(`⏰ Espera ${remaining}s antes de usar este comando nuevamente.`);
+    }
+
+    cooldowns.set(chatId, now);
+
+    const sessionPath = './MysticSession/';
     
-    for (const file of allFiles) {
-      if (file === 'creds.json') continue;
+    if (!existsSync(sessionPath)) {
+      return m.reply('❌ La carpeta de sesión no existe.');
+    }
+
+    if (!m.isGroup) {
+      await m.reply('🔄 Resincronizando chat privado...');
       
       try {
-        const filePath = path.join(sessionPath, file);
-        const stats = await fs.stat(filePath);
+        clearGroupCache(chatId);
         
-        if (stats.isFile() && stats.mtimeMs < oneHourAgo) {
-          await fs.unlink(filePath);
-          deletedCount++;
-        }
+        await conn.sendPresenceUpdate('available', chatId);
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        await conn.sendMessage(chatId, { text: '✅ Chat resincronizado\n\n💡 El bot debería responder ahora normalmente.\n\n📌 Si el problema persiste:\n1. Usa ' + usedPrefix + 's para reiniciar\n2. Elimina el chat y vuelve a escribir' });
+        
       } catch (err) {
-        // Ignorar errores de archivos que ya no existen
+        console.error('Error resincronizando chat privado:', err);
+        await m.reply('⚠️ Error al resincronizar. Intenta:\n1. ' + usedPrefix + 's (reiniciar)\n2. Eliminar y volver a abrir el chat');
+      }
+      
+      return;
+    }
+
+    await m.reply('🔄 Resincronizando el grupo...');
+
+    try {
+      await conn.groupMetadata(chatId);
+    } catch (err) {
+      return m.reply('⚠️ El bot no puede acceder a este grupo.\n\n💡 Posibles soluciones:\n1. Asegúrate que el bot sea admin\n2. Saca y vuelve a agregar el bot\n3. Reinicia el bot: ' + usedPrefix + 's');
+    }
+
+    const groupId = chatId.replace('@g.us', '').replace('@s.whatsapp.net', '');
+    const files = await fs.readdir(sessionPath);
+    
+    const patterns = [
+      'sender-key-',
+      'session-'
+    ];
+    
+    const groupFiles = files.filter(file => {
+      if (file === 'creds.json') return false;
+      
+      if (file.includes(groupId)) {
+        return patterns.some(pattern => file.startsWith(pattern));
+      }
+      
+      return false;
+    });
+
+    let deleted = 0;
+
+    for (const file of groupFiles) {
+      try {
+        await fs.unlink(path.join(sessionPath, file));
+        deleted++;
+      } catch (err) {
+        console.error(`Error eliminando ${file}:`, err.message);
       }
     }
 
-    // Pausa antes del resultado (2 segundos)
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    clearGroupCache(chatId);
 
-    // Enviar resultado
-    if (deletedCount > 0) {
-      await conn.sendMessage(m.chat, {
-        text: `✅ Limpieza completada.\n🗑️ Archivos eliminados: ${deletedCount}\n📁 Archivo creds.json preservado.`
-      }, {quoted: m});
-    } else {
-      await conn.sendMessage(m.chat, {text: '✅ No se eliminaron archivos.'}, {quoted: m});
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    try {
+      const metadata = await conn.groupMetadata(chatId);
+      
+      await conn.sendPresenceUpdate('available', chatId);
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const isBotAdmin = metadata.participants.find(
+        p => conn.decodeJid(p.id) === conn.decodeJid(conn.user.jid)
+      )?.admin;
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      if (deleted > 0) {
+        await m.reply(`✅ Grupo resincronizado correctamente\n🗑️ Archivos de sesión limpiados: ${deleted}\n👥 Participantes detectados: ${metadata.participants.length}\n🤖 Bot es admin: ${isBotAdmin ? 'Sí' : 'No'}\n\n💡 El bot ahora debería responder normalmente.\n\n📌 Si el problema persiste:\n1. ${usedPrefix}s (reiniciar bot)\n2. Saca y agrega el bot nuevamente`);
+      } else {
+        await m.reply(`✅ Grupo resincronizado\n📝 No se encontraron archivos corruptos\n👥 Participantes: ${metadata.participants.length}\n\n💡 El bot debería funcionar ahora.\n\n🔧 Si no funciona: ${usedPrefix}s`);
+      }
+    } catch (err) {
+      console.error('Error resincronizando metadata:', err);
+      await m.reply(`⚠️ Resincronización parcial completada\n🗑️ Archivos limpiados: ${deleted}\n\n💡 Reinicia el bot:\n${usedPrefix}s`);
     }
 
-    // Pausa antes del mensaje de reinicio (3 segundos)
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    await conn.sendMessage(m.chat, {
-      text: `🔄 Para aplicar los cambios, usa:\n${usedPrefix}s`
-    }, {quoted: m});
-
   } catch (err) {
-    console.error('Error en limpieza de sesión:', err);
-    await conn.sendMessage(m.chat, {
-      text: '❌ Error durante la limpieza. Revisa los logs para más detalles.'
-    }, {quoted: m});
+    console.error('Error en resincronización:', err);
+    await m.reply('❌ Error crítico. Reinicia el bot: ' + (usedPrefix || '/') + 's');
   }
 };
 
-handler.help = ['fixmsgespera'];
+handler.help = ['borrarchat', 'lchat', 'fixchat'];
 handler.tags = ['fix'];
-handler.command = /^(fixmsgespera|ds)$/i;
-handler.rowner = false; // Cambia a true si quieres que solo el owner pueda usarlo
-handler.owner = false;
-handler.mods = false;
-handler.premium = false;
-handler.group = false;
-handler.private = false;
-handler.admin = false;
-handler.botAdmin = false;
-handler.fail = null;
+handler.command = /^(borrarchat|lchat|Lchat|fixgrupo|fixchat)$/i;
 
 export default handler;

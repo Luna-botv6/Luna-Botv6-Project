@@ -1,44 +1,76 @@
-import fs from 'fs'
-import { setCleanerStatus, isCleanerEnabled, setAutoClean, getAutoCleanConfig } from '../lib/cleaner-config.js'
+import fs from 'fs';
+import { setCleanerStatus, isCleanerEnabled, getAutoCleanConfig } from '../lib/cleaner-config.js';
+
+let isInitialized = false;
+
+async function ensureCleanerDisabled() {
+  if (isInitialized) return;
+  
+  try {
+    const configPath = './database/config-cleaner.json';
+    
+    if (fs.existsSync(configPath)) {
+      const data = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      
+      if (data.enabled === true || data.autoClean === true) {
+        data.enabled = false;
+        data.autoClean = false;
+        fs.writeFileSync(configPath, JSON.stringify(data, null, 2), 'utf8');
+      }
+    } else {
+      const defaultConfig = {
+        enabled: false,
+        autoClean: false,
+        intervalHours: 6,
+        lastCleanTime: null
+      };
+      
+      const dir = './database';
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      
+      fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), 'utf8');
+    }
+  } catch (e) {}
+  
+  isInitialized = true;
+}
+
+ensureCleanerDisabled();
 
 const handler = async (m, { text }) => {
-  const datas = global || {}
-  const dbData = datas.db?.data?.users?.[m.sender] || {}
-  const idioma = dbData.language || global.defaultLenguaje || 'es'
+  const datas = global || {};
+  const dbData = datas.db?.data?.users?.[m.sender] || {};
+  const idioma = dbData.language || global.defaultLenguaje || 'es';
 
-  let tradutor = {}
+  let tradutor = {};
   try {
-    const langPath = `./src/languages/${idioma}.json`
+    const langPath = `./src/languages/${idioma}.json`;
     if (fs.existsSync(langPath)) {
-      const _translate = JSON.parse(fs.readFileSync(langPath))
-      tradutor = _translate.plugins?.owner_limpieza || {}
+      const _translate = JSON.parse(fs.readFileSync(langPath));
+      tradutor = _translate.plugins?.owner_limpieza || {};
     }
-  } catch (error) {
-    console.log('Error al cargar traducciones:', error)
-  }
+  } catch (error) {}
 
   const defaultTexts = {
-    texto1: '⚙️ Usa: limpieza on/off',
-    texto2: '✅ Limpieza activada',
-    texto3: '❌ Limpieza desactivada',
-    texto4: 'ℹ️ Estado actual:',
-    texto5: '✅ Activa',
-    texto6: '❌ Inactiva',
-    texto7: '🔄 Limpieza automática activada cada',
-    texto8: '⏹️ Limpieza automática desactivada',
-    texto9: '📋 **CONFIGURACIÓN DE LIMPIEZA**',
-    texto10: '🔧 Limpieza manual:',
-    texto11: '🤖 Limpieza automática:',
-    texto12: '⏰ Intervalo:',
-    texto13: 'horas',
-    texto14: '❌ Intervalo inválido. Usa: 6, 12 o 24 horas',
-    texto15: '📌 **COMANDOS DISPONIBLES:**',
-    texto16: '• `limpieza on` - Activar limpieza manual',
-    texto17: '• `limpieza off` - Desactivar limpieza manual',
-    texto18: '• `limpieza auto on [6/12/24]` - Activar limpieza automática',
-    texto19: '• `limpieza auto off` - Desactivar limpieza automática',
-    texto20: '• `limpieza status` - Ver estado actual'
-  }
+    texto1: '💫 Usa: limpieza on/off',
+    texto2: '✅ Limpieza manual activada',
+    texto3: '❌ Limpieza manual desactivada',
+    texto4: '📊 Estado actual:',
+    texto5: '🟢 Activa',
+    texto6: '🔴 Inactiva',
+    texto7: '⚠️ La limpieza automática está deshabilitada permanentemente',
+    texto8: '🌙 CONFIGURACION DE LIMPIEZA',
+    texto9: '🔧 Limpieza manual:',
+    texto10: '🤖 Limpieza automática:',
+    texto11: '🛡️ Deshabilitada (Protegiendo keys de sesión)',
+    texto12: '📌 COMANDOS DISPONIBLES:',
+    texto13: '• limpieza on - Activar limpieza manual',
+    texto14: '• limpieza off - Desactivar limpieza manual',
+    texto15: '• limpieza status - Ver estado actual',
+    texto16: '💡 NOTA: La limpieza automática está desactivada para proteger las keys de sesión y evitar desconexiones'
+  };
 
   const texts = {
     texto1: tradutor.texto1 || defaultTexts.texto1,
@@ -56,73 +88,42 @@ const handler = async (m, { text }) => {
     texto13: tradutor.texto13 || defaultTexts.texto13,
     texto14: tradutor.texto14 || defaultTexts.texto14,
     texto15: tradutor.texto15 || defaultTexts.texto15,
-    texto16: tradutor.texto16 || defaultTexts.texto16,
-    texto17: tradutor.texto17 || defaultTexts.texto17,
-    texto18: tradutor.texto18 || defaultTexts.texto18,
-    texto19: tradutor.texto19 || defaultTexts.texto19,
-    texto20: tradutor.texto20 || defaultTexts.texto20
-  }
+    texto16: tradutor.texto16 || defaultTexts.texto16
+  };
 
-  const args = text.trim().toLowerCase().split(' ')
-  const command = args[0]
-  const subcommand = args[1]
-  const interval = parseInt(args[2])
+  const args = text.trim().toLowerCase().split(' ');
+  const command = args[0];
 
-  // Comando para limpieza manual
   if (command === 'on') {
-    setCleanerStatus(true)
-    m.reply(texts.texto2)
+    setCleanerStatus(true);
+    m.reply(texts.texto2);
   } 
   else if (command === 'off') {
-    setCleanerStatus(false)
-    m.reply(texts.texto3)
+    setCleanerStatus(false);
+    m.reply(texts.texto3);
   }
-  
-  // Comando para limpieza automática
   else if (command === 'auto') {
-    if (subcommand === 'on') {
-      const hours = interval && [6, 12, 24].includes(interval) ? interval : 6
-      setAutoClean(true, hours)
-      m.reply(`${texts.texto7} ${hours} ${texts.texto13}`)
-    } 
-    else if (subcommand === 'off') {
-      setAutoClean(false)
-      m.reply(texts.texto8)
-    }
-    else {
-      m.reply(texts.texto14)
-    }
+    m.reply(texts.texto7);
   }
-  
-  // Mostrar estado actual
   else if (command === 'status' || command === '') {
-    const manualEnabled = isCleanerEnabled()
-    const autoConfig = getAutoCleanConfig()
+    const manualEnabled = isCleanerEnabled();
     
-    let statusMsg = `${texts.texto9}\n\n`
-    statusMsg += `${texts.texto10} ${manualEnabled ? texts.texto5 : texts.texto6}\n`
-    statusMsg += `${texts.texto11} ${autoConfig.enabled ? texts.texto5 : texts.texto6}\n`
+    let statusMsg = `${texts.texto8}\n\n`;
+    statusMsg += `${texts.texto9} ${manualEnabled ? texts.texto5 : texts.texto6}\n`;
+    statusMsg += `${texts.texto10} ${texts.texto11}\n\n`;
+    statusMsg += `${texts.texto12}\n`;
+    statusMsg += `${texts.texto13}\n`;
+    statusMsg += `${texts.texto14}\n`;
+    statusMsg += `${texts.texto15}\n\n`;
+    statusMsg += `${texts.texto16}`;
     
-    if (autoConfig.enabled) {
-      statusMsg += `${texts.texto12} ${autoConfig.intervalHours} ${texts.texto13}\n`
-    }
-    
-    statusMsg += `\n${texts.texto15}\n`
-    statusMsg += `${texts.texto16}\n`
-    statusMsg += `${texts.texto17}\n`
-    statusMsg += `${texts.texto18}\n`
-    statusMsg += `${texts.texto19}\n`
-    statusMsg += `${texts.texto20}`
-    
-    m.reply(statusMsg)
+    m.reply(statusMsg);
   }
-  
-  // Comando inválido
   else {
-    m.reply(texts.texto14)
+    m.reply(texts.texto1);
   }
-}
+};
 
-handler.command = ['limpieza']
-handler.rowner = true // Solo real owner
-export default handler
+handler.command = ['limpieza'];
+handler.rowner = true;
+export default handler;

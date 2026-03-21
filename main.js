@@ -28,10 +28,10 @@ import NodeCache from 'node-cache';
 import { restaurarConfiguraciones } from './lib/funcConfig.js';
 import { getOwnerFunction } from './lib/owner-funciones.js';
 import { isCleanerEnabled } from './lib/cleaner-config.js';
-import { startAutoCleanService } from './auto-cleaner.js';
+import { startAutoCleanService, startGroupCleanService } from './auto-cleaner.js';
 import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.js';
 import mentionListener from './plugins/game-ialuna.js';
-
+import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
 let stopped = 'close';  
@@ -125,7 +125,8 @@ global.loadDatabase = async function loadDatabase() {
   };
   global.db.chain = chain(global.db.data);
 };
-loadDatabase();
+await loadDatabase();
+await restaurarConfiguraciones();
 
 global.chatgpt = new Low(new JSONFile(path.join(__dirname, '/db/chatgpt.json')));
 global.loadChatgptDB = async function loadChatgptDB() {
@@ -214,16 +215,22 @@ const connectionOptions = {
 
     version,
 
-    getMessage: async (key) => {
-        try {
-            let jid = jidNormalizedUser(key.remoteJid);
-            let msg = await store.loadMessage(jid, key.id);
-            return msg?.message || "";
-        } catch (e) {
-            secureLogger?.error?.('Error en getMessage:', e);
-            return '';
-        }
-    },
+getMessage: async (key) => {
+    const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+    const msgTimestamp = (key.messageTimestamp || 0) * 1000;
+    
+if (msgTimestamp < connectionTime) {
+    return null;
+}
+
+    try {
+        let jid = jidNormalizedUser(key.remoteJid);
+        let msg = await store.loadMessage(jid, key.id);
+        return msg?.message || "";
+    } catch (e) {
+        return '';
+    }
+},
 
     patchMessageBeforeSending: async (message) => {
         return message;
@@ -256,37 +263,41 @@ const connectionOptions = {
 global.conn = makeWASocket(connectionOptions);
 import printMessage from './src/libraries/print.js';
 
-const originalSendMessage = global.conn.sendMessage.bind(global.conn);
-
-global.conn.sendMessage = async function (jid, content, options = {}) {
-  const result = await originalSendMessage(jid, content, options);
-
-  try {
-    const fakeMsg = {
-      key: {
+function applyPrintWrapper(conn) {
+  const originalSendMessage = conn.sendMessage.bind(conn);
+  conn.sendMessage = async function (jid, content, options = {}) {
+    const msgText = content?.text ?? content?.caption ?? content?.conversation ?? null;
+    if (msgText !== null && typeof msgText === 'string' && msgText.trim() === '') {
+      return null;
+    }
+    const result = await originalSendMessage(jid, content, options);
+    try {
+      const fakeMsg = {
+        key: {
+          fromMe: true,
+          remoteJid: jid
+        },
         fromMe: true,
-        remoteJid: jid
-      },
-      fromMe: true,
-      sender: global.conn.user?.jid,
-      chat: jid,
-      mtype: Object.keys(content || {})[0] || 'unknown',
-      messageTimestamp: Math.floor(Date.now() / 1000),
-      text:
-        content?.text ||
-        content?.caption ||
-        content?.conversation ||
-        null,
-      msg: content
-    };
+        sender: conn.user?.jid,
+        chat: jid,
+        mtype: Object.keys(content || {})[0] || 'unknown',
+        messageTimestamp: Math.floor(Date.now() / 1000),
+        text:
+          content?.text ||
+          content?.caption ||
+          content?.conversation ||
+          null,
+        msg: content
+      };
+      await printMessage(fakeMsg, conn);
+    } catch (e) {
+      console.error('[Print Bot Error]', e.message);
+    }
+    return result;
+  };
+}
 
-    await printMessage(fakeMsg, global.conn);
-  } catch (e) {
-    console.error('[Print Bot Error]', e.message);
-  }
-
-  return result;
-};
+applyPrintWrapper(global.conn);
 
 conn.ev.on('creds.update', saveCreds);
 
@@ -300,7 +311,7 @@ setInterval(async () => {
   }
 }, 30000);
 
-restaurarConfiguraciones(global.conn);
+//restaurarConfiguraciones(global.conn);
 const ownerConfig = getOwnerFunction();
 if (ownerConfig.modopublico) global.conn.public = true;
 if (ownerConfig.auread) global.opts['autoread'] = true;
@@ -562,6 +573,10 @@ let codigoSolicitado = false;
 
 async function connectionUpdate(update) {
   const { connection, lastDisconnect, isNewLogin, qr } = update;
+  
+  if (connection === 'close') {
+    console.log(chalk.red('[ ✖ ] Conexión cerrada'));
+  }
 
   stopped = connection;
   if (isNewLogin) conn.isInit = true;
@@ -580,9 +595,20 @@ async function connectionUpdate(update) {
     }
   }
 
-  if (connection === 'open') {
+if (connection === 'open') {
+    stopped = 'open';
     console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
-    console.log(chalk.green('[ ℹ️ ] Bot iniciado exitosamente'));
+    console.log(chalk.green('[ ℹ️ ] Reinicializando listeners...'));
+    
+    setTimeout(async () => {
+      try {
+        await global.reloadHandler(false);
+        console.log(chalk.green('[ ✅ ] Listeners reinicializados'));
+      } catch (e) {
+        console.error(chalk.red('[ ✖ ] Error reinicializando listeners:'), e.message);
+      }
+    }, 2000);
+    
     setTimeout(async () => {
       try {
         const { autoreconnectSubbots } = await import('./plugins/subbot-reconeccion.js');
@@ -606,15 +632,28 @@ async function connectionUpdate(update) {
   }
 
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-  if (reason == 405) {
-    await fs.unlinkSync("./MysticSession/" + "creds.json");
-    console.log(chalk.bold.redBright(`[ ⚠ ] Conexión reemplazada, Por favor espere un momento me voy a reiniciar...\nSi aparecen error vuelve a iniciar con : npm start`));
-    process.send('reset');
+if (reason === 405) {
+    console.log(chalk.yellow('[ ⚠ ] Sesión reemplazada detectada'));
+    console.log(chalk.yellow('[ ⚠ ] Reconectando sin borrar credenciales...'));
+    setTimeout(async () => { 
+      await global.reloadHandler(true).catch(console.error); 
+    }, 3000);
+    return;
   }
 
-  if (connection === 'close') {
+if (connection === 'close') {
     if (reason === DisconnectReason.badSession) {
-      conn.logger.error(`[ ⚠ ] Sesión incorrecta, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
+      console.log(chalk.red('[ ✖ ] Sesión corrupta detectada'));
+      console.log(chalk.yellow('[ ⚠ ] Limpiando sesión...'));
+      try {
+        const authPath = `./${global.authFile}`;
+        if (fs.existsSync(authPath)) {
+          await fs.promises.rm(authPath, { recursive: true, force: true });
+        }
+      } catch (e) {}
+      console.log(chalk.yellow('[ ⚠ ] Por favor reinicia con: npm start'));
+      setTimeout(() => process.exit(1), 2000);
+      return;
     } else if (reason === DisconnectReason.connectionClosed) {
       conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando en 2 segundos...`);
       setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
@@ -644,72 +683,55 @@ let isInit = true;
 
 let handler = await import('./handler.js');
 global.reloadHandler = async function(restatConn) {
-  
   try {
     const Handler = await import(`./handler.js?update=${Date.now()}`).catch(console.error);
     if (Object.keys(Handler || {}).length) handler = Handler;
   } catch (e) {
     console.error(e);
   }
+  
   if (restatConn) {
     const oldChats = global.conn.chats;
     try {
       global.conn.ws.close();
     } catch { }
+    
     conn.ev.removeAllListeners();
     global.conn = makeWASocket(connectionOptions, {chats: oldChats});
-    conn.ev.on('creds.update', saveCreds);
-    store?.bind(conn);
+    applyPrintWrapper(global.conn);
+    
     isInit = true;
   }
+  
   if (!isInit) {
     conn.ev.off('messages.upsert', conn.handler);
     conn.ev.off('group-participants.update', conn.participantsUpdate);
-    conn.ev.off('groups.update', conn.groupsUpdate);
     conn.ev.off('message.delete', conn.onDelete);
     conn.ev.off('call', conn.onCall);
     conn.ev.off('connection.update', conn.connectionUpdate);
     conn.ev.off('creds.update', conn.credsUpdate);
   }
 
-  conn.welcome = '👋 ¡Bienvenido/a!\n@user';
-  conn.bye = '👋 ¡Hasta luego!\n@user';
-  conn.spromote = '*[ ℹ️ ] @user Fue promovido a administrador.*';
-  conn.sdemote = '*[ ℹ️ ] @user Fue degradado de administrador.*';
-  
-  conn.sIcon = '*[ ℹ️ ] Se ha cambiado la foto de perfil del grupo.*';
-  conn.sRevoke = '*[ ℹ️ ] El enlace de invitación al grupo ha sido restablecido.*';
-
   conn.handler = handler.handler.bind(global.conn);
   conn.participantsUpdate = handler.participantsUpdate.bind(global.conn);
-  conn.groupsUpdate = handler.groupsUpdate.bind(global.conn);
   conn.onDelete = handler.deleteUpdate.bind(global.conn);
   conn.onCall = handler.callUpdate.bind(global.conn);
   conn.connectionUpdate = connectionUpdate.bind(global.conn);
   conn.credsUpdate = saveCreds.bind(global.conn, true);
 
-  const currentDateTime = new Date();
-  const messageDateTime = new Date(conn.ev);
-  if (currentDateTime >= messageDateTime) {
-    const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0]);
-  } else {
-    const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0]);
-  }
-
 conn.ev.on('messages.upsert', async (msg) => {
-  try {
-    await conn.handler(msg);
-  } catch (err) {
-    secureLogger.error('ERROR en handler de mensajes:', err);
-  }
-});
+    try {
+      await conn.handler(msg);
+    } catch (err) {
+      console.error('ERROR en handler de mensajes:', err.message);
+    }
+  });
 
-conn.ev.on('group-participants.update', conn.participantsUpdate);
-conn.ev.on('groups.update', conn.groupsUpdate);
-conn.ev.on('message.delete', conn.onDelete);
-conn.ev.on('call', conn.onCall);
-conn.ev.on('connection.update', conn.connectionUpdate);
-conn.ev.on('creds.update', conn.credsUpdate);
+  conn.ev.on('group-participants.update', conn.participantsUpdate);
+  conn.ev.on('message.delete', conn.onDelete);
+  conn.ev.on('call', conn.onCall);
+  conn.ev.on('connection.update', conn.connectionUpdate);
+  conn.ev.on('creds.update', conn.credsUpdate);
 
   if (restatConn || !global.mentionListenerInitialized) {
     try {
@@ -722,8 +744,10 @@ conn.ev.on('creds.update', conn.credsUpdate);
       global.mentionListenerInitialized = false;
     }
   }
-isInit = false;
-return true;
+  
+  isInit = false;
+  console.log(chalk.green('[ ✅ ] Handler recargado correctamente'));
+  return true;
 };
 
 const pluginFolder = global.__dirname(join(__dirname, './plugins/index'));
@@ -773,7 +797,8 @@ global.reload = async (_ev, filename) => {
 Object.freeze(global.reload);
 watch(pluginFolder, global.reload);
 await global.reloadHandler();
-
+manejarEventosGrupo(conn);
+startGroupCleanService();
 async function _quickTest() {
   const test = await Promise.all([
     spawn('ffmpeg'),
@@ -814,7 +839,16 @@ setInterval(async () => {
   if (stopped === 'close' || !global.conn || !global.conn?.user) return;
   const _uptime = process.uptime() * 1000;
   const uptime = clockString(_uptime);
-  const bio = `• Activo: ${uptime} | TheMystic-Bot-MD`;
+  const hora = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  
+  const gruposActivos = Object.keys(global.conn.chats || {}).filter(jid => jid.endsWith('@g.us')).length;
+  
+  const bio = `🌙 Luna-Bot v6 - Online
+⏱️ Activo: ${uptime}
+🕐 Hora: ${hora}
+👥 Grupos: ${gruposActivos}
+✨ Powered by TheMystic-Bot-MD`;
+  
   await global.conn?.updateProfileStatus(bio).catch(() => {});
 }, 60000);
 

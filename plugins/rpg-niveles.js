@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 import { getUserStats } from '../lib/stats.js'
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
 
 const statsFile = path.join('./database', 'stats.json')
 
-// 📊 Cargar todos los stats desde el archivo JSON
 function loadAllStats() {
   if (!fs.existsSync(statsFile)) return {}
   try {
@@ -14,92 +14,94 @@ function loadAllStats() {
   }
 }
 
-// 🏆 Obtener los top N usuarios ordenados por clave
-function getTopUsers(allStats, key, limit = 10) {
-  const arr = Object.entries(allStats).map(([id, data]) => ({
-    id,
-    ...(typeof data === 'object' ? data : getUserStats(id))
-  }))
-  arr.sort((a, b) => (b[key] || 0) - (a[key] || 0))
-  return arr.slice(0, limit)
-}
-
-// 🔍 Buscar la posición de un usuario en el ranking
-function getUserPosition(list, id) {
-  return list.findIndex(u => u.id === id) + 1 || 0
-}
-
-const handler = async (m, { command }) => {
+const handler = async (m, { conn }) => {
   const allStats = loadAllStats()
-  
+
   if (!allStats || Object.keys(allStats).length === 0) {
-    return m.reply('❌ No hay datos de aventureros para mostrar.')
+    return m.reply('❌ No hay aventureros registrados aún.')
   }
 
-  const senderId = m.sender
-  const topExp = getTopUsers(allStats, 'exp')
-  const topLevel = getTopUsers(allStats, 'level')
-  const topDiamonds = getTopUsers(allStats, 'money')
+  const { participants } = await getGroupDataForPlugin(conn, m.chat, m.sender)
 
-  // 🎨 MENSAJE BONITO PARA WHATSAPP
-  let text = `╔══════════════════════╗
-║ 🏆𝐓𝐀𝐁𝐋𝐀 𝐃𝐄 𝐀𝐕𝐄𝐍𝐓𝐔𝐑𝐄𝐑𝐎𝐒 
-║  ⚔️ 𝐌Á𝐒 𝐃𝐄𝐒𝐓𝐀𝐂𝐀𝐃𝐎𝐒 ⚔️        
-╚══════════════════════╝
+  const realSender = (() => {
+    if (!m.sender?.includes('@lid')) return conn.decodeJid(m.sender)
+    const p = participants.find(x => x.lid === m.sender)
+    return p ? conn.decodeJid(p.id) : conn.decodeJid(m.sender)
+  })()
 
-┌─────────────────────┐
-│🌟 𝐓𝐎𝐏 ${topExp.length} 𝐄𝐗𝐏𝐄𝐑𝐈𝐄𝐍𝐂𝐈𝐀 🌟    
-└─────────────────────┘
+  const senderNum = realSender.split('@')[0]
 
-`
+  const groupStats = []
+  for (const p of participants) {
+    const realJid = conn.decodeJid(p.id)
+    const realNum = realJid.split('@')[0]
 
-  // 🌟 TOP EXP
-  topExp.forEach((user, i) => {
-    const mention = '@' + user.id.split('@')[0]
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🏅'
-    text += `${medal} *${i + 1}.* ${user.id === senderId ? `${mention} ⭐(𝐓ú)⭐` : mention} ➤ *${user.exp || 0}* exp ✨\n`
-  })
-  text += `\n💫 *Tu posición:* ${getUserPosition(topExp, senderId)} de ${Object.keys(allStats).length} aventureros\n\n`
+    let statsData = allStats[realNum]
 
-  // 🎚️ TOP NIVEL
-  text += `┌─────────────────────┐
-│      🎚️ 𝐓𝐎𝐏 ${topLevel.length} 𝐍𝐈𝐕𝐄𝐋 🎚️   
-└─────────────────────┘
+    if (!statsData && p.lid) {
+      const lidNum = p.lid.replace('@lid', '').replace(/[^0-9]/g, '')
+      statsData = allStats[lidNum]
+    }
 
-`
-  topLevel.forEach((user, i) => {
-    const mention = '@' + user.id.split('@')[0]
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🏅'
-    text += `${medal} *${i + 1}.* ${user.id === senderId ? `${mention} ⭐(𝐓ú)⭐` : mention} ➤ *${user.level || 0}* nivel 🆙\n`
-  })
-  text += `\n💫 *Tu posición:* ${getUserPosition(topLevel, senderId)} de ${Object.keys(allStats).length} aventureros\n\n`
+    if (!statsData) continue
 
-  // 💎 TOP DIAMANTES
-  text += `┌─────────────────────┐
-│💎 𝐓𝐎𝐏 ${topDiamonds.length} 𝐃𝐈𝐀𝐌𝐀𝐍𝐓𝐄𝐒 💎     
-└─────────────────────┘
+    groupStats.push({
+      jid: realJid,
+      num: realNum,
+      ...(typeof statsData === 'object' ? statsData : getUserStats(realNum))
+    })
+  }
 
-`
-  topDiamonds.forEach((user, i) => {
-    const mention = '@' + user.id.split('@')[0]
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🏅'
-    text += `${medal} *${i + 1}.* ${user.id === senderId ? `${mention} ⭐(𝐓ú)⭐` : mention} ➤ *${user.money || 0}* diamantes 💰\n`
-  })
-  text += `\n💫 *Tu posición:* ${getUserPosition(topDiamonds, senderId)} de ${Object.keys(allStats).length} aventureros\n\n`
+  if (groupStats.length === 0) {
+    return m.reply('❌ Ningún aventurero de este grupo tiene estadísticas aún.')
+  }
 
-  text += `▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬
-⚔️ 𝙀𝙣 𝙘𝙖𝙙𝙖 𝙥𝙖𝙨𝙤, 𝙚𝙨𝙘𝙪𝙡𝙥𝙚 𝙩𝙪 𝙡𝙚𝙮𝙚𝙣𝙙𝙖 
-      𝙚𝙣 𝙚𝙨𝙩𝙖 𝙜𝙧𝙖𝙣 𝙖𝙫𝙚𝙣𝙩𝙪𝙧𝙖 ⚔️
-▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬`
+  const top = (key, limit = 10) =>
+    [...groupStats].sort((a, b) => (b[key] || 0) - (a[key] || 0)).slice(0, limit)
 
-  const mentions = [
-    ...topExp.map(u => u.id),
-    ...topLevel.map(u => u.id),
-    ...topDiamonds.map(u => u.id)
-  ]
-  const uniqueMentions = [...new Set(mentions)]
-  
-  await m.reply(text, null, { mentions: uniqueMentions })
+  const topExp = top('exp')
+  const topLevel = top('level')
+  const topMoney = top('money')
+
+  const total = groupStats.length
+  const medals = ['🥇', '🥈', '🥉']
+  const medal = i => medals[i] ?? '🏅'
+
+  const row = (user, i) => {
+    const isSelf = user.num === senderNum
+    return `${medal(i)} *${i + 1}.* @${user.num}${isSelf ? ' ⭐' : ''}`
+  }
+
+  const pos = (list) => {
+    const p = list.findIndex(u => u.num === senderNum) + 1
+    return p ? `_📍 Tu posición: #${p} de ${total}_` : `_📍 No estás en el top_`
+  }
+
+  let text = `⚔️ *Los tops de este grupo* ⚔️\n`
+  text += `▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱\n\n`
+
+  text += `✨ *Top Experiencia*\n`
+  topExp.forEach((u, i) => { text += `${row(u, i)} ➤ *${u.exp || 0}* exp\n` })
+  text += `${pos(topExp)}\n\n`
+
+  text += `🎚️ *Top Nivel*\n`
+  topLevel.forEach((u, i) => { text += `${row(u, i)} ➤ nivel *${u.level || 0}*\n` })
+  text += `${pos(topLevel)}\n\n`
+
+  text += `💎 *Top Diamantes*\n`
+  topMoney.forEach((u, i) => { text += `${row(u, i)} ➤ *${u.money || 0}* 💎\n` })
+  text += `${pos(topMoney)}\n\n`
+
+  text += `▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱\n`
+  text += `_⚔️ Cada paso forja tu leyenda_`
+
+  const mentions = [...new Set([
+    ...topExp.map(u => u.jid),
+    ...topLevel.map(u => u.jid),
+    ...topMoney.map(u => u.jid)
+  ])]
+
+  await m.reply(text, null, { mentions })
 }
 
 handler.command = /^lb|leaderboard$/i

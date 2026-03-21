@@ -1,152 +1,725 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystic Bot 🔮</title>
-    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="web/favicon.ico">
-    <link rel="stylesheet" href="web/estilo.css">
+    <title>Luna-BotV6 - Bot Inteligente de WhatsApp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estilo de la pantalla de carga */
-        .loading-screen {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4169e1;
+            --secondary: #87ceeb;
+            --dark: #0a1929;
+            --darker: #0d1b2a;
+            --text: #e0e0e0;
+            --accent: #64b5f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, #1a2332 100%);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .stars {
             position: fixed;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        header {
+            background: rgba(13, 27, 42, 0.95);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .bot-image {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+            box-shadow: 0 0 50px rgba(100, 181, 246, 0.6);
+            border: 4px solid var(--secondary);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        h1 {
+            font-size: 4em;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), white);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(65,105,225,0.8)); }
+            50% { filter: drop-shadow(0 0 40px rgba(135,206,235,1)); }
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            color: var(--secondary);
+            margin-bottom: 40px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid var(--secondary);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(100, 181, 246, 0.4);
+        }
+
+        .section {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 60px;
+            color: var(--secondary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: rgba(30, 58, 95, 0.6);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(100, 181, 246, 0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(100, 181, 246, 0.3);
+            border-color: var(--secondary);
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 1.5em;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .platforms {
             display: flex;
             justify-content: center;
-            align-items: center;
-            background-color: #232323; 
-            z-index: 1000;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 40px;
         }
 
-        .loading-screen p {
-            font-size: 2em;
-            font-family: 'Comfortaa', sans-serif;
+        .platform-badge {
+            background: linear-gradient(45deg, var(--primary), #1e3a8a);
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            border: 2px solid var(--secondary);
+            transition: all 0.3s;
         }
 
-        /* Clase para ocultar elementos */
-        .hide {
+        .platform-badge:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(65,105,225,0.5);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .contact-card {
+            background: rgba(30, 58, 95, 0.6);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid var(--primary);
+            transition: all 0.3s;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(100, 181, 246, 0.4);
+        }
+
+        .contact-card i {
+            font-size: 3em;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .contact-card a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .modal {
             display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--darker);
+            margin: 5% auto;
+            padding: 40px;
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close {
+            color: var(--secondary);
+            float: right;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close:hover {
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            background: rgba(30, 58, 95, 0.4);
+            color: white;
+            font-size: 1em;
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .reports-section {
+            background: rgba(30, 58, 95, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 40px;
+        }
+
+        .report-item {
+            background: rgba(13, 27, 42, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .report-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-pending {
+            background: #ff9800;
+            color: white;
+        }
+
+        .status-resolved {
+            background: #4caf50;
+            color: white;
+        }
+
+        footer {
+            background: var(--darker);
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 2px solid var(--primary);
+            margin-top: 80px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            color: var(--secondary);
+            font-size: 2em;
+            transition: all 0.3s;
+        }
+
+        .social-links a:hover {
+            color: white;
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5em; }
+            .nav-links { display: none; }
+            .bot-image { width: 200px; height: 200px; }
+            .section-title { font-size: 2em; }
+        }
+
+        .install-steps {
+            background: rgba(30, 58, 95, 0.4);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .step {
+            background: rgba(13, 27, 42, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .step-number {
+            display: inline-block;
+            background: var(--primary);
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .code-block {
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+            font-family: 'Courier New', monospace;
+            color: var(--secondary);
+            margin: 10px 0;
+            overflow-x: auto;
         }
     </style>
 </head>
 <body>
-    <div class="loading-screen" id="loading-screen">
-        <p>⌛Cargando⏳</p>
+    <div class="stars" id="stars"></div>
+
+    <header>
+        <nav>
+            <div class="logo">
+                <i class="fas fa-moon"></i>
+                Luna-BotV6
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Inicio</a></li>
+                <li><a href="#features">Características</a></li>
+                <li><a href="#platforms">Plataformas</a></li>
+                <li><a href="#guide">Guía</a></li>
+                <li><a href="#contact">Contacto</a></li>
+                <li><a href="#" onclick="openReportModal()">Reportar</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXArcYhs_fumojCStyRfIWEG_st6I4ZrkPaEsJSmIYjw&s" alt="Luna Bot" class="bot-image">
+            <h1>Luna-BotV6</h1>
+            <p class="subtitle">Tu Bot Inteligente de WhatsApp 24/7</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/Luna-botv6/Luna-Botv6-Project" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-github"></i> Ver en GitHub
+                </a>
+                <a href="https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y" class="btn btn-secondary" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Canal Oficial
+                </a>
+                <button class="btn btn-secondary" onclick="openReportModal()">
+                    <i class="fas fa-bug"></i> Reportar Problema
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="features">
+        <h2 class="section-title"><i class="fas fa-star"></i> Características Principales</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <h3 class="feature-title">Juegos Integrados</h3>
+                <p>Tic-Tac-Toe, Ahorcado, Buscaminas, Carreras, Ruleta, Lotería y mucho más</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">Moderación Avanzada</h3>
+                <p>Anti-spam, anti-link, anti-tóxico y control total de grupos</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">Inteligencia Artificial</h3>
+                <p>Respuestas automáticas inteligentes y conversaciones naturales</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚙️</div>
+                <h3 class="feature-title">Comandos Personalizables</h3>
+                <p>Crea tus propios comandos sin escribir código</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💎</div>
+                <h3 class="feature-title">Economía Virtual</h3>
+                <p>Sistema de minería, monedas, tienda y banco integrado</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔄</div>
+                <h3 class="feature-title">Actualización Automática</h3>
+                <p>Sistema inteligente de actualizaciones con Git</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="platforms">
+        <h2 class="section-title"><i class="fas fa-laptop"></i> Plataformas Disponibles</h2>
+        <div class="platforms">
+            <div class="platform-badge">📱 Termux (Android)</div>
+            <div class="platform-badge">💻 PC (Windows/Linux/Mac)</div>
+            <div class="platform-badge">☁️ BoxMineWorld 24/7</div>
+            <div class="platform-badge">🌐 GitHub Pages</div>
+        </div>
+    </section>
+
+    <section class="section" id="guide">
+        <h2 class="section-title"><i class="fas fa-book"></i> Guía de Instalación</h2>
+        <div class="install-steps">
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Clonar el repositorio</strong>
+                <div class="code-block">git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git</div>
+            </div>
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Instalar dependencias</strong>
+                <div class="code-block">npm install</div>
+            </div>
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Configurar el bot</strong>
+                <div class="code-block">Edita config.js con tus datos</div>
+            </div>
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>Iniciar el bot</strong>
+                <div class="code-block">npm start</div>
+            </div>
+            <div class="step">
+                <span class="step-number">5</span>
+                <strong>Configurar IA (opcional)</strong>
+                <div class="code-block">/miid - Obtener LID<br>/iadd [número_LID] - Agregar IA<br>/iaon - Activar IA</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="contact">
+        <h2 class="section-title"><i class="fas fa-address-book"></i> Contacto</h2>
+        <div class="contact-grid">
+            <div class="contact-card">
+                <i class="fab fa-whatsapp"></i>
+                <h3>WhatsApp</h3>
+                <a href="https://wa.me/5493483466763" target="_blank">+54 9 348 346 6763</a>
+            </div>
+            <div class="contact-card">
+                <i class="fab fa-discord"></i>
+                <h3>Discord</h3>
+                <a href="https://discord.com/users/german_coto" target="_blank">german_coto</a>
+            </div>
+            <div class="contact-card">
+                <i class="fas fa-envelope"></i>
+                <h3>Email</h3>
+                <a href="mailto:lunabotv6@gmail.com">lunabotv6@gmail.com</a>
+            </div>
+            <div class="contact-card">
+                <i class="fab fa-facebook"></i>
+                <h3>Facebook</h3>
+                <a href="https://www.facebook.com/profile.php?id=61580601092491" target="_blank">Luna-BotV6</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="section reports-section" id="reports">
+        <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Reportes Recientes</h2>
+        <div id="reportsList"></div>
     </div>
 
-    <video autoplay muted loop id="bg-video" preload="auto">
-        <source src="https://videos.pexels.com/video-files/7180356/7180356-hd_1366_720_25fps.mp4" type="video/mp4">
-        Error al cargar el video
-    </video>
+    <footer>
+        <p>&copy; 2025 Luna-BotV6 Project - Creado por Germán Miño</p>
+        <div class="social-links">
+            <a href="https://github.com/Luna-botv6/Luna-Botv6-Project" target="_blank"><i class="fab fa-github"></i></a>
+            <a href="https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y" target="_blank"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://discord.com/users/german_coto" target="_blank"><i class="fab fa-discord"></i></a>
+            <a href="https://www.facebook.com/profile.php?id=61580601092491" target="_blank"><i class="fab fa-facebook"></i></a>
+        </div>
+    </footer>
 
-    <div class="content" id="content">
-        <p>⌛Cargando⏳</p>
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeReportModal()">&times;</span>
+            <h2><i class="fas fa-bug"></i> Reportar un Problema</h2>
+            <form id="reportForm" onsubmit="submitReport(event)">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="reportName" required>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Problema</label>
+                    <select id="reportType" required>
+                        <option value="">Selecciona...</option>
+                        <option value="bug">🐛 Bug/Error</option>
+                        <option value="feature">💡 Sugerencia</option>
+                        <option value="question">❓ Pregunta</option>
+                        <option value="other">📝 Otro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="reportDesc" required placeholder="Describe detalladamente el problema..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-paper-plane"></i> Enviar Reporte
+                </button>
+            </form>
+        </div>
     </div>
 
     <script>
-        // Oculta la pantalla de carga
-        function hideLoadingScreen() {
-            document.getElementById('loading-screen').classList.add('hide');
+        for(let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            document.getElementById('stars').appendChild(star);
         }
 
-        // Carga el contenido de la URL proporcionada
-        async function loadContent(url, fallbackUrl = null) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Error fetching ${url}: ${response.statusText}`);
-                document.getElementById('content').innerHTML = await response.text();
-                loadDisqus(); // Carga Disqus si el contenido se cargó correctamente
-            } catch (error) {
-                console.error(`Error cargando contenido: ${error.message}`);
-                if (fallbackUrl) {
-                    loadContent(fallbackUrl); // Intenta cargar el fallback si hay error
-                } else {
-                    document.getElementById('content').innerHTML = `<p>Error Cargando: ${error.message}</p>`;
-                }
+        const reports = [];
+
+        function openReportModal() {
+            document.getElementById('reportModal').style.display = 'block';
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').style.display = 'none';
+        }
+
+        function submitReport(e) {
+            e.preventDefault();
+            const report = {
+                id: Date.now(),
+                name: document.getElementById('reportName').value,
+                type: document.getElementById('reportType').value,
+                desc: document.getElementById('reportDesc').value,
+                date: new Date().toLocaleString(),
+                status: 'pending'
+            };
+            reports.push(report);
+            displayReports();
+            closeReportModal();
+            document.getElementById('reportForm').reset();
+            alert('¡Reporte enviado exitosamente! Gracias por tu colaboración.');
+        }
+
+        function displayReports() {
+            const list = document.getElementById('reportsList');
+            if(reports.length === 0) {
+                list.innerHTML = '<p style="text-align:center;">No hay reportes aún</p>';
+                return;
+            }
+            list.innerHTML = reports.map(r => `
+                <div class="report-item">
+                    <strong>${r.name}</strong>
+                    <span class="report-status status-${r.status}">
+                        ${r.status === 'pending' ? '⏳ Pendiente' : '✅ Resuelto'}
+                    </span>
+                    <p style="margin-top: 10px; color: var(--secondary);">${r.type.toUpperCase()}</p>
+                    <p style="margin-top: 5px;">${r.desc}</p>
+                    <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.7;">${r.date}</p>
+                </div>
+            `).reverse().join('');
+        }
+
+        window.onclick = function(event) {
+            if(event.target == document.getElementById('reportModal')) {
+                closeReportModal();
             }
         }
 
-        // Carga Disqus para comentarios
-        function loadDisqus() {
-            const disqusDiv = document.createElement('div');
-            disqusDiv.id = 'disqus_thread';
-            document.getElementById('content').appendChild(disqusDiv);
-
-            const disqus_config = function () {
-                this.page.url = window.location.href;
-                this.page.identifier = document.title;
-            };
-
-            const s = document.createElement('script');
-            s.src = 'https://amigos-steam.disqus.com/embed.js';
-            s.setAttribute('data-timestamp', +new Date());
-            document.body.appendChild(s);
-        }
-
-        // Devuelve la URL localizada según el idioma del navegador
-        function getLocalizedUrl(urlBase) {
-            const lang = navigator.language.slice(0, 2); // Obtener el código de idioma
-            const langMap = {
-                es: 'es.html',
-                pt: 'pt.html',
-                fr: 'fr.html',
-                ru: 'ru.html',
-                ar: 'ar.html',
-                hi: 'hi.html'
-            };
-            return `${urlBase}${langMap[lang] || 'ingles.html'}`;
-        }
-
-        // Carga el contenido localizado
-        function loadLocalizedContent(urlBase) {
-            const localizedUrl = getLocalizedUrl(urlBase);
-            const fallbackUrl = `${urlBase}ingles.html`;
-            loadContent(localizedUrl, fallbackUrl);
-        }
-
-        // Inicialización al cargar el DOM
-        document.addEventListener("DOMContentLoaded", () => {
-            const bgVideo = document.getElementById('bg-video');
-
-            // Ocultar pantalla de carga después de 5 segundos
-            const timeoutId = setTimeout(hideLoadingScreen, 5000);
-
-            // Intentar cargar el contenido localizado inmediatamente
-            loadLocalizedContent('web/');
-
-            // Ocultar la pantalla de carga cuando el video esté listo, si no se ha ocultado aún
-            bgVideo.addEventListener('loadeddata', () => {
-                clearTimeout(timeoutId); // Cancelar el timeout si se ha cargado el video
-                hideLoadingScreen(); // Ocultar la pantalla de carga
-            });
-        });
-
-        // Manejo de clics en enlaces internos
-        document.addEventListener('click', (event) => {
-            const anchor = event.target.closest('a');
-            if (anchor && anchor.href.includes('web/')) {
-                event.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                loadLocalizedContent(anchor.href.replace('.html', ''));
-            }
-        });
-
-        // Recarga la página al cambiar el estado del historial
-        window.onpopstate = () => location.reload();
+        displayReports();
     </script>
-
-    <!-- Widget de Discord -->
-    <script src="https://cdn.jsdelivr.net/npm/@widgetbot/crate@3" async defer>
-        new Crate({
-            server: '1278571215635877908',
-            channel: '1280978443793727549'
-        });
-    </script>
-
-    <noscript>JavaScript OFF. Se requiere JS activado para visualizar esta página. Consulta el repositorio si tienes problemas.</noscript>
 </body>
 </html>

@@ -1,221 +1,274 @@
-import { join, dirname } from 'path';
-import { createRequire } from 'module';
+import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
-import { setupMaster, fork } from 'cluster';
-import cfonts from 'cfonts';
-import readline from 'readline';
-import yargs from 'yargs';
+import { dirname } from 'path';
+import fs from 'fs';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import chalk from 'chalk';
-import fs from 'fs/promises';
-import fsSync from 'fs';
-import './config.js';
 
-import { PHONENUMBER_MCC } from '@whiskeysockets/baileys';
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(__dirname);
-const { say } = cfonts;
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-let isRunning = false;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const execAsync = promisify(exec);
 
-const question = (texto) => new Promise((resolver) => rl.question(texto, resolver));
-
-say('Iniciando...', {
-  font: 'simple',
-  align: 'center',
-  gradient: ['yellow', 'cyan'],
-});
-
-say('Luna-botv6', {
-  font: 'block',
-  align: 'center',
-  gradient: ['blue', 'magenta'],
-});
-
-process.stdout.write('\x07');
-
-console.log(chalk.hex('#00FFFF').bold('─◉ Bienvenido al sistema Luna-botv6'));
-console.log(chalk.hex('#FF00FF')('─◉ Preparando entorno y verificaciones necesarias...'));
-
-const rutaTmp = join(__dirname, 'src/tmp');
-try {
-  await fs.mkdir(rutaTmp, { recursive: true });
-  await fs.chmod(rutaTmp, 0o777);
-  console.log(chalk.hex('#39FF14')('✓ Carpeta src/tmp configurada correctamente.'));
-} catch (err) {
-  console.warn(chalk.hex('#FFA500')('⚠ Error configurando src/tmp:'), err.message);
-}
-
-async function limpiarArchivosTMP() {
-  const tmpPath = join(__dirname, 'src/tmp');
-  const coreFile = join(__dirname, 'core');
-  const MAX_AGE = 300000;
-  const stats = { tmp: 0, core: false, total: 0 };
-
+async function getRealMemory() {
   try {
-    const [tmpFiles, coreExists] = await Promise.allSettled([
-      fs.readdir(tmpPath),
-      fs.access(coreFile).then(() => true).catch(() => false)
-    ]);
+    if (fs.existsSync('/sys/fs/cgroup/memory/memory.limit_in_bytes')) {
+      const limit = fs.readFileSync('/sys/fs/cgroup/memory/memory.limit_in_bytes', 'utf8').trim();
+      const limitBytes = parseInt(limit);
+      if (limitBytes > 0 && limitBytes < 9007199254740991) {
+        return Math.floor(limitBytes / (1024 * 1024));
+      }
+    }
 
-    if (tmpFiles.status === 'fulfilled' && tmpFiles.value.length > 0) {
-      const now = Date.now();
-      const deletePromises = tmpFiles.value.map(async (file) => {
-        try {
-          const fullPath = join(tmpPath, file);
-          const fileStat = await fs.stat(fullPath);
-          
-          if (now - fileStat.mtimeMs > MAX_AGE) {
-            await fs.rm(fullPath, { recursive: true, force: true });
-            stats.tmp++;
-            return true;
-          }
-        } catch (err) {
-          return false;
+    if (fs.existsSync('/sys/fs/cgroup/memory.max')) {
+      const limit = fs.readFileSync('/sys/fs/cgroup/memory.max', 'utf8').trim();
+      if (limit !== 'max') {
+        const limitBytes = parseInt(limit);
+        if (limitBytes > 0) {
+          return Math.floor(limitBytes / (1024 * 1024));
         }
-        return false;
-      });
-
-      await Promise.allSettled(deletePromises);
+      }
     }
 
-    if (coreExists.status === 'fulfilled' && coreExists.value) {
+    const { stdout: meminfoData } = await execAsync('cat /proc/meminfo 2>/dev/null');
+    if (meminfoData) {
+      const match = meminfoData.match(/MemTotal:\s+(\d+)\s+kB/);
+      if (match) {
+        return Math.floor(parseInt(match[1]) / 1024);
+      }
+    }
+  } catch (error) {}
+
+  return 512;
+}
+
+async function checkIfNeedsRelaunch() {
+  const totalMemoryMB = await getRealMemory();
+  const memoryLimitMB = Math.floor(totalMemoryMB * 0.85);
+  const currentLimit = parseInt(process.env.MEMORY_LIMIT_MB || '0');
+  
+  if (currentLimit === 0 || Math.abs(currentLimit - memoryLimitMB) > 50) {
+    return { needsRelaunch: true, totalMemoryMB, memoryLimitMB };
+  }
+  
+  return { needsRelaunch: false, totalMemoryMB, memoryLimitMB };
+}
+
+const check = await checkIfNeedsRelaunch();
+
+if (check.needsRelaunch) {
+  console.log(chalk.yellow('\n⚠️  Detectado inicio sin configuración de memoria óptima'));
+  console.log(chalk.cyan(`📊 RAM Servidor: ${(check.totalMemoryMB / 1024).toFixed(2)}GB (${check.totalMemoryMB}MB)`));
+  console.log(chalk.green(`🎯 Relanzando con límite: ${(check.memoryLimitMB / 1024).toFixed(2)}GB (${check.memoryLimitMB}MB)\n`));
+
+  const args = [
+    `--max-old-space-size=${check.memoryLimitMB}`,
+    '--expose-gc',
+    'index-main.js',
+    ...process.argv.slice(2)
+  ];
+
+  let child = null;
+  let restartCount = 0;
+  const MAX_RESTART = 10;
+  const RESTART_WINDOW = 120000;
+  let firstRestartTime = null;
+  let monitorInterval = null;
+  let logMonitorInterval = null;
+  let isRestarting = false;
+
+  const logFilePath = '/tmp/bot-stderr.log';
+  
+  function startChild() {
+    if (isRestarting) return;
+    
+    if (fs.existsSync(logFilePath)) {
       try {
-        await fs.rm(coreFile, { force: true });
-        stats.core = true;
-      } catch {}
+        fs.unlinkSync(logFilePath);
+      } catch (e) {}
     }
+    
+    const logStream = fs.createWriteStream(logFilePath, { flags: 'a' });
+    
+    child = spawn('node', args, {
+      stdio: ['inherit', 'inherit', 'pipe'],
+      shell: false,
+      env: {
+        ...process.env,
+        MEMORY_LIMIT_MB: check.memoryLimitMB.toString(),
+        TOTAL_MEMORY_MB: check.totalMemoryMB.toString(),
+        RELAUNCHED: 'true',
+        FORCE_COLOR: '1'
+      }
+    });
 
-    stats.total = stats.tmp + (stats.core ? 1 : 0);
+    const errorPatterns = [
+      'allocation failure',
+      'JavaScript heap out of memory',
+      'FATAL ERROR',
+      'Mark-Compact'
+    ];
 
-    if (stats.total > 0) {
-      const parts = [];
-      if (stats.tmp > 0) parts.push(`${stats.tmp} archivos tmp/`);
-      if (stats.core) parts.push('archivo core');
-      console.log(chalk.hex('#00CED1').bold('✨ Limpieza completada: ') + chalk.hex('#FF1493')(parts.join(' + ')));
+    child.stderr.on('data', (data) => {
+      process.stderr.write(data);
+      logStream.write(data);
+    });
+
+    logMonitorInterval = setInterval(() => {
+      if (!fs.existsSync(logFilePath)) return;
+      
+      try {
+        const logContent = fs.readFileSync(logFilePath, 'utf8');
+        const lastLines = logContent.split('\n').slice(-100).join('\n');
+        
+        if (errorPatterns.some(pattern => lastLines.includes(pattern)) && !isRestarting) {
+          isRestarting = true;
+          console.log(chalk.hex('#FFD700').bold('\n🔄 ¡Sistema reiniciando para estabilizar la memoria RAM! 💫\n'));
+          if (monitorInterval) {
+            clearInterval(monitorInterval);
+            monitorInterval = null;
+          }
+          if (logMonitorInterval) {
+            clearInterval(logMonitorInterval);
+            logMonitorInterval = null;
+          }
+          logStream.end();
+          child.kill('SIGTERM');
+        }
+      } catch (error) {}
+    }, 2000);
+
+    monitorInterval = setInterval(() => {
+      if (!child || !child.pid) return;
+      
+      try {
+        const memUsagePath = `/proc/${child.pid}/statm`;
+        if (!fs.existsSync(memUsagePath)) return;
+        
+        const statm = fs.readFileSync(memUsagePath, 'utf8').split(' ');
+        const usedMemoryMB = Math.floor((parseInt(statm[1]) * 4096) / (1024 * 1024));
+        const memoryPercent = (usedMemoryMB / check.totalMemoryMB) * 100;
+        
+        if (memoryPercent >= 92 && !isRestarting) {
+          isRestarting = true;
+          console.log(chalk.hex('#FFD700').bold('\n🔄 ¡Sistema reiniciando para estabilizar la memoria RAM! 💫\n'));
+          if (monitorInterval) {
+            clearInterval(monitorInterval);
+            monitorInterval = null;
+          }
+          if (logMonitorInterval) {
+            clearInterval(logMonitorInterval);
+            logMonitorInterval = null;
+          }
+          logStream.end();
+          child.kill('SIGTERM');
+        }
+      } catch (error) {}
+    }, 10000);
+
+    child.on('exit', (code, signal) => {
+      if (monitorInterval) {
+        clearInterval(monitorInterval);
+        monitorInterval = null;
+      }
+      if (logMonitorInterval) {
+        clearInterval(logMonitorInterval);
+        logMonitorInterval = null;
+      }
+      logStream.end();
+
+      const now = Date.now();
+
+      if (!firstRestartTime || (now - firstRestartTime) > RESTART_WINDOW) {
+        firstRestartTime = now;
+        restartCount = 0;
+      }
+
+      restartCount++;
+
+      if (restartCount >= MAX_RESTART) {
+        console.error(chalk.red(`\n❌ ${MAX_RESTART} reinicios en 2 minutos. Deteniendo para evitar loop infinito.\n`));
+        process.exit(1);
+      }
+
+      if (signal === 'SIGINT' || code === 0) {
+        process.exit(code || 0);
+      }
+
+      console.log(chalk.yellow(`\n⚡ Reiniciando sistema... (${restartCount}/${MAX_RESTART})\n`));
+      
+      setTimeout(() => {
+        isRestarting = false;
+        startChild();
+      }, 2000);
+    });
+
+    child.on('error', (error) => {
+      console.error(chalk.red('❌ Error en proceso hijo:'), error.message);
+      if (monitorInterval) {
+        clearInterval(monitorInterval);
+        monitorInterval = null;
+      }
+      if (logMonitorInterval) {
+        clearInterval(logMonitorInterval);
+        logMonitorInterval = null;
+      }
+      logStream.end();
+      setTimeout(() => {
+        startChild();
+      }, 3000);
+    });
+  }
+
+  startChild();
+
+  process.on('SIGINT', () => {
+    if (monitorInterval) {
+      clearInterval(monitorInterval);
     }
-  } catch (err) {
-    console.error(chalk.hex('#FF1493')('✖ Error en limpieza:'), err.message);
-  }
-}
-
-let limpiezaActiva = false;
-
-async function ejecutarLimpieza() {
-  if (limpiezaActiva) return;
-  limpiezaActiva = true;
-  try {
-    await limpiarArchivosTMP();
-  } finally {
-    setTimeout(() => { limpiezaActiva = false; }, 5000);
-  }
-}
-
-setInterval(ejecutarLimpieza, 900000);
-setTimeout(ejecutarLimpieza, 3000);
-
-async function verificarOCrearCarpetaAuth() {
-  const authPath = join(__dirname, global.authFile);
-  try {
-    await fs.mkdir(authPath, { recursive: true });
-  } catch {}
-}
-
-function verificarCredsJson() {
-  const credsPath = join(__dirname, global.authFile, 'creds.json');
-  return fsSync.existsSync(credsPath);
-}
-
-function formatearNumeroTelefono(numero) {
-  let formattedNumber = numero.replace(/[^\d+]/g, '');
-  if (formattedNumber.startsWith('+52') && !formattedNumber.startsWith('+521')) {
-    formattedNumber = formattedNumber.replace('+52', '+521');
-  } else if (formattedNumber.startsWith('52') && !formattedNumber.startsWith('521')) {
-    formattedNumber = `+521${formattedNumber.slice(2)}`;
-  } else if (formattedNumber.startsWith('52') && formattedNumber.length >= 12) {
-    formattedNumber = `+${formattedNumber}`;
-  } else if (!formattedNumber.startsWith('+')) {
-    formattedNumber = `+${formattedNumber}`;
-  }
-  return formattedNumber;
-}
-
-function esNumeroValido(numeroTelefono) {
-  const numeroSinSigno = numeroTelefono.replace('+', '');
-  return Object.keys(PHONENUMBER_MCC).some(codigo => numeroSinSigno.startsWith(codigo));
-}
-
-async function start(file) {
-  if (isRunning) return;
-  isRunning = true;
-
-  await verificarOCrearCarpetaAuth();
-
-  if (verificarCredsJson()) {
-    const args = [join(__dirname, file), ...process.argv.slice(2)];
-    setupMaster({ exec: args[0], args: args.slice(1) });
-    const p = fork();
-    return;
-  }
-
-  const opcion = await question(chalk.hex('#FFD700').bold('─◉　Seleccione una opción (solo el numero):\n') + chalk.hex('#E0E0E0').bold('1. Con código QR\n2. Con código de texto de 8 dígitos\n─> '));
-
-  let numeroTelefono = '';
-  if (opcion === '2') {
-    const phoneNumber = await question(chalk.hex('#FFD700').bold('\n─◉　Escriba su número de WhatsApp:\n') + chalk.hex('#E0E0E0').bold('◉　Ejemplo: +5493483466763\n─> '));
-    numeroTelefono = formatearNumeroTelefono(phoneNumber);
-    if (!esNumeroValido(numeroTelefono)) {
-      console.log(chalk.bgHex('#FF1493')(chalk.white.bold('[ ERROR ] Número inválido. Asegúrese de haber escrito su numero en formato internacional y haber comenzado con el código de país.\n─◉　Ejemplo:\n◉ +5493483466763\n')));
-      process.exit(0);
+    if (logMonitorInterval) {
+      clearInterval(logMonitorInterval);
     }
-    process.argv.push(numeroTelefono);
-  }
+    if (child) child.kill('SIGINT');
+  });
 
-  if (opcion === '1') {
-    process.argv.push('qr');
-  } else if (opcion === '2') {
-    process.argv.push('code');
-  }
+  process.on('SIGTERM', () => {
+    if (monitorInterval) {
+      clearInterval(monitorInterval);
+    }
+    if (logMonitorInterval) {
+      clearInterval(logMonitorInterval);
+    }
+    if (child) child.kill('SIGTERM');
+  });
 
-  const args = [join(__dirname, file), ...process.argv.slice(2)];
-  setupMaster({ exec: args[0], args: args.slice(1) });
+  process.on('uncaughtException', (error) => {
+    console.error(chalk.red('❌ Error no capturado:'), error.message);
+  });
 
-  const p = fork();
+  process.on('unhandledRejection', (reason) => {
+    console.error(chalk.red('❌ Promise rechazada:'), reason);
+  });
 
-  p.on('message', (data) => {
-    console.log(chalk.hex('#39FF14').bold('─◉　RECIBIDO:'), data);
-    switch (data) {
-      case 'reset':
-        p.process.kill();
-        isRunning = false;
-        start.apply(this, arguments);
-        break;
-      case 'uptime':
-        p.send(process.uptime());
-        break;
+  process.on('exit', () => {
+    if (monitorInterval) {
+      clearInterval(monitorInterval);
+    }
+    if (logMonitorInterval) {
+      clearInterval(logMonitorInterval);
+    }
+    if (fs.existsSync(logFilePath)) {
+      try {
+        fs.unlinkSync(logFilePath);
+      } catch (e) {}
     }
   });
 
-  p.on('exit', (_, code) => {
-    isRunning = false;
-    console.error(chalk.hex('#FF1493').bold('[ ERROR ] Ocurrió un error inesperado:'), code);
-    p.process.kill();
-    isRunning = false;
-    start.apply(this, arguments);
-    if (process.env.pm_id) {
-      process.exit(1);
-    } else {
-      process.exit();
-    }
-  });
-
-  const opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());
-  if (!opts['test']) {
-    if (!rl.listenerCount()) {
-      rl.on('line', (line) => {
-        p.emit('message', line.trim());
-      });
-    }
+} else {
+  try {
+    await import('./index-main.js');
+  } catch (error) {
+    console.error(chalk.red('❌ Error cargando index-main.js:'), error.message);
+    process.exit(1);
   }
 }
-
-start('main.js');

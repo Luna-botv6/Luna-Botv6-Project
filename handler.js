@@ -21,8 +21,9 @@ import { ensureUserData, ensureBotSettings } from './lib/funcion/databaseManager
 import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
+import { gcIfNeeded } from './lib/gcHelper.js';
 
-EventEmitter.defaultMaxListeners = 20;
+EventEmitter.defaultMaxListeners = 30;
 
 const groupCache = new Map();
 const recentMessages = new Map();
@@ -74,10 +75,11 @@ async function loadCustomCommandsOnce(customCommandsDir) {
 
 function logError(e, plugin = 'general') {
   console.log(chalk.red(`\n💥 Error en: ${chalk.yellow(plugin)}`));
-  console.log(chalk.red(`📝 ${chalk.white(e?.message || e?.toString() || 'Error desconocido')}`));
+  console.log(chalk.red(`📄 ${chalk.white(e?.message || e?.toString() || 'Error desconocido')}`));
 }
 
 let mconn;
+let currentConn;
 const { proto } = (await import("@whiskeysockets/baileys")).default;
 
 startCacheCleanupInterval(groupCache, recentMessages, recentParticipantEvents, translationsCache, customCommandsCache, processedVoiceMessages, CACHE_TTL, DUPLICATE_TIMEOUT);
@@ -94,16 +96,30 @@ setInterval(() => {
       toDelete.forEach(id => processedVoiceMessages.delete(id));
     }
     
-    if (global.gc) global.gc();
+    gcIfNeeded('intervalo-60s');
   } catch (e) {}
 }, 60000);
 
 export async function handler(chatUpdate) {
   try {
+    if (!this?.user?.jid) {
+      return;
+    }
+    currentConn = this;
     this.msgqueque = this.msgqueque || [];
     this.uptime = this.uptime || Date.now();
     
-    if (!chatUpdate?.messages?.length) return;
+if (!chatUpdate?.messages?.length) return;
+
+const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+
+const validMessages = chatUpdate.messages.filter(msg => {
+  const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
+  return msgTimestamp >= connectionTime;
+});
+
+if (validMessages.length === 0) return;
+chatUpdate.messages = validMessages;
 
     this.pushMessage(chatUpdate.messages).catch(console.error);
 
@@ -113,6 +129,17 @@ export async function handler(chatUpdate) {
 
     const { sender, chat } = extractSenderAndChat(m, this);
     if (!sender || !chat) return;
+
+    const _mute = global.db?.data?.mutes?.[chat + '_' + sender];
+    if (_mute && (!_mute.until || Date.now() < _mute.until)) {
+      const _ownerNums = (global.owner || []).map(o => String(Array.isArray(o) ? o[0] : o));
+      const _lidOwners = (global.lidOwners || []).map(x => String(x));
+      const _isOwner = _ownerNums.some(n => sender.includes(n)) || _lidOwners.some(n => sender.includes(n));
+      if (!_isOwner) {
+        this.sendMessage(chat, { delete: m.key }).catch(() => {});
+        return;
+      }
+    }
 
     m = normalizeMessageText(m);
 
@@ -182,7 +209,19 @@ export async function handler(chatUpdate) {
           const id = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson)?.id;
           if (id) m.text = id;
         } catch (e) {}
+      } else {
+        const isMentioned = m.message?.extendedTextMessage?.contextInfo?.mentionedJid?.includes(this.user.jid);
+        const isQuotedMention = m.message?.extendedTextMessage?.contextInfo?.participant === this.user.jid;
+        if (isMentioned || isQuotedMention) {
+          m.mentionedJid = m.mentionedJid || [];
+          if (!m.mentionedJid.includes(this.user.jid)) {
+            m.mentionedJid.push(this.user.jid);
+          }
+          m.isMentionedBot = true;
+        }
       }
+
+      if (typeof m.text !== 'string') m.text = '';
 
       const { isROwner, isOwner, isMods, isPrems } = checkUserPermissions(m, this);
 
@@ -332,7 +371,7 @@ export async function handler(chatUpdate) {
             this.sendPresenceUpdate('composing', m.chat).catch(() => {});
           }
 
-          const chat = global.db.data.chats[m.chat] || getConfig(m.chat);
+          const chat = getConfig(m.chat);
           const user = global.db.data.users[m.sender] || {};
           const botSpam = global.db.data.settings[this.user.jid] || {};
 
@@ -369,10 +408,16 @@ export async function handler(chatUpdate) {
             user.commandCount = 1;
           }
 
-          const adminMode = chat?.modoadmin;
-          if (adminMode && !isOwner && !isROwner && m.isGroup && (plugin.admin || plugin.botAdmin || plugin.group)) {
-            continue;
-          }
+          if (m.isGroup && chat?.modoadmin && !isOwner && !isROwner) {
+  let userIsAdmin = false;
+  try {
+    const { getGroupDataForPlugin } = await import('./lib/funcion/pluginHelper.js');
+    const groupData = await getGroupDataForPlugin(this, m.chat, m.sender);
+    userIsAdmin = groupData.isAdmin;
+  } catch (e) {}
+  
+  if (!userIsAdmin) continue;
+}
 
           if (plugin.rowner && !isROwner) {
             fail('rowner', m, this);
@@ -465,7 +510,7 @@ export async function handler(chatUpdate) {
               for (const key of Object.values(global.APIKeys || {})) {
                 text = text.replace(new RegExp(key, 'g'), '#OCULTO#');
               }
-              await m.reply(text).catch(() => {});
+              if (text && text.trim()) await m.reply(text).catch(() => {});
             }
           } finally {
             if (typeof plugin.after === 'function') {
@@ -478,6 +523,7 @@ export async function handler(chatUpdate) {
             if (m.limit) {
               m.reply(`${tradutor.texto4?.[0] || 'Límite usado'} ${m.limit} ${tradutor.texto4?.[1] || 'veces'}`);
             }
+             gcIfNeeded(m?.plugin || 'plugin');
           }
           break;
         }
@@ -519,12 +565,12 @@ export async function handler(chatUpdate) {
         }
       } catch (e) {}
 
-      
-
       const settingsREAD = global.db.data.settings[this.user.jid] || {};
       if (opts['autoread'] || settingsREAD?.autoread2) {
         this.readMessages([m.key]).catch(() => {});
       }
+
+      m = null;
     }
   } catch (e) {
     logError(e, 'main_handler');
@@ -533,12 +579,15 @@ export async function handler(chatUpdate) {
 
 export async function participantsUpdate({ id, participants, action }) {
   try {
+    const conn = currentConn || mconn?.conn || mconn;
+    if (!conn?.user?.jid) return;
+
     const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
     const _translate = await loadTranslation(idioma);
     const tradutor = _translate.handler.participantsUpdate;
 
     await handleParticipantsUpdate(
-      mconn,
+      conn,
       id,
       participants,
       action,
@@ -553,48 +602,18 @@ export async function participantsUpdate({ id, participants, action }) {
   } catch (e) {}
 }
 
-export async function groupsUpdate(groupsUpdate) {
-  try {
-    if (opts['self'] || !global.db.data || !mconn?.conn) return;
-
-    const idioma = global.db.data.chats[groupsUpdate[0]?.id]?.language || global.defaultLenguaje;
-    const _translate = await loadTranslation(idioma);
-    const tradutor = _translate.handler?.participantsUpdate || {};
-
-    for (const groupUpdate of groupsUpdate) {
-      try {
-        const { id, desc, subject, icon, revoke } = groupUpdate;
-        if (!id) continue;
-
-        groupCache.delete(id);
-        const chats = global.db.data.chats[id];
-        if (!chats?.detect) continue;
-
-        let text = '';
-        if (desc) text = (chats?.sDesc || tradutor.texto5 || 'Descripción cambiada').replace('@desc', desc);
-        else if (subject) text = (chats?.sSubject || tradutor.texto6 || 'Nombre cambiado').replace('@subject', subject);
-        else if (icon) text = (chats?.sIcon || tradutor.texto7 || 'Ícono cambiado').replace('@icon', icon);
-        else if (revoke) text = (chats?.sRevoke || tradutor.texto8 || 'Enlace revocado').replace('@revoke', revoke);
-
-        if (text) {
-          await mconn?.conn?.sendMessage(id, { text, mentions: mconn?.conn?.parseMention(text) }).catch(() => {});
-        }
-      } catch (e) {}
-    }
-  } catch (e) {}
-}
-
 export async function callUpdate(callUpdate) {
   try {
-    const isAnticall = global?.db?.data?.settings[mconn?.conn?.user?.jid]?.antiCall;
-    if (!isAnticall || !mconn?.conn) return;
+    const conn = currentConn || mconn?.conn;
+    const isAnticall = global?.db?.data?.settings[conn?.user?.jid]?.antiCall;
+    if (!isAnticall || !conn) return;
 
     for (const nk of callUpdate) {
       try {
         if (!nk.isGroup && nk.status === 'offer') {
           const msg = `Hola *@${nk.from.split('@')[0]}*, ${nk.isVideo ? 'las videollamadas' : 'las llamadas'} no están permitidas. Serás bloqueado.\nContacta a mi creador para ser desbloqueado.`;
-          await mconn?.conn?.reply(nk.from, msg, false, { mentions: [nk.from] });
-          await mconn.conn.updateBlockStatus(nk.from, 'block');
+          await conn.reply(nk.from, msg, false, { mentions: [nk.from] });
+          await conn.updateBlockStatus(nk.from, 'block');
         }
       } catch (e) {}
     }
@@ -604,7 +623,8 @@ export async function callUpdate(callUpdate) {
 export async function deleteUpdate(message) {
   try {
     const { fromMe, id, participant } = message;
-    if (fromMe || !mconn?.conn || !global.db) return;
+    const conn = currentConn || mconn?.conn;
+    if (fromMe || !conn || !global.db) return;
 
     const idioma = global.db.data.users[participant]?.language || global.defaultLenguaje || 'es';
     const _translate = await loadTranslation(idioma);
@@ -614,7 +634,7 @@ export async function deleteUpdate(message) {
     let date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
     let time = d.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
 
-    let msg = mconn.conn.serializeM(mconn.conn.loadMessage(id));
+    let msg = conn.serializeM(conn.loadMessage(id));
     if (!msg?.chat || !msg?.isGroup) return;
 
     let chat = global.db.data.chats[msg.chat] || {};
@@ -622,8 +642,8 @@ export async function deleteUpdate(message) {
 
     const antideleteMessage = `${tradutor.texto1?.[0] || '🔄 Mensaje eliminado'}\n${tradutor.texto1?.[1] || 'Por'}: @${participant.split('@')[0]}\n${tradutor.texto1?.[2] || 'Hora'}: ${time}\n${tradutor.texto1?.[3] || 'Fecha'}: ${date}`.trim();
 
-    await mconn.conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [mconn.conn.decodeJid(participant)] }, { quoted: msg }).catch(() => {});
-    await mconn.conn.copyNForward(msg.chat, msg).catch(() => {});
+    await conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [conn.decodeJid(participant)] }, { quoted: msg }).catch(() => {});
+    await conn.copyNForward(msg.chat, msg).catch(() => {});
   } catch (e) {}
 }
 
@@ -671,88 +691,46 @@ watchFile(file, async () => {
   }
 });
 
-process.on('unhandledRejection', (reason) => {
-  const msg = reason?.message || reason?.toString() || 'Error desconocido';
-  
-  if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-    return;
-  }
-  
-  if (msg.includes('presence') || msg.includes('sending presence') || msg.includes('enviando presencia')) {
-    console.log(chalk.yellow('\n⚠️ ============================================'));
-    console.log(chalk.yellow('❌ BOT BANEADO - NO SE VOLVERÁ A CONECTAR'));
-    console.log(chalk.yellow('============================================'));
-    console.log(chalk.white('📋 Solución:'));
-    console.log(chalk.white('1. Elimina la carpeta "MysticSession"'));
-    console.log(chalk.white('2. Vuelve a vincular el bot escaneando el QR'));
-    console.log(chalk.yellow('============================================\n'));
-    return;
-  }
-  
-  if (msg.includes('Connection') || msg.includes('Conexión') || msg.includes('WebSocket')) {
-    console.log(chalk.yellow('\n⚠️ ============================================'));
-    console.log(chalk.yellow('🔌 ERROR DE CONEXIÓN'));
-    console.log(chalk.yellow('============================================'));
-    console.log(chalk.white('📋 Posibles soluciones:'));
-    console.log(chalk.white('1. Verifica tu conexión a internet'));
-    console.log(chalk.white('2. Reinicia el servidor: npm start'));
-    console.log(chalk.white('3. Si persiste, vuelve a vincular el bot'));
-    console.log(chalk.yellow('============================================\n'));
-    return;
-  }
-  
-  console.log(chalk.red('\n🛠️ ============================================'));
-  console.log(chalk.red('ERROR NO MANEJADO'));
-  console.log(chalk.red('============================================'));
-  console.log(chalk.white(`📝 Mensaje: ${msg}`));
-  console.log(chalk.white('📋 Acción recomendada:'));
-  console.log(chalk.white('1. Reinicia el servidor con: npm start'));
-  console.log(chalk.white('2. Si el error persiste, revisa los logs'));
-  console.log(chalk.red('============================================\n'));
-});
+if (!global._errorHandlersRegistered) {
+  global._errorHandlersRegistered = true;
 
-process.on('uncaughtException', (err) => {
-  const msg = err?.message || err?.toString() || 'Error desconocido';
-  
-  if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-    return;
-  }
-  
-  if (msg.includes('authenticate') || msg.includes('autenticación') || msg.includes('QR')) {
-    console.log(chalk.yellow('\n⚠️ ============================================'));
-    console.log(chalk.yellow('❌ ERROR DE AUTENTICACIÓN'));
-    console.log(chalk.yellow('============================================'));
-    console.log(chalk.white('📋 La vinculación no se completó correctamente'));
-    console.log(chalk.white('Solución:'));
-    console.log(chalk.white('1. Detén el servidor (Ctrl + C)'));
-    console.log(chalk.white('2. Elimina la carpeta "MysticSession"'));
-    console.log(chalk.white('3. Reinicia: npm start'));
-    console.log(chalk.white('4. Escanea el código QR nuevamente'));
-    console.log(chalk.yellow('============================================\n'));
-    return;
-  }
-  
-  if (msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT') || msg.includes('ENOTFOUND')) {
-    console.log(chalk.yellow('\n⚠️ ============================================'));
-    console.log(chalk.yellow('🌐 ERROR DE RED'));
-    console.log(chalk.yellow('============================================'));
-    console.log(chalk.white('📋 Problema de conexión a internet detectado'));
-    console.log(chalk.white('Solución:'));
-    console.log(chalk.white('1. Verifica tu conexión a internet'));
-    console.log(chalk.white('2. Espera unos segundos y reinicia el bot'));
-    console.log(chalk.white('3. El bot se reconectará automáticamente'));
-    console.log(chalk.yellow('============================================\n'));
-    return;
-  }
-  
-  console.log(chalk.red('\n⚠️ ============================================'));
-  console.log(chalk.red('EXCEPCIÓN CRÍTICA NO CAPTURADA'));
-  console.log(chalk.red('============================================'));
-  console.log(chalk.white(`📝 Mensaje: ${msg}`));
-  console.log(chalk.white(`📍 Stack: ${err?.stack?.split('\n')[1]?.trim() || 'No disponible'}`));
-  console.log(chalk.white('📋 Acción URGENTE:'));
-  console.log(chalk.white('1. REINICIA el servidor inmediatamente'));
-  console.log(chalk.white('2. Si el error se repite, revisa el código'));
-  console.log(chalk.white('3. Considera restaurar desde un backup'));
-  console.log(chalk.red('============================================\n'));
-});
+  process.on('unhandledRejection', (reason) => {
+    const msg = reason?.message || reason?.toString() || 'Error desconocido';
+    
+    if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
+      return;
+    }
+    
+    if (msg.includes('presence') || msg.includes('sending presence') || msg.includes('enviando presencia')) {
+      console.log(chalk.yellow('⚠️ BOT BANEADO - Elimina "MysticSession" y vuelve a vincular'));
+      return;
+    }
+    
+    if (msg.includes('Connection') || msg.includes('Conexión') || msg.includes('WebSocket')) {
+      console.log(chalk.yellow('⚠️ Error de conexión - Verifica tu internet'));
+      return;
+    }
+    
+    console.log(chalk.red(`🛠️ ERROR: ${msg}`));
+  });
+
+  process.on('uncaughtException', (err) => {
+    const msg = err?.message || err?.toString() || 'Error desconocido';
+    
+    if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
+      return;
+    }
+    
+    if (msg.includes('authenticate') || msg.includes('autenticación') || msg.includes('QR')) {
+      console.log(chalk.yellow('⚠️ Error de autenticación - Elimina "MysticSession" y reinicia'));
+      return;
+    }
+    
+    if (msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT') || msg.includes('ENOTFOUND')) {
+      console.log(chalk.yellow('⚠️ Error de red - Verifica tu conexión'));
+      return;
+    }
+    
+    console.log(chalk.red(`⚠️ EXCEPCIÓN CRÍTICA: ${msg}`));
+  });
+}

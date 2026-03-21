@@ -1,32 +1,56 @@
-import util from 'util';
-import path from 'path';
-
+import fs from 'fs';
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const user = (a) => '@' + a.split('@')[0];
-function handler(m, {groupMetadata, command, conn, text, usedPrefix}) {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.fun_top
 
-  if (!text) throw `${tradutor.texto1}`;
-  const ps = groupMetadata.participants.map((v) => v.id);
-  const a = ps.getRandom();
-  const b = ps.getRandom();
-  const c = ps.getRandom();
-  const d = ps.getRandom();
-  const e = ps.getRandom();
-  const f = ps.getRandom();
-  const g = ps.getRandom();
-  const h = ps.getRandom();
-  const i = ps.getRandom();
-  const j = ps.getRandom();
-  const k = Math.floor(Math.random() * 70);
-  const x = `${pickRandom(['🤓', '😅', '😂', '😳', '😎', '🥵', '😱', '🤑', '🙄', '💩', '🍑', '🤨', '🥴', '🔥', '👇🏻', '😔', '👀', '🌚'])}`;
-  const l = Math.floor(Math.random() * x.length);
-  const vn = `https://hansxd.nasihosting.com/sound/sound${k}.mp3`;
-  const top = `*${x} Top 10 ${text} ${x}*
-    
+function pickRandom(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+async function handler(m, { command, conn, text, usedPrefix }) {
+  try {
+    const datas = global;
+    const idioma = datas.db.data.users[m.sender]?.language || global.defaultLenguaje;
+    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`, 'utf8'));
+    const tradutor = _translate.plugins.fun_top;
+
+    if (!text) {
+      throw `${tradutor.texto1 || 'Por favor proporciona un criterio para el top'}`;
+    }
+
+    const chatId = m.chat;
+    const senderId = m.sender;
+    const groupData = await getGroupDataForPlugin(conn, chatId, senderId);
+    const participants = groupData?.participants || [];
+
+    if (!participants || participants.length === 0) {
+      return m.reply('No se encontraron participantes en el grupo.');
+    }
+
+    const ps = participants.map((v) => v.id);
+
+    if (ps.length < 10) {
+      return m.reply(`Se necesitan al menos 10 participantes. Hay ${ps.length} participantes.`);
+    }
+
+    const getRandomParticipant = () => ps[Math.floor(Math.random() * ps.length)];
+
+    const a = getRandomParticipant();
+    const b = getRandomParticipant();
+    const c = getRandomParticipant();
+    const d = getRandomParticipant();
+    const e = getRandomParticipant();
+    const f = getRandomParticipant();
+    const g = getRandomParticipant();
+    const h = getRandomParticipant();
+    const i = getRandomParticipant();
+    const j = getRandomParticipant();
+
+    const k = Math.floor(Math.random() * 70);
+    const x = pickRandom(['🤓', '😅', '😂', '😳', '😎', '🥵', '😱', '🤑', '🙄', '💩', '🍑', '🤨', '🥴', '🔥', '👇🏻', '😔', '👀', '🌚']);
+
+    const top = `*${x} Top 10 ${text} ${x}*
+
 *1. ${user(a)}*
 *2. ${user(b)}*
 *3. ${user(c)}*
@@ -37,15 +61,17 @@ function handler(m, {groupMetadata, command, conn, text, usedPrefix}) {
 *8. ${user(h)}*
 *9. ${user(i)}*
 *10. ${user(j)}*`;
-  m.reply(top, null, {mentions: [a, b, c, d, e, f, g, h, i, j]});
-  /*conn.sendFile(m.chat, vn, 'error.mp3', null, m, true, {
-    type: 'audioMessage',
-    ptt: true});*/
+
+    m.reply(top, null, { mentions: [a, b, c, d, e, f, g, h, i, j] });
+
+  } catch (e) {
+    console.error('Error en top:', e);
+    m.reply(`Error: ${e.message || e}`);
+  }
 }
+
 handler.help = handler.command = ['top'];
 handler.tags = ['fun'];
 handler.group = true;
+
 export default handler;
-function pickRandom(list) {
-  return list[Math.floor(Math.random() * list.length)];
-}

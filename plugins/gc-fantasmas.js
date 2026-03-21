@@ -1,76 +1,156 @@
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { isLidJid, resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
 import fs from 'fs';
-import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
+import path from 'path';
 
-const cooldowns = new Map();
+const DB_PATH = './database/fantasmas_tracker.json';
 
-const handler = async (m, { isOwner, conn, text, args, command, usedPrefix }) => {
-  const chatId = m.chat;
-  const cooldownTime = 2 * 60 * 1000;
-  const now = Date.now();
-  if (usedPrefix == 'a' || usedPrefix == 'A') return;
+const asegurarArchivo = () => {
+  const dir = path.dirname(DB_PATH);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(DB_PATH)) fs.writeFileSync(DB_PATH, '{}', 'utf8');
+};
+
+const cargarDB = () => {
+  try {
+    asegurarArchivo();
+    return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+  } catch (e) {
+    return {};
+  }
+};
+
+const guardarDB = (data) => {
+  try {
+    asegurarArchivo();
+    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {}
+};
+
+const activos = new Map();
+
+const cargarEnMemoria = () => {
+  const data = cargarDB();
+  for (const [groupId, usuarios] of Object.entries(data)) {
+    activos.set(groupId, new Map(Object.entries(usuarios)));
+  }
+};
+
+const persistir = () => {
+  const data = {};
+  for (const [groupId, usuarios] of activos.entries()) {
+    data[groupId] = Object.fromEntries(usuarios);
+  }
+  guardarDB(data);
+};
+
+cargarEnMemoria();
+
+function safeSetInterval(fn, delay) {
+  const MAX = 2147483647;
+  if (delay > MAX) {
+    setTimeout(() => {
+      fn();
+      safeSetInterval(fn, delay);
+    }, MAX);
+  } else {
+    setInterval(fn, delay);
+  }
+}
+
+safeSetInterval(() => {
+  activos.clear();
+  guardarDB({});
+}, 30 * 24 * 60 * 60 * 1000);
+
+setInterval(persistir, 5 * 60 * 1000);
+
+const tiempoInactivo = (ms) => {
+  const minutos = Math.floor(ms / 60000);
+  const horas = Math.floor(ms / 3600000);
+  const dias = Math.floor(ms / 86400000);
+  const meses = Math.floor(ms / 2592000000);
+  if (meses >= 1) return `${meses} ${meses === 1 ? 'mes' : 'meses'}`;
+  if (dias >= 1) return `${dias} ${dias === 1 ? 'día' : 'días'}`;
+  if (horas >= 1) return `${horas} ${horas === 1 ? 'hora' : 'horas'}`;
+  if (minutos >= 1) return `${minutos} ${minutos === 1 ? 'minuto' : 'minutos'}`;
+  return 'hace un momento';
+};
+
+const handler = async (m, { isOwner, conn, text, usedPrefix }) => {
+  if (usedPrefix === 'a' || usedPrefix === 'A') return;
   if (!m.isGroup) return;
 
-  const { groupMetadata, participants, isAdmin, isBotAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
+  const chatId = m.chat;
+  const now = Date.now();
+  const cooldownTime = 2 * 60 * 1000;
 
-  if (!isAdmin && !isOwner) {
+  const { participants, isAdmin, isBotAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
+
+  if (!isAdmin && !isOwner)
     return m.reply('⚠️ Este comando solo puede ser usado por administradores del grupo.');
-  }
 
-  if (cooldowns.has(chatId)) {
-    const expirationTime = cooldowns.get(chatId) + cooldownTime;
-    if (now < expirationTime) {
-      const timeLeft = Math.ceil((expirationTime - now) / 1000);
-      const minutes = Math.floor(timeLeft / 60);
-      const seconds = timeLeft % 60;
-      return m.reply(`⏰ Debes esperar ${minutes}m ${seconds}s antes de usar este comando nuevamente.`);
-    }
-  }
-  cooldowns.set(chatId, now);
+  if (!handler._cooldowns) handler._cooldowns = new Map();
 
-  const datas = global;
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
-  const tradutor = _translate.plugins.gc_fantasmas;
-
-  const member = participants.map(u => u.id);
-  let sum = !text ? member.length : text;
-  let total = 0;
-  const sider = [];
-
-  for (let i = 0; i < sum; i++) {
-    const users = participants.find(u => u.id == member[i]);
-    if ((typeof global.db.data.users[member[i]] == 'undefined' || global.db.data.users[member[i]].chat == 0) && !users?.admin) {
-      if (typeof global.db.data.users[member[i]] !== 'undefined') {
-        if (global.db.data.users[member[i]].whitelist == false) {
-          total++;
-          sider.push(member[i]);
-        }
-      } else {
-        total++;
-        sider.push(member[i]);
-      }
+  if (handler._cooldowns.has(chatId)) {
+    const exp = handler._cooldowns.get(chatId) + cooldownTime;
+    if (now < exp) {
+      const left = Math.ceil((exp - now) / 1000);
+      return m.reply(`⏰ Espera ${Math.floor(left / 60)}m ${left % 60}s`);
     }
   }
 
-  if (total == 0) return conn.reply(m.chat, tradutor.texto1, m);
+  handler._cooldowns.set(chatId, now);
 
-  const texto = `${tradutor.texto2[0]} ${await conn.getName(m.chat)}
-${tradutor.texto2[1]} ${sum}
+  const limit = parseInt(text) || participants.length;
+  const grupoActivos = activos.get(chatId) || new Map();
 
-${tradutor.texto2[2]}
-${sider.map(v => '  👉🏻 @' + v.replace(/@.+/, '')).join('\n')}
+  const fantasmas = participants
+    .slice(0, limit)
+    .filter(u => {
+      if (u.admin) return false;
+      const rawId = u.id || '';
+      const numero = rawId.split('@')[0];
+      return !grupoActivos.has(numero);
+    })
+    .map(u => ({
+      jid: u.id,
+      numero: u.id.split('@')[0],
+      ultimaVez: grupoActivos.get(u.id.split('@')[0]) || null
+    }));
 
-${tradutor.texto2[3]}`;
+  if (fantasmas.length === 0)
+    return conn.sendMessage(m.chat, { text: '✅ No hay fantasmas en el grupo.', mentions: [] }, { quoted: m });
 
-  if (isBotAdmin) {
-    conn.sendMessage(m.chat, { text: texto, mentions: sider }, { quoted: m });
-  } else {
-    conn.reply(m.chat, texto, m);
-  }
+  const lista = fantasmas.map(f => {
+    const tiempo = f.ultimaVez ? `hace ${tiempoInactivo(now - f.ultimaVez)}` : 'sin actividad registrada';
+    return `  👉🏻 @${f.numero} (${tiempo})`;
+  }).join('\n');
+
+  const texto = `👻 *Fantasmas en ${await conn.getName(m.chat)}*\n📊 Revisados: ${limit}\n\n${lista}`;
+
+  conn.sendMessage(m.chat, { text: texto, mentions: fantasmas.map(f => f.jid) }, { quoted: m });
+};
+
+handler.all = async function (m) {
+  try {
+    if (!m.isGroup || !m.sender) return;
+
+    let numero;
+    if (isLidJid(m.sender)) {
+      const resolved = await resolveJidToPhone(m.sender, this, m.chat);
+      if (!resolved) return;
+      numero = resolved;
+    } else {
+      numero = m.sender.split('@')[0];
+    }
+
+    if (!activos.has(m.chat)) activos.set(m.chat, new Map());
+    activos.get(m.chat).set(numero, Date.now());
+  } catch (e) {}
 };
 
 handler.command = /^(verfantasmas|fantasmas|sider)$/i;
 handler.tags = ['group'];
 handler.group = true;
-
 export default handler;

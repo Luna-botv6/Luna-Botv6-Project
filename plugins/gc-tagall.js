@@ -34,7 +34,7 @@ const handler = async (m, { conn, args, isOwner }) => {
     const mentionSet = new Set();
     participants.forEach(p => mentionSet.add(conn.decodeJid(p.id)));
 
-    let messageText = args.join(' ') || '*¡Atención!*';
+    let messageText = args.join(' ') || '¡Atención!';
 
     if (m.mentionedJid?.length) {
       for (const lid of m.mentionedJid) {
@@ -45,15 +45,20 @@ const handler = async (m, { conn, args, isOwner }) => {
       }
     }
 
-    let teks = `┏━━━ ⸢ Tag All ⸣ ━━━\n`;
+    let teks = `*꧁ 🌙 ¡Atención! 🌙 ꧂*\n`;
+    teks += `\n`;
+    teks += `*📢 Mensaje:*\n`;
+    teks += `\n`;
     teks += `${messageText}\n\n`;
+    teks += `👥 *Usuarios en el Grupo:*\n`;
 
     for (const jid of mentionSet) {
-      teks += `┣➥ @${jid.split('@')[0]}\n`;
+      teks += `👤 @${jid.split('@')[0]}\n`;
     }
 
-    teks += `┗━━━━━━━━━━━━━━━━\n`;
-    teks += `*└* Luna-Botv6 - 𝐁𝐨𝐭\n\n*▌│█║▌║▌║║▌║▌║▌║█*`;
+    teks += `\n`;
+    teks += `*☆――☆――☆――☆――☆*\n`;
+    teks += `✨ *Luna-botv6* ✨`;
 
     await conn.sendMessage(chatId, { text: teks, mentions: [...mentionSet] });
   } catch (e) {

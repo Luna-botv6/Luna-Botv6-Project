@@ -16,7 +16,7 @@ const handler = async (m, { conn, isOwner }) => {
       (p.lid && p.lid === jid)
     )
 
-  const filtered = users.filter(u => findUserInGroup(u.id))
+  const filtered = users.filter(u => u.warns > 0 && findUserInGroup(u.id))
   if (filtered.length === 0) return m.reply('✅ No hay usuarios con advertencias en este grupo.')
 
   let msg = '📋 *Lista de advertencias actuales:*\n\n'

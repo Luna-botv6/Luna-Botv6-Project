@@ -1,41 +1,34 @@
-import fs from 'fs';
-import { spawn } from 'child_process';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'fs'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const RESTART_FILE = '/tmp/luna-restart-notify.json'
 
-const handler = async (m, { conn, isROwner, text }) => {
-  const datas = global;
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
-  const tradutor = _translate.plugins.owner_restart;
-  
-  await m.reply(`
-🔄 ${tradutor.texto1 || 'Reiniciando el bot...'}
-⏳ El bot se reiniciará en unos segundos.
-✅ Por favor espera un momento.
-  `.trim());
-  
-  setTimeout(async () => {
-    await conn.ws.close();
-    
-    const indexPath = path.join(process.cwd(), 'index.js');
-    const args = [indexPath, ...process.argv.slice(2)];
-    
-    spawn(process.argv[0], args, {
-      detached: true,
-      stdio: 'inherit'
-    }).unref();
-    
-    process.exit(0);
-  }, 2000);
-};
+const handler = async (m, { conn }) => {
+  await m.reply('🔄 Reiniciando sistema, espera un momento...')
 
-handler.help = ['restart'];
-handler.tags = ['owner'];
-handler.command = ['restart', 'reiniciar'];
-handler.rowner = true;
+  fs.writeFileSync(RESTART_FILE, JSON.stringify({ chat: m.chat }), 'utf8')
 
-export default handler;
+  setTimeout(() => {
+    if (global.gc) global.gc()
+    process.kill(process.ppid, 'SIGTERM')
+  }, 3000)
+}
+
+handler.all = async function (m, { conn }) {
+  if (!fs.existsSync(RESTART_FILE)) return
+  try {
+    const data = JSON.parse(fs.readFileSync(RESTART_FILE, 'utf8'))
+    fs.unlinkSync(RESTART_FILE)
+    if (!data?.chat) return
+    await conn.sendMessage(data.chat, {
+      text: '✅ Sistema reiniciado exitosamente, estoy de vuelta 🌙'
+    })
+  } catch {
+  }
+}
+
+handler.help = ['restart']
+handler.tags = ['owner']
+handler.command = ['restart', 'reiniciar']
+handler.rowner = true
+
+export default handler

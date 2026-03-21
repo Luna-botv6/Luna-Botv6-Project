@@ -1,23 +1,16 @@
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { isUserMuted } from './gc-mute.js';
 
 export const all = async (m, { conn }) => {
   try {
-    if (!m.isGroup) return;
-    if (m.fromMe) return;
-    if (!global.muted || global.muted.length === 0) return;
-
-    let sender = m.sender;
-
-    if (sender.includes('@lid')) {
-      const { participants } = await getGroupDataForPlugin(conn, m.chat, sender);
-      const p = participants.find(u => u.lid === sender);
-      if (p?.id) sender = p.id;
-    }
-
-    const muteKey = `${m.chat}_${sender}`;
-
-    if (global.muted.includes(muteKey)) {
-      await conn.sendMessage(m.chat, { delete: m.key });
-    }
+    if (!m.key?.remoteJid?.endsWith('@g.us')) return;
+    if (m.key?.fromMe) return;
+    const chat = m.key.remoteJid;
+    const sender = m.key.participant || m.key.remoteJid;
+    if (!isUserMuted(chat, sender)) return;
+    const _ownerNums = (global.owner || []).map(o => String(Array.isArray(o) ? o[0] : o));
+    const _lidOwners = (global.lidOwners || []).map(x => String(x));
+    const _isOwner = _ownerNums.some(n => sender.includes(n)) || _lidOwners.some(n => sender.includes(n));
+    if (_isOwner) return;
+    await conn.sendMessage(chat, { delete: m.key });
   } catch (e) {}
 };

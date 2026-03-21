@@ -23,13 +23,10 @@ const handler = async (m, { conn, isOwner, usedPrefix, command }) => {
   const finalCheck = findUserInGroup(target)
   if (!finalCheck) return m.reply('❗ El usuario mencionado no está en el grupo.')
 
-  const warns = await removeWarning(target)
-  let messageSent = false
+  target = finalCheck.id
 
-  if (!messageSent) {
-    await m.reply(`♻️ Se eliminó una advertencia a @${target.split('@')[0]}.\n📊 Advertencias actuales: ${warns}/6`, null, { mentions: [target] })
-    messageSent = true
-  }
+  const warns = await removeWarning(target)
+  await m.reply(`♻️ Se eliminó una advertencia a @${target.split('@')[0]}.\n📊 Advertencias actuales: ${warns}/4`, null, { mentions: [target] })
 }
 
 handler.command = /^(unwarn|delwarn|deladvertencia|deladvertir)$/i

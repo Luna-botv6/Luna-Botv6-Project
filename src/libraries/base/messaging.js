@@ -52,10 +52,16 @@ export const messagingUtils = {
     try {
       m = await conn.sendMessage(jid, message, {...opt, ...options});
     } catch (e) {
-      console.error(e);
+      if (e?.data === 403 || e?.output?.statusCode === 403) { file = null; return null; }
       m = null;
     } finally {
-      if (!m) m = await conn.sendMessage(jid, {...message, [mtype]: file}, {...opt, ...options});
+      if (!m) {
+        try {
+          m = await conn.sendMessage(jid, {...message, [mtype]: file}, {...opt, ...options});
+        } catch (e2) {
+          if (e2?.data === 403 || e2?.output?.statusCode === 403) { file = null; return null; }
+        }
+      }
       file = null;
       return m;
     }
