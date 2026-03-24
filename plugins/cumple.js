@@ -221,26 +221,39 @@ handler.tags    = ['grupos'];
 handler.command = /^(cumple(años?)?|setcumple|editcumple|delcumple)$/i;
 export default handler;
 
+const CHECKER_STATE_PATH = './database/cumple_checker.json';
+
+function loadCheckerState() {
+  try {
+    if (fs.existsSync(CHECKER_STATE_PATH))
+      return JSON.parse(fs.readFileSync(CHECKER_STATE_PATH, 'utf8'));
+  } catch {}
+  return { lastChecked: null };
+}
+
+function saveCheckerState(state) {
+  try { fs.writeFileSync(CHECKER_STATE_PATH, JSON.stringify(state)); } catch {}
+}
+
 let _checkerStarted = false;
 
 export function startBirthdayChecker(conn) {
   if (_checkerStarted) return;
   _checkerStarted = true;
 
-  let _lastChecked = null;
-
   setInterval(async () => {
-    const nowUTC   = new Date();
-    const nowAR    = new Date(nowUTC.getTime() - 3 * 60 * 60 * 1000);
-    const today    = `${nowAR.getDate()}-${nowAR.getMonth() + 1}`;
+    const nowUTC = new Date();
+    const nowAR  = new Date(nowUTC.getTime() - 3 * 60 * 60 * 1000);
+    const today  = `${nowAR.getDate()}-${nowAR.getMonth() + 1}`;
+    const h      = nowAR.getHours();
 
-    if (_lastChecked === today) return;
+    if (h < 8) return;
 
-    const h = nowAR.getHours();
-    const min = nowAR.getMinutes();
-    if (h !== 8 || min >= 30) return;
+    const state = loadCheckerState();
+    if (state.lastChecked === today) return;
 
-    _lastChecked = today;
+    state.lastChecked = today;
+    saveCheckerState(state);
     const db = loadDB();
 
     for (const [groupJid, members] of Object.entries(db)) {
