@@ -214,10 +214,6 @@ chatUpdate.messages = validMessages;
         const isMentioned = m.message?.extendedTextMessage?.contextInfo?.mentionedJid?.includes(this.user.jid);
         const isQuotedMention = m.message?.extendedTextMessage?.contextInfo?.participant === this.user.jid;
         if (isMentioned || isQuotedMention) {
-          m.mentionedJid = m.mentionedJid || [];
-          if (!m.mentionedJid.includes(this.user.jid)) {
-            m.mentionedJid.push(this.user.jid);
-          }
           m.isMentionedBot = true;
         }
       }
