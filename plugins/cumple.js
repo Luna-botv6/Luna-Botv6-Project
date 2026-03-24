@@ -232,7 +232,12 @@ function loadCheckerState() {
 }
 
 function saveCheckerState(state) {
-  try { fs.writeFileSync(CHECKER_STATE_PATH, JSON.stringify(state)); } catch {}
+  try {
+    if (!fs.existsSync('./database')) fs.mkdirSync('./database', { recursive: true });
+    fs.writeFileSync(CHECKER_STATE_PATH, JSON.stringify(state));
+  } catch (e) {
+    console.error('[cumple] Error guardando estado:', e.message);
+  }
 }
 
 let _checkerStarted = false;
