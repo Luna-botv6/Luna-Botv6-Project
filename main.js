@@ -31,6 +31,7 @@ import { isCleanerEnabled } from './lib/cleaner-config.js';
 import { startAutoCleanService, startGroupCleanService } from './auto-cleaner.js';
 import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.js';
 import mentionListener from './plugins/game-ialuna.js';
+import { startBirthdayChecker } from './plugins/cumple.js';
 import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
@@ -316,8 +317,6 @@ const ownerConfig = getOwnerFunction();
 if (ownerConfig.modopublico) global.conn.public = true;
 if (ownerConfig.auread) global.opts['autoread'] = true;
 if (ownerConfig.modogrupos) global.conn.modogrupos = true;
-conn.ev.on('connection.update', connectionUpdate);
-
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 
 if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
@@ -492,10 +491,10 @@ if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
     }, 5000);
 }
 
-conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 if (isCleanerEnabled()) runCleaner();
 
 startAutoCleanService();
+startBirthdayChecker(global.conn);
 
 if (!opts['test']) {
   if (global.db) {
@@ -513,12 +512,10 @@ async function clearTmp() {
   try {
     for (const dirname of tmp) {
       if (!existsSync(dirname)) continue;
-      
       const files = await readdir(dirname);
       await Promise.all(files.map(async file => {
         const filePath = join(dirname, file);
         const stats = await stat(filePath);
-        
         if (stats.isFile() && (Date.now() - stats.mtimeMs >= 1000 * 60 * 30)) {
           await unlink(filePath);
           secureLogger.info(`Archivo temporal eliminado: ${file}`);
@@ -529,6 +526,36 @@ async function clearTmp() {
     secureLogger.error('Error en clearTmp:', err.message);
   }
 }
+
+async function clearLibrariesTmp() {
+  const dir = join('./src/libraries/tmp');
+  try {
+    if (!existsSync(dir)) return;
+    const files = await readdir(dir);
+    const MAX_AGE = 1000 * 60 * 60 * 24;
+    let deleted = 0;
+    await Promise.all(files.map(async file => {
+      const filePath = join(dir, file);
+      try {
+        const stats = await stat(filePath);
+        if (stats.isFile() && (Date.now() - stats.mtimeMs >= MAX_AGE)) {
+          await unlink(filePath);
+          deleted++;
+        }
+      } catch {}
+    }));
+    if (deleted > 0) secureLogger.info(`[libraries/tmp] ${deleted} archivo(s) eliminado(s)`);
+  } catch (err) {
+    secureLogger.error('Error en clearLibrariesTmp:', err.message);
+  }
+}
+
+setInterval(async () => {
+  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
+  await clearLibrariesTmp();
+}, 1000 * 60 * 60 * 24);
+
+clearLibrariesTmp();
 
 if (privacyConfig.dataRetention.enabled) {
     setInterval(() => {
@@ -574,10 +601,6 @@ let codigoSolicitado = false;
 async function connectionUpdate(update) {
   const { connection, lastDisconnect, isNewLogin, qr } = update;
   
-  if (connection === 'close') {
-    console.log(chalk.red('[ ✖ ] Conexión cerrada'));
-  }
-
   stopped = connection;
   if (isNewLogin) conn.isInit = true;
 
@@ -597,26 +620,30 @@ async function connectionUpdate(update) {
 
 if (connection === 'open') {
     stopped = 'open';
-    console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
-    console.log(chalk.green('[ ℹ️ ] Reinicializando listeners...'));
+    if (!global._connectedLogged) {
+      global._connectedLogged = true;
+      console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
+    }
     
     setTimeout(async () => {
       try {
         await global.reloadHandler(false);
-        console.log(chalk.green('[ ✅ ] Listeners reinicializados'));
       } catch (e) {
         console.error(chalk.red('[ ✖ ] Error reinicializando listeners:'), e.message);
       }
     }, 2000);
     
-    setTimeout(async () => {
-      try {
-        const { autoreconnectSubbots } = await import('./plugins/subbot-reconeccion.js');
-        await autoreconnectSubbots(conn);
-      } catch (error) {
-        console.error(chalk.red('❌ Error en auto-reconexión:'), error.message);
-      }
-    }, 5000);
+    if (!global._subbotReconnectDone) {
+      global._subbotReconnectDone = true;
+      setTimeout(async () => {
+        try {
+          const { autoreconnectSubbots } = await import('./plugins/subbot-reconeccion.js');
+          await autoreconnectSubbots(conn);
+        } catch (error) {
+          console.error(chalk.red('❌ Error en auto-reconexión:'), error.message);
+        }
+      }, 5000);
+    }
     codigoSolicitado = false;
 
     if (opcion === '2' && pairingTimeout) {
@@ -625,9 +652,9 @@ if (connection === 'open') {
     }
 
   } else if (connection === 'connecting') {
-    console.log(chalk.yellow('[ ℹ️ ] Conectando a WhatsApp...'));
 
   } else if (connection === 'close') {
+    global._connectedLogged = false;
     console.log(chalk.red('[ ✖ ] Conexión cerrada'));
   }
 
@@ -735,10 +762,8 @@ conn.ev.on('messages.upsert', async (msg) => {
 
   if (restatConn || !global.mentionListenerInitialized) {
     try {
-      console.log(chalk.yellow('[ 🤖 ] Inicializando listener de IA...'));
       mentionListener(conn);
       global.mentionListenerInitialized = true;
-      console.log(chalk.green('[ ✅ ] Listener de IA inicializado correctamente'));
     } catch (e) {
       console.error(chalk.red('[ ✖ ] Error inicializando mentionListener:'), e);
       global.mentionListenerInitialized = false;
@@ -746,7 +771,6 @@ conn.ev.on('messages.upsert', async (msg) => {
   }
   
   isInit = false;
-  console.log(chalk.green('[ ✅ ] Handler recargado correctamente'));
   return true;
 };
 

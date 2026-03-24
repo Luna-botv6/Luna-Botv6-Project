@@ -21,6 +21,7 @@ import { ensureUserData, ensureBotSettings } from './lib/funcion/databaseManager
 import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
+import { getGroupDataForPlugin } from './lib/funcion/pluginHelper.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
 
 EventEmitter.defaultMaxListeners = 30;
@@ -230,9 +231,8 @@ chatUpdate.messages = validMessages;
         const time = 1000 * 5;
         const previousID = queque[queque.length - 1];
         queque.push(m.id || m.key.id);
-        setInterval(async function () {
-          if (queque.indexOf(previousID) === -1) clearInterval(this);
-          await delay(time);
+        const _interval = setInterval(function () {
+          if (queque.indexOf(previousID) === -1) clearInterval(_interval);
         }, time);
       }
 
@@ -409,15 +409,13 @@ chatUpdate.messages = validMessages;
           }
 
           if (m.isGroup && chat?.modoadmin && !isOwner && !isROwner) {
-  let userIsAdmin = false;
-  try {
-    const { getGroupDataForPlugin } = await import('./lib/funcion/pluginHelper.js');
-    const groupData = await getGroupDataForPlugin(this, m.chat, m.sender);
-    userIsAdmin = groupData.isAdmin;
-  } catch (e) {}
-  
-  if (!userIsAdmin) continue;
-}
+            let userIsAdmin = false;
+            try {
+              const groupData = await getGroupDataForPlugin(this, m.chat, m.sender);
+              userIsAdmin = groupData.isAdmin;
+            } catch (e) {}
+            if (!userIsAdmin) continue;
+          }
 
           if (plugin.rowner && !isROwner) {
             fail('rowner', m, this);
@@ -439,11 +437,11 @@ chatUpdate.messages = validMessages;
             fail('group', m, this);
             continue;
           }
-          if (plugin.botAdmin && m.isGroup) {
+          if (plugin.botAdmin && m.isGroup && !isBotAdmin) {
             fail('botAdmin', m, this);
             continue;
           }
-          if (plugin.admin && m.isGroup) {
+          if (plugin.admin && m.isGroup && !isAdmin) {
             fail('admin', m, this);
             continue;
           }
@@ -473,6 +471,16 @@ chatUpdate.messages = validMessages;
             continue;
           }
 
+          let _isAdmin = false, _isBotAdmin = false, _isRAdmin = false;
+          if (m.isGroup) {
+            try {
+              const _gd = await getGroupDataForPlugin(this, m.chat, m.sender);
+              _isAdmin    = _gd.isAdmin;
+              _isBotAdmin = _gd.isBotAdmin;
+              _isRAdmin   = _gd.groupMetadata?.participants?.find(p => this.decodeJid(p.id) === this.decodeJid(m.sender))?.admin === 'superadmin';
+            } catch (e) {}
+          }
+
           const extra = {
             match: [prefixUsed],
             usedPrefix: prefixUsed,
@@ -488,9 +496,9 @@ chatUpdate.messages = validMessages;
             bot: {},
             isROwner,
             isOwner,
-            isRAdmin: false,
-            isAdmin: false,
-            isBotAdmin: false,
+            isRAdmin: _isRAdmin,
+            isAdmin: _isAdmin,
+            isBotAdmin: _isBotAdmin,
             isPrems,
             chatUpdate,
             __dirname: name.startsWith('custom-') ? customCommandsDir : ___dirname,
@@ -584,7 +592,7 @@ export async function participantsUpdate({ id, participants, action }) {
 
     const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
     const _translate = await loadTranslation(idioma);
-    const tradutor = _translate.handler.participantsUpdate;
+    const tradutor = _translate?.handler?.participantsUpdate ?? {};
 
     await handleParticipantsUpdate(
       conn,
