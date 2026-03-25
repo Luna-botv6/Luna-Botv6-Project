@@ -248,16 +248,10 @@ if (msgTimestamp < connectionTime) {
         useClones: false
     }),
 
-    cachedGroupMetadata: (jid) => {
-        const chat = global.conn.chats[jid];
-        if (chat) {
-            return {
-                id: chat.id,
-                subject: chat.subject,
-                participants: chat.participants?.length || 0
-            };
-        }
-        return {};
+    cachedGroupMetadata: async (jid) => {
+        const cached = global.groupCache?.get(jid);
+        if (cached?.data?.groupMetadata?.participants) return cached.data.groupMetadata;
+        return null;
     },
 };
 
@@ -821,6 +815,38 @@ global.reload = async (_ev, filename) => {
 Object.freeze(global.reload);
 watch(pluginFolder, global.reload);
 await global.reloadHandler();
+
+conn.ev.on('groups.update', async ([event]) => {
+  try {
+    const metadata = await conn.groupMetadata(event.id);
+    if (global.groupCache && metadata) {
+      const existing = global.groupCache.get(event.id);
+      const participants = existing?.data?.participants || (metadata.participants || []).map(p => ({
+        id: p.id || p.jid, lid: p.lid || null, admin: p.admin || null
+      }));
+      global.groupCache.set(event.id, {
+        data: { groupMetadata: metadata, participants },
+        timestamp: Date.now()
+      });
+    }
+  } catch {}
+});
+
+conn.ev.on('group-participants.update', async (event) => {
+  try {
+    const metadata = await conn.groupMetadata(event.id);
+    if (global.groupCache && metadata) {
+      const participants = (metadata.participants || []).map(p => ({
+        id: p.id || p.jid, lid: p.lid || null, admin: p.admin || null
+      }));
+      global.groupCache.set(event.id, {
+        data: { groupMetadata: metadata, participants },
+        timestamp: Date.now()
+      });
+    }
+  } catch {}
+});
+
 manejarEventosGrupo(conn);
 startGroupCleanService();
 async function _quickTest() {
