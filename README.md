@@ -628,45 +628,54 @@ Luna-Botv6-Project/
 
 ### 📋 Guía paso a paso — BoxMine
 
-**Paso 1 — Crear cuenta en BoxMine Dash**
+> [!NOTE]
+> En BoxMine **no se usa `npm start` ni comandos de terminal**. Todo se maneja desde la consola del panel web. Seguí estos pasos exactos.
 
-Ingresá a [dash.boxmineworld.com/register](https://dash.boxmineworld.com/register) y completá:
-- Usuario, correo y contraseña
-- Verificación Cloudflare
-- Confirmá tu correo electrónico
+---
 
-**Paso 2 — Crear un servidor Node.js**
+**Paso 1 — Crear cuenta**
 
-Desde el panel, creá un nuevo servicio seleccionando **Node.js** como tipo de servidor.
+Ingresá a [dash.boxmineworld.com/register](https://dash.boxmineworld.com/register), completá usuario, correo, contraseña y la verificación. Confirmá tu correo.
 
-**Paso 3 — Subir los archivos**
+---
 
-En el **File Manager** del panel, subí todos los archivos del bot. Podés usar el botón de upload o conectarte por SFTP.
+**Paso 2 — Crear el servidor**
 
-**Paso 4 — Instalar dependencias**
-
-En la consola del panel ejecutá:
-```bash
-npm install
-```
-
-**Paso 5 — Configurar el bot**
-
-Editá `config.js` directamente desde el File Manager del panel con tus datos.
-
-**Paso 6 — Iniciar el bot**
-
-```bash
-npm start
-```
-
-Escaneá el QR que aparece en la consola del panel con tu WhatsApp.
+1. En el panel hacé clic en **Crear Servidor**
+2. En la lista de ubicaciones elegí **Free-N6** (si hay lugar disponible, es el nodo free recomendado)
+3. En **Productos** seleccioná **Free-Wa** — es el plan gratuito para bots de WhatsApp
+4. En el selector de **Software** buscá y elegí **Luna-Botv6**
+5. Poné un nombre al servidor (ej: `Botluna`) y hacé clic en **Crear Servidor**
 
 > [!TIP]
-> **Recomendación:** Usá el modo de código de 8 dígitos en lugar de QR si tu servidor no muestra bien el código QR. Agregá tu número en `config.js` y reiniciá.
+> Si Free-N6 no tiene lugar disponible, probá con **Free-N4** o **Free**. El nodo N6 suele ser el más estable para bots.
 
-> [!NOTE]
-> Si el bot se desconecta, BoxMine reinicia el proceso automáticamente. No necesitás hacer nada.
+---
+
+**Paso 3 — Entrar al servidor y vincularlo**
+
+1. En tu lista de servidores, hacé clic en **Gestionar** del servidor recién creado
+2. Una vez dentro del panel del servidor, tocá las **tres líneas** (☰) arriba a la derecha
+3. Seleccioná **Consola**
+4. Escribí `start` en la consola y presioná Enter
+5. Esperá que se descarguen todas las dependencias automáticamente
+
+Una vez que termina la instalación verás en consola:
+
+```
+Iniciando Luna-Botv6...
+Elegí un método para vincular:
+1. Código QR
+2. Código de 8 dígitos
+```
+
+6. Escribí `1` para QR o `2` para código de 8 dígitos
+   - Si elegís **2**, escribí tu número **sin espacios ni +** (ej: `5493483511079`)
+   - El bot te enviará un código de 8 dígitos a tu WhatsApp
+   - Ingresalo en WhatsApp: **Configuración → Dispositivos vinculados → Vincular con número**
+
+> [!IMPORTANT]
+> En la consola de BoxMine **solo escribís números** para elegir opciones al vincular. No uses `npm start` ni otros comandos — el panel lo gestiona todo automáticamente.
 
 ---
 
