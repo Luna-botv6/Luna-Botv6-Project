@@ -647,7 +647,7 @@ Ingresá a [dash.boxmineworld.com/register](https://dash.boxmineworld.com/regist
 4. Especificaciones: WhatsApp bot **( Luna-Botv6 )**
 5. En la lista de ubicaciones elegí **Free-N6** (si hay lugar disponible, es el nodo free recomendado)
 6. desliza hacia abajo seleccióna **crear servidor**
-7. 
+   
 
 > [!TIP]
 > Si Free-N6 no tiene lugar disponible, probá con **Free-N4** o **Free**. El nodo N6 suele ser el más estable para bots.
