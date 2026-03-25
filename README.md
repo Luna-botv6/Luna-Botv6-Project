@@ -101,75 +101,62 @@ const LunaBot = {
 </div>
 
 ---
-
 ## 🆕 Últimas Actualizaciones
+
 <table>
 <tr>
 <td>
 
-## ✅ 01/02/2026 – Sincronización Total y Optimización Completa del Sistema 🚀
+## ✅ 25/03/2026 – Optimización Profunda del Core del Bot 🚀
 
-### 🔧 Arquitectura Centralizada
-- ✅ Sistema de configuración único y coordinado (configuracion.json)
-- ✅ Sincronización automática entre database.json y global.db.data
-- ✅ Detección de admin perfecta incluso con números en formato LID
-- ✅ Conversión automática LID → Números reales en todos los sistemas
-- ✅ Caché inteligente con validación de timestamp
+### 🧠 handler.js
+- ✅ Checks de `admin` y `botAdmin` corregidos (estaban invertidos, siempre fallaban)
+- ✅ `isAdmin` e `isBotAdmin` ahora se calculan en tiempo real para cada usuario en `extra`
+- ✅ Eliminado `import()` dinámico dentro del loop de plugins (mejora arranque)
+- ✅ Corregido memory leak en sistema de cola (`setInterval` sin referencia)
+- ✅ Eliminado setter ilegal de `mentionedJid` que causaba crash en protobuf
+- ✅ `participantsUpdate` con optional chaining para evitar crash por idioma faltante
 
-### 🎨 Interfaz y Diseño
-- ✅ Nueva bienvenida elegante con emojis ꧁ 🌙 ✨ ꧂
-- ✅ Comando tagall mejorado con diseño profesional
-- ✅ Mensajes de advertencia y alertas optimizados
-- ✅ Bienvenidas y despedidas con contador exacto de miembros
+### ⚡ main.js
+- ✅ `cachedGroupMetadata` corregido — ahora Baileys usa el caché real de grupos
+- ✅ Listeners `groups.update` y `group-participants.update` implementados según la doc de Baileys
+- ✅ Eliminado listener duplicado de `connection.update` que causaba doble ejecución
+- ✅ Logs de consola limpiados — sin spam al iniciar ni al reconectar
+- ✅ Limpieza automática de `src/libraries/tmp` cada 24 horas
+- ✅ Reconexión de subbots y log "Conectado" con flag para evitar duplicados
 
-### ⚡ Optimización de Rendimiento
-- ✅ Código reducido 67% (elimininación de funciones redundantes)
-- ✅ Eliminados todos los console.log y console.error innecesarios
-- ✅ Reducción significativa de consumo de RAM
-- ✅ Manejo eficiente de caché con TTL dinámico
-- ✅ Sin spam en consola, ejecución silenciosa
+### 🔐 pluginHelper.js
+- ✅ `isAdmin` ya no se cachea por grupo — se calcula por sender en cada llamada
+- ✅ Migración automática de JSON con formato viejo (número sin `@`) al arrancar
+- ✅ Validación del JSON de admins — se auto-repara si está corrupto
+- ✅ Fallback al caché en disco cuando WhatsApp devuelve `rate-overlimit`
+- ✅ Deduplicación de queries a `groupMetadata` con mapa de promesas en vuelo
+- ✅ Escritura a disco cada 10s solo cuando hay cambios (dirty flag)
 
-### 🚫 Sistemas de Protección Mejorados
-- ✅ AntiTóxico con detección de patrones y palabras ofensivas
-- ✅ AntiEnlaces con filtros de URLs y redes sociales
-- ✅ Sistema de advertencias coordinado y sincronizado
-- ✅ Menciones correctas incluso en advertencias y alertas
-- ✅ Bans automáticos después de máximo de advertencias
+### 🔗 lid-resolver.js
+- ✅ Resolución LID→JID en O(1) con caché en memoria
+- ✅ Fallback a `groupCache` cuando el LID no está en caché aún
+- ✅ Fallback final a `conn.contacts` como último recurso
+- ✅ Eliminado log de warning innecesario en consola
 
-### 🔐 Detección de Admin Corregida
-- ✅ Identifica admins correctamente en TODOS los sistemas
-- ✅ Soporta números en formato LID y @s.whatsapp.net
-- ✅ Menciones precisas en avisos y alertas
-- ✅ Participantes correctos sin duplicados o undefined
+### 👥 groupMetadata.js
+- ✅ Corregido bug crítico: `addAdminToCache` recibía número sin `@` — nunca coincidía
+- ✅ Guarda campo `lid` en participants para resolución correcta
+- ✅ `isBotAdmin` con check explícito igual que `pluginHelper`
+- ✅ Eliminado `requestDelay` redundante con el sistema de deduplicación
 
-### 📊 Sincronización de Configuración
-- ✅ Welcome/Goodbye guarda y mantiene estado al reiniciar
-- ✅ AntiLink, AntiTóxico, Audios, etc. persisten correctamente
-- ✅ Configuración centralizada en ./database/configuracion.json
-- ✅ Backup automático de configuraciones disponible
-- ✅ Limpieza de configuraciones antiguas de grupos inactivos
-
-### 🎯 Coordinación Total
-- ✅ handler.js integrado con getConfig() para lecturas correctas
-- ✅ groupMetadata.js sincronizado sin spam triple
-- ✅ pluginHelper.js convierte LID a números reales automáticamente
-- ✅ on-off-antitoxi.js integrado con pluginHelper
-- ✅ on-off-antilinks.js integrado con pluginHelper
+### 🎂 cumple.js
+- ✅ Estado del checker persistido en disco (`cumple_checker.json`)
+- ✅ Ventana de envío ampliada — ya no falla si el bot se reinicia después de las 8:00 AM
+- ✅ El archivo de estado se crea automáticamente la primera vez
 
 ### 📈 Resultados
-- ✅ 0 conflictos entre sistemas
-- ✅ 100% precisión en detección de admin
-- ✅ 100% sincronización de configuración
-- ✅ 75% menos consumo de RAM
-- ✅ Cero bugs de duplicación o spam
-- ✅ Bienvenidas y despedidas funcionan perfectamente al reiniciar
+- ✅ Detección de admin 100% correcta en grupos grandes con LID
+- ✅ Cero `rate-overlimit` por queries duplicadas a WhatsApp
+- ✅ Menor consumo de RAM — una sola fuente de verdad para metadata de grupos
+- ✅ Baileys aprovechado al máximo según su documentación oficial
+- ✅ Auto-reparación del JSON de admins sin intervención manual
 
-### 🔄 Migración Recomendada
-- ✅ Eliminar carpeta `database` completa
-- ✅ Eliminar archivo `database.json` de la raíz
-- ✅ Reiniciar el bot (npm start)
-- ✅ El bot recreará todo automáticamente sin conflictos
-  
 </td>
 </tr>
 </table>
