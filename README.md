@@ -642,10 +642,12 @@ Ingresá a [dash.boxmineworld.com/register](https://dash.boxmineworld.com/regist
 **Paso 2 — Crear el servidor**
 
 1. En el panel hacé clic en **Crear Servidor**
-2. En la lista de ubicaciones elegí **Free-N6** (si hay lugar disponible, es el nodo free recomendado)
-3. En **Productos** seleccioná **Free-Wa** — es el plan gratuito para bots de WhatsApp
-4. En el selector de **Software** buscá y elegí **Luna-Botv6**
-5. Poné un nombre al servidor (ej: `Botluna`) y hacé clic en **Crear Servidor**
+2. Poné un nombre al servidor **(ej: Botluna)**
+3. secciónen de: Software / Juegos/ **WhatsApp-bot**
+4. Especificaciones: WhatsApp bot **( Luna-Botv6 )**
+5. En la lista de ubicaciones elegí **Free-N6** (si hay lugar disponible, es el nodo free recomendado)
+6. desliza hacia abajo seleccióna **crear servidor**
+7. 
 
 > [!TIP]
 > Si Free-N6 no tiene lugar disponible, probá con **Free-N4** o **Free**. El nodo N6 suele ser el más estable para bots.
@@ -657,7 +659,7 @@ Ingresá a [dash.boxmineworld.com/register](https://dash.boxmineworld.com/regist
 1. En tu lista de servidores, hacé clic en **Gestionar** del servidor recién creado
 2. Una vez dentro del panel del servidor, tocá las **tres líneas** (☰) arriba a la derecha
 3. Seleccioná **Consola**
-4. Escribí `start` en la consola y presioná Enter
+4. Seleccioná `start` en la consola 
 5. Esperá que se descarguen todas las dependencias automáticamente
 
 Una vez que termina la instalación verás en consola:
@@ -670,7 +672,7 @@ Elegí un método para vincular:
 ```
 
 6. Escribí `1` para QR o `2` para código de 8 dígitos
-   - Si elegís **2**, escribí tu número **sin espacios ni +** (ej: `5493483511079`)
+   - Si elegís **2**, escribí tu número **sin espacios** (ej: `+5493483511079`)
    - El bot te enviará un código de 8 dígitos a tu WhatsApp
    - Ingresalo en WhatsApp: **Configuración → Dispositivos vinculados → Vincular con número**
 
