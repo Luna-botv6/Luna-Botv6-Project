@@ -56,7 +56,8 @@ handler.all = async function (m, { conn }) {
       'vivan los novios': '01J674D3S12JTFDETTNF12V4W8.mp3',
       'gatito|gato|oiia|oia|uiia': 'gatoxd.mp3',
       'free fire|noche de free fire': 'hoy-es-noche-de-free-fire-made-with-Voicemod.mp3',
-      'pasa pack': '01J6735MY23DV6ES9XHBP06K9R.mp3'
+      'pasa pack': '01J6735MY23DV6ES9XHBP06K9R.mp3',
+      'la bebesita|la bebecita|la bbsita|santurrona': 'la-bebecita-saturado.mp3'
     }
 
     const lower = text.toLowerCase()
