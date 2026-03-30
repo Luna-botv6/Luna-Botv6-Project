@@ -57,7 +57,8 @@ handler.all = async function (m, { conn }) {
       'gatito|gato|oiia|oia|uiia': 'gatoxd.mp3',
       'free fire|noche de free fire': 'hoy-es-noche-de-free-fire-made-with-Voicemod.mp3',
       'pasa pack': '01J6735MY23DV6ES9XHBP06K9R.mp3',
-      'la bebesita|la bebecita|la bbsita|santurrona': 'la-bebecita-saturado.mp3'
+      'la bebesita|la bebecita|la bbsita|santurrona': 'la-bebecita-saturado.mp3',
+      '5 noche con mi tío|5 noches con mi tio|5 noches con alfredo|fainas and freddy': '5-noches-con-mi-tio.mp3'
     }
 
     const lower = text.toLowerCase()
