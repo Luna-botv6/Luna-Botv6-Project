@@ -28,21 +28,31 @@ const handler = async (m, { conn, usedPrefix, isOwner, args, command }) => {
 
   let user = null;
 
-  if (m.mentionedJid && m.mentionedJid[0]) {
-    const mention = m.mentionedJid[0];
-    user = resolveLidToId(mention) || mention;
+  const botJid = conn.decodeJid(conn.user.id);
+
+  if (m.mentionedJid && m.mentionedJid.length) {
+    const filtered = m.mentionedJid.filter(jid => conn.decodeJid(jid) !== botJid);
+    if (filtered.length) {
+      const mention = filtered[0];
+      user = resolveLidToId(mention) || mention;
+    }
   } else if (m.quoted && m.quoted.sender) {
     const quotedSender = m.quoted.sender;
     user = resolveLidToId(quotedSender) || quotedSender;
   } else if (m.text) {
     const cleanText = m.text.replace(/[^0-9]/g, '');
-    if (cleanText.length < 11 || cleanText.length > 15) return m.reply(tradutor.texto2);
-    user = cleanText + '@s.whatsapp.net';
+    if (cleanText.length >= 11 && cleanText.length <= 15) {
+      user = cleanText + '@s.whatsapp.net';
+    }
   }
 
   if (!user) {
     const msg = `${tradutor.texto1[0]} ${usedPrefix}quitaradmin @tag*\n*┠≽ ${usedPrefix}quitaradmin ${tradutor.texto1[1]}`;
     return m.reply(msg, m.chat, { mentions: conn.parseMention(msg) });
+  }
+
+  if (conn.decodeJid(user) === botJid) {
+    return m.reply('❌ No puedo quitarme admin a mí mismo 😅');
   }
 
   const decodedUser = conn.decodeJid(user);
@@ -58,9 +68,7 @@ const handler = async (m, { conn, usedPrefix, isOwner, args, command }) => {
 
   try {
     await conn.groupParticipantsUpdate(m.chat, [user], 'demote');
-    
     clearGroupCache(m.chat);
-    
     await m.reply(tradutor.texto3.replace(/@user/g, `@${user.split('@')[0]}`), null, { mentions: [user] });
   } catch (e) {
     console.error(e);
