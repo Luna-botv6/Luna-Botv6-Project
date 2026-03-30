@@ -34,7 +34,7 @@ handler.all = async function (m, { conn }) {
     if (!audiosEnabled) return
 
     const audios = {
-      'hola': '01J673CQ9ZE93TRQKCKN9Q8Z0M.mp3',
+      'hola': 'holis.mp3',
       'que no': 'elmo-si-o-no.mp3',
       'anadieleimporta|a nadie le importa': '01J6734W48PG8EA14QW517QR2K.mp3',
       'araara|ara ara': '01J672TYT2TFVG5NT5QVPJ8XHX.mp3',
