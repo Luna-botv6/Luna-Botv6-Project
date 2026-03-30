@@ -52,7 +52,7 @@ handler.all = async function (m, { conn }) {
       'te amo|teamo': '01J6748B0RYBJWX5TBMWQZYX95.mp3',
       'siu|siiuu|siuuu': '01J6747RFN09GR42AXY18VFW10.mp3',
       'uwu': '01J674A7N7KNER6GY6FCYTTZSR.mp3',
-      'yamete|yamete kudasai': '01J674DR0CB7BD43HHBN1CBBC8.mp3',
+      'yamete|yamete kudasai': 'yamete-kudasai-ah-made-with-Voicemod.mp3',
       'vivan los novios': '01J674D3S12JTFDETTNF12V4W8.mp3',
       'gatito|gato|oiia|oia|uiia': 'gatoxd.mp3',
       'free fire|noche de free fire': 'hoy-es-noche-de-free-fire-made-with-Voicemod.mp3',
