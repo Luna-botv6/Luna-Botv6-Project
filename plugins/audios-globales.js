@@ -79,6 +79,7 @@ handler.all = async function (m, { conn }) {
       'yamete|yamete kudasai': '01J674DR0CB7BD43HHBN1CBBC8.mp3',
       'vivan los novios': '01J674D3S12JTFDETTNF12V4W8.mp3',
       'gatito|gato|oiia|oia|uiia': 'gatoxd.mp3',
+      'free fire|noche de free fire': 'AUD-20260330-WA0087.mp3',
       'pasa pack': '01J6735MY23DV6ES9XHBP06K9R.mp3'
     }
 
