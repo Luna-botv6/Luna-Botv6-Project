@@ -37,7 +37,7 @@ handler.all = async function (m, { conn }) {
       'hola': 'holis.mp3',
       'que no': 'elmo-si-o-no.mp3',
       'anadieleimporta|a nadie le importa': '01J6734W48PG8EA14QW517QR2K.mp3',
-      'araara|ara ara': '01J672TYT2TFVG5NT5QVPJ8XHX.mp3',
+      'araara|ara ara': 'ara-ara_NGiqCMS.mp3',
       'miarda de bot|mierda de bot|mearda de bot': '01J673T2Q92H3A0AW5B8RHA2N0.mp3',
       'bañate': '01J672VZBZ488TCVYA7KBB3TFG.mp3',
       'baneado': '01J672WYXHW6JM3T8PCNQHH6MN.mp3',
