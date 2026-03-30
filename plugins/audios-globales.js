@@ -35,7 +35,7 @@ handler.all = async function (m, { conn }) {
 
     const audios = {
       'hola': '01J673CQ9ZE93TRQKCKN9Q8Z0M.mp3',
-      'que no': '01J6745EH5251SV6HT327JJW9G.mp3',
+      'que no': 'elmo-si-o-no.mp3',
       'anadieleimporta|a nadie le importa': '01J6734W48PG8EA14QW517QR2K.mp3',
       'araara|ara ara': '01J672TYT2TFVG5NT5QVPJ8XHX.mp3',
       'miarda de bot|mierda de bot|mearda de bot': '01J673T2Q92H3A0AW5B8RHA2N0.mp3',
