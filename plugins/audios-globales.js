@@ -11,51 +11,27 @@ const handler = (m) => m
 
 handler.all = async function (m, { conn }) {
   try {
-    if (!m || m.fromMe || m.isBaileys || !m.id) {
-      return
-    }
-    if (!conn?.user) {
-      return
-    }
-    if (!m.chat.endsWith('@g.us')) {
-      return
-    }
+    if (!m || m.fromMe || m.isBaileys || !m.id) return
+    if (!conn?.user) return
+    if (!m.chat.endsWith('@g.us')) return
 
     const text = (m.text || '').trim()
-    if (!text) {
-      return
-    }
-
+    if (!text) return
 
     const sinPrefijoActivo = getSinPrefijo(m.chat)
-    if (sinPrefijoActivo) {
-      return
-    }
+    if (sinPrefijoActivo) return
 
     const first = text.trim().split(/\s+/)[0]
     const prefijos = ['.', '#', '/', '!', '?', '$', '%', '&', '*']
-    if (prefijos.includes(first[0])) {
-      return
-    }
-    if (m.isCommand) {
-      return
-    }
-    if (m.commandSinPrefijo) {
-      return
-    }
-
-    if (text.length < 2) {
-      return
-    }
+    if (prefijos.includes(first[0])) return
+    if (m.isCommand) return
+    if (m.commandSinPrefijo) return
+    if (text.length < 2) return
 
     const chat = getConfig(m.chat) || {}
     const audiosEnabled = chat.audios !== undefined ? chat.audios : true
-    if (chat.isBanned) {
-      return
-    }
-    if (!audiosEnabled) {
-      return
-    }
+    if (chat.isBanned) return
+    if (!audiosEnabled) return
 
     const audios = {
       'hola': '01J673CQ9ZE93TRQKCKN9Q8Z0M.mp3',
@@ -79,7 +55,7 @@ handler.all = async function (m, { conn }) {
       'yamete|yamete kudasai': '01J674DR0CB7BD43HHBN1CBBC8.mp3',
       'vivan los novios': '01J674D3S12JTFDETTNF12V4W8.mp3',
       'gatito|gato|oiia|oia|uiia': 'gatoxd.mp3',
-      'free fire|noche de free fire': 'freefire.mp3',
+      'free fire|noche de free fire': 'hoy-es-noche-de-free-fire-made-with-Voicemod.mp3',
       'pasa pack': '01J6735MY23DV6ES9XHBP06K9R.mp3'
     }
 
@@ -94,29 +70,19 @@ handler.all = async function (m, { conn }) {
       }
     }
 
-    if (!matchedFile) {
-      return
-    }
-
+    if (!matchedFile) return
 
     const audioUrl = `${BASE}/${encodeURIComponent(matchedFile)}`
-
     const res = await fetch(audioUrl)
-    if (!res.ok) {
-      return
-    }
-
+    if (!res.ok) return
 
     const mp3Buffer = Buffer.from(await res.arrayBuffer())
-
     const oggBuffer = await convertToOgg(mp3Buffer)
 
     await conn.sendPresenceUpdate('recording', m.chat)
     await new Promise(res => setTimeout(res, 1200))
 
-    if (!conn?.user) {
-      return
-    }
+    if (!conn?.user) return
 
     await conn.sendMessage(m.chat, { audio: oggBuffer, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: m })
 
@@ -142,6 +108,10 @@ function convertToOgg(mp3Buffer) {
     ffmpeg(input)
       .inputFormat('mp3')
       .audioCodec('libopus')
+      .audioChannels(1)
+      .audioFrequency(48000)
+      .audioBitrate('128k')
+      .outputOptions(['-application voip', '-frame_duration 20', '-packet_loss 0'])
       .format('ogg')
       .on('error', reject)
       .pipe(output)
