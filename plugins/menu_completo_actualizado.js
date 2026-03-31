@@ -410,6 +410,20 @@ ${readMore}
 ┃ 🧹 .limpiargrupos · Sale de grupos vacíos
 ╰━━━━━━━━━━━━━━━━━━━━━╯
 
+╭━━━『 🤖 LUNA IA 』━━━╮
+┃ Hablame natural mencionandome
+┃ sin necesidad de comandos 💜
+┃
+┃ 🎮 ${usedPrefix}iamenu · ver todo lo que hago
+┃
+┃ Ejemplos rapidos:
+┃ › @Luna veo veo
+┃ › @Luna clima de tu ciudad
+┃ › @Luna activa el modoadmin
+┃ › @Luna genera una imagen
+┃ › @Luna mutea a @usuario
+╰━━━━━━━━━━━━━━━━━━━╯
+
 ╭━━━━━━━━━━━━━━━━━━━╮
 ┃  🌙 *LUNA BOT* 🌙
 ┃  Creado con ❤️
@@ -435,6 +449,19 @@ END:VCARD`
       caption: str,
       mentions: [m.sender]
     }, { quoted: fkontak })
+
+    await conn.sendButton(
+      m.chat,
+      '🤖 *Luna IA* — Hablame de forma natural mencionándome.\nSin comandos, sin prefijos. Solo hablá 💜',
+      'Luna-Botv6-Project 🌙',
+      null,
+      [
+        ['🤖 Ver menú de IA', `${usedPrefix}iamenu`]
+      ],
+      null,
+      null,
+      m
+    )
 
   } catch (e) {
     conn.reply(m.chat, '❌ Ocurrió un error al mostrar el menú', m)
