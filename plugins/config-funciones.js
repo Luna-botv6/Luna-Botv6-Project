@@ -1,6 +1,6 @@
-import fs from 'fs';
 import { setConfig, getConfig } from '../lib/funcConfig.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { setOwnerFunction } from '../lib/owner-funciones.js';
 
 const configLocks = new Map();
 
@@ -8,7 +8,7 @@ async function safeSetConfig(chatId, config) {
   if (configLocks.has(chatId)) await configLocks.get(chatId);
   const promise = setConfig(chatId, config);
   configLocks.set(chatId, promise);
-  try { await promise; } 
+  try { await promise; }
   finally { configLocks.delete(chatId); }
 }
 
@@ -61,7 +61,6 @@ const HELP_TEXT = (prefix, cmd) => `*====[ ⚙️ CONFIGURACIÓN ⚙️ ]====*
 async function getOwnerNumbers(conn) {
   const nums = [];
   const clean = (n) => n.toString().replace(/[^0-9]/g, '');
-  
   if (global.owner?.length) {
     for (const o of global.owner) {
       const n = clean(Array.isArray(o) ? o[0] : o);
@@ -85,35 +84,24 @@ const handler = async (m, {conn, usedPrefix, command, args}) => {
   const isROwner = ownerNumbers.includes(realNum);
   const isOwner = isROwner || m.sender === conn?.user?.jid;
   const isAdmin = m.isGroup ? (await getGroupDataForPlugin(conn, m.chat, m.sender)).isAdmin : false;
-  
+
   const isEnable = /true|enable|(turn)?on|1/i.test(command);
   const type = (args[0] || '').toLowerCase();
-  
+
   if (!CONFIG_MAP[type]) {
     if (!/[01]/.test(command)) await conn.sendMessage(m.chat, {text: HELP_TEXT(usedPrefix, command)}, {quoted: m});
     return;
   }
 
   const config = CONFIG_MAP[type];
-  
+
   if (config.group && !m.isGroup) return m.reply('❌ Este comando solo funciona en grupos');
   if (config.admin && !isAdmin && !isOwner) return m.reply('❌ Solo admins pueden usar este comando');
   if (config.owner && !isOwner && !isROwner) return m.reply('❌ Solo el owner puede usar este comando');
 
   if (config.file) {
-    let ownerConfig = {};
-    try {
-      ownerConfig = JSON.parse(await fs.promises.readFile('./database/funciones-owner.json', 'utf8'));
-    } catch (e) {
-      ownerConfig = { antiprivado: false, modopublico: false, vierwimage: false, modogrupos: false };
-    }
-    ownerConfig[type] = isEnable;
-    try {
-      await fs.promises.writeFile('./database/funciones-owner.json', JSON.stringify(ownerConfig, null, 2), 'utf8');
-    } catch (e) {
-      console.error('Error guardando funciones-owner.json:', e.message);
-      return m.reply('❌ Error al guardar la configuración.');
-    }
+    const saved = setOwnerFunction(type, isEnable);
+    if (!saved) return m.reply('❌ Error al guardar la configuración.');
   } else if (config.bot) {
     global.db.data.settings[conn.user.jid][config.key] = isEnable;
   } else {
@@ -123,15 +111,15 @@ const handler = async (m, {conn, usedPrefix, command, args}) => {
   }
 
   const scopeText = config.bot || config.file ? 'TODO EL BOT' : 'ESTE CHAT';
-const msg = `✧─── ☾ 𝗖𝗢𝗡𝗙𝗜𝗚 𝗟𝗨𝗡𝗔 ☽ ───✧
+  const msg = `✧─── ☾ 𝗖𝗢𝗡𝗙𝗜𝗚 𝗟𝗨𝗡𝗔 ☽ ───✧
 
 ${isEnable ? '✅' : '❌'} • *Función:* _${type}_
 🔘 • *Estado:* _${isEnable ? 'ACTIVADA' : 'DESACTIVADA'}_
 🌐 • *Alcance:* _${scopeText}_
 
 ✨──────────────────✨`;
-  
-conn.sendMessage(m.chat, {text: msg}, {quoted: m});
+
+  conn.sendMessage(m.chat, {text: msg}, {quoted: m});
 };
 
 handler.command = /^((en|dis)able|(tru|fals)e|(turn)?[01])$/i;

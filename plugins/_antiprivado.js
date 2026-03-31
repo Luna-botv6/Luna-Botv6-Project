@@ -1,33 +1,24 @@
-import { readFile } from 'fs/promises';
+import { isFunctionEnabled } from '../lib/owner-funciones.js';
 
 export async function before(m, { conn, isOwner, isROwner }) {
-  if (m.isBaileys && m.fromMe) return true;
+  if (m.fromMe) return false;
   if (m.isGroup) return false;
-  if (!m.message) return true;
+  if (!m.message) return false;
+  if (!isFunctionEnabled('antiprivado')) return false;
 
-  let ownerConfig = {};
-  try {
-    const configData = await readFile('./database/funciones-owner.json', 'utf8');
-    ownerConfig = JSON.parse(configData);
-  } catch {
-    ownerConfig.antiprivado = false;
-  }
+  const sender = m.sender || m.key?.remoteJid || '';
+  const ownerNums = (global.owner || []).map(o => String(Array.isArray(o) ? o[0] : o));
+  const lidOwners = (global.lidOwners || []).map(x => String(x));
 
-  if (!ownerConfig.antiprivado) return false;
-  if (isOwner || isROwner) return false;
+  const _isOwner = isOwner || isROwner
+    || ownerNums.some(n => sender.includes(n))
+    || lidOwners.some(n => sender.includes(n));
 
-  const senderNumber = m.sender.split('@')[0];
-  const ownerNumbers = global.owner.map(([num]) => num);
-  const lidOwners = global.lidOwners || [];
+  if (_isOwner) return false;
 
-  if (ownerNumbers.includes(senderNumber) || lidOwners.includes(senderNumber)) return false;
-
-  const botJid = conn.user.jid || conn.user.id;
-  if (m.sender === botJid) return true;
-
-  if (typeof this.updateBlockStatus === 'function') {
-    await this.updateBlockStatus(m.chat, 'block');
-  }
-
+  m.text = '';
+  m.commandSinPrefijo = '';
+  m.isMentionedBot = false;
+  try { await conn.updateBlockStatus(sender, 'block'); } catch {}
   return true;
 }
