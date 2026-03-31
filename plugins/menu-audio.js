@@ -39,8 +39,16 @@ const handler = async (m, {conn}) => {
   ⭐ 𝖥𝗋𝖾𝖾 𝖿𝗂𝗋𝖾
   ⭐ 𝖯𝖺𝗌𝖺 𝗉𝖺𝖼𝗄
   ⭐ 𝖫𝖺 𝖻𝖾𝖻𝖾𝗌𝗂𝗍𝖺
-  ⭐ fainas and freddy
+  ⭐ 𝟧 𝗇𝗈𝖼𝗁𝖾𝗌
   ⭐ 𝖯𝗈𝗋 𝖿𝗂𝗇 𝖺𝗉𝖺𝗋𝖾𝖼𝗂𝗌𝗍𝖾
+  ⭐ No Digas Mamadas 
+  ⭐ Ay Despacito
+  ⭐ Comando Estelar
+  ⭐ Decir Estupideces
+  ⭐ Hora y Media
+  ⭐ A Mi Se Me Hace
+  ⭐ Que Dificil 
+  ⭐ Audio de Whatsapp
 
 ✨ ━━━━━ ☾ ━━━━━ ✨`;
 
