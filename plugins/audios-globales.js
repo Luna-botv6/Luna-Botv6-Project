@@ -130,6 +130,3 @@ function convertToOgg(mp3Buffer) {
 }
 
 export default handler
-}
-
-export default handler
