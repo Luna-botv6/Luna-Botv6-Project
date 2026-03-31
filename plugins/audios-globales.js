@@ -64,9 +64,9 @@ handler.all = async function (m, { conn }) {
        'comando estelar|estelar|comando|refuerzos': 'comando-estelar-necesito-ayuda.mp3',
        'decir estupideces|estupideces|decir tonterías': 'decir-estupideces.mp3',
        'hora y media|15:00|hora|media': '1500-es-hora-y-media.mp3',
-       'a mi se me hace|se me hace|parece que|creo que': 'a-mi-se-me-hace-que-eres-marica_INzinVu.mp3',
+       'a mi se me hace que': 'a-mi-se-me-hace-que-eres-marica_INzinVu.mp3',
        'que dificil|dificil|complicado|que complicado': 'que-dificil-me-la-pusiste-diablo.mp3',
-       'audio de whatsapp|whatsapp|audio': 'whatsapp-audio-2019-09-08-at-225441.mp3',
+       'troleado|troll|trolls': 'whatsapp-audio-2019-09-08-at-225441.mp3',
        'por fin apareció|por fin apareciste|al fin llegas|te tarda|por fin llegas|por fin llegaste|te tardaste': 'por-fin-apareciste-malnacido-picoro.mp3' 
     }
 
@@ -127,6 +127,9 @@ function convertToOgg(mp3Buffer) {
       .on('error', reject)
       .pipe(output)
   })
+}
+
+export default handler
 }
 
 export default handler
