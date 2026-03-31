@@ -34,7 +34,7 @@ handler.all = async function (m, { conn }) {
     if (!audiosEnabled) return
 
     const audios = {
-      'hola': 'holis.mp3',
+      'hola bot': 'holis.mp3',
       'que no': 'elmo-si-o-no.mp3',
       'anadieleimporta|a nadie le importa': '01J6734W48PG8EA14QW517QR2K.mp3',
       'araara|ara ara': 'ara-ara_NGiqCMS.mp3',
@@ -60,10 +60,10 @@ handler.all = async function (m, { conn }) {
       'la bebesita|la bebecita|la bbsita|santurrona': 'la-bebecita-saturado.mp3',
       '5 noche con mi tío|5 noches con mi tio|5 noches con alfredo|fainas and freddy': '5-noches-con-mi-tio.mp3',
        'no digas mamadas|no mamadas|no digas eso': 'no-digas-mamadas_4Q3vIm8.mp3',
-       'ay despacito|ay despacio|despacio|suave': 'ay-despacito.mp3',
+       'ay despacito|ay despacio|ay despacio|ay suave': 'ay-despacito.mp3',
        'comando estelar|estelar|comando|refuerzos': 'comando-estelar-necesito-ayuda.mp3',
        'decir estupideces|estupideces|decir tonterías': 'decir-estupideces.mp3',
-       'hora y media|15:00|hora|media': '1500-es-hora-y-media.mp3',
+       'mil quiniento|pvtas|cuanto cobras': '1500-es-hora-y-media.mp3',
        'a mi se me hace que': 'a-mi-se-me-hace-que-eres-marica_INzinVu.mp3',
        'que dificil|dificil|complicado|que complicado': 'que-dificil-me-la-pusiste-diablo.mp3',
        'troleado|troll|trolls': 'whatsapp-audio-2019-09-08-at-225441.mp3',
