@@ -67,7 +67,15 @@ handler.all = async function (m, { conn }) {
        'a mi se me hace que': 'a-mi-se-me-hace-que-eres-marica_INzinVu.mp3',
        'que dificil|dificil|complicado|que complicado': 'que-dificil-me-la-pusiste-diablo.mp3',
        'troleado|troll|trolls': 'whatsapp-audio-2019-09-08-at-225441.mp3',
-       'por fin apareció|por fin apareciste|al fin llegas|te tarda|por fin llegas|por fin llegaste|te tardaste': 'por-fin-apareciste-malnacido-picoro.mp3' 
+       'por fin apareció|por fin apareciste|al fin llegas|te tarda|por fin llegas|por fin llegaste|te tardaste': 'por-fin-apareciste-malnacido-picoro.mp3',
+       'el señor de la noche|soy el señor de la noche|don omar|el caballero de la noche|soy batman|mitad hombre mitad animal': 'el-senor-de-la-noche-don-omar.mp3',
+       'con la carita empapada|vegeta carita empapada|me puse a llorar|llegue tarde|vegeta llorando|esperaba que llegaras': 'vegeta-con-la-carita-empapada.mp3',
+       'miku miku beam|miku miku bim|rayo miku|ataque miku|miku beam|beam miku': 'miku-miku-beam_GR1xBFx.mp3',
+       'noo la policia|ay no la policia|viene la gorra|la yuta|corran que viene la cana|oh no la policia': 'noo-la-policia.mp3'
+
+
+
+
     }
 
     const lower = text.toLowerCase()
