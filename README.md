@@ -239,14 +239,27 @@ const LunaBot = {
 
 ```js
 const LunaIA = {
-  activacion:  "@Luna + lo que necesites",
-  entiende:    "frases naturales en español",
-  responde:    "en tiempo real dentro del grupo",
-  compatible:  "LID · @s.whatsapp.net · números normales",
+  activacion:   "@Luna + lo que necesites",
+  personalidad: "argentina · empática · cálida · auténtica",
+  entiende:     "frases naturales en español rioplatense",
+  responde:     "en tiempo real dentro del grupo",
+  compatible:   "LID · @s.whatsapp.net · números normales",
+
+  capacidades:  [
+    "Conversación natural 💬",     "Clima en tiempo real 🌤️",
+    "Recetas detalladas 🍽️",       "Letras de canciones 🎵",
+    "Info de países 🌍",           "Matemáticas y cálculos 🧮",
+    "Conversión de divisas 💱",    "Traducción multiidioma 🌐",
+    "Comandos por lenguaje natural 🎯", "Imágenes automáticas 🖼️",
+  ],
+
+  ia:          "múltiples motores con fallback automático — siempre responde",
+  busqueda:    "multi-fuente en paralelo — la mejor respuesta disponible",
+  imagenes:    "búsqueda real + generación IA como último recurso",
   juegos:      ["Veo Veo 👁️", "Ahorcado 🎮"],
-  moderacion:  ["Mute 🔇", "Kick 👢", "Ban 🚫"],
-  config:      "activa/desactiva funciones hablando",
-  extras:      ["Clima 🌤️", "Imágenes IA 🖼️", "Matemáticas 🧮", "Música 🎵"],
+  moderacion:  ["Mute 🔇", "Kick 👢", "Ban 🚫", "Desmutear ✅"],
+  cache:       "respuestas guardadas en disco — más rápido en cada consulta",
+  plugins:     "índice de plugins en caché — detección instantánea de comandos",
 };
 ```
 
@@ -269,6 +282,305 @@ Mencioná a Luna en el grupo usando su `@tag` seguido de lo que necesitás. Así
 ```
 
 > **No hay prefijos como `.` o `/` — es una conversación real.**
+
+---
+
+<div align="center">
+
+### 🧠 Motor de Inteligencia Artificial
+
+![IA Multi-Motor](https://img.shields.io/badge/🧠-IA_MULTI--MOTOR-4DA6FF?style=for-the-badge&logoColor=white&labelColor=0d1b3e)
+![Fallback Auto](https://img.shields.io/badge/⚡-FALLBACK_AUTOMÁTICO-50DC78?style=for-the-badge&logoColor=white&labelColor=0a3320)
+![Siempre Responde](https://img.shields.io/badge/✅-SIEMPRE_RESPONDE-FFD700?style=for-the-badge&logoColor=black&labelColor=5a3e00)
+
+</div>
+
+Luna usa **múltiples motores de IA en cadena**. Si el primero está ocupado o falla, pasa automáticamente al siguiente sin que el usuario note nada. El orden se aleatoriza en cada consulta para distribuir la carga, y siempre hay un motor de respaldo garantizado.
+
+> Sin importar la hora ni la carga del sistema, Luna **siempre va a responder**.
+
+---
+
+<div align="center">
+
+### 🔍 Búsqueda Inteligente Multi-Fuente
+
+![Búsqueda](https://img.shields.io/badge/🔍-BÚSQUEDA_MULTI--FUENTE-4DA6FF?style=for-the-badge&logoColor=white&labelColor=0d1b3e)
+![Paralela](https://img.shields.io/badge/⚡-EN_PARALELO-50DC78?style=for-the-badge&logoColor=white&labelColor=0a3320)
+
+</div>
+
+Cuando le preguntás algo a Luna, consulta **múltiples fuentes de información al mismo tiempo** y combina la mejor respuesta disponible. Si la información encontrada es corta, Luna la expande con su IA antes de responder. Si el texto ya es extenso y preciso, lo envía directo sin pasar por IA para mayor velocidad.
+
+---
+
+<div align="center">
+
+### 🖼️ Imágenes Automáticas
+
+![Imágenes](https://img.shields.io/badge/🖼️-IMÁGENES_AUTOMÁTICAS-D946EF?style=for-the-badge&logoColor=white&labelColor=5b0a6e)
+![IA Generativa](https://img.shields.io/badge/🎨-IA_GENERATIVA-FF6B9D?style=for-the-badge&logoColor=white&labelColor=3d0a20)
+
+</div>
+
+Cuando la consulta lo requiere (recetas, lugares, animales, objetos, etc.), Luna adjunta automáticamente una imagen relevante. Busca en varias fuentes en cascada, y si ninguna tiene la imagen exacta, **genera una nueva desde cero con IA generativa**.
+
+```
+Búsqueda real → más fuentes → generación IA como último recurso
+```
+
+---
+
+<div align="center">
+
+### 💬 Conversación Natural
+
+</div>
+
+Luna tiene personalidad propia. Responde en **español rioplatense**, usa "vos", es empática y auténtica. No suena como un robot.
+
+| Frases de ejemplo | Qué hace Luna |
+|-------------------|--------------|
+| `@Luna hola, como andas?` | Saluda y responde con calidez |
+| `@Luna estoy triste` | Prioriza el acompañamiento emocional |
+| `@Luna quien sos?` | Se presenta como la IA creada por Germán Miño |
+| `@Luna contame un chiste` | Cuenta un chiste con humor argentino |
+| `@Luna tenes emociones?` | Reflexiona sobre su naturaleza de IA |
+| `@Luna dame un consejo` | Da consejos genuinos y personalizados |
+
+---
+
+<div align="center">
+
+### 🌤️ Clima en Tiempo Real
+
+![Clima](https://img.shields.io/badge/🌤️-CLIMA_EN_TIEMPO_REAL-4DA6FF?style=for-the-badge&logoColor=white&labelColor=0d1b3e)
+
+</div>
+
+Luna consulta datos meteorológicos en tiempo real y puede geolocalizar cualquier ciudad del mundo.
+
+| Frase | Acción |
+|-------|--------|
+| `@Luna clima de Buenos Aires` | Clima actual + próximos 3 días |
+| `@Luna temperatura en Córdoba` | Temperatura actual |
+| `@Luna va a llover en Mendoza` | Pronóstico de lluvia |
+| `@Luna hace calor en Rosario?` | Estado climático actual |
+| `@Luna pronostico de Tucumán` | Pronóstico completo |
+
+La respuesta incluye: temperatura actual, sensación térmica, humedad, viento, precipitaciones, índice UV y el pronóstico de los próximos 3 días.
+
+---
+
+<div align="center">
+
+### 🍽️ Recetas Detalladas
+
+![Recetas](https://img.shields.io/badge/🍽️-RECETAS_DETALLADAS-FF6B35?style=for-the-badge&logoColor=white&labelColor=7a2900)
+
+</div>
+
+Sistema de tres capas para encontrar cualquier receta, con fallback progresivo:
+
+```
+Base de datos de recetas → Wikipedia en español → IA Generativa
+```
+
+| Frase | Acción |
+|-------|--------|
+| `@Luna receta de milanesas` | Receta completa con ingredientes y pasos |
+| `@Luna como se hace el asado?` | Preparación paso a paso |
+| `@Luna ingredientes para pizza` | Lista de ingredientes |
+| `@Luna como preparar locro` | Receta detallada |
+| `@Luna pasos para hacer alfajores` | Preparación completa |
+
+La respuesta incluye nombre del plato, categoría, lista de ingredientes con medidas exactas, preparación paso a paso y una imagen del plato.
+
+---
+
+<div align="center">
+
+### 🎵 Letras de Canciones
+
+![Letras](https://img.shields.io/badge/🎵-LETRAS_DE_CANCIONES-8B5CF6?style=for-the-badge&logoColor=white&labelColor=3b1d8a)
+
+</div>
+
+| Frase | Acción |
+|-------|--------|
+| `@Luna letra de La Noche de Anita` | Busca y devuelve la letra completa |
+| `@Luna letra de Tan Bionica - Ciudad Mágica` | Búsqueda por artista y canción |
+| `@Luna como dice la cancion de Soda Stereo` | Búsqueda libre |
+| `@Luna lyrics de El Zorro` | También acepta "lyrics" |
+
+Sistema en cascada: busca en bases de datos de letras, luego en la web, y si no la encuentra la genera con IA.
+
+---
+
+<div align="center">
+
+### 🌍 Información de Países
+
+![Países](https://img.shields.io/badge/🌍-INFO_DE_PAÍSES-10B981?style=for-the-badge&logoColor=white&labelColor=065F46)
+
+</div>
+
+| Frase | Acción |
+|-------|--------|
+| `@Luna capital de Francia` | Devuelve la capital |
+| `@Luna cuantos habitantes tiene Brasil` | Población actualizada |
+| `@Luna moneda de Japón` | Moneda e información económica |
+| `@Luna idioma de Egipto` | Idiomas oficiales |
+| `@Luna superficie de Rusia` | Área en km² |
+| `@Luna donde queda el pais de Islandia` | Región y subregión geográfica |
+
+La respuesta incluye nombre oficial, región, capital, población, área, idiomas, moneda y la bandera del país.
+
+---
+
+<div align="center">
+
+### 🧮 Matemáticas y Cálculos
+
+</div>
+
+Luna puede resolver operaciones matemáticas directamente sin ninguna app externa.
+
+| Frase | Resultado |
+|-------|-----------|
+| `@Luna cuanto es 250 * 48` | `🧮 El resultado es: 12000` |
+| `@Luna raiz cuadrada de 144` | `🧮 El resultado es: 12` |
+| `@Luna 15% de 3500` | `🧮 El resultado es: 525` |
+| `@Luna cuanto da 1250 dividido 5` | `🧮 El resultado es: 250` |
+| `@Luna calculame 99 por 99` | `🧮 El resultado es: 9801` |
+
+---
+
+<div align="center">
+
+### 💱 Conversión de Divisas
+
+![Divisas](https://img.shields.io/badge/💱-DIVISAS_EN_TIEMPO_REAL-FCD34D?style=for-the-badge&logoColor=black&labelColor=92400E)
+
+</div>
+
+Tasas de cambio en tiempo real con soporte para todas las monedas de América Latina y el mundo.
+
+| Frase | Acción |
+|-------|--------|
+| `@Luna 100 dolares en pesos` | Conversión USD → ARS al momento |
+| `@Luna 50 euros a reales` | Conversión EUR → BRL |
+| `@Luna cotizacion del dolar` | Tipo de cambio actual |
+| `@Luna 1000 pesos mexicanos en guaranies` | MXN → PYG |
+| `@Luna 5 mil dolares a pesos chilenos` | Soporta "mil" y "millon" |
+
+Monedas soportadas: `USD · EUR · BRL · PEN · COP · MXN · CLP · UYU · PYG · BOB · VES · GTQ · CRC · NIO · HNL · PAB · ARS`
+
+---
+
+<div align="center">
+
+### 🌐 Traducción Multiidioma
+
+![Traducción](https://img.shields.io/badge/🌐-TRADUCCIÓN_MULTIIDIOMA-4DA6FF?style=for-the-badge&logoColor=white&labelColor=0d1b3e)
+
+</div>
+
+| Frase | Acción |
+|-------|--------|
+| `@Luna traducir hola mundo al inglés` | Traduce al idioma pedido |
+| `@Luna como se dice gracias en japonés` | Detección automática de idioma destino |
+| `@Luna traduce esto al portugués` | Traducción con contexto |
+| `@Luna traducir al francés: me alegra conocerte` | Texto explícito |
+
+---
+
+<div align="center">
+
+### 🎮 Comandos por Lenguaje Natural
+
+</div>
+
+Luna detecta cuando querés ejecutar un **comando del bot** sin necesidad de escribirlo con prefijo. Entiende la intención del texto y lo despacha automáticamente.
+
+<details>
+<summary><b>👥 Administración de Grupos</b></summary>
+
+| Frase natural | Comando equivalente |
+|---------------|-------------------|
+| `@Luna dale admin a @usuario` | `.promote` |
+| `@Luna quita de admin a @usuario` | `.demote` |
+| `@Luna dame el link del grupo` | `.link` |
+| `@Luna resetear link del grupo` | `.resetlink` |
+| `@Luna info del grupo` | `.infogroup` |
+| `@Luna cambia el nombre del grupo a Luna Squad` | `.setname Luna Squad` |
+| `@Luna nueva descripcion del grupo: grupo oficial` | `.setdesc` |
+| `@Luna cambiar mensaje de bienvenida a: Bienvenido!` | `.setwelcome` |
+
+</details>
+
+<details>
+<summary><b>🛠️ Herramientas</b></summary>
+
+| Frase natural | Comando equivalente |
+|---------------|-------------------|
+| `@Luna hacer sticker` | `.sticker` |
+| `@Luna pasar sticker a imagen` | `.toimg` |
+| `@Luna traducir al inglés` | `.traducir` |
+| `@Luna leer imagen` | `.ocr` |
+| `@Luna texto a voz` | `.tts` |
+| `@Luna estas vivo?` | `.ping` |
+| `@Luna mandame un meme` | `.meme` |
+| `@Luna foto de gato` | `.cat` |
+| `@Luna foto de perro` | `.dog` |
+
+</details>
+
+<details>
+<summary><b>⚠️ Advertencias y Control</b></summary>
+
+| Frase natural | Comando equivalente |
+|---------------|-------------------|
+| `@Luna ver advertencias de @usuario` | `.listwarn` |
+| `@Luna quien no habla en el grupo` | `.fantasmas` |
+| `@Luna test de velocidad` | `.speedtest` |
+| `@Luna reiniciar bot` | `.restart` |
+| `@Luna sincronizar mensajes` | `.lchat` |
+
+</details>
+
+<details>
+<summary><b>🧙 RPG y Economía</b></summary>
+
+| Frase natural | Comando equivalente |
+|---------------|-------------------|
+| `@Luna ver mi exp` | `.verexp` |
+| `@Luna top del grupo` | `.lb` |
+| `@Luna quiero mi recompensa diaria` | `.reclamar` |
+| `@Luna ver mi perfil` | `.perfil` |
+| `@Luna quiero minar exp` | `.minar` |
+| `@Luna minar diamantes` | `.diamondmine` |
+
+</details>
+
+---
+
+<div align="center">
+
+### 💾 Sistema de Caché Inteligente
+
+![Cache](https://img.shields.io/badge/💾-CACHÉ_EN_DISCO-50DC78?style=for-the-badge&logoColor=white&labelColor=0a3320)
+![PluginIndex](https://img.shields.io/badge/⚡-ÍNDICE_DE_PLUGINS-FFD700?style=for-the-badge&logoColor=black&labelColor=5a3e00)
+
+</div>
+
+Luna tiene **dos capas de caché persistente** que sobreviven a reinicios del servidor:
+
+**`texto.json`** — Caché de respuestas de la IA. Si alguien pregunta lo mismo (o algo muy similar), Luna responde instantáneamente desde disco sin hacer ninguna consulta externa.
+
+**`plugins-index.json`** — Índice de todos los plugins del bot con sus comandos. Cuando se cargan los 290+ plugins, se guarda un mapa de `comando → plugin` en disco. En las siguientes consultas, la detección de comandos es **instantánea** sin tocar la red.
+
+> El índice se actualiza automáticamente cada vez que se recargan los plugins. Si agregás un plugin nuevo, se detecta en el próximo ciclo.
 
 ---
 
