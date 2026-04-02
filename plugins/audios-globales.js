@@ -61,7 +61,7 @@ handler.all = async function (m, { conn }) {
       '5 noche con mi tío|5 noches con mi tio|5 noches con alfredo|fainas and freddy': '5-noches-con-mi-tio.mp3',
        'no digas mamadas|no mamadas|no digas eso': 'no-digas-mamadas_4Q3vIm8.mp3',
        'ay despacito|ay despacio|ay despacio|ay suave': 'ay-despacito.mp3',
-       'comando estelar|estelar|comando|refuerzos': 'comando-estelar-necesito-ayuda.mp3',
+       'comando estelar|estelar|refuerzos': 'comando-estelar-necesito-ayuda.mp3',
        'decir estupideces|estupideces|decir tonterías': 'decir-estupideces.mp3',
        'mil quiniento|pvtas|cuanto cobras': '1500-es-hora-y-media.mp3',
        'a mi se me hace que': 'a-mi-se-me-hace-que-eres-marica_INzinVu.mp3',
