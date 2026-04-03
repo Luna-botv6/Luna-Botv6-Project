@@ -4,6 +4,27 @@ import { join } from 'path'
 
 const RESTART_FILE = '/tmp/luna-restart-notify.json'
 const PROTECTED_FILES = ['config.js']
+const REPO_URL = 'https://github.com/Luna-botv6/Luna-Botv6-Project.git'
+
+function hasGitRepo() {
+  try {
+    execSync('git rev-parse --git-dir', { stdio: 'ignore' })
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function initRepo(conn, chat) {
+  await conn.sendMessage(chat, {
+    text: '⚙️ *No se encontro repositorio Git*\n\n🔧 Inicializando y vinculando con GitHub...'
+  })
+  execSync('git init', { encoding: 'utf8' })
+  execSync(`git remote add origin ${REPO_URL}`, { encoding: 'utf8' })
+  execSync('git fetch origin', { encoding: 'utf8', timeout: 60000 })
+  execSync('git checkout -B main --track origin/main', { encoding: 'utf8' })
+  execSync('git reset --hard origin/main', { encoding: 'utf8', timeout: 60000 })
+}
 
 const handler = async (m, { conn }) => {
   await m.reply('🔄 Actualizando y reiniciando sistema, espera un momento...')
@@ -17,37 +38,42 @@ const handler = async (m, { conn }) => {
       }
     }
 
-    const gitOutput = execSync('git pull', { encoding: 'utf8', timeout: 30000 })
-    const updated = !gitOutput.includes('Already up to date')
-
-    for (const [file, content] of Object.entries(backups)) {
-      writeFileSync(join(process.cwd(), file), content, 'utf8')
-    }
-
-    if (updated) {
-      const lines = gitOutput.split('\n').filter(l => l.trim())
-      const fileLines = lines.filter(l => /\|/.test(l) && /[+\-]/.test(l))
-
-      const fileList = fileLines.map(l => {
-        const name = l.split('|')[0].trim()
-        return `　📄 ${name} ✅`
-      }).join('\n')
-
-      const summary = lines.find(l => l.includes('file') && l.includes('changed')) || ''
-
+    if (!hasGitRepo()) {
+      await initRepo(conn, m.chat)
+      for (const [file, content] of Object.entries(backups)) {
+        writeFileSync(join(process.cwd(), file), content, 'utf8')
+      }
       await conn.sendMessage(m.chat, {
-        text:
-          `📦 *Actualizacion detectada*\n\n` +
-          `📂 *Archivos:*\n${fileList || '　📄 Sin detalle'}\n\n` +
-          `📊 ${summary}\n\n` +
-          `⏳ _Instalando dependencias..._`
+        text: '✅ *Repositorio inicializado correctamente*\n\n⏳ _Instalando dependencias..._'
       })
-
       execSync('npm install --silent', { encoding: 'utf8', timeout: 60000 })
     } else {
-      await conn.sendMessage(m.chat, {
-        text: '✅ *Ya esta en la ultima version*\n\n⏳ Reiniciando de todas formas...'
-      })
+      const gitOutput = execSync('git pull origin main', { encoding: 'utf8', timeout: 30000 })
+      const updated = !gitOutput.includes('Already up to date')
+
+      for (const [file, content] of Object.entries(backups)) {
+        writeFileSync(join(process.cwd(), file), content, 'utf8')
+      }
+
+      if (updated) {
+        const lines = gitOutput.split('\n').filter(l => l.trim())
+        const fileLines = lines.filter(l => /\|/.test(l) && /[+\-]/.test(l))
+        const fileList = fileLines.map(l => `　📄 ${l.split('|')[0].trim()} ✅`).join('\n')
+        const summary = lines.find(l => l.includes('file') && l.includes('changed')) || ''
+
+        await conn.sendMessage(m.chat, {
+          text:
+            `📦 *Actualizacion detectada*\n\n` +
+            `📂 *Archivos:*\n${fileList || '　📄 Sin detalle'}\n\n` +
+            `📊 ${summary}\n\n` +
+            `⏳ _Instalando dependencias..._`
+        })
+        execSync('npm install --silent', { encoding: 'utf8', timeout: 60000 })
+      } else {
+        await conn.sendMessage(m.chat, {
+          text: '✅ *Ya esta en la ultima version*\n\n⏳ Reiniciando de todas formas...'
+        })
+      }
     }
   } catch (e) {
     await conn.sendMessage(m.chat, {
