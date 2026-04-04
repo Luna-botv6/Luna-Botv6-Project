@@ -334,23 +334,19 @@ ${readMore}
 ╰━━━━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━『 👑 OWNER 』━━━╮
-┃ 🔧 > <funcion>
-┃ ⚙️ => <funcion>
-┃ 🛠️ $ <funcion>
 ┃ 👑 ${usedPrefix}dsowner
 ┃ 🏷️ ${usedPrefix}setprefix <prefijo>
 ┃ 🔄 ${usedPrefix}resetprefix
 ┃ 🔄 ${usedPrefix}resetuser <@tag>
 ┃ 🛠️ ${usedPrefix}restoreuser <@tag>
 ┃ 👨‍💻 ${usedPrefix}autoadmin
-┃ ✅ ${usedPrefix}darmod <@tag>
-┃ 🗑️ ${usedPrefix}quitarmod <@tag>
 ┃ 📋 ${usedPrefix}grouplist
 ┃ 🚪 ${usedPrefix}leavegc
-┃ 🔒 ${usedPrefix}cajafuerte
 ┃ 🚫 ${usedPrefix}blocklist
 ┃ 🔑 ${usedPrefix}addowner <@tag/num>
+┃ 🔑 ${usedPrefix}agregarlid <@tag/num>
 ┃ 🗑️ ${usedPrefix}delowner <@tag/num>
+┃ 🗑️ ${usedPrefix}dellid <@tag/num>
 ┃ 🛑 ${usedPrefix}block <@tag/num>
 ┃ ⛔ ${usedPrefix}unblock <@tag/num>
 ┃ 🔒 ${usedPrefix}enable restrict
@@ -358,32 +354,27 @@ ${readMore}
 ┃ 🗣️ ${usedPrefix}autoread on
 ┃ 👀 ${usedPrefix}autoread off
 ┃ 🌐 ${usedPrefix}enable public
-┃ 🔒 ${usedPrefix}disable public
-┃ 📱 ${usedPrefix}enable pconly
-┃ 💻 ${usedPrefix}disable pconly
-┃ 👥 ${usedPrefix}enable gconly
-┃ 🚷 ${usedPrefix}disable gconly
-┃ 📞 ${usedPrefix}enable anticall
+┃ ✅ ${usedPrefix}enaable anticall
 ┃ 🚫 ${usedPrefix}disable anticall
 ┃ 🛑 ${usedPrefix}enable antiprivado
 ┃ ❌ ${usedPrefix}disable antiprivado
-┃ 🤖 ${usedPrefix}enable modejadibot
-┃ ⚡ ${usedPrefix}disable modejadibot
-┃ 🎶 ${usedPrefix}enable audios_bot
-┃ 🔇 ${usedPrefix}disable audios_bot
 ┃ 🧯 ${usedPrefix}enable antispam
 ┃ 🚫 ${usedPrefix}disable antispam
 ┃ 💌 ${usedPrefix}msg <txt>
-┃ 🚷 ${usedPrefix}banchat
+┃ 🚷 ${usedPrefix}banchat✅
 ┃ ✅ ${usedPrefix}unbanchat
 ┃ 🔄 ${usedPrefix}resetuser <@tag>
 ┃ ⛔ ${usedPrefix}banuser <@tag>
 ┃ 🟢 ${usedPrefix}unbanuser <@tag>
+┃ 📌 ${usedPrefix}banid
+┃ 🔕 ${usedPrefix}banid <id>
+┃ ✅ ${usedPrefix}unbanid <id>
 ┃ 💎 ${usedPrefix}dardiamantes <@tag> <cant>
 ┃ 🌟 ${usedPrefix}añadirxp <@tag> <cant>
 ┃ 📣 ${usedPrefix}bc <txt>
 ┃ 📲 ${usedPrefix}bcchats <txt>
 ┃ 💬 ${usedPrefix}bcgc <txt>
+┃ 💬 ${usedPrefix}informaragrupos <txt>
 ┃ 🎧 ${usedPrefix}bcgc2 <aud>
 ┃ 🎬 ${usedPrefix}bcgc2 <vid>
 ┃ 🖼️ ${usedPrefix}bcgc2 <img>
@@ -392,16 +383,11 @@ ${readMore}
 ┃ 🔄 ${usedPrefix}restart
 ┃ ⚡ ${usedPrefix}update
 ┃ 🚫 ${usedPrefix}banlist
-┃ ⏳ ${usedPrefix}addprem2 <@tag> <time>
-┃ 🎯 ${usedPrefix}addprem3 <@tag> <time>
-┃ 💫 ${usedPrefix}addprem4 <@tag> <time>
-┃ ❌ ${usedPrefix}delprem <@tag>
 ┃ 📋 ${usedPrefix}listcmd
 ┃ 🖼️ ${usedPrefix}setppbot <img>
 ┃ ➕ ${usedPrefix}addcmd <txt>
 ┃ 🗑️ ${usedPrefix}delcmd
 ┃ 💾 ${usedPrefix}saveimage <img>
-┃ 👁️ ${usedPrefix}viewimage <txt>
 ╰━━━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━『 🤖 BOT ADMIN 』━━━╮
