@@ -3,184 +3,178 @@ import { getUserStats, getRoleByLevel } from '../lib/stats.js'
 const handler = async (m, { conn, usedPrefix, isPrems }) => {
 
   try {
-    const stats    = getUserStats(m.sender)
-    const role     = getRoleByLevel(stats.level)
+    const stats   = getUserStats(m.sender)
+    const role    = getRoleByLevel(stats.level)
     const { money, exp, level, limit, premiumTime } = stats
-    const taguser  = `@${m.sender.split('@')[0]}`
-    const botName  = '@Luna'
-    const isPrem   = premiumTime > 0 || isPrems
+    const taguser = `@${m.sender.split('@')[0]}`
+    const isPrem  = premiumTime > 0 || isPrems
+
+    // Mención dinámica del bot (se ve como @NombreDelBot en WhatsApp)
+    const botJid  = conn.user?.jid || conn.user?.id || ''
+    const botTag  = `@${botJid.split('@')[0]}`
 
     const more     = String.fromCharCode(8206)
     const readMore = more.repeat(850)
 
-    const str = `🌙 *LUNA IA — MENÚ COMPLETO*
+    const str = `✦ 𝗜𝗡𝗧𝗘𝗟𝗜𝗚𝗘𝗡𝗖𝗜𝗔 𝗔𝗥𝗧𝗜𝗙𝗜𝗖𝗜𝗔𝗟 ✦
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
 
-👤 *Tu perfil*
-┌ 👋 ${taguser}
-├ 📊 Nivel: ${level} · ⭐ Exp: ${exp}
-├ 🎯 Rango: ${role}
-├ 💰 Dinero: $${money} · 🎫 Límite: ${limit}
+👤 *Perfil de* ${taguser}
+┌ 📊 Nivel ${level}  ·  ⭐ ${exp} exp
+├ 🎯 Rango: *${role}*
+├ 💰 $${money}  ·  🎫 Límite: ${limit}
 └ 💎 Premium: ${isPrem ? '✅ Activo' : '❌ Inactivo'}
 ${readMore}
-─────────────────────
-🧠 *CÓMO HABLARLE A LUNA*
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+🧠 *¿CÓMO USAR LA IA?*
 
-No necesitás comandos. Solo mencioname con ${botName} y hablá natural.
+Sin comandos. Solo mencioname y hablá natural.
+Así de simple 👇
 
-Luna entiende estas *palabras clave* para buscar información:
+> ${botTag} ¿cómo se hace una pizza casera?
 
-› *como se hace / como se prepara*
-  ${botName} como se hacen los tacos
-  ${botName} como se preparan los canelones
+Eso es todo. La IA entiende tu pregunta y responde al instante.
 
-› *receta de / receta para*
-  ${botName} receta de pizza casera
-  ${botName} receta para hacer alfajores
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+📚 *BUSCAR INFORMACIÓN*
 
-› *que es / que fue / que son*
-  ${botName} que es la fotosíntesis
-  ${botName} que fue la Guerra Fría
+*🍽️ Recetas y preparación*
+> ${botTag} receta de alfajores
+> ${botTag} como se preparan los canelones
 
-› *quien es / quien fue / quien inventó*
-  ${botName} quien fue Nikola Tesla
-  ${botName} quien inventó el avión
+*📖 Definiciones y conceptos*
+> ${botTag} qué es la fotosíntesis
+> ${botTag} qué fue la Guerra Fría
 
-› *cuando fue / cuando nació / cuando ocurrió*
-  ${botName} cuando fue la Revolución Francesa
-  ${botName} cuando nació Lionel Messi
+*🧑 Personas y personajes*
+> ${botTag} quién fue Nikola Tesla
+> ${botTag} quién inventó el avión
 
-› *donde queda / donde está / donde nació*
-  ${botName} donde queda la Patagonia
-  ${botName} donde está Islandia
+*📅 Fechas e historia*
+> ${botTag} cuándo fue la Revolución Francesa
+> ${botTag} cuándo nació Lionel Messi
 
-› *por qué / porque*
-  ${botName} por qué el cielo es azul
-  ${botName} porque llueve
+*🌍 Lugares y geografía*
+> ${botTag} dónde queda la Patagonia
+> ${botTag} capital de Japón
 
-› *historia de / origen de*
-  ${botName} historia de los mayas
-  ${botName} origen del tango
+*❓ Por qué y cómo funciona*
+> ${botTag} por qué el cielo es azul
+> ${botTag} cómo funciona el GPS
 
-› *como funciona / para qué sirve*
-  ${botName} como funciona el GPS
-  ${botName} para qué sirve el magnesio
+*📏 Medidas y datos*
+> ${botTag} cuánto mide la Torre Eiffel
+> ${botTag} cuánto tarda en llegar a Marte
 
-› *cuánto mide / cuánto pesa / cuánto tarda*
-  ${botName} cuánto mide la Torre Eiffel
-  ${botName} cuánto tarda en llegar a Marte
+*💬 Significados*
+> ${botTag} significado de empatía
+> ${botTag} origen del tango
 
-› *capital de / significado de*
-  ${botName} capital de Japón
-  ${botName} significado de empatía
-
-─────────────────────
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
 🎮 *JUEGOS*
 
 👁️ *Veo veo*
-› ${botName} veo veo
-› ${botName} dame una pista
-› ${botName} cancela el juego
+> ${botTag} veo veo
+> ${botTag} dame una pista
+> ${botTag} cancela el juego
 
 🪢 *Ahorcado*
-› ${botName} ahorcado fácil / medio / difícil
-› ${botName} dame una pista · cancela el ahorcado
-› _[letra]_ para adivinar
+> ${botTag} ahorcado fácil / medio / difícil
+> ${botTag} dame una pista
+> _[escribí una letra para adivinar]_
 
-─────────────────────
-⚔️ *RPG — SISTEMA DE RANGOS*
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+⚔️ *RPG & RANGOS*
 
-› ${botName} mi exp / mis estadísticas
-› ${botName} ver mi perfil de juego
-› ${botName} top del grupo / ver ranking
-› ${botName} reclamar recompensa diaria
-› ${botName} quiero minar / ir a minar
-› ${botName} minar diamantes
+> ${botTag} mi exp / mis estadísticas
+> ${botTag} ver mi perfil de juego
+> ${botTag} top del grupo / ver ranking
+> ${botTag} reclamar recompensa diaria
+> ${botTag} quiero minar diamantes
 
-─────────────────────
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
 🧮 *MATEMÁTICAS*
 
-› ${botName} cuánto es 2 + 2
-› ${botName} la mitad de 5000
-› ${botName} derivada de x³
-› ${botName} 20% de 800
-› ${botName} promedio de 4, 7, 9
+> ${botTag} cuánto es 2 + 2
+> ${botTag} la mitad de 5000
+> ${botTag} derivada de x³
+> ${botTag} 20% de 800
+> ${botTag} promedio de 4, 7, 9
 
-─────────────────────
-🖼️ *IMÁGENES Y MEDIA*
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+🖼️ *IMÁGENES & MEDIA*
 
 🎨 *Generar con IA*
-› ${botName} genera una imagen de un gato
-› ${botName} crea un dibujo de dragón
+> ${botTag} genera una imagen de un dragón
+> ${botTag} crea un dibujo de paisaje espacial
 
 😂 *Stickers y fotos*
-› ${botName} hacer sticker _(respondé una imagen)_
-› ${botName} pasar sticker a imagen
-› ${botName} foto de gato / foto de perro
-› ${botName} quiero un meme
+> ${botTag} hacer sticker  _↩ respondé una imagen_
+> ${botTag} pasar sticker a imagen
+> ${botTag} foto de gato / foto de perro
+> ${botTag} quiero un meme
 
 👁️ *Leer imagen (OCR)*
-› ${botName} qué dice la imagen _(respondé una foto)_
+> ${botTag} qué dice la imagen  _↩ respondé una foto_
 
-─────────────────────
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
 🎵 *DESCARGAS*
 
-› ${botName} descarga la música de Tini
-› ${botName} playlist de Shakira
-› ${botName} texto a voz: hola mundo
-› _[link TikTok / Instagram / Facebook]_ — descarga solo
+> ${botTag} descarga la música de Tini
+> ${botTag} playlist de Shakira
+> ${botTag} texto a voz: hola mundo
+> _[pegá un link de TikTok / IG / Facebook]_
 
-─────────────────────
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
 🌐 *UTILIDADES*
 
-› ${botName} traducir al inglés: buen día
-› ${botName} clima de Buenos Aires
-› ${botName} cuánto internet tengo
-› ${botName} estás vivo
+> ${botTag} traducir al inglés: buen día
+> ${botTag} clima de Buenos Aires
+> ${botTag} cuánto internet tengo
+> ${botTag} estás vivo
 
-─────────────────────
-🔇 *MODERACIÓN* _(solo admins)_
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+🔇 *MODERACIÓN*  _· solo admins_
 
-› ${botName} mutea a @usuario _(o por 30 min / 2 horas)_
-› ${botName} desmutea a @usuario
-› ${botName} expulsa a @usuario
-› ${botName} dale admin a @usuario
-› ${botName} quita el admin a @usuario
-› ${botName} ver advertencias de @usuario
-› ${botName} ver fantasmas / quién no habla
+> ${botTag} mutea a @usuario  _· por 30 min / 2 h_
+> ${botTag} desmutea a @usuario
+> ${botTag} expulsa a @usuario
+> ${botTag} dale admin a @usuario
+> ${botTag} quita el admin a @usuario
+> ${botTag} ver advertencias de @usuario
+> ${botTag} ver fantasmas / quién no habla
 
-─────────────────────
-⚙️ *CONFIG DEL GRUPO* _(solo admins)_
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+⚙️ *CONFIG DEL GRUPO*  _· solo admins_
 
-› ${botName} activa el antilink / bienvenida / antidelete
-› ${botName} activa el antitoxic / autosticker / antispam
-› ${botName} activa el antiprivado / restrict / afk / modoadmin
-› ${botName} desactiva _[función]_
-› ${botName} cambia el nombre del grupo a [nombre]
-› ${botName} cambia la descripción del grupo a [texto]
-› ${botName} cambia el mensaje de bienvenida a [texto]
-› ${botName} link del grupo / resetear link / info del grupo
-› ${botName} abre el grupo / cierra el grupo
-› ${botName} invoca a todos / mencionar todos
-› ${botName} reiniciar bot / sincronizar mensajes
+> ${botTag} activa el antilink / bienvenida / antidelete
+> ${botTag} activa el antitoxic / autosticker / antispam
+> ${botTag} activa el antiprivado / restrict / afk
+> ${botTag} desactiva _[función]_
+> ${botTag} cambia el nombre del grupo a _[nombre]_
+> ${botTag} cambia la descripción a _[texto]_
+> ${botTag} link del grupo / resetear link / info
+> ${botTag} abre el grupo / cierra el grupo
+> ${botTag} invoca a todos / mencionar todos
+> ${botTag} reiniciar bot / sincronizar mensajes
 
-─────────────────────
-💬 *CHARLA*
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+💬 *CHARLA LIBRE*
 
-Hablame de lo que quieras: chistes, consejos,
-emociones, preguntas, recados y mucho más.
+Hablame de cualquier cosa 🙂
 
-› ${botName} contame un chiste
-› ${botName} dame un consejo
-› ${botName} cómo estás
-› ${botName} cómo instalo en Termux / Windows
-› ${botName} quién te hizo
+> ${botTag} contame un chiste
+> ${botTag} dame un consejo
+> ${botTag} cómo estás
+> ${botTag} cómo instalo en Termux
+> ${botTag} quién te hizo
 
-─────────────────────
-🌙 *Luna Bot IA* · _Sin comandos · Solo hablá_`.trim()
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+_✦ Sin comandos · Solo mencioname y hablá ✦_`.trim()
 
     await conn.sendMessage(m.chat, {
       text: str,
-      mentions: [m.sender]
+      mentions: [m.sender, botJid]
     }, { quoted: m })
 
   } catch (e) {
