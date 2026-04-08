@@ -4,8 +4,8 @@ import {fileURLToPath} from 'url';
 import fs from 'fs'; 
 import moment from 'moment-timezone';
 
-global.botnumber = ""
-global.confirmCode = ""
+global.botnumber = "+51971313887"
+global.confirmCode = "+51971313887"
 global.authFile = `MysticSession`;
 
 // Cambiar a true si el Bot responde a sus comandos con otros comandos.
@@ -16,7 +16,7 @@ global.isBaileysFail = false
 global.defaultLenguaje = 'es';
 
 global.lidOwners = [
-  "128213531545849",
+  "+51971313887",
   "29717298188532",
   "5219994092751",
   "5217421108292"
