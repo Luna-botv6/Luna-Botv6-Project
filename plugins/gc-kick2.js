@@ -102,9 +102,9 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
   }
 };
 
-handler.help = ['kick <@user>', 'echar <@user>'];
+handler.help = ['kick'];
 handler.tags = ['group'];
-handler.command = /^(kick|echar|hechar|sacar)$/i;
-handler.group = true;
+handler.command = /^(kick|ban|poñonoin|expulsar|eliminar|echar|sacar)$/i;
+handler.admin = handler.group = handler.botAdmin = true;
 
 export default handler;

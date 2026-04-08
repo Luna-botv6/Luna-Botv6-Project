@@ -26,7 +26,7 @@ const handler = async (m, { conn, isOwner, usedPrefix, command }) => {
   target = finalCheck.id
 
   const warns = await removeWarning(target)
-  await m.reply(`♻️ Se eliminó una advertencia a @${target.split('@')[0]}.\n📊 Advertencias actuales: ${warns}/3`, null, { mentions: [target] })
+  await m.reply(`♻️ Se eliminó una advertencia a @${target.split('@')[0]}.\n📊 Advertencias actuales: ${warns}/4`, null, { mentions: [target] })
 }
 
 handler.command = /^(unwarn|delwarn|deladvertencia|deladvertir)$/i

@@ -65,10 +65,7 @@ const handler = async (m, { isOwner, conn, text, args, command, usedPrefix }) =>
     }
 
     await conn.groupParticipantsUpdate(m.chat, [user], 'promote');
-    
-    clearGroupCache(m.chat);
-    
-    await m.reply(`✅ @${user.split('@')[0]} ha sido promovido a administrador.`, null, { mentions: [user] });
+    await m.reply(`✅ @${user.split('@')[0]} ha sido promovido a administrador por @${realUserJid.split('@')[0]}.`, null, { mentions: [user, realUserJid] });
   } catch (e) {
     console.error(e);
     await m.reply('*[◉] No se pudo promover al usuario. Verifica que yo sea admin y que el usuario sea un miembro del grupo.*');

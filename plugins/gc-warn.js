@@ -32,15 +32,15 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
   const reason = text?.replace(/@\d+/g, '').trim() || 'Sin motivo especificado.';
   const warns = await addWarning(target);
 
-  await m.reply(`⚠️ El usuario @${target.split('@')[0]} ha sido advertido.\n📄 Motivo: ${reason}\n📊 Advertencias: ${warns}/3`, null, { mentions: [target] });
+  await m.reply(`⚠️ El usuario @${target.split('@')[0]} ha sido advertido.\n📄 Motivo: ${reason}\n📊 Advertencias: ${warns}/4`, null, { mentions: [target] });
 
-  if (warns >= 3) {
+  if (warns >= 4) {
     await resetWarnings(target);
     await conn.groupParticipantsUpdate(m.chat, [target], 'remove');
     
     clearGroupCache(m.chat);
     
-    await m.reply(`🚷 El usuario @${target.split('@')[0]} fue expulsado por acumular 3 advertencias.`, null, { mentions: [target] });
+    await m.reply(`🚷 El usuario @${target.split('@')[0]} fue expulsado por acumular 4 advertencias.`, null, { mentions: [target] });
   }
 };
 
