@@ -108,48 +108,39 @@ const LunaBot = {
 <tr>
 <td>
 
-## ✅ 25/03/2026 – Optimización Profunda del Core del Bot 🚀
+## 🌍 11/04/2026 – Sistema Multi-Idioma Integrado 🌐
 
-### 🧠 handler.js
-- ✅ Checks de `admin` y `botAdmin` corregidos (estaban invertidos, siempre fallaban)
-- ✅ `isAdmin` e `isBotAdmin` ahora se calculan en tiempo real para cada usuario
-- ✅ Eliminado `import()` dinámico dentro del loop de plugins (mejora de arranque)
-- ✅ Corregido memory leak en sistema de cola (`setInterval` sin referencia)
-- ✅ Eliminado setter ilegal de `mentionedJid` que causaba crash en protobuf
-- ✅ `participantsUpdate` con optional chaining para evitar crash por idioma faltante
+### 🧠 Sistema de Traducciones
+- ✅ Se implementó el sistema global de idiomas usando archivos JSON (`es.json`, `en.json`, `pt.json`)
+- ✅ Todos los plugins ahora utilizan variables dinámicas (`t.*`) en lugar de textos directos
+- ✅ Eliminado el hardcodeo de mensajes dentro del código
+- ✅ Estructura unificada: `plugins.nombre_del_plugin`
+- ✅ Compatibilidad total con el sistema existente del bot
 
-### ⚡ main.js
-- ✅ `cachedGroupMetadata` corregido — ahora Baileys usa el caché real de grupos
-- ✅ Listeners `groups.update` y `group-participants.update` según doc de Baileys
-- ✅ Eliminado listener duplicado de `connection.update` que causaba doble ejecución
-- ✅ Logs de consola limpiados — sin spam al iniciar ni al reconectar
-- ✅ Limpieza automática de `src/libraries/tmp` cada 24 horas
+### 🌐 Comando de Idioma
+- 🗣️ Ahora puedes cambiar el idioma del bot por usuario usando:
 
-### 🔐 pluginHelper.js
-- ✅ `isAdmin` ya no se cachea por grupo — se calcula por sender en cada llamada
-- ✅ Migración automática de JSON con formato viejo al arrancar
-- ✅ Validación del JSON de admins — se auto-repara si está corrupto
-- ✅ Fallback al caché en disco cuando WhatsApp devuelve `rate-overlimit`
-- ✅ Deduplicación de queries a `groupMetadata` con mapa de promesas en vuelo
+  .idioma es  
+  .idioma en  
+  .idioma pt  
 
-### 🔗 lid-resolver.js
-- ✅ Resolución LID→JID en O(1) con caché en memoria
-- ✅ Fallback a `groupCache` cuando el LID no está en caché aún
-- ✅ Eliminado log de warning innecesario en consola
+- 📌 Ejemplo:
+  
+  .idioma pt  
 
-### 👥 groupMetadata.js
-- ✅ Corregido bug crítico: `addAdminToCache` recibía número sin `@` — nunca coincidía
-- ✅ Guarda campo `lid` en participants para resolución correcta
+- ✅ El idioma se guarda automáticamente por usuario
+- ✅ Todos los mensajes del bot se adaptan al idioma seleccionado
 
-### 🎂 cumple.js
-- ✅ Estado del checker persistido en disco — ya no falla si el bot se reinicia
-- ✅ Ventana de envío ampliada a todo el día desde las 8 AM
+### ⚙️ Beneficios
+- ✅ Soporte completo para Español, Inglés y Portugués
+- ✅ Sistema escalable para agregar nuevos idiomas fácilmente
+- ✅ Código más limpio y mantenible
+- ✅ Mejor experiencia para usuarios internacionales
 
-### 📈 Resultados
-- ✅ Detección de admin 100% correcta en grupos grandes con LID
-- ✅ Cero `rate-overlimit` por queries duplicadas a WhatsApp
-- ✅ Menor consumo de RAM — una sola fuente de verdad para metadata de grupos
-- ✅ Baileys aprovechado al máximo según su documentación oficial
+### 📈 Resultado
+- 🌍 Bot completamente multilenguaje
+- 🧩 Plugins organizados y centralizados
+- ⚡ Base lista para futuras expansiones sin modificar lógica
 
 </td>
 </tr>
