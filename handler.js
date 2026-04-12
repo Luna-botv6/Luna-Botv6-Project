@@ -47,7 +47,7 @@ async function loadTranslation(idioma) {
   const cached = translationsCache.get(idioma);
   if (cached) return cached;
   try {
-    const data = await readFile(`./src/languages/${idioma}.json`, 'utf8');
+    const data = await readFile(`./src/lunaidiomas/${idioma}.json`, 'utf8');
     const parsed = JSON.parse(data);
     translationsCache.set(idioma, parsed);
     return parsed;
@@ -55,6 +55,12 @@ async function loadTranslation(idioma) {
     return {};
   }
 }
+
+global.loadTranslation = loadTranslation;
+global.getIdioma = (m) => {
+  if (m?.isGroup) return global.db?.data?.chats?.[m.chat]?.language || global.defaultLenguaje || 'es';
+  return global.db?.data?.users?.[m?.sender]?.language || global.defaultLenguaje || 'es';
+};
 
 async function loadCustomCommandsOnce(customCommandsDir) {
   if (!fs.existsSync(customCommandsDir)) return;
@@ -193,7 +199,7 @@ chatUpdate.messages = validMessages;
         global.chatgpt.data.users[sender] = [];
       }
 
-      const idioma = global.db.data.users[sender]?.language || global.defaultLenguaje;
+      const idioma = (m.isGroup ? global.db.data.chats?.[chat]?.language : global.db.data.users[sender]?.language) || global.defaultLenguaje;
       const _translate = await loadTranslation(idioma);
       const tradutor = _translate.handler?.handler || {};
 
@@ -379,7 +385,7 @@ chatUpdate.messages = validMessages;
             user.bannedMessageCount = user.bannedMessageCount || 0;
             if (user.bannedMessageCount < 3) {
               const messageNumber = user.bannedMessageCount + 1;
-              const messageText = `${tradutor.texto1?.[0] || 'Estás baneado'}\n${tradutor.texto1?.[1] || 'Mensaje'} ${messageNumber}/3\n${user.bannedReason ? `${tradutor.texto1?.[2] || 'Razón'}: ${user.bannedReason}` : `${tradutor.texto1?.[3] || 'Sin razón especificada'}`}\n${tradutor.texto1?.[4] || 'Contacta al soporte'}`.trim();
+              const messageText = `${tradutor.texto1?.[0]}\n${tradutor.texto1?.[1]} ${messageNumber}/3\n${user.bannedReason ? `${tradutor.texto1?.[2]}: ${user.bannedReason}` : `${tradutor.texto1?.[3]}`}\n${tradutor.texto1?.[4]}`.trim();
               m.reply(messageText);
               user.bannedMessageCount++;
             } else if (user.bannedMessageCount === 3) {
@@ -393,7 +399,7 @@ chatUpdate.messages = validMessages;
             if (user.commandCount >= 2) {
               const remainingTime = Math.ceil((user.lastCommandTime + 5000 - Date.now()) / 1000);
               if (remainingTime > 0) {
-                m.reply(`*[⏱️] Espera* _${remainingTime} segundos_ *antes de usar otro comando.*`);
+                m.reply(`*[⏱️]* _${remainingTime}s_ ${tradutor.antispam || ''}`);
                 continue;
               } else {
                 user.commandCount = 0;
@@ -453,17 +459,17 @@ chatUpdate.messages = validMessages;
           m.isCommand = true;
           const xp = 'exp' in plugin ? parseInt(plugin.exp) : 17;
           if (xp > 200) {
-            m.reply('Haciendo trampa -_-');
+            m.reply(tradutor.trampa || '');
           } else {
             m.exp += xp;
           }
 
           if (!isPrems && plugin.limit && global.db.data.users[m.sender]?.limit < plugin.limit) {
-            m.reply(`${tradutor.texto2 || 'Límite excedido'} _${this.prefix}buyall_`);
+            m.reply(`${tradutor.texto2} _${this.prefix}buyall_`);
             continue;
           }
           if (plugin.level > user?.level) {
-            m.reply(`${tradutor.texto3?.[0] || 'Nivel'} ${plugin.level} ${tradutor.texto3?.[1] || 'requerido'} ${user?.level || 0}, ${tradutor.texto3?.[2] || 'Usa'} ${this.prefix}lvl ${tradutor.texto3?.[3] || 'para subir de nivel'}`);
+            m.reply(`${tradutor.texto3?.[0]} ${plugin.level} ${tradutor.texto3?.[1]} ${user?.level || 0}, ${tradutor.texto3?.[2]} ${this.prefix}lvl ${tradutor.texto3?.[3]}`);
             continue;
           }
 
@@ -525,7 +531,7 @@ chatUpdate.messages = validMessages;
               }
             }
             if (m.limit) {
-              m.reply(`${tradutor.texto4?.[0] || 'Límite usado'} ${m.limit} ${tradutor.texto4?.[1] || 'veces'}`);
+              m.reply(`${tradutor.texto4?.[0]} ${m.limit} ${tradutor.texto4?.[1]}`);
             }
              gcIfNeeded(m?.plugin || 'plugin');
           }
@@ -615,7 +621,11 @@ export async function callUpdate(callUpdate) {
     for (const nk of callUpdate) {
       try {
         if (!nk.isGroup && nk.status === 'offer') {
-          const msg = `Hola *@${nk.from.split('@')[0]}*, ${nk.isVideo ? 'las videollamadas' : 'las llamadas'} no están permitidas. Serás bloqueado.\nContacta a mi creador para ser desbloqueado.`;
+          const idioma = global?.db?.data?.users[nk.from]?.language || global.defaultLenguaje;
+          const _translate = await loadTranslation(idioma);
+          const tradutor = _translate?.handler?.callUpdate || {};
+          const tipoLlamada = nk.isVideo ? tradutor.video : tradutor.voz;
+          const msg = `Hola *@${nk.from.split('@')[0]}*, ${tipoLlamada} ${tradutor.texto1}`;
           await conn.reply(nk.from, msg, false, { mentions: [nk.from] });
           await conn.updateBlockStatus(nk.from, 'block');
         }
@@ -635,7 +645,7 @@ export async function deleteUpdate(message) {
     const tradutor = _translate.handler?.deleteUpdate || {};
 
     let d = new Date(Date.now() + 3600000);
-    let date = d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
+    let date = d.toLocaleDateString(idioma, { day: 'numeric', month: 'long', year: 'numeric' });
     let time = d.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
 
     let msg = conn.serializeM(conn.loadMessage(id));
@@ -644,7 +654,7 @@ export async function deleteUpdate(message) {
     let chat = global.db.data.chats[msg.chat] || {};
     if (!chat?.antidelete) return;
 
-    const antideleteMessage = `${tradutor.texto1?.[0] || '🔄 Mensaje eliminado'}\n${tradutor.texto1?.[1] || 'Por'}: @${participant.split('@')[0]}\n${tradutor.texto1?.[2] || 'Hora'}: ${time}\n${tradutor.texto1?.[3] || 'Fecha'}: ${date}`.trim();
+    const antideleteMessage = `${tradutor.texto1?.[0]}\n${tradutor.texto1?.[1]}: @${participant.split('@')[0]}\n${tradutor.texto1?.[2]}: ${time}\n${tradutor.texto1?.[3]}: ${date}`.trim();
 
     await conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [conn.decodeJid(participant)] }, { quoted: msg }).catch(() => {});
     await conn.copyNForward(msg.chat, msg).catch(() => {});
