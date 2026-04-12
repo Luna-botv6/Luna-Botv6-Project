@@ -1,0 +1,1859 @@
+{
+  "handler": {
+    "handler": {
+      "texto1": [
+        "🚫 Estás baneado",
+        "Mensaje",
+        "Razón",
+        "Sin razón especificada",
+        "Contacta al soporte"
+      ],
+      "texto2": "Límite excedido. Usa _",
+      "texto3": [
+        "Nivel",
+        "requerido. Tu nivel actual es",
+        "Usa",
+        "para subir de nivel"
+      ],
+      "texto4": [
+        "Límite usado",
+        "veces"
+      ],
+      "antispam": "⏱️ Espera _ segundos antes de usar otro comando.",
+      "trampa": "Haciendo trampa -_-"
+    },
+    "participantsUpdate": {},
+    "callUpdate": {
+      "video": "las videollamadas",
+      "voz": "las llamadas",
+      "texto1": "no están permitidas. Serás bloqueado.\nContacta a mi creador para ser desbloqueado."
+    },
+    "deleteUpdate": {
+      "texto1": [
+        "🔄 Mensaje eliminado",
+        "Por",
+        "Hora",
+        "Fecha"
+      ]
+    },
+    "dfail": {
+      "texto1": "🚫 Este comando es solo para el dueño principal.",
+      "texto2": "🚫 Este comando es solo para dueños.",
+      "texto3": "🚫 Este comando es solo para moderadores.",
+      "texto4": "🚫 Este comando es solo para usuarios premium.",
+      "texto5": "🚫 Este comando solo se puede usar en grupos.",
+      "texto6": "🚫 Este comando solo se puede usar en privado.",
+      "texto7": "🚫 Este comando es solo para administradores del grupo.",
+      "texto8": "🚫 Necesito ser administrador para ejecutar este comando.",
+      "texto9": "🚫 Necesitas estar registrado para usar este comando.",
+      "texto10": "🚫 Comando restringido.",
+      "texto11": [
+        "Acceso denegado",
+        "No tienes permiso para usar este comando.",
+        "https://wa.me/"
+      ]
+    }
+  },
+  "setidioma": {
+    "titulo": "🌐 *Idiomas disponibles*",
+    "uso": "Usá _/idioma <código>_ para cambiar tu idioma",
+    "invalido": "❌ Idioma inválido. Opciones: {validos}",
+    "no_disponible": "⚠️ Este idioma aún no está disponible.",
+    "ya_activo": "✅ Ya tenés activado {idioma}",
+    "cambiado": "✅ Idioma cambiado a {idioma}"
+  },
+  "menu": {
+    "perfil_titulo": "TU PERFIL",
+    "hola": "Hola",
+    "nivel": "Nivel",
+    "exp": "Exp",
+    "rango": "Rango",
+    "dinero": "Dinero",
+    "limite": "Límite",
+    "registro": "Registro",
+    "premium": "Premium",
+    "info_titulo": "INFO DEL BOT",
+    "canal_oficial": "canal oficial",
+    "informacion": "información",
+    "velocidad": "velocidad",
+    "mi_creador": "mi creador",
+    "texto": "txt",
+    "sincroniza": "sincroniza",
+    "juegos_titulo": "JUEGOS",
+    "ppt_opciones": "papel/tijera/piedra",
+    "nombre_tag": "nombre/@tag",
+    "apuesta": "apuesta",
+    "config_titulo": "CONFIG GRUPO",
+    "descargas_titulo": "DESCARGAS",
+    "usuario": "usr",
+    "admin_titulo": "ADMIN GRUPOS",
+    "numero": "num",
+    "abrir_cerrar": "abrir/cerrar",
+    "audio": "audio",
+    "video": "video",
+    "imagen": "img",
+    "convertidores_titulo": "CONVERTIDORES",
+    "nota_voz": "nota voz",
+    "idioma": "idioma",
+    "efecto": "efecto",
+    "logos_titulo": "LOGOS Y EFECTOS",
+    "ver_efectos": "Ver lista de efectos",
+    "licencia_desc": "Licencia con tu foto",
+    "frases_titulo": "FRASES",
+    "imagenes_titulo": "IMAGENES",
+    "herramientas_titulo": "HERRAMIENTAS",
+    "cantidad": "cant",
+    "pais": "país",
+    "ciudad": "ciudad",
+    "motivo": "motivo",
+    "operacion": "operacion",
+    "mensaje": "msj",
+    "rpg_titulo": "RPG",
+    "tipo": "tipo",
+    "valor": "valor",
+    "stickers_titulo": "STICKERS",
+    "autor": "autor",
+    "attp_titulo": "TEXTO ANIMADO ATTP",
+    "attp_colores": "Cambia de colores",
+    "ttp_titulo": "TEXTO ANIMADO TTP",
+    "ttp3": "El texto rebota",
+    "ttp4": "Zoom con pulso",
+    "ttp5": "Vibra intenso",
+    "ttp6": "Ola de colores",
+    "ttp7": "Aparece y desaparece",
+    "ttp8": "Glitch hacker",
+    "ttp9": "Se escribe solo",
+    "ttp10": "Neón parpadeante",
+    "ttp11": "Cae desde arriba",
+    "ttp12": "Crece desde la nada",
+    "ttp13": "Cada letra un color",
+    "owner_titulo": "OWNER",
+    "prefijo": "prefijo",
+    "botadmin_titulo": "BOT ADMIN",
+    "borrar_chats": "Borra todos los chats",
+    "lista_grupos": "Lista grupos del bot",
+    "limpiar_grupos": "Sale de grupos vacíos",
+    "ia_titulo": "LUNA IA",
+    "ia_desc1": "Hablame natural mencionandome",
+    "ia_desc2": "sin necesidad de comandos 💜",
+    "ia_ver": "ver todo lo que hago",
+    "ia_ejemplos": "Ejemplos rapidos",
+    "ia_ejemplo1": "clima de tu ciudad",
+    "ia_ejemplo2": "activa el modoadmin",
+    "ia_ejemplo3": "genera una imagen",
+    "ia_ejemplo4": "mutea a @usuario",
+    "ia_boton": "🤖 *Luna IA* — Hablame de forma natural mencionándome.\nSin comandos, sin prefijos. Solo hablá 💜",
+    "ia_boton_ver": "Ver menú de IA",
+    "creado": "Creado con ❤️",
+    "error_menu": "❌ Ocurrió un error al mostrar el menú"
+  },
+  "plugins": {
+  "waifu_claim": {
+  "no_waifu": "❌ No tienes ninguna waifu para reclamar. Haz una tirada primero con {prefix}rw",
+  "success": "✅ Has reclamado a tu waifu!\nNombre: {name}\nAnime: {anime}"
+},
+  "waifu_roll": {
+    "cooldown": "⏳ Ya hiciste tu tirada hoy.\nVuelve en {hrs}h {mins}m.",
+    "result": "🎲 Tirada de Waifu!\n\nNombre: {name}\nAnime: {anime}\nRareza: {rarity}\nValor: {value}\nDescripción: {desc}\n\nUsa {prefix}claim para reclamarla."
+  },
+    "instagram_dl": {
+      "no_text": "Ingresa un enlace de Instagram.\n\nEjemplo:\n{example}",
+      "invalid_url": "El enlace no parece ser válido.\n\nEjemplo:\n{example}",
+      "downloading": "Descargando medios de Instagram...",
+      "no_media": "No se pudo obtener ningún medio.",
+      "video_caption": "✅ VIDEO DE INSTAGRAM\nDescargado exitosamente\nFuente: Luna-botv6",
+      "image_caption": "✅ IMAGEN DE INSTAGRAM\nDescargada exitosamente\nFuente: Luna-botv6",
+      "error": "Error al descargar los medios. Intenta con otro enlace o más tarde."
+    },
+    "tiktok_dl": {
+      "no_text": "Ingresa un enlace de TikTok.\n\nEjemplo:\n{example}",
+      "invalid_url": "El enlace no parece ser válido.\n\nEjemplo:\n{example}",
+
+      "step1": "*「 🎵 TikTok 」* 🔎 Buscando video...\n{progress}",
+      "step2": "*「 🎵 TikTok 」* 📡 Conectando al servidor...\n{progress}",
+      "step3": "*「 🎵 TikTok 」* 🔓 Eliminando marca de agua...\n{progress}",
+      "step4": "*「 🎵 TikTok 」* 📦 Preparando descarga...\n{progress}",
+      "step5": "*「 🎵 TikTok 」* ⚡ Descargando video...\n{progress}",
+
+      "no_video": "「 🎵 *TikTok Downloader* 」\n\n❌ No se encontró el video\n{progress}",
+      "ready": "「 🎵 *TikTok Downloader* 」\n\n✅ ¡Video listo!\n{progress}",
+
+      "caption": "「 🎵 *TikTok Downloader* 」\n\n✅ Descargado exitosamente\n🚫 Sin marca de agua\n🎬 Calidad HD",
+
+      "error": "「 🎵 *TikTok Downloader* 」\n\n❌ Error: {error}\n{progress}"
+    },
+    "facebook_dl": {
+      "no_text": "Ingresa un enlace de Facebook.\n\nEjemplo:\n{example}",
+      "invalid_url": "El enlace no parece ser válido.\n\nEjemplo:\n{example}",
+      "downloading": "Descargando video de Facebook...",
+      "no_video": "No se pudo obtener ningún video.",
+      "no_url": "No se encontró URL válida para el video.",
+      "success_caption": "✅ VIDEO DE FACEBOOK\nDescargado exitosamente\nFuente: Luna-botv6",
+      "error": "Error al descargar el video. Intenta con otro enlace o más tarde."
+    },
+    "gc_promote": {
+      "texto1": [
+        "⚠️ Uso incorrecto.",
+        "número"
+      ],
+      "texto2": "❌ Número no válido.",
+      "texto3": "❌ El usuario no está en el grupo.",
+      "texto4": "✅ El usuario ya es administrador.",
+      "texto5": "✨ Ahora es administrador:",
+      "texto6": "❌ Error al promover."
+    },
+    "gc_demote": {
+      "texto1": [
+        "⚠️ Uso incorrecto.",
+        "número"
+      ],
+      "texto2": "❌ No puedo quitarme el rango a mí mismo.",
+      "texto3": "✨ Rango removido a:",
+      "texto4": "❌ El usuario no está en el grupo.",
+      "texto5": "❌ El usuario no es administrador.",
+      "texto6": "❌ Error al quitar el rango."
+    },
+    "gc_fantasmas": {
+      "texto1": "⏰ Espera",
+      "texto2": "✅ No hay fantasmas en el grupo.",
+      "texto3": "inactivo",
+      "texto4": "👻 *REPORTE DE FANTASMAS*",
+      "texto5": "Grupo",
+      "texto6": "Total revisados",
+      "texto7": "Fantasmas",
+      "texto8": "Estos usuarios no han enviado mensajes."
+    },
+    "afk__afk": {
+      "texto1": [
+        "⚠️ Este usuario está en modo AFK",
+        "Razón:",
+        "Razón:",
+        "Sin razón especificada",
+        "Ausente hace:"
+      ],
+      "texto2": [
+        "✅ Bienvenido de vuelta, ya no estás en modo AFK",
+        "Razón:",
+        "Estuviste ausente:"
+      ]
+    },
+    "afk_afk": {
+      "desactivado": "❌ El estado AFK está desactivado en este grupo. Nadie puede usarlo mientras esté desactivado.",
+      "texto1": [
+        "😴 Ahora estás en modo AFK,",
+        "Razón"
+      ]
+    },
+    "antispam_before": {
+      "frases_owner": [
+        "👀 Ey jefe, tranquilo con los comandos que hasta yo me marco...",
+        "😅 Casi te mando una advertencia, menos mal que eres el owner.",
+        "🤙 Oye, ni yo aguanto tanto comando seguido. Respira un poco jefe.",
+        "😂 Si fueras otro usuario ya te hubiera bloqueado. Pero bueno, eres el jefe.",
+        "🙈 Detecte actividad sospechosa... ah no, eres tu. Sigue nomás.",
+        "🫡 A tus ordenes, aunque me cansas un poco con tanto comando..."
+      ],
+      "notify_owner": [
+        "🚨 *Anti-Spam — Usuario bloqueado*",
+        "👤 *Usuario:*",
+        "📍 *Contexto:*",
+        "Grupo",
+        "Chat privado",
+        "🆔 *ID:*",
+        "📊 *Estadisticas:*",
+        "Advertencias:",
+        "Mensajes totales:",
+        "Rafaga detectada:",
+        "comandos en",
+        "⛔ El usuario fue baneado y bloqueado automaticamente."
+      ],
+      "ban": [
+        "⛔ *Fuiste bloqueado por exceso de comandos*",
+        "Mandaste *",
+        " comandos* en menos de *",
+        " segundos* y ya habia recibido *",
+        " advertencias*",
+        " advertencia*",
+        " antes.",
+        "El bot ya no respondera a tus mensajes.",
+        "Si crees que fue un error, contacta al owner:"
+      ],
+      "warn": [
+        "⚠️ *Oye, frena un poco!*",
+        "Detecte *",
+        " comandos* en menos de *",
+        " segundos*. Eso es demasiado rapido.",
+        "Esta es tu advertencia *",
+        "de",
+        "🔴 Una mas y quedas bloqueado permanentemente.",
+        "🟡 Te quedan *",
+        " oportunidades* antes del bloqueo.",
+        "Espera un momento y sigue usando el bot con calma. 🙏"
+      ]
+    },
+    "config_handler": {
+      "sin_sesion": "⚠️ Sesión no válida. El bot no está conectado correctamente.",
+      "solo_grupos": "❌ Este comando solo funciona en grupos",
+      "solo_admins": "❌ Solo admins pueden usar este comando",
+      "solo_owner": "❌ Solo el owner puede usar este comando",
+      "error_config": "❌ Error al guardar la configuración.",
+      "alcance": [
+        "TODO EL BOT",
+        "ESTE CHAT"
+      ],
+      "help": [
+        "*====[ ⚙️ CONFIGURACIÓN ⚙️ ]====*",
+        "(Owner)",
+        "*================================*"
+      ],
+      "resultado": [
+        "✧─── ☾ 𝗖𝗢𝗡𝗙𝗜𝗚 𝗟𝗨𝗡𝗔 ☽ ───✧",
+        "Función:",
+        "Estado:",
+        "ACTIVADA",
+        "DESACTIVADA",
+        "Alcance:",
+        "✨──────────────────✨"
+      ],
+      "descripcion": "🎉 *WELCOME* - {prefix}{command} welcome\n   Activa o desactiva el mensaje de bienvenida cuando alguien entra al grupo.\n\n🚫 *ANTILINK* - {prefix}{command} antilink\n   Elimina mensajes que contengan enlaces de otros grupos de WhatsApp.\n\n🚫 *ANTILINK2* - {prefix}{command} antilink2\n   Versión más estricta del antilink, detecta y elimina casi cualquier tipo de enlace.\n\n🔐 *RESTRICT* - {prefix}{command} restrict {value}\n   Activa las restricciones del grupo para eliminar integrantes (solo owner).\n\n📖 *AUTOREAD* - {prefix}{command} autoread {value}\n   Marca automáticamente como leídos todos los mensajes que recibe el bot.\n\n🎵 *AUDIOS* - {prefix}{command} audios\n   Activa o desactiva la respuesta automática con audios.\n\n🏷️ *AUTOSTICKER* - {prefix}{command} autosticker\n   Convierte automáticamente en sticker imágenes o videos.\n\n📞 *ANTICALL* - {prefix}{command} anticall {value}\n   Bloquea automáticamente las llamadas entrantes.\n\n☢️ *ANTITOXIC* - {prefix}{command} antitoxic\n   Detecta y elimina mensajes con palabras tóxicas.\n\n👑 *MODOADMIN* - {prefix}{command} modoadmin\n   Solo admins pueden usar comandos.\n\n⏰ *AFK* - {prefix}{command} afk\n   Controla el uso del modo AFK.\n\n🗑️ *ANTIDELETE* - {prefix}{command} antidelete\n   Evita que se eliminen mensajes.\n\n📊 *AUDIOS_BOT* - {prefix}{command} audios_bot {value}\n   Activa o desactiva los audios del bot.\n\n🎯 *ANTISPAM* - {prefix}{command} antispam {value}\n   Bloquea usuarios spam.\n\n📝 *ANTIPRIVADO* - {prefix}{command} antiprivado {value}\n   Impide mensajes privados.\n\n🌐 *MODOPUBLICO* - {prefix}{command} modopublico {value}\n   Cambia a modo público.\n\n👀 *VIEWIMAGE* - {prefix}{command} viewimage {value}\n   Activa vista previa de imágenes.\n\n🢀 *MODOGRUPOS* - {prefix}{command} modogrupos {value}\n   Permite solo uso en grupos."
+    },
+    "audio_efectos": {
+      "texto1": "⚠️ Responde a un audio usando el comando",
+      "texto2": "❌ Error al procesar el audio"
+    },
+    "convertidor_toanime": {
+      "texto1": "⚠️ Responde a una imagen",
+      "texto2": "🎌 Convirtiendo a anime...",
+      "texto3": "❌ Error al convertir la imagen a anime"
+    },
+    "rpg_minar": {
+      "texto1": [
+        "⏳ Debes esperar",
+        "para volver a minar"
+      ],
+      "texto2": [
+        "╭━〔 *Minería exitosa* 〕━⬣",
+        "┃⛏️ Has minado con tu pico virtual...",
+        "┃✨ Ganaste",
+        "┃⌛ Podrás minar de nuevo en *10 minutos*",
+        "╰━━━━━━━━━━━━━━━━━━⬣"
+      ]
+    },
+    "fun_calculador": {
+      "texto1": [
+        "es un poco",
+        "de",
+        "Pero puede mejorar 😌"
+      ],
+      "texto2": [
+        "es totalmente",
+        "de",
+        "Sin dudas 🔥"
+      ],
+      "texto3": [
+        "tiene nivel medio de",
+        "de",
+        "Nada mal 😎"
+      ],
+      "texto4": [
+        "es un poco",
+        "lesbiana",
+        "Pero puede mejorar 😌"
+      ],
+      "texto5": [
+        "es totalmente",
+        "lesbiana",
+        "Sin dudas 🔥"
+      ],
+      "texto6": [
+        "tiene nivel medio de",
+        "lesbiana",
+        "Nada mal 😎"
+      ],
+      "texto7": [
+        "es un poco",
+        "pajer@",
+        "Controlate 😳"
+      ],
+      "texto8": [
+        "es totalmente",
+        "pajer@",
+        "Ya es costumbre 😏"
+      ],
+      "texto9": [
+        "tiene nivel medio de",
+        "pajer@",
+        "Normal supongo 🤨"
+      ],
+      "texto10": [
+        "es un poco",
+        "put@",
+        "Hmm sospechoso 😳"
+      ],
+      "texto11": [
+        "es totalmente",
+        "put@",
+        "Confirmado 🔥"
+      ],
+      "texto12": [
+        "tiene nivel medio de",
+        "put@",
+        "Interesante 🤔"
+      ],
+      "texto13": [
+        "es un poco",
+        "manc@",
+        "Practica más 😅"
+      ],
+      "texto14": [
+        "es totalmente",
+        "manc@",
+        "Nivel dios 💩"
+      ],
+      "texto15": [
+        "tiene nivel medio de",
+        "manc@",
+        "Puede mejorar 😎"
+      ],
+      "texto16": [
+        "es un poco",
+        "rata",
+        "Cuida tus monedas 🐀"
+      ],
+      "texto17": [
+        "es totalmente",
+        "rata",
+        "No gasta nada 💰"
+      ],
+      "texto18": [
+        "tiene nivel medio de",
+        "rata",
+        "Ahorra bastante 😏"
+      ],
+      "texto19": [
+        "es un poco",
+        "prostitut@",
+        "Cuidado 😳"
+      ],
+      "texto20": [
+        "es totalmente",
+        "prostitut@",
+        "Nivel experto 🔥"
+      ],
+      "texto21": [
+        "tiene nivel medio de",
+        "prostitut@",
+        "Puede ser 😏"
+      ],
+      "texto22": "❌ Comando inválido",
+      "texto23": [
+        "El resultado no miente 😈",
+        "Esto fue calculado científicamente 🧪",
+        "100% real no fake 😎"
+      ],
+      "texto24": "Calculadora",
+      "texto25": "Calculando...",
+      "texto26": "❌ Etiqueta a alguien"
+    },
+    "calcular": {
+      "texto1": "✨ *Uso correcto:*",
+      "texto2": "🔹 *Ejemplo:*",
+      "texto3": "usuario",
+      "texto4": "🧠✨ Calculando el nivel de",
+      "texto5": "para",
+      "texto6": "⏳ Procesando resultados...",
+      "texto7": "🔥 Es un auténtico mestre.",
+      "texto8": "💫 Tiene un nivel envidiable.",
+      "texto9": "✨ No está nada mal.",
+      "texto10": "😅 Podría mejorar un poco.",
+      "texto11": "🙈 Mejor ni hablamos...",
+      "texto12": "✅✨ Resultado completado:",
+      "texto13": "tiene un nivel de",
+      "texto14": "del"
+    },
+    "formarpareja": {
+      "texto1": "❌ No se encontraron participantes en el grupo.",
+      "texto2": "❌ Se necesitan al menos 2 participantes para formar una pareja.",
+      "texto3": "💔 ¡No hay química! Mejor busca a alguien más...",
+      "texto4": "😕 Puede ser una amistad... pero no más.",
+      "texto5": "🤔 Hay algo... pero deben trabajar en ello.",
+      "texto6": "😊 ¡Linda conexión, podrían ser algo bonito!",
+      "texto7": "😍 ¡Wow! Son una pareja genial, ¡se nota la chispa!",
+      "texto8": "💍 ¡Almas gemelas! ¡Cásense ya!",
+      "texto9": "PAREJA IDEAL",
+      "texto10": "debería hacer pareja con",
+      "texto11": "Compatibilidad",
+      "texto12": "❌ Ocurrió un error al intentar formar la pareja."
+    },
+    "love": {
+      "texto1": "*Usa el comando así:*",
+      "texto2": "Ejemplos:",
+      "texto3": "¡Almas gemelas! El destino los une para siempre.",
+      "texto4": "Hay una conexión muy fuerte entre ustedes.",
+      "texto5": "Tienen potencial, pero deben conocerse más.",
+      "texto6": "Podrían intentarlo, aunque hay diferencias.",
+      "texto7": "Tal vez solo sea amistad… o ni eso.",
+      "texto8": "Test del Amor",
+      "texto9": "Pareja",
+      "texto10": "Compatibilidad",
+      "texto11": "Resultado",
+      "texto12": "🌟 ¡Una conexión perfecta! Las estrellas se alinean para ustedes.",
+      "texto13": "💫 ¡Increíble química! El amor está en el aire.",
+      "texto14": "✨ ¡Muy compatible! Podrían tener un futuro brillante juntos.",
+      "texto15": "🌙 Buena conexión, con potencial para crecer.",
+      "texto16": "🌸 Hay algo especial aquí, vale la pena explorarlo.",
+      "texto17": "🍀 Podrían funcionar con el esfuerzo adecuado.",
+      "texto18": "🌿 Tal vez como amigos sea mejor opción.",
+      "texto19": "🍃 La amistad podría ser el camino ideal.",
+      "texto20": "🌫️ Mejor mantener la distancia por ahora.",
+      "texto21": "🌨️ Parece que no hay chispa entre ustedes."
+    },
+    "fun_reto": {
+      "texto1": [
+        "Envía un mensaje a tu crush 😳",
+        "Habla 1 minuto sin parar 😂",
+        "Canta una canción en el grupo 🎤",
+        "Di un secreto tuyo 🤫",
+        "Manda un audio diciendo algo vergonzoso 😅"
+      ],
+      "texto2": "*┌────「 RETO 」─*",
+      "texto3": "*└────「 MYSTIC 」─*"
+    },
+    "share": {
+      "texto1": "Usa el comando así:",
+      "texto2": "Resultado compartido"
+    },
+    "fun_top": {
+      "texto1": "❌ Por favor proporciona un criterio para el top",
+      "texto2": "❌ No se encontraron participantes en el grupo.",
+      "texto3": "❌ Se necesitan al menos 10 participantes. Hay",
+      "texto4": "participantes.",
+      "texto5": "Top 10",
+      "texto6": "❌ Error"
+    },
+    "fun_tops": {
+      "texto1": "🏳️‍🌈 TOP GAYS 🏳️‍🌈",
+      "texto2": "🎌 TOP OTAKUS 🎌"
+    },
+    "stats": {
+      "texto1": "Estadísticas",
+      "texto2": "Usuario",
+      "texto3": "Nivel",
+      "texto4": "Rango",
+      "texto5": "Experiencia",
+      "texto6": "Progreso",
+      "texto7": "Para subir",
+      "texto8": "Recursos",
+      "texto9": "Diamantes",
+      "texto10": "Luna Coins",
+      "texto11": "Mystic Coins",
+      "texto12": "Otros datos",
+      "texto13": "Límite",
+      "texto14": "Participaciones",
+      "texto15": "Premium",
+      "texto16": "Sí",
+      "texto17": "No",
+      "texto18": "🌌 ¡Eres una leyenda cósmica! Has alcanzado las estrellas.",
+      "texto19": "⭐ ¡Poder supremo! Pocos han llegado tan lejos.",
+      "texto20": "🌟 ¡Ser celestial! Tu dedicación es inspiradora.",
+      "texto21": "👑 ¡Emperador divino! Dominas este reino.",
+      "texto22": "🔱 ¡Titán imparable! Tu fuerza es legendaria.",
+      "texto23": "⚡ ¡Semidiós! El poder fluye a través de ti.",
+      "texto24": "🏆 ¡Campeón supremo! Has demostrado tu valía.",
+      "texto25": "🦅 ¡Como un fénix! Renaces más fuerte.",
+      "texto26": "🐉 ¡Dragón poderoso! Tu rugido se escucha en todo el reino.",
+      "texto27": "👹 ¡Fuerza demoníaca! Nada puede detenerte.",
+      "texto28": "💎 ¡Leyenda viviente! Tu nombre será recordado.",
+      "texto29": "🌙 ¡Poder místico! La magia te acompaña.",
+      "texto30": "🔥 ¡Maestro consumado! Tu habilidad es notable.",
+      "texto31": "⚔️ ¡Guerrero épico! Tu valentía es admirable.",
+      "texto32": "⭐ ¡Veterano respetado! La experiencia te respalda.",
+      "texto33": "🏅 ¡Usuario avanzado! Sigues progresando bien.",
+      "texto34": "📘 ¡Buen progreso! Estás aprendiendo rápido.",
+      "texto35": "🧰 ¡Bienvenido novato! Tu aventura apenas comienza."
+    },
+    "cambiar": {
+      "texto1": "❌ Usa el comando correctamente:",
+      "texto2": "❌ Ingresa una cantidad válida y mayor que 0.",
+      "texto3": "❌ No tienes suficiente Exp. Necesitas",
+      "texto4": "de Exp para obtener",
+      "texto5": "diamantes.",
+      "texto6": "✅ Cambio realizado:",
+      "texto7": "Has cambiado",
+      "texto8": "de Exp por",
+      "texto9": "diamantes.",
+      "texto10": "Ahora tienes:",
+      "texto11": "❌ No tienes suficientes Diamantes. Tienes",
+      "texto12": "diamantes.",
+      "texto13": "Has cambiado",
+      "texto14": "de Exp."
+    },
+    "comprarprote": {
+      "texto1": "🛡️ Opciones de Protección disponibles:",
+      "texto2": "horas",
+      "texto3": "diamantes",
+      "texto4": "Para comprar usa:",
+      "texto5": "Ejemplo: /comprarprote 5",
+      "texto6": "❌ Opción inválida. Usa el comando sin parámetros para ver las opciones disponibles.",
+      "texto7": "💎 diamantes",
+      "texto8": "✨ experiencia",
+      "texto9": "❌ No tienes suficientes:",
+      "texto10": "✅ Protección comprada por",
+      "texto11": "Has ganado"
+    },
+    "game_delttt": {
+      "texto1": "❌ No estás en ninguna partida de Tic Tac Toe.",
+      "texto2": "🎮 Crear partida",
+      "texto3": "crear",
+      "texto4": "✅ Partida de Tic Tac Toe eliminada correctamente."
+    },
+    "rpg_balance": {
+      "texto1": [
+        "╭━━━〔 💰 Balance 〕━━━⬣",
+        "👤 Usuario:",
+        "💎 Diamantes:",
+        "━━━━━━━━━━━━━━",
+        "🛒 Tienda disponible",
+        "━━━━━━━━━━━━━━",
+        "<objeto>"
+      ]
+    },
+    "rpg_shop": {
+      "texto1": [
+        "┏----------⬣",
+        "┃ *Compra Finalizada*",
+        "┃ *Gastado*",
+        "┗----------⬣"
+      ],
+      "texto2": "Lo siento, no tienes suficiente XP para comprar",
+      "texto3": "diamantes."
+    },
+    "rpg_cofre": {
+      "texto1": [
+        "⚠️ Ya has reclamado tu cofre. Vuelve en",
+        "para más recompensas."
+      ],
+      "texto2": [
+        "╔════〔 📦 **COFRE RECOMPENSA** 〕════╗",
+        "║",
+        "║ ¡Has abierto un cofre del tesoro!",
+        "Experiencia",
+        "Diamantes",
+        "MysticCoins",
+        "Estado Premium:",
+        "╚═══════════════════════════╝"
+      ]
+    },
+    "rpg_crime": {
+      "texto1": "¡Cuidado! La policía te busca. Espera",
+      "texto2": "Pagaste una multa de:",
+      "texto3": "Lograste escapar con:",
+      "texto4": [
+        "¡Asalto impecable! El banco no supo qué pasó.",
+        "Robaste una joyería de lujo y nadie te vio.",
+        "Hackeaste un cajero automático con éxito."
+      ],
+      "texto5": [
+        "¡La policía te atrapó en plena fuga!",
+        "Un civil te delató y terminaste en la comisaría.",
+        "La alarma sonó antes de que pudieras escapar."
+      ],
+      "texto6": "diamantes"
+    },
+    "rpg_levelup": {
+      "texto1": "¡Subiste de Nivel!",
+      "texto2": "Nivel anterior:",
+      "texto3": "Nivel actual:",
+      "texto4": "Rango:",
+      "texto5": "Gremio de Aventureros",
+      "texto6": "Felicidades",
+      "texto7": "Bienvenido",
+      "texto8": "Rango actual:",
+      "texto9": "Experiencia:",
+      "texto10": "diamantes",
+      "texto11": [
+        "Te faltan",
+        "XP para subir. ¡Sigue así!"
+      ]
+    },
+    "rpg_mystic": {
+      "texto1": [
+        "¡Aún estás agotado!",
+        "Podrás canalizar energía mística nuevamente en",
+        "Recupera tu energía y vuelve pronto"
+      ],
+      "texto2": [
+        "CANALIZACIÓN EXITOSA",
+        "Has obtenido",
+        "Total acumulado:",
+        "Podrás canalizar de nuevo en 10 minutos",
+        "¡Sigue canalizando para obtener más MysticCoins!"
+      ],
+      "texto3": "Error: Hubo un problema al canalizar energía. Intenta nuevamente."
+    },
+    "rpg_minardiamantes": {
+      "texto1": [
+        "¡Aún estás cansado!",
+        "Podrás minar diamantes nuevamente en",
+        "Descansa un poco y vuelve pronto"
+      ],
+      "texto2": [
+        "MINADO EXITOSO",
+        "Has encontrado",
+        "Total acumulado:",
+        "Podrás volver a minar en 10 minutos",
+        "¡Sigue minando para conseguir más diamantes!",
+        "diamantes"
+      ],
+      "texto3": "Error: Hubo un problema al minar diamantes. Intenta nuevamente."
+    },
+    "rpg_leaderboard": {
+      "texto1": "No hay aventureros registrados aún.",
+      "texto2": "Ningún aventurero de este grupo tiene estadísticas aún.",
+      "texto3": "Tu posición:",
+      "texto4": "de",
+      "texto5": "No estás en el top",
+      "texto6": "Los tops de este grupo",
+      "texto7": "Top Experiencia",
+      "texto8": "Top Nivel",
+      "texto9": "Top Diamantes",
+      "texto10": "Cada paso forja tu leyenda",
+      "texto11": "nivel"
+    },
+    "rpg_profile": {
+      "texto1": "Perfil de Usuario",
+      "texto2": "Nombre",
+      "texto3": "Número",
+      "texto4": "Nivel",
+      "texto5": "Rango",
+      "texto6": "Diamantes",
+      "texto7": "Límite",
+      "texto8": "Participaciones",
+      "texto9": "Sí",
+      "texto10": "No"
+    },
+    "rpg_juegolimit": {
+      "texto1": [
+        "Espera",
+        "minutos antes de volver a jugar."
+      ],
+      "texto2": "Adivina un número del 1 al 5.",
+      "texto3": "Ejemplo de uso",
+      "texto4": "Ingresa un número válido entre 1 y 5.",
+      "texto5": "¡Correcto! El número era",
+      "texto6": "Ganaste",
+      "texto7": "límites",
+      "texto8": "Fallaste. El número era",
+      "texto9": "¡Suerte para la próxima!"
+    },
+    "rpg_daily": {
+      "texto1": [
+        "Ya has reclamado tu regalo.",
+        "vuelve en"
+      ],
+      "texto2": "RECOMPENSA DIARIA",
+      "texto3": [
+        "¡Botín Premium Recogido!",
+        "¡Botín Diario Recogido!"
+      ],
+      "texto4": "Diamantes"
+    },
+    "rpg_robar": {
+      "texto1": "Debes mencionar a alguien para robarle.",
+      "texto2": "¿Robarte a ti mismo? Eso no tiene sentido.",
+      "texto3": "El usuario",
+      "texto4": "tiene protección activada y no puedes robarle XP ni diamantes.",
+      "texto5": "Ya robaste recientemente. Espera",
+      "texto6": "no tiene experiencia para robarle.",
+      "texto7": "Le robaste",
+      "texto8": "Le robaste"
+    },
+    "rpg_robardiamantes": {
+      "texto1": "Debes esperar",
+      "texto2": "para volver a robar diamantes.",
+      "texto3": "Etiqueta a alguien para robarle diamantes.",
+      "texto4": "está protegido y no puedes robarle diamantes.",
+      "texto5": "No se puede robar, el usuario no tiene diamantes.",
+      "texto6": "Robaste",
+      "texto7": "diamantes de un pobre",
+      "texto8": "Robaste",
+      "texto9": "diamantes a"
+    },
+    "rpg_work": {
+      "texto1": "¡Espera un momento, aventurero!",
+      "texto2": "Vuelve a trabajar en",
+      "texto3": "¡Aventura completada!",
+      "texto4": "Ganaste",
+      "texto5": "de experiencia",
+      "texto6": "diamantes",
+      "texto7": "Nivel actual",
+      "tiempo": [
+        "minutos",
+        "segundos"
+      ],
+      "mensajes": [
+        "Trabajaste duro y ganaste recompensas valiosas.",
+        "Tu esfuerzo fue reconocido y te pagaron bien.",
+        "Otro día de trabajo productivo, sigue así.",
+        "Has completado tu jornada laboral con éxito.",
+        "Ganaste experiencia y diamantes por tu trabajo."
+      ]
+    },
+    "rpg_transferir": {
+      "confirmar": "Si",
+      "cancelar": "No",
+      "texto1": "*Tienes una transferencia pendiente.* Responde *Si* o *No* para continuar.",
+      "texto2": [
+        "Comando Transferir",
+        "Transfiere tus recursos a otro usuario con este comando",
+        "Para transferir",
+        "Nota",
+        "Debes mencionar al usuario destinatario",
+        "Responde",
+        "para confirmar la transferencia o",
+        "para cancelarla cuando se te pida"
+      ],
+      "texto3": "diamantes",
+      "texto4": "No tienes suficientes",
+      "texto5": "para transferir",
+      "texto6": [
+        "Confirmación de transferencia",
+        "¿Quieres transferir",
+        "a",
+        "para confirmar o",
+        "para cancelar"
+      ],
+      "texto7": "Tiempo agotado, transferencia cancelada.",
+      "texto8": "Transferencia cancelada.",
+      "texto9": "Ya no tienes suficientes",
+      "texto10": [
+        "Has transferido",
+        "a"
+      ]
+    },
+    "rpg_adivemoji": {
+      "texto1": "Ya hay un juego activo. Usa /pista3 o /rpta3 para responder.",
+      "texto2": "Indica la dificultad",
+      "texto3": "¡Adivina el emoji!",
+      "texto4": "Tienes",
+      "texto5": "segundos",
+      "texto6": "Usa",
+      "texto7": "Responde con",
+      "texto8": "tu_respuesta",
+      "texto9": "No hay ningún juego activo.",
+      "texto10": "Pista",
+      "texto11": "No hay ningún juego activo. Usa /adivemoji para empezar.",
+      "texto12": "Escribe tu respuesta",
+      "texto13": "¡Tiempo agotado! La respuesta correcta era",
+      "texto14": "¡Correcto!",
+      "texto15": "La respuesta era",
+      "texto16": "Recompensa",
+      "texto17": "Respuesta incorrecta. Intenta de nuevo o usa /pista3.",
+      "preguntas": {
+        "facil": [
+          {
+            "emoji": "☕",
+            "respuesta": "café",
+            "pista": "c_ _é"
+          },
+          {
+            "emoji": "📚",
+            "respuesta": "libros",
+            "pista": "l_ _r_s"
+          },
+          {
+            "emoji": "👻",
+            "respuesta": "fantasma",
+            "pista": "f_ _ _ _ _ _a"
+          },
+          {
+            "emoji": "🐱",
+            "respuesta": "gato",
+            "pista": "g_ _ _"
+          }
+        ],
+        "medio": [
+          {
+            "emoji": "⚽️🥅",
+            "respuesta": "fútbol",
+            "pista": "f_ _ _ _l"
+          },
+          {
+            "emoji": "🚗💨",
+            "respuesta": "carrera",
+            "pista": "c_ _ _ _ _a"
+          }
+        ],
+        "dificil": [
+          {
+            "emoji": "🚀🌌🪐",
+            "respuesta": "astronauta",
+            "pista": "a_ _ _ _ _ _ _ _a"
+          },
+          {
+            "emoji": "🏛️⚖️👩‍⚖️",
+            "respuesta": "tribunal",
+            "pista": "t_ _ _ _ _ _l"
+          }
+        ]
+      }
+    },
+    "verbaneados": {
+      "sinBaneados": "✅ No hay usuarios bloqueados por spam.",
+      "titulo": "📛 *Lista de usuarios bloqueados por spam:*",
+      "motivo": "Motivo",
+      "fecha": "Fecha",
+      "por": "Por"
+    },
+    "sticker_wm": {
+      "texto1": "❌ Responde a un sticker.",
+      "texto2": "❌ Solo funciona con stickers (.webp).",
+      "texto3": "❌ No pude procesar el sticker.",
+      "texto4": "❌ No pude descargar el sticker. Intenta de nuevo.",
+      "texto5": "❌ Error al enviar el sticker. Intenta de nuevo."
+    },
+    "sticker_sticker": {
+      "texto1": "❌ Responde a una imagen/video o usa:",
+      "texto2": "❌ URL inválida. Ejemplo:",
+      "texto3": "❌ Error al crear el sticker.",
+      "texto4": "❌ No pude descargar la imagen/video. Intenta de nuevo.",
+      "texto5": "❌ Error al enviar el sticker. Intenta de nuevo."
+    },
+    "sticker_semoji": {
+      "texto1": [
+        "❌ Uso incorrecto",
+        "<tipo> <emoji>",
+        "<emoji>",
+        "📌 Ejemplos:",
+        "• apple 😎",
+        "• google 😂",
+        "• samsung 😭",
+        "• whatsapp 🤖",
+        "• facebook 😍",
+        "• twitter 🐦",
+        "• mozilla 🦊",
+        "• openmoji 😀",
+        "• joypixels 😁",
+        "• htc 🤳",
+        "• microsoft 💻"
+      ],
+      "texto2": "❌ Error al generar el sticker."
+    },
+    "owner_removeexp": {
+      "texto1": "Uso: *removeexp <cantidad> @usuario*\nEjemplo: *removeexp 500 @tag*",
+      "texto2": "La cantidad de experiencia debe ser un número válido y mayor que cero.",
+      "texto3": "Debes mencionar al usuario al que deseas restar EXP.",
+      "titulo": "💢 EXP Eliminada",
+      "para": "Para",
+      "por": "Por",
+      "exp_eliminada": "EXP eliminada",
+      "nivel": "Nivel actual",
+      "rol": "Rol",
+      "exp_antes": "EXP anterior",
+      "exp_actual": "EXP actual",
+      "error": "⌛ Ocurrió un error al procesar el comando"
+    },
+    "iamenu": {
+      "error": "❌ Error al mostrar el menú de IA",
+      "premium_si": "✅ Activo",
+      "premium_no": "❌ Inactivo",
+      "titulo": "✦ 𝗜𝗡𝗧𝗘𝗟𝗜𝗚𝗘𝗡𝗖𝗜𝗔 𝗔𝗥𝗧𝗜𝗙𝗜𝗖𝗜𝗔𝗟 ✦",
+      "perfil": "Perfil de",
+      "nivel": "Nivel",
+      "rango": "Rango",
+      "limite": "Límite",
+      "premium": "Premium",
+      "como_usar_titulo": "🧠 *¿CÓMO USAR LA IA?*",
+      "como_usar_desc": "Sin comandos. Solo mencioname y hablá natural.\nAsí de simple 👇",
+      "como_usar_ejemplo": "¿cómo se hace una pizza casera?",
+      "como_usar_extra": "Eso es todo. La IA entiende tu pregunta y responde al instante.",
+      "buscar_titulo": "📚 *BUSCAR INFORMACIÓN*",
+      "buscar_ej1": "receta de alfajores",
+      "buscar_ej2": "como se preparan los canelones",
+      "def_ej1": "qué es la fotosíntesis",
+      "def_ej2": "qué fue la Guerra Fría",
+      "pers_ej1": "quién fue Nikola Tesla",
+      "pers_ej2": "quién inventó el avión",
+      "fecha_ej1": "cuándo fue la Revolución Francesa",
+      "fecha_ej2": "cuándo nació Lionel Messi",
+      "lugar_ej1": "dónde queda la Patagonia",
+      "lugar_ej2": "capital de Japón",
+      "porque_ej1": "por qué el cielo es azul",
+      "porque_ej2": "cómo funciona el GPS",
+      "medida_ej1": "cuánto mide la Torre Eiffel",
+      "medida_ej2": "cuánto tarda en llegar a Marte",
+      "sign_ej1": "significado de empatía",
+      "sign_ej2": "origen del tango",
+      "juegos_titulo": "🎮 *JUEGOS*",
+      "veo1": "veo veo",
+      "veo2": "dame una pista",
+      "veo3": "cancela el juego",
+      "ahorcado1": "ahorcado fácil / medio / difícil",
+      "ahorcado2": "dame una pista",
+      "rpg_titulo": "⚔️ *RPG & RANGOS*",
+      "rpg1": "mi exp / mis estadísticas",
+      "rpg2": "ver mi perfil de juego",
+      "rpg3": "top del grupo / ver ranking",
+      "rpg4": "reclamar recompensa diaria",
+      "rpg5": "quiero minar diamantes",
+      "mate_titulo": "🧮 *MATEMÁTICAS*",
+      "mate1": "cuánto es 2 + 2",
+      "mate2": "la mitad de 5000",
+      "mate3": "derivada de x³",
+      "mate4": "20% de 800",
+      "mate5": "promedio de 4, 7, 9",
+      "media_titulo": "🖼️ *IMÁGENES & MEDIA*",
+      "img1": "genera una imagen de un dragón",
+      "img2": "crea un dibujo de paisaje espacial",
+      "stick1": "hacer sticker",
+      "stick2": "pasar sticker a imagen",
+      "stick3": "foto de gato / foto de perro",
+      "stick4": "quiero un meme",
+      "ocr": "qué dice la imagen",
+      "descargas_titulo": "🎵 *DESCARGAS*",
+      "desc1": "descarga la música de Tini",
+      "desc2": "playlist de Shakira",
+      "desc3": "texto a voz: hola mundo",
+      "utilidades_titulo": "🌐 *UTILIDADES*",
+      "util1": "traducir al inglés: buen día",
+      "util2": "clima de Buenos Aires",
+      "util3": "cuánto internet tengo",
+      "util4": "estás vivo",
+      "mod_titulo": "🔇 *MODERACIÓN*",
+      "mod_solo_admins": "_· solo admins_",
+      "mod1": "mutea a @usuario _· por 30 min / 2 h_",
+      "mod2": "desmutea a @usuario",
+      "mod3": "expulsa a @usuario",
+      "mod4": "dale admin a @usuario",
+      "mod5": "quita el admin a @usuario",
+      "mod6": "ver advertencias de @usuario",
+      "mod7": "ver fantasmas / quién no habla",
+      "config_titulo": "⚙️ *CONFIG DEL GRUPO*",
+      "config1": "activa el antilink / bienvenida / antidelete",
+      "config2": "activa el antitoxic / autosticker / antispam",
+      "config3": "activa el antiprivado / restrict / afk",
+      "config4": "desactiva [función]",
+      "config5": "cambia el nombre del grupo a [nombre]",
+      "config6": "cambia la descripción a [texto]",
+      "config7": "link del grupo / resetear link / info",
+      "config8": "abre el grupo / cierra el grupo",
+      "config9": "invoca a todos / mencionar todos",
+      "charla_titulo": "💬 *CHARLA LIBRE*",
+      "charla_desc": "Hablame de cualquier cosa 🙂",
+      "charla1": "contame un chiste",
+      "charla2": "dame un consejo",
+      "charla3": "cómo estás",
+      "charla4": "cómo instalo en Termux",
+      "charla5": "quién te hizo",
+      "footer": "_✦ Sin comandos · Solo mencioname y hablá ✦_"
+    },
+    "gc_mute": {
+      "solo_grupos": "*[⚠] Este comando solo funciona en grupos.*",
+      "bot_no_admin": "*[⚠] El bot debe ser administrador para usar este comando.*",
+      "solo_admins": "*[⚠] Solo los administradores pueden usar este comando.*",
+      "usuario_no_encontrado": "*[⚠] Ese usuario no está en el grupo.*",
+      "ya_silenciado": "ya está silenciado.",
+      "ambiguo": "Especificaste *{valor}* pero no dijiste si son minutos u horas.",
+      "ambiguo_ejemplo": "Ejemplo:",
+      "mute_titulo": "🔇 *Silencio activado*",
+      "mute_usuario": "Usuario:",
+      "mute_por": "Por:",
+      "mute_duracion": "Duración:",
+      "sin_limite": "Sin límite de tiempo",
+      "unmute_titulo": "🔊 *Silencio desactivado*",
+      "unmute_desc": "_Ya puede escribir en el grupo._",
+      "no_silenciado": "no está silenciado.",
+      "error": "*[⚠] Error al procesar el comando.*",
+      "uso_unmute": "Uso:",
+      "menu": "🔇 *Silenciar usuario*\n\n*Sin tiempo:*\n{prefix}{cmd} @usuario\n\n*Con tiempo:*\n{prefix}{cmd} @usuario por 30 minutos\n{prefix}{cmd} @usuario por 2 horas\n{prefix}{cmd} @usuario 1h\n\n_El usuario no podrá escribir en el grupo._",
+      "auto_unmute": "ya puede volver a escribir, se cumplió el tiempo de silencio.",
+      "formato_minutos": "minuto",
+      "formato_minutos_pl": "minutos",
+      "formato_horas": "hora",
+      "formato_horas_pl": "horas",
+      "formato_y": "y",
+      "sin_limite_fmt": "sin límite de tiempo"
+    },
+    "lista_mute": {
+      "solo_grupos": "*[⚠] Este comando solo funciona en grupos*",
+      "sin_silenciados": "*[✅] No hay usuarios silenciados en este grupo*",
+      "titulo": "*🔇 USUARIOS SILENCIADOS*",
+      "expira": "expira en *{min} min*",
+      "sin_limite": "sin límite",
+      "total": "*Total:*",
+      "usuarios": "usuario(s)"
+    },
+    "owner_restart": {
+      "reiniciando": "🔄 Reiniciando sistema, espera un momento...",
+      "reiniciado": "✅ Sistema reiniciado exitosamente, estoy de vuelta 🌙"
+    },
+    "game_cazar": {
+      "cooldown_segundos": "⏳ Casi listo... espera *{seg} segundo(s)* más antes de cazar.",
+      "cooldown_espera": [
+        "⏳ Aún estás recuperándote. Vuelve en *{min} minuto(s)*.",
+        "🏥 Los médicos no te dan el alta todavía. *{min} minuto(s)* más.",
+        "😴 Tu cazador aún está durmiendo el golpe. *{min} minuto(s)* restantes.",
+        "🩹 Tus heridas necesitan *{min} minuto(s)* más para sanar.",
+        "🌀 El portal dimensional sigue inestable. Espera *{min} minuto(s)*.",
+        "💀 Estás técnicamente vivo pero necesitas *{min} minuto(s)* para confirmarlo.",
+        "🛌 El curandero dice que si salís antes de *{min} minuto(s)* no responde por las consecuencias."
+      ]
+    },
+    "cumple": {
+      "solo_admins": "🌙 *Luna-Botv6-Project*\n\n❌ Solo admins y el owner pueden usar este comando.",
+      "help": "🌙 *Luna-Botv6-Project*\n\n🎂 *Comando: Cumpleaños*\n\n*Agregar uno o varios:*\n_.cumple @tag 11 de marzo_\n_.cumple @tag1 5 de mayo @tag2 20 de junio_\n\n*Ver lista del grupo:*\n_.cumple lista_\n\n*Backup:*\n_.cumple backup_",
+      "help_set": "🌙 *Luna-Botv6-Project*\n\n✏️ *Editar cumpleaños*\n\n_Usá el comando así:_\n_.setcumple @tag 25 de diciembre_\n\n_O para borrar:_\n_.delcumple @tag_",
+      "help_del": "🌙 *Luna-Botv6-Project*\n\n_Usá: .delcumple @tag_",
+      "fecha_invalida": "🌙 *Luna-Botv6-Project*\n\n❓ No entendí la fecha para @{tag}\n\n_Ejemplo: .setcumple @tag 25 de diciembre_",
+      "actualizado": "🌙 *Luna-Botv6-Project*\n\n✅ Cumpleaños de @{tag} actualizado\n📅 {dia} de {mes}",
+      "eliminado": "🌙 *Luna-Botv6-Project*\n\n🗑️ Cumpleaños de @{tag} eliminado",
+      "no_registrado": "🌙 *Luna-Botv6-Project*\n\n❓ @{tag} no tiene cumpleaños registrado",
+      "lista_vacia": "🌙 *Luna-Botv6-Project*\n\n📋 No hay cumpleaños registrados en este grupo.",
+      "lista_titulo": "🌙 *Luna-Botv6-Project*\n\n🎂 *Cumpleaños del grupo*",
+      "backup_ok": "🌙 *Luna-Botv6-Project*\n\n💾 Backup creado: _{path}_",
+      "registrados_titulo": "🌙 *Luna-Botv6-Project*\n\n🎂 *Cumpleaños registrados!*",
+      "fecha_error": "🌙 *Luna-Botv6-Project*\n\n❓ No entendí la fecha para @{tag}\n_Ejemplo: .cumple @tag 11 de marzo_",
+      "de": "de",
+      "meses": [
+        "",
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre"
+      ],
+      "cumple_msg": "🎂 *FELIZ CUMPLEAÑOS* 🎂\n🎉 Hoy celebramos el cumpleaños de {nombres}! 🎂\n\n🥳 Que tengas un día increíble lleno de alegría,\n   amor y muchas sorpresas. Lo merecés todo! 💜\n\n🎈🎁🎊🌟✨🎆🎇🪅🎠"
+    },
+    "owner_unbanuser": {
+      "texto1": "⚠️ Mencioná o respondé a un usuario para desbanearlo.",
+      "texto2": "❌ No se encontró al usuario.",
+      "texto3": "✅ Usuario desbaneado correctamente."
+    },
+    "info_estado": {
+      "texto1": [
+        "ESTADO DEL BOT",
+        "Creador:",
+        "Contacto:",
+        "Canal:",
+        "Velocidad:",
+        "Actividad:",
+        "Prefijo:",
+        "Modo:",
+        "Usuarios Reg.:",
+        "Usuarios Totales:",
+        "Tipo de Bot:",
+        "Chats Privados:",
+        "Grupos:",
+        "Total de Chats:",
+        "Auto-lectura:",
+        "Restricción:",
+        "Solo Privado:",
+        "Solo Grupos:",
+        "Anti-Privado:",
+        "Anti-Llamadas:",
+        "Modo JadiBot:"
+      ]
+    },
+    "sticker_kiss": {
+      "texto1": "❌ Menciona o responde a alguien"
+    },
+    "veoveo": {
+      "activo": "¡Ya hay un juego activo! Usa /pista o responde.",
+      "error_cat": "Debes elegir una categoría válida. Las disponibles son:\n\n*{cats}*",
+      "inicio": "*Veo, veo...* (Categoría: {cat})\n\n*Pista:* {pista}\n\n¡Adivina qué objeto es!\n\n⏰ Tienes *15 segundos*\n💡 Usa /pista para ayuda\n❌ Usa /cancelar para terminar",
+      "timeout": "*⏰ ¡Tiempo agotado!*\n\nLa respuesta era: *{obj}* {emoji}\n\n¡Inténtalo de nuevo con otro juego!",
+      "no_juego": "No hay ningún juego activo.",
+      "cancelado": "*Juego cancelado* ❌\n\nLa respuesta era: *{obj}* {emoji}",
+      "ganaste": "*¡Correcto!* 🥳✅ El objeto era *{obj}* {emoji}.\n\nPartidas ganadas: {gan}\nPerdidas: {per}",
+      "casi": "*¡Casi!* 🤏❗ Tu respuesta está muy cerca. ¡Sigue intentando!",
+      "incorrecto": "*Respuesta incorrecta* ❌. Sigue intentándolo o usa /pista para más ayuda.",
+      "preguntas": {
+        "cocina": [
+          {
+            "objeto": "cuchara",
+            "pista": "Se usa para comer sopas o líquidos.",
+            "emoji": "🥄"
+          },
+          {
+            "objeto": "taza",
+            "pista": "Se usa para tomar bebidas calientes.",
+            "emoji": "☕"
+          },
+          {
+            "objeto": "horno",
+            "pista": "Se usa para cocinar o calentar alimentos.",
+            "emoji": "🍽️"
+          }
+        ],
+        "habitación": [
+          {
+            "objeto": "cama",
+            "pista": "Se usa para dormir.",
+            "emoji": "🛏️"
+          },
+          {
+            "objeto": "espejo",
+            "pista": "Se usa para ver nuestro reflejo.",
+            "emoji": "🪞"
+          },
+          {
+            "objeto": "lámpara",
+            "pista": "Nos da luz cuando está oscuro.",
+            "emoji": "💡"
+          }
+        ],
+        "baño": [
+          {
+            "objeto": "jabón",
+            "pista": "Se usa para lavarse las manos.",
+            "emoji": "🧼"
+          },
+          {
+            "objeto": "toalla",
+            "pista": "Se usa para secarse el cuerpo.",
+            "emoji": "🛁"
+          },
+          {
+            "objeto": "ducha",
+            "pista": "Se usa para bañarse.",
+            "emoji": "🚿"
+          }
+        ],
+        "parque": [
+          {
+            "objeto": "bicicleta",
+            "pista": "Un vehículo de dos ruedas que se pedalea.",
+            "emoji": "🚲"
+          },
+          {
+            "objeto": "banco",
+            "pista": "Un lugar donde te sientas en el parque.",
+            "emoji": "🪑"
+          },
+          {
+            "objeto": "árbol",
+            "pista": "Planta de gran tamaño que tiene tronco.",
+            "emoji": "🌳"
+          }
+        ],
+        "animales": [
+          {
+            "objeto": "perro",
+            "pista": "Animal domesticado que dice guau.",
+            "emoji": "🐕"
+          },
+          {
+            "objeto": "gato",
+            "pista": "Animal domesticado que dice miau.",
+            "emoji": "🐈"
+          },
+          {
+            "objeto": "elefante",
+            "pista": "Animal grande con orejas grandes y trompa.",
+            "emoji": "🐘"
+          }
+        ],
+        "ropa": [
+          {
+            "objeto": "camisa",
+            "pista": "Prenda que usamos en la parte superior del cuerpo.",
+            "emoji": "👚"
+          },
+          {
+            "objeto": "pantalón",
+            "pista": "Ropa que cubre las piernas.",
+            "emoji": "👖"
+          },
+          {
+            "objeto": "zapatos",
+            "pista": "Prenda que usamos en los pies.",
+            "emoji": "👟"
+          }
+        ],
+        "frutas": [
+          {
+            "objeto": "manzana",
+            "pista": "Fruta roja o verde que se come cruda.",
+            "emoji": "🍎"
+          },
+          {
+            "objeto": "banana",
+            "pista": "Fruta amarilla que se pela antes de comer.",
+            "emoji": "🍌"
+          },
+          {
+            "objeto": "naranja",
+            "pista": "Fruta cítrica que se puede exprimir.",
+            "emoji": "🍊"
+          }
+        ],
+        "colores": [
+          {
+            "objeto": "rojo",
+            "pista": "Es el color del amor y la pasión.",
+            "emoji": "❤️"
+          },
+          {
+            "objeto": "azul",
+            "pista": "Es el color del cielo y el mar.",
+            "emoji": "💙"
+          },
+          {
+            "objeto": "amarillo",
+            "pista": "Es el color del sol.",
+            "emoji": "💛"
+          }
+        ]
+      }
+    },
+    "info_speedtest": {
+      "cargando": "⏳ *Analizando servidor y red...*\n\nEsto puede tomar unos segundos.",
+      "titulo": "╭━━━〔 *ANÁLISIS COMPLETO* 〕━━━╮",
+      "estado_general": "✅ *ESTADO GENERAL*",
+      "estado_optimo": "✅ *Estado: ÓPTIMO*",
+      "estado_problemas": "⚠️ *Estado: PROBLEMAS DETECTADOS*",
+      "uptime_titulo": "⏱️ *TIEMPO DE ACTIVIDAD*",
+      "iniciado": "Iniciado:",
+      "uptime": "Uptime:",
+      "test": "Test:",
+      "chats_titulo": "💬 *ESTADÍSTICAS DE CHATS*",
+      "grupos": "Grupos:",
+      "privados": "Privados:",
+      "total": "Total:",
+      "red_titulo": "📊 *VELOCIDAD DE RED*",
+      "descarga": "📥 Descarga:",
+      "subida": "📤 Subida:",
+      "ping": "📍 Ping:",
+      "ram_titulo": "💾 *MEMORIA DEL SISTEMA*",
+      "ram": "RAM:",
+      "uso": "Uso:",
+      "libre": "Libre:",
+      "node_titulo": "🧠 *MEMORIA NODE.JS*",
+      "heap": "Heap:",
+      "cpu_titulo": "⚙️ *RECURSOS DEL SERVIDOR*",
+      "cpu": "CPU:",
+      "sistema": "Sistema:",
+      "error_titulo": "❌ *ERROR EN TEST DE VELOCIDAD*",
+      "error_label": "Error:",
+      "uptime_bot": "⏱️ *UPTIME DEL BOT*",
+      "activo": "Activo:",
+      "chats_activos": "💬 *CHATS ACTIVOS*",
+      "diagnostico": "🔍 *DIAGNÓSTICO DEL SISTEMA*",
+      "causa": "Causa probable:",
+      "solucion": "Solución:",
+      "warn_descarga": "⚠️ Velocidad de descarga muy baja (< 5 Mbps)",
+      "warn_subida": "⚠️ Velocidad de subida muy baja (< 2 Mbps)",
+      "warn_ping": "⚠️ Latencia alta (> 100ms)",
+      "warn_ram": "⚠️ Memoria RAM crítica (> 85%)",
+      "warn_heap": "⚠️ Heap de Node.js alto (> 80%)",
+      "warn_cpu": "⚠️ CPU sobrecargada",
+      "causa_internet": "Problema de conexión a Internet",
+      "sol_internet": "Verifica tu proveedor de internet o reinicia el router",
+      "causa_ram": "Recursos del servidor saturados",
+      "sol_ram": "El sistema se reiniciará automáticamente si es necesario",
+      "causa_cpu": "CPU sobrecargada",
+      "sol_cpu": "Reduce procesos activos o espera unos minutos",
+      "causa_timeout": "Conexión a Internet extremadamente lenta o inestable",
+      "sol_timeout": "Verifica tu conexión y vuelve a intentar",
+      "causa_python": "Falta el script de speedtest",
+      "sol_python": "Contacta al administrador",
+      "causa_memoria": "Memoria RAM insuficiente",
+      "sol_memoria": "El sistema se reiniciará automáticamente",
+      "causa_desconocida": "Error desconocido en el servidor",
+      "sol_desconocida": "Intenta de nuevo o contacta al administrador"
+    },
+    "gc_hidetag": {
+      "no_sesion": "⚠️ Sesión no válida. El bot no está conectado correctamente.",
+      "solo_grupos": "❌ Este comando solo funciona en grupos.",
+      "solo_admins": "⚠️ Este comando solo puede ser usado por administradores del grupo.",
+      "cooldown": "⏰ Debés esperar {min}m {seg}s antes de usar este comando nuevamente.",
+      "texto_default": "¡Hola! 👋",
+      "error": "❌ Error al ejecutar el comando."
+    },
+    "gc_tagall": {
+      "solo_grupos": "❌ Este comando solo funciona en grupos.",
+      "solo_admins": "⚠️ Este comando solo puede ser usado por administradores del grupo.",
+      "cooldown": "⏰ Debés esperar {min}m {seg}s antes de usar este comando nuevamente.",
+      "atencion": "¡Atención!",
+      "titulo": "╭━━━〔 🌙 *Luna-Botv6* 🌙 〕━━━╮",
+      "mensaje_label": "📢 *Mensaje:*",
+      "usuarios_label": "👥 *Miembros del grupo:*",
+      "footer": "╰━━━━━━━━━━━━━━━━━━━━━━━╯\n✨ *Luna-botv6* ✨",
+      "error": "❌ Error al ejecutar el comando."
+    },
+    "owner_autoadmin": {
+      "texto1": "✅ Ya eres administrador en este grupo.",
+      "texto2": "❌ No se pudo promoverte. Asegurate de que el bot sea admin."
+    },
+    "gc_warn": {
+      "solo_grupos": "*[◉] Este comando solo funciona en grupos.*",
+      "solo_admins": "⚠️ Solo administradores pueden usar este comando.",
+      "bot_no_admin": "❌ El bot necesita ser administrador para expulsar usuarios.",
+      "uso": "🚫 Uso: *{prefix}{cmd} @usuario*",
+      "no_auto": "❌ No puedo advertirme a mí mismo.",
+      "no_en_grupo": "◉ El usuario mencionado no se encuentra en este grupo.",
+      "sin_motivo": "Sin motivo especificado.",
+      "advertido": "⚠️ El usuario @{tag} ha sido advertido.\n📄 Motivo: {motivo}\n📊 Advertencias: {warns}/3",
+      "expulsado": "🚷 El usuario @{tag} fue expulsado por acumular 3 advertencias."
+    },
+    "gc_unwarn": {
+      "solo_admins": "⚠️ Solo los administradores pueden usar este comando.",
+      "uso": "🚫 Usa: *{prefix}{cmd} @usuario*",
+      "no_en_grupo": "❗ El usuario mencionado no está en el grupo.",
+      "removida": "♻️ Se eliminó una advertencia a @{tag}.\n📊 Advertencias actuales: {warns}/3"
+    },
+    "gc_listwarn": {
+      "solo_admins": "⚠️ Solo los administradores pueden usar este comando.",
+      "sin_advertencias": "✅ No hay usuarios con advertencias en este grupo.",
+      "titulo": "📋 *Lista de advertencias actuales:*"
+    },
+    "game_aventura": {
+      "cooldown": "⏳ Aún estás recuperándote de tu última aventura...\nVuelve en *{seg} segundos*.",
+      "titulo": "*🌍 Aventura iniciada...*",
+      "gan_exp": "✨ Ganaste *{val} XP*",
+      "per_exp": "💥 Perdiste *{val} XP*",
+      "gan_money": "💎 Ganaste *{val} diamantes*",
+      "per_money": "💸 Perdiste *{val} diamantes*",
+      "footer": "🎒 Usa *{prefix}perfil* para ver tus estadísticas.",
+      "aventuras": [
+        {
+          "tipo": "cofre",
+          "mensaje": "¡Encontraste un cofre escondido en una cueva misteriosa!"
+        },
+        {
+          "tipo": "enemigo",
+          "mensaje": "¡Luchaste contra un guerrero esqueleto y saliste victorioso!"
+        },
+        {
+          "tipo": "aliado",
+          "mensaje": "Un sabio anciano te dio experiencia por ayudarlo."
+        },
+        {
+          "tipo": "trampa",
+          "mensaje": "¡Pisaste una trampa mágica! Perdiste un poco..."
+        },
+        {
+          "tipo": "boss",
+          "mensaje": "¡Venciste a un mini-jefe en la mazmorra!"
+        },
+        {
+          "tipo": "pocion",
+          "mensaje": "Encontraste una poción mágica y subiste de experiencia."
+        },
+        {
+          "tipo": "mercader",
+          "mensaje": "Un mercader perdido te recompensó por escoltarlo."
+        },
+        {
+          "tipo": "oscuro",
+          "mensaje": "Un espíritu oscuro te drenó energía..."
+        },
+        {
+          "tipo": "hada",
+          "mensaje": "Un hada encantada te bendijo con luz y diamantes."
+        },
+        {
+          "tipo": "ruinas",
+          "mensaje": "Exploraste ruinas antiguas y descubriste tesoros."
+        },
+        {
+          "tipo": "dragon",
+          "mensaje": "Te acercaste sigilosamente a un dragón dormido y robaste tesoros."
+        }
+      ]
+    },
+    "tarot": {
+      "bienvenida": "🔮 LECTURA DE TAROT 🔮\n\nBienvenido a tu sesión mística.\n¿Cuál es tu nombre?",
+      "pregunta_edad": "¿Cuántos años tienes?",
+      "edad_invalida": "Por favor, una edad válida 😅",
+      "pregunta_signo": "¿Tu signo zodiacal?",
+      "pregunta_consulta": "Ahora... tu pregunta para el universo:",
+      "pregunta_corta": "Cuéntame un poco más sobre tu pregunta 👀",
+      "cartas_hablan": "✨ Las cartas están hablando... ✨",
+      "error": "Las cartas están confundidas... intenta de nuevo más tarde 🔮",
+      "tu_pregunta": "❓ *Tu pregunta:*",
+      "carta_revelada": "🃏 *CARTA REVELADA:",
+      "mi_opinion": "💭 *Mi opinión es:*",
+      "footer": "✨ Que los astros iluminen tu camino 🌟",
+      "cartas": [
+        {
+          "nombre": "El Mago",
+          "significado": "Tu situación requiere acción. Tienes todas las herramientas que necesitas. Es momento de tomar control y manifestar lo que deseas."
+        },
+        {
+          "nombre": "La Sacerdotisa",
+          "significado": "Confía en tu intuición ahora más que nunca. Hay información oculta que pronto será revelada. Tu instinto es tu mayor aliado."
+        },
+        {
+          "nombre": "La Emperatriz",
+          "significado": "Abundancia y fertilidad rodean tu situación. Es un buen momento para crear y crecer. La prosperidad se aproxima."
+        },
+        {
+          "nombre": "El Emperador",
+          "significado": "Necesitas establecer límites claros y tomar decisiones firmes. Tu autoridad y liderazgo son clave aquí."
+        },
+        {
+          "nombre": "El Hierofante",
+          "significado": "Busca consejo de personas con experiencia. Hay una lección importante por aprender. La tradición tiene valor ahora."
+        },
+        {
+          "nombre": "Los Enamorados",
+          "significado": "Una decisión importante sobre una relación o conexión se acerca. Hay armonía si actúas desde el corazón."
+        },
+        {
+          "nombre": "El Carro",
+          "significado": "El movimiento y el progreso están completamente a tu favor. Tu determinación te llevará lejos. La victoria está próxima."
+        },
+        {
+          "nombre": "La Fuerza",
+          "significado": "Tienes más poder y resistencia de lo que crees. Tu coraje interior es tu mayor fuerza."
+        },
+        {
+          "nombre": "El Ermitaño",
+          "significado": "Es tiempo de reflexión profunda. Tu sabiduría interior tiene las claves que necesitas."
+        },
+        {
+          "nombre": "La Rueda de la Fortuna",
+          "significado": "Un ciclo está terminando y otro comienza. Los cambios son inevitables pero positivos."
+        },
+        {
+          "nombre": "La Justicia",
+          "significado": "La verdad saldrá a la luz pronto. Las cosas se equilibrarán naturalmente."
+        },
+        {
+          "nombre": "El Colgado",
+          "significado": "A veces hay que soltar para ganar. Una pausa reflexiva es necesaria antes de actuar."
+        },
+        {
+          "nombre": "La Muerte",
+          "significado": "Un ciclo termina para que comience uno nuevo. El cambio es transformación, no destrucción."
+        },
+        {
+          "nombre": "La Templanza",
+          "significado": "El equilibrio es clave en tu situación. Modera tus acciones y busca el punto medio."
+        },
+        {
+          "nombre": "El Diablo",
+          "significado": "Reconoce qué te mantiene atrapado. Tienes el poder de liberarte."
+        },
+        {
+          "nombre": "La Torre",
+          "significado": "Un cambio repentino pero necesario se acerca. Aunque sea disruptivo, trae claridad."
+        },
+        {
+          "nombre": "La Estrella",
+          "significado": "La esperanza es tu brújula. Tus sueños son posibles si mantienes la fe."
+        },
+        {
+          "nombre": "La Luna",
+          "significado": "Confía en tus sueños y tu intuición. Tu subconsciente tiene respuestas."
+        },
+        {
+          "nombre": "El Sol",
+          "significado": "La victoria y el éxito están garantizados. El futuro es radiante y lleno de oportunidades."
+        },
+        {
+          "nombre": "El Juicio",
+          "significado": "Es momento de una evaluación profunda de tu vida. Renuévate y comienza el siguiente capítulo."
+        },
+        {
+          "nombre": "El Mundo",
+          "significado": "Un ciclo se completa exitosamente. La plenitud y totalidad están dentro de ti."
+        }
+      ],
+      "respuestas": {
+        "dinero": {
+          "positivo": "¡Excelente! Las cartas ven dinero en tu futuro 💸\n(Aunque tu pareja espera aún más jaja)",
+          "negativo": "Mmm, complicado... especialmente si sigues\ngastando sin pensar 😂",
+          "neutro": "Paciencia, la riqueza llega para quien\ntrabaja duro y espera 💪",
+          "generico": "Las cartas ven potencial, pero recuerda:\nel dinero no sale de la nada 💭"
+        },
+        "amor": {
+          "positivo": "¡Grandes noticias! Romance en el aire ❤️\n(Ahora haz tu parte jaja)",
+          "negativo": "Hay turbulencia, pero todo se arregla\ncon paciencia y comprensión 💔➡️💚",
+          "neutro": "Tu media naranja está en camino...\nSolo ten paciencia 😅",
+          "generico": "Movimiento amoroso a la vista.\n¡Que suceda la magia! ✨"
+        },
+        "trabajo": {
+          "positivo": "¡Ascenso a la vista! Tu éxito laboral\nes inminente 📈",
+          "negativo": "Cambios en camino. A veces los cambios\nson para mejor 🔄",
+          "liderazgo": "Tu liderazgo es tu mayor fortaleza.\nEstás destinado a dirigir 👑",
+          "generico": "Oportunidades laborales al horizonte.\nMantén los ojos abiertos 👀"
+        },
+        "fiesta": {
+          "positivo": "¡Claro que sí! Noche épica garantizada 🎉\n(¡A pasarlo bien!)",
+          "negativo": "Caos del bueno, ¡del que recuerdas\ncon los amigos al día siguiente! 😂",
+          "neutro": "Mejor espera un poco... o deja\nla billetera en casa 💸",
+          "generico": "¡Adelante! Las cartas aprueban\ntu diversión 🎊"
+        },
+        "soledad": {
+          "positivo": "Luz al final del túnel. Los buenos\nmomentos están por llegar 🌟",
+          "amor": "No estás solo. El amor y cuidado\nllegará a tu vida 💝",
+          "generico": "La soledad es temporal.\nNuevas conexiones vienen en camino 🤝"
+        },
+        "suerte": {
+          "rueda": "¡La Rueda de la Fortuna! Tus chances\nse multiplicaron (¡o eso esperas!) 🎰",
+          "sol": "Mala noticia: tu suerte viene de trabajar,\nno de jugar a la lotería 💪",
+          "generico": "Las cartas ven oportunidades.\nLa verdadera suerte la haces tú 🌈"
+        },
+        "genericas": [
+          "Las cartas dicen que confíes en el proceso.\n¡El universo está de tu lado! 🔮",
+          "Según lo que veo, todo apunta a que\nsucederán cosas interesantes pronto ✨",
+          "La energía es positiva.\nMantén la fe en lo que deseas 🌙",
+          "Las cartas te dicen que sigas adelante.\nEl camino está claro 💫"
+        ]
+      },
+      "triggers": {
+        "dinero": [
+          "millonari",
+          "rico",
+          "dinero",
+          "plata"
+        ],
+        "amor": [
+          "novia",
+          "novio",
+          "pareja",
+          "enamorad"
+        ],
+        "trabajo": [
+          "trabajo",
+          "empleo",
+          "jefe",
+          "laboral"
+        ],
+        "fiesta": [
+          "salir",
+          "baile",
+          "discoteca",
+          "fiesta",
+          "boliche"
+        ],
+        "soledad": [
+          "triste",
+          "deprimid",
+          "solo",
+          "solitari"
+        ],
+        "suerte": [
+          "suerte",
+          "lotería",
+          "premio"
+        ]
+      }
+    }
+  },
+  "functions": {
+    "group_msgs": {
+      "no_desc": "Sin descripción",
+      "welcome": "🌙 *¡Bienvenido/a a @group!* ✨\n\n👋 ¡Hola, @user!\n🌟 Ahora somos *@total* miembros en este grupo.\n📖 Te invitamos a leer la descripción del grupo:.\n\n*@desc*\n\n*¡Que disfrutes tu estancia!* 🎉",
+      "bye": "🌙 *¡Hasta pronto!* 👫\n\n👋 Adiós, @user\n🌟 Ahora quedamos *@total* miembros.\n\n*¡Esperamos verte de nuevo!* ✨",
+      "promote": "🌙 *¡Promoción!* ✨\n\n👑 @tag ha promovido a @user como administrador/a del grupo.\n\n*¡Felicidades!* 🎉",
+      "demote": "🌙 *Cambio de rol* 👫\n\n📉 @tag ha removido a @user como administrador/a del grupo."
+    },
+    "group_detect": {
+      "no_name": "Sin nombre",
+      "on": "activada",
+      "off": "desactivada",
+      "on_m": "activado",
+      "off_m": "desactivado",
+      "texto1": "El nombre del grupo ha sido modificado a:",
+      "texto2": "La descripción del grupo ha sido modificada.",
+      "texto3": "Se ha cambiado la foto de perfil del grupo.",
+      "texto4": "El enlace de invitación al grupo ha sido restablecido.",
+      "texto5": "La restricción de mensajes ha sido",
+      "texto6": "El modo solo admins ha sido"
+    },
+    "desbloquear": {
+      "soloOwner": "🚫 Solo el owner puede usar esto.",
+      "noBaneado": "❌ Ese número no está en la lista de baneados.",
+      "usuarioDesbloqueado": "✅ Usuario desbloqueado: %numero%"
+    },
+    "banchat": {
+      "texto1": "🚫 *Chat baneado*\n\n👮 Por: {tag}\n📝 Motivo: {motivo}\n\n_El bot no responderá en este grupo._",
+      "sin_motivo": "Sin motivo especificado"
+    },
+    "banid": {
+      "obteniendo": "⏳ Obteniendo lista de grupos...",
+      "sinGrupos": "❌ El bot no está en ningún grupo.",
+      "listaTitulo": "📋 *GRUPOS ACTIVOS DEL BOT*",
+      "miembros": "miembros",
+      "si": "Sí",
+      "no": "No",
+      "baneado": "🚫 Baneado",
+      "activo": "✅ Activo",
+      "uso": "_Usá .banid <id> para banear un grupo_",
+      "noEncontrado": "❌ No se encontró ese grupo o el bot no está en él.",
+      "avisoGrupo": "🚫 *Este chat ha sido baneado*\n\n━━━━━━━━━━━━━━━━━━\n⛔ El bot ya *no responderá* en este grupo.\n👑 Decisión tomada por el *owner* del bot.\n━━━━━━━━━━━━━━━━━━\n_Si creés que es un error, contactá al owner._",
+      "confirmacion": "✅ *Grupo baneado exitosamente*\n\n📛 *Nombre:* %nombre%\n🆔 *ID:* %id%\n👥 *Miembros:* %miembros%\n\n_Se envió el aviso al grupo._"
+    },
+    "banlist": {
+      "texto1": "🚫 USUARIOS BANEADOS",
+      "texto2": "🚫 CHATS BANEADOS",
+      "total": "Total"
+    },
+    "banuser": {
+      "texto1": "⚠️ Etiquetá o respondé a un usuario para banearlo.",
+      "texto2": "✅ Usuario baneado correctamente."
+    },
+    "unbanchat": {
+      "texto1": "✅ *Chat desbaneado*\n\n👮 Por: {tag}\n\n_El bot vuelve a funcionar en este grupo._"
+    },
+    "unbanid": {
+      "obteniendo": "⏳ Obteniendo lista de grupos baneados...",
+      "noBaneados": "✅ No hay grupos baneados actualmente.",
+      "titulo": "🚫 *GRUPOS BANEADOS (%total%)*",
+      "miembros": "miembros",
+      "si": "Sí",
+      "no": "No",
+      "uso": "_Usá .unbanid <id> para desbanear un grupo_",
+      "noEstaBaneado": "⚠️ Ese grupo no está baneado.",
+      "noEncontrado": "❌ No se encontró ese grupo o el bot no está en él.",
+      "avisoGrupo": "✅ *Este chat ha sido desbaneado*\n\n━━━━━━━━━━━━━━━━━━\n🎉 El bot vuelve a estar *activo* en este grupo.\n👑 Autorizado por el *owner* del bot.\n━━━━━━━━━━━━━━━━━━\n_¡Ya podés usar todos los comandos normalmente!_",
+      "confirmacion": "✅ *Grupo desbaneado exitosamente*\n\n📛 *Nombre:* %nombre%\n🆔 *ID:* %id%\n👥 *Miembros:* %miembros%\n\n_Se envió el aviso al grupo._"
+    },
+    "personalidad": {
+      "titulo": "PERSONALIDAD",
+      "nombre": "Nombre",
+      "genero": "Género",
+      "buena": "Buena Moral",
+      "mala": "Mala Moral",
+      "tipo": "Tipo de persona",
+      "estado": "Siempre está",
+      "inteligencia": "Inteligencia",
+      "morosidad": "Morosidad",
+      "coraje": "Coraje",
+      "miedo": "Miedo",
+      "fama": "Fama",
+      "generos": [
+        "Hombre",
+        "Mujer",
+        "Homosexual",
+        "Bisexual",
+        "Pansexual",
+        "Feminista",
+        "Heterosexual",
+        "Macho alfa",
+        "Mujerzona",
+        "Marimacha",
+        "Palosexual",
+        "PlayStationSexual",
+        "Sr. Manuela",
+        "Pollosexual"
+      ],
+      "tipos": [
+        "De buen corazón",
+        "Arrogante",
+        "Tacaño",
+        "Generoso",
+        "Humilde",
+        "Tímido",
+        "Cobarde",
+        "Entrometido",
+        "Cristal",
+        "No binarie XD",
+        "Pendejo"
+      ],
+      "estados": [
+        "Pesado",
+        "De malas",
+        "Distraído",
+        "De molestoso",
+        "Chismoso",
+        "Jalandosela",
+        "De compras",
+        "Viendo anime",
+        "Chateando porque está soltero",
+        "Acostado bueno para nada",
+        "De mujeriego",
+        "En el celular"
+      ]
+    },
+    "rpcancion": {
+      "noActiva": "🎵 No hay una canción activa. Usa /cancion para empezar.",
+      "sinRespuesta": "✏️ Escribe tu respuesta: * /rpcancion tu_respuesta*",
+      "correcto": "✅ ¡Correcto! Era: *%respuesta%*\nGanaste %xp% XP.",
+      "incorrecto": "❌ Respuesta incorrecta. Intenta otra vez."
+    },
+    "verprotes": {
+      "titulo": "🛡️ *PROTECCIONES ACTIVAS*",
+      "sinProtecciones": "🛡️ No hay protecciones activas en este momento.",
+      "usuario": "Usuario",
+      "activada": "Activada",
+      "restante": "Tiempo restante",
+      "duracion": "Duración total",
+      "total": "Total",
+      "activa": "protección(es) activa(s)",
+      "horas": "h",
+      "minutos": "m",
+      "expirada": "Expirada",
+      "error": "❌ Error al obtener las protecciones activas."
+    },
+    "owner_quitarmoney": {
+      "soloOwner": "🚫 Este comando es solo para los propietarios del bot.",
+      "texto1": "❌ Menciona a alguien o usa el comando en privado",
+      "texto2": "❌ Ingresa la cantidad de diamantes a quitar",
+      "texto3": "❌ Solo se permiten números",
+      "texto4": "❌ La cantidad debe ser mayor a 0",
+      "titulo": "╭━━━〔 *💎 Diamantes Quitados* 〕━━━⬣",
+      "para": "┃ *👤 Para:*",
+      "por": "┃ *👑 Por:*",
+      "quitados": "┃ *✨ Diamantes quitados:*",
+      "antes": "┃ *💎 Diamantes anteriores:*",
+      "actual": "┃ *💎 Diamantes actuales:*",
+      "insuficiente": "┃ *⚠️ No tenía suficientes diamantes*",
+      "footer": "╰━━━━━━━━━━━━━━━━━━━━⬣",
+      "error": "❌ Ocurrió un error al procesar el comando"
+    },
+    "owner_quitarlimit": {
+      "soloOwner": "🚫 Este comando es solo para los propietarios del bot.",
+      "texto1": "❌ Menciona a alguien o usa el comando en privado",
+      "texto2": "❌ Ingresa la cantidad de límite a quitar",
+      "texto3": "❌ Solo se permiten números",
+      "texto4": "❌ La cantidad debe ser mayor a 0",
+      "titulo": "╭━━━〔 *📊 Límite Quitado* 〕━━━⬣",
+      "para": "┃ *👤 Para:*",
+      "por": "┃ *👑 Por:*",
+      "quitados": "┃ *✨ Límite quitado:*",
+      "antes": "┃ *📊 Límite anterior:*",
+      "actual": "┃ *📊 Límite actual:*",
+      "insuficiente": "┃ *⚠️ No tenía suficiente límite*",
+      "footer": "╰━━━━━━━━━━━━━━━━━━━━⬣",
+      "error": "❌ Ocurrió un error al procesar el comando"
+    },
+    "gc_mute": {
+      "menu_titulo": "🔇 *Silenciar usuario*",
+      "sin_tiempo": "Sin tiempo:",
+      "con_tiempo": "Con tiempo:",
+      "ejemplo_1": "@usuario",
+      "ejemplo_2": "@usuario por 30 minutos",
+      "ejemplo_3": "@usuario por 2 horas",
+      "ejemplo_4": "@usuario 1h",
+      "nota": "_El usuario no podrá escribir en el grupo._",
+      "error_grupo": "*[⚠] Este comando solo funciona en grupos.*",
+      "error_bot_admin": "*[⚠] El bot debe ser administrador para usar este comando.*",
+      "error_admin": "*[⚠] Solo los administradores pueden usar este comando.*",
+      "uso": "*Uso:*",
+      "usuario_no_grupo": "*[⚠] Ese usuario no está en el grupo.*",
+      "ya_silenciado": "*[⚠] Ya está silenciado.*",
+      "error_ambiguo": "⚠️ Especificaste {value} pero no dijiste si son minutos u horas.",
+      "ejemplo_minutos": "minutos",
+      "ejemplo_horas": "horas",
+      "silencio_activado": "🔇 *Silencio activado*",
+      "usuario": "👤 Usuario:",
+      "por": "👮 Por:",
+      "duracion": "⏳ Duración:",
+      "silencio_desactivado": "🔊 *Silencio desactivado*",
+      "puede_escribir": "_Ya puede escribir en el grupo._",
+      "error_general": "*[⚠] Error al procesar el comando.*",
+      "no_silenciado": "*[⚠] No está silenciado.*"
+    }
+  }
+}
