@@ -1,0 +1,110 @@
+import fs from 'fs'
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
+
+const cooldowns = new Map()
+
+const handler = async (m, { conn, text, isOwner }) => {
+  const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje
+  const t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.gc_hidetag
+
+  try {
+    if (!conn?.user?.jid) return m.reply(t.no_sesion)
+    if (!m.isGroup) return m.reply(t.solo_grupos)
+
+    const { participants, isAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender)
+
+    const senderNum = conn.decodeJid(m.sender).replace('@s.whatsapp.net', '')
+    const isLidOwner = global.lidOwners?.includes(senderNum)
+    const isGlobalOwner = global.owner?.some(([num]) => num === senderNum)
+
+    if (!isAdmin && !isOwner && !isLidOwner && !isGlobalOwner) return m.reply(t.solo_admins)
+
+    const cooldownTime = 2 * 60 * 1000
+    const now = Date.now()
+
+    if (!isOwner && !isLidOwner && !isGlobalOwner) {
+      const key = `${m.chat}_${m.sender}`
+      if (cooldowns.has(key)) {
+        const expire = cooldowns.get(key) + cooldownTime
+        if (now < expire) {
+          const left = expire - now
+          return m.reply(t.cooldown.replace('{min}', Math.floor(left / 60000)).replace('{seg}', Math.floor((left % 60000) / 1000)))
+        }
+      }
+      cooldowns.set(key, now)
+    }
+
+    const resolveLid = jid => {
+      if (!jid?.includes('@lid')) return conn.decodeJid(jid)
+      const p = participants.find(x => x.lid === jid)
+      return p ? conn.decodeJid(p.id) : null
+    }
+
+    const mentionSet = new Set()
+    participants.forEach(p => mentionSet.add(conn.decodeJid(p.id)))
+
+    const quoted = m.quoted || m
+    const mime = (quoted.msg || quoted).mimetype || ''
+    const isMedia = /image|video|sticker|audio/.test(mime)
+
+    let finalText = text || ''
+    if (!finalText && quoted && quoted !== m) finalText = quoted.text || quoted.caption || quoted.body || ''
+    if (!finalText) finalText = t.texto_default
+
+    const mentionPattern = /@(\d+)/g
+    let match
+    const numbersInText = []
+    while ((match = mentionPattern.exec(finalText)) !== null) numbersInText.push(match[1])
+
+    if (numbersInText.length > 0) {
+      for (const numInText of numbersInText) {
+        for (const p of participants) {
+          const pId = conn.decodeJid(p.id)
+          const pNum = pId.split('@')[0]
+          const pLid = p.lid ? p.lid.split('@')[0] : null
+          if (pNum === numInText || pLid === numInText) {
+            mentionSet.add(pId)
+            const regex = new RegExp(`@${numInText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g')
+            finalText = finalText.replace(regex, `@${pNum}`)
+            break
+          }
+        }
+      }
+    }
+
+    if (m.mentionedJid?.length) {
+      for (const lid of m.mentionedJid) {
+        const real = resolveLid(lid)
+        if (!real) continue
+        mentionSet.add(real)
+        finalText = finalText.replace(/@\S+/, `@${real.split('@')[0]}`)
+      }
+    }
+
+    const mentions = [...mentionSet]
+
+    if (isMedia && quoted.mtype === 'imageMessage') {
+      const media = await quoted.download()
+      await conn.sendMessage(m.chat, { image: media, caption: finalText, mentions }, { quoted: m })
+    } else if (isMedia && quoted.mtype === 'videoMessage') {
+      const media = await quoted.download()
+      await conn.sendMessage(m.chat, { video: media, caption: finalText, mentions }, { quoted: m })
+    } else if (isMedia && quoted.mtype === 'audioMessage') {
+      const media = await quoted.download()
+      await conn.sendMessage(m.chat, { audio: media, mimetype: 'audio/mpeg', mentions }, { quoted: m })
+    } else if (isMedia && quoted.mtype === 'stickerMessage') {
+      const media = await quoted.download()
+      await conn.sendMessage(m.chat, { sticker: media, mentions }, { quoted: m })
+    } else {
+      await conn.sendMessage(m.chat, { text: finalText, mentions }, { quoted: m })
+    }
+  } catch (e) {
+    await m.reply(t.error)
+  }
+}
+
+handler.command = /^(hidetag|notificar|notify|n)$/i
+handler.tags = ['group']
+handler.group = true
+
+export default handler
