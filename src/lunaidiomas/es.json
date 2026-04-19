@@ -148,14 +148,14 @@
     "error_menu": "❌ Ocurrió un error al mostrar el menú"
   },
   "plugins": {
-  "waifu_claim": {
-  "no_waifu": "❌ No tienes ninguna waifu para reclamar. Haz una tirada primero con {prefix}rw",
-  "success": "✅ Has reclamado a tu waifu!\nNombre: {name}\nAnime: {anime}"
-},
-  "waifu_roll": {
-    "cooldown": "⏳ Ya hiciste tu tirada hoy.\nVuelve en {hrs}h {mins}m.",
-    "result": "🎲 Tirada de Waifu!\n\nNombre: {name}\nAnime: {anime}\nRareza: {rarity}\nValor: {value}\nDescripción: {desc}\n\nUsa {prefix}claim para reclamarla."
-  },
+    "waifu_claim": {
+      "no_waifu": "❌ No tienes ninguna waifu para reclamar. Haz una tirada primero con {prefix}rw",
+      "success": "✅ Has reclamado a tu waifu!\nNombre: {name}\nAnime: {anime}"
+    },
+    "waifu_roll": {
+      "cooldown": "⏳ Ya hiciste tu tirada hoy.\nVuelve en {hrs}h {mins}m.",
+      "result": "🎲 Tirada de Waifu!\n\nNombre: {name}\nAnime: {anime}\nRareza: {rarity}\nValor: {value}\nDescripción: {desc}\n\nUsa {prefix}claim para reclamarla."
+    },
     "instagram_dl": {
       "no_text": "Ingresa un enlace de Instagram.\n\nEjemplo:\n{example}",
       "invalid_url": "El enlace no parece ser válido.\n\nEjemplo:\n{example}",
@@ -168,18 +168,14 @@
     "tiktok_dl": {
       "no_text": "Ingresa un enlace de TikTok.\n\nEjemplo:\n{example}",
       "invalid_url": "El enlace no parece ser válido.\n\nEjemplo:\n{example}",
-
       "step1": "*「 🎵 TikTok 」* 🔎 Buscando video...\n{progress}",
       "step2": "*「 🎵 TikTok 」* 📡 Conectando al servidor...\n{progress}",
       "step3": "*「 🎵 TikTok 」* 🔓 Eliminando marca de agua...\n{progress}",
       "step4": "*「 🎵 TikTok 」* 📦 Preparando descarga...\n{progress}",
       "step5": "*「 🎵 TikTok 」* ⚡ Descargando video...\n{progress}",
-
       "no_video": "「 🎵 *TikTok Downloader* 」\n\n❌ No se encontró el video\n{progress}",
       "ready": "「 🎵 *TikTok Downloader* 」\n\n✅ ¡Video listo!\n{progress}",
-
       "caption": "「 🎵 *TikTok Downloader* 」\n\n✅ Descargado exitosamente\n🚫 Sin marca de agua\n🎬 Calidad HD",
-
       "error": "「 🎵 *TikTok Downloader* 」\n\n❌ Error: {error}\n{progress}"
     },
     "facebook_dl": {
@@ -1412,7 +1408,10 @@
     "gc_listwarn": {
       "solo_admins": "⚠️ Solo los administradores pueden usar este comando.",
       "sin_advertencias": "✅ No hay usuarios con advertencias en este grupo.",
-      "titulo": "📋 *Lista de advertencias actuales:*"
+      "titulo": "📋 *Lista de advertencias actuales:*",
+      "usuario": "👤 @{tag} — {warns}/3 warns",
+      "razon": "  ↳ {n}. {motivo}",
+      "sin_motivo": "Sin motivo especificado."
     },
     "game_aventura": {
       "cooldown": "⏳ Aún estás recuperándote de tu última aventura...\nVuelve en *{seg} segundos*.",

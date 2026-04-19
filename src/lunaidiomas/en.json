@@ -148,14 +148,14 @@
     "error_menu": "❌ An error occurred while showing the menu"
   },
   "plugins": {
-  "waifu_claim": {
-  "no_waifu": "❌ You don't have any waifu to claim. Roll first using {prefix}rw",
-  "success": "✅ You have claimed your waifu!\nName: {name}\nAnime: {anime}"
-},
-  "waifu_roll": {
-    "cooldown": "⏳ You already rolled today.\nCome back in {hrs}h {mins}m.",
-    "result": "🎲 Waifu Roll!\n\nName: {name}\nAnime: {anime}\nRarity: {rarity}\nValue: {value}\nDescription: {desc}\n\nUse {prefix}claim to claim her."
-  },
+    "waifu_claim": {
+      "no_waifu": "❌ You don't have any waifu to claim. Roll first using {prefix}rw",
+      "success": "✅ You have claimed your waifu!\nName: {name}\nAnime: {anime}"
+    },
+    "waifu_roll": {
+      "cooldown": "⏳ You already rolled today.\nCome back in {hrs}h {mins}m.",
+      "result": "🎲 Waifu Roll!\n\nName: {name}\nAnime: {anime}\nRarity: {rarity}\nValue: {value}\nDescription: {desc}\n\nUse {prefix}claim to claim her."
+    },
     "instagram_dl": {
       "no_text": "Enter an Instagram link.\n\nExample:\n{example}",
       "invalid_url": "The link does not appear to be valid.\n\nExample:\n{example}",
@@ -168,18 +168,14 @@
     "tiktok_dl": {
       "no_text": "Enter a TikTok link.\n\nExample:\n{example}",
       "invalid_url": "The link does not appear to be valid.\n\nExample:\n{example}",
-
       "step1": "*「 🎵 TikTok 」* 🔎 Searching video...\n{progress}",
       "step2": "*「 🎵 TikTok 」* 📡 Connecting to server...\n{progress}",
       "step3": "*「 🎵 TikTok 」* 🔓 Removing watermark...\n{progress}",
       "step4": "*「 🎵 TikTok 」* 📦 Preparing download...\n{progress}",
       "step5": "*「 🎵 TikTok 」* ⚡ Downloading video...\n{progress}",
-
       "no_video": "「 🎵 *TikTok Downloader* 」\n\n❌ Video not found\n{progress}",
       "ready": "「 🎵 *TikTok Downloader* 」\n\n✅ Video ready!\n{progress}",
-
       "caption": "「 🎵 *TikTok Downloader* 」\n\n✅ Downloaded successfully\n🚫 No watermark\n🎬 HD quality",
-
       "error": "「 🎵 *TikTok Downloader* 」\n\n❌ Error: {error}\n{progress}"
     },
     "facebook_dl": {
@@ -1411,7 +1407,10 @@
     "gc_listwarn": {
       "solo_admins": "⚠️ Only administrators can use this command.",
       "sin_advertencias": "✅ No users with warnings in this group.",
-      "titulo": "📋 *Current warnings list:*"
+      "titulo": "📋 *Current warnings list:*",
+      "usuario": "👤 @{tag} — {warns}/3 warnings",
+      "razon": "  ↳ {n}. {motivo}",
+      "sin_motivo": "No reason specified."
     },
     "game_aventura": {
       "cooldown": "⏳ You are still recovering from your last adventure...\nCome back in *{seg} seconds*.",
