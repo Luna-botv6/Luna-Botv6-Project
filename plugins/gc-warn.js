@@ -29,7 +29,7 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
   if (!finalCheck) return m.reply(t.no_en_grupo)
 
   const reason = text?.replace(/@\d+/g, '').trim() || t.sin_motivo
-  const warns = await addWarning(target)
+  const warns = await addWarning(target, reason)
   const tag = target.split('@')[0]
 
   await m.reply(

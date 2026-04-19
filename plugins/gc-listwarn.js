@@ -11,14 +11,24 @@ const handler = async (m, { conn, isOwner }) => {
   if (!isAdmin && !isOwner) return m.reply(t.solo_admins)
 
   const users = await listWarnings()
-
-  const filtered = users.filter(u => u.warns > 0 && participants.find(p => p.id === u.id))
+  const filtered = users.filter(u => participants.find(p => p.id === u.id))
   if (filtered.length === 0) return m.reply(t.sin_advertencias)
 
-  let msg = `${t.titulo}\n\n`
-  for (const u of filtered) msg += `• @${u.id.split('@')[0]} — ${u.warns}/3\n`
+  let msg = `${t.titulo}\n`
+  for (const u of filtered) {
+    const tag = u.id.split('@')[0]
+    msg += `\n${t.usuario.replace('{tag}', tag).replace('{warns}', u.warns)}\n`
+    const reasons = u.reasons?.length ? u.reasons : []
+    if (reasons.length > 0) {
+      reasons.forEach((r, i) => {
+        msg += `${t.razon.replace('{n}', i + 1).replace('{motivo}', r || t.sin_motivo)}\n`
+      })
+    } else {
+      msg += `${t.razon.replace('{n}', 1).replace('{motivo}', t.sin_motivo)}\n`
+    }
+  }
 
-  await conn.sendMessage(m.chat, { text: msg, mentions: filtered.map(u => u.id) })
+  await conn.sendMessage(m.chat, { text: msg.trim(), mentions: filtered.map(u => u.id) })
 }
 
 handler.command = /^(listwarn|veradvertencias|advertencias)$/i
