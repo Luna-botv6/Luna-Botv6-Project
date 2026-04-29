@@ -148,6 +148,11 @@
     "error_menu": "❌ Ocorreu um erro ao mostrar o menu"
   },
   "plugins": {
+    "wink": {
+      "sin_imagen": "╭━━━〔 🎭 *WINK LOTTIE* 〕━━━╮\n┃\n┃ ⚠️ *Você precisa enviar ou responder*\n┃ *uma imagem* para criar o wink.\n┃\n┃ 🎬 *Efeitos disponíveis:*\n┃ _{efectos}_\n┃\n┃ 💡 *Exemplos de uso:*\n┃ • _.wink spin_ + imagem anexada\n┃ • _.wink zoom_ respondendo foto\n┃ • _.wink_ → efeito aleatório 🎲\n┃ • _.wink lista_ → ver todos\n╰━━━━━━━━━━━━━━━━━━━━━╯",
+      "lista": "╭━━━〔 🎭 *EFEITOS WINK* 〕━━━╮\n┃\n{lista}\n┃\n┃ 💡 *Como usar:*\n┃ _.wink <efeito>_ + imagem\n┃ _.wink_ → escolhe um aleatório 🎲\n╰━━━━━━━━━━━━━━━━━━━━━╯",
+      "lista_item": "┃ {n}. 🎬 *.wink {efecto}*"
+    },
     "waifu_claim": {
       "no_waifu": "❌ Você não tem nenhuma waifu para reivindicar. Faça uma rodada primeiro com {prefix}rw",
       "success": "✅ Você reivindicou sua waifu!\nNome: {name}\nAnime: {anime}"
@@ -1647,6 +1652,19 @@
           "prêmio"
         ]
       }
+    },
+    "gc_kick2": {
+      "no_admin": "⚠️ Apenas administradores podem usar este comando.",
+      "no_bot_admin": "⚠️ Preciso ser administrador para expulsar usuários.",
+      "no_restrict": "⚠️ Você precisa ativar o *restrict* para usar este comando.",
+      "cooldown": "⏰ Aguarde *{min}m {seg}s* antes de usar este comando novamente.",
+      "no_target": "Você precisa mencionar um usuário ou responder à mensagem dele.\n*{prefix}{cmd} @usuário*",
+      "wrong_number": "*[◉] O número informado está incorreto.*",
+      "cant_kick_self": "*🤖 Não posso me expulsar do grupo.*",
+      "not_in_group": "*[◉] A pessoa mencionada não está no grupo.*",
+      "cant_kick_admin": "*[◉] Não posso expulsar um administrador do grupo.*",
+      "kick_success": "✅ @{user} foi expulso do grupo.",
+      "kick_success_reason": "✅ @{user} foi expulso do grupo.\n📋 *Motivo:* {motivo}"
     }
   },
   "functions": {
@@ -1655,7 +1673,8 @@
       "welcome": "🌙 *Bem-vindo(a) a @group!* ✨\n\n👋 Olá, @user!\n🌟 Agora somos *@total* membros.\n\n*@desc*",
       "bye": "🌙 *Até breve!* 👫\n\n👋 Adeus, @user\n🌟 Agora restam *@total* membros.",
       "promote": "🌙 *Promoção!* ✨\n\n👑 @tag promoveu @user a administrador(a).",
-      "demote": "🌙 *Mudança de cargo*\n\n📉 @tag removeu @user do cargo de administrador."
+      "demote": "🌙 *Mudança de cargo*\n\n📉 @tag removeu @user do cargo de administrador.",
+      "kick_reason_suffix": "\n\n⚠️ *Motivo da expulsão:* {motivo}"
     },
     "group_detect": {
       "no_name": "Sem nome",

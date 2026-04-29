@@ -148,6 +148,11 @@
     "error_menu": "❌ An error occurred while showing the menu"
   },
   "plugins": {
+    "wink": {
+      "sin_imagen": "╭━━━〔 🎭 *WINK LOTTIE* 〕━━━╮\n┃\n┃ ⚠️ *You need to send or reply to*\n┃ *an image* to create a wink.\n┃\n┃ 🎬 *Available effects:*\n┃ _{efectos}_\n┃\n┃ 💡 *Usage examples:*\n┃ • _.wink spin_ + attached image\n┃ • _.wink zoom_ replying to a photo\n┃ • _.wink_ → random effect 🎲\n┃ • _.wink list_ → see all effects\n╰━━━━━━━━━━━━━━━━━━━━━╯",
+      "lista": "╭━━━〔 🎭 *WINK EFFECTS* 〕━━━╮\n┃\n{lista}\n┃\n┃ 💡 *How to use:*\n┃ _.wink <effect>_ + image\n┃ _.wink_ → picks a random one 🎲\n╰━━━━━━━━━━━━━━━━━━━━━╯",
+      "lista_item": "┃ {n}. 🎬 *.wink {efecto}*"
+    },
     "waifu_claim": {
       "no_waifu": "❌ You don't have any waifu to claim. Roll first using {prefix}rw",
       "success": "✅ You have claimed your waifu!\nName: {name}\nAnime: {anime}"
@@ -1645,6 +1650,19 @@
           "prize"
         ]
       }
+    },
+    "gc_kick2": {
+      "no_admin": "⚠️ Only administrators can use this command.",
+      "no_bot_admin": "⚠️ I need to be an administrator to remove users.",
+      "no_restrict": "⚠️ You need to enable *restrict* to use this command.",
+      "cooldown": "⏰ Please wait *{min}m {seg}s* before using this command again.",
+      "no_target": "You need to mention a user or reply to their message.\n*{prefix}{cmd} @user*",
+      "wrong_number": "*[◉] The number entered is incorrect.*",
+      "cant_kick_self": "*🤖 I cannot remove myself from the group.*",
+      "not_in_group": "*[◉] The mentioned person is not in the group.*",
+      "cant_kick_admin": "*[◉] I cannot remove a group administrator.*",
+      "kick_success": "✅ @{user} has been removed from the group.",
+      "kick_success_reason": "✅ @{user} has been removed from the group.\n📋 *Reason:* {motivo}"
     }
   },
   "functions": {
@@ -1653,7 +1671,8 @@
       "welcome": "🌙 *Welcome to @group!* ✨\n\n👋 Hello, @user!\n🌟 We are now *@total* members in this group.\n📖 We invite you to read the group description.\n\n*@desc*\n\n*Enjoy your stay!* 🎉",
       "bye": "🌙 *Goodbye!* 👫\n\n👋 Farewell, @user\n🌟 We are now *@total* members.\n\n*Hope to see you again!* ✨",
       "promote": "🌙 *Promotion!* ✨\n\n👑 @tag has promoted @user as group administrator.\n\n*Congratulations!* 🎉",
-      "demote": "🌙 *Role change* 👫\n\n📉 @tag has removed @user as group administrator."
+      "demote": "🌙 *Role change* 👫\n\n📉 @tag has removed @user as group administrator.",
+      "kick_reason_suffix": "\n\n⚠️ *Reason for removal:* {motivo}"
     },
     "group_detect": {
       "no_name": "No name",
