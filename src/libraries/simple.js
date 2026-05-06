@@ -20,10 +20,21 @@ const {
   makeInMemoryStore,
   getAggregateVotesInPollMessage, 
   prepareWAMessageMedia,
-  WA_DEFAULT_EPHEMERAL
+  WA_DEFAULT_EPHEMERAL,
+  fetchLatestBaileysVersion
 } = (await import("@whiskeysockets/baileys")).default
 
-export function makeWASocket(connectionOptions, options = {}) {
+const WA_VERSION_OVERRIDE = [2, 2413, 51]
+
+export async function makeWASocket(connectionOptions, options = {}) {
+  if (!connectionOptions.version) {
+    try {
+      const { version } = await fetchLatestBaileysVersion()
+      connectionOptions.version = version
+    } catch {
+      connectionOptions.version = WA_VERSION_OVERRIDE
+    }
+  }
   const conn = (global.opts['legacy'] ? makeWALegacySocket : _makeWaSocket)(connectionOptions);
 
   const sock = Object.defineProperties(conn, {
