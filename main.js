@@ -22,7 +22,7 @@ import { isJidBroadcast } from '@whiskeysockets/baileys';
 import { makeWASocket, protoType, serialize } from './src/libraries/simple.js';
 import { Low, JSONFile } from 'lowdb';
 import store from './src/libraries/store.js';
-const { DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, jidNormalizedUser, PHONENUMBER_MCC } = await import("@whiskeysockets/baileys");
+const { DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, fetchLatestWaWebVersion, makeCacheableSignalKeyStore, jidNormalizedUser, PHONENUMBER_MCC } = await import("@whiskeysockets/baileys");
 import readline from 'readline';
 import NodeCache from 'node-cache';
 import { restaurarConfiguraciones } from './lib/funcConfig.js';
@@ -186,7 +186,23 @@ try {
 }
 
 const {state, saveCreds} = await useMultiFileAuthState(authFolder);
-const { version } = await fetchLatestBaileysVersion();
+
+let version;
+try {
+  const result = await fetchLatestWaWebVersion()
+  version = result.version
+  console.log(chalk.green('[ ✅ ] Versión WA Web obtenida de sw.js: [' + version.join(', ') + ']'))
+} catch (e) {
+  console.log(chalk.yellow('[ ⚠ ] No se pudo obtener versión WaWeb: ' + e.message))
+  try {
+    const r = await fetchLatestBaileysVersion()
+    version = r.version
+    console.log(chalk.yellow('[ ⚠ ] Usando versión de Baileys: [' + version.join(', ') + ']'))
+  } catch {
+    version = [2, 3000, 1037641644]
+    console.log(chalk.yellow('[ ⚠ ] Usando versión hardcodeada de fallback: [' + version.join(', ') + ']'))
+  }
+}
 
 console.info = () => {}
 
@@ -255,7 +271,7 @@ if (msgTimestamp < connectionTime) {
     },
 };
 
-global.conn = makeWASocket(connectionOptions);
+global.conn = await makeWASocket(connectionOptions);
 import printMessage from './src/libraries/print.js';
 
 function applyPrintWrapper(conn) {
@@ -653,12 +669,19 @@ if (connection === 'open') {
   }
 
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-if (reason === 405) {
-    console.log(chalk.yellow('[ ⚠ ] Sesión reemplazada detectada'));
-    console.log(chalk.yellow('[ ⚠ ] Reconectando sin borrar credenciales...'));
+
+  if (reason === 405) {
+    global._reconnect405Count = (global._reconnect405Count || 0) + 1
+    if (global._reconnect405Count >= 3) {
+      console.log(chalk.red('[ ✖ ] Error de protocolo persistente (405). Esperando 60 segundos...'))
+      global._reconnect405Count = 0
+      setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 60000);
+      return;
+    }
+    console.log(chalk.yellow('[ ⚠ ] Reconectando...'));
     setTimeout(async () => { 
       await global.reloadHandler(true).catch(console.error); 
-    }, 3000);
+    }, 5000);
     return;
   }
 
@@ -718,7 +741,7 @@ global.reloadHandler = async function(restatConn) {
     } catch { }
     
     conn.ev.removeAllListeners();
-    global.conn = makeWASocket(connectionOptions, {chats: oldChats});
+    global.conn = await makeWASocket(connectionOptions, {chats: oldChats});
     applyPrintWrapper(global.conn);
     
     isInit = true;
