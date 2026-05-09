@@ -14,26 +14,27 @@ async function safeSetConfig(chatId, config) {
 }
 
 const CONFIG_MAP = {
-  welcome: { key: 'welcome', group: true, admin: true },
-  detect: { key: 'detect', group: true, admin: true },
-  detect2: { key: 'detect2', group: true, admin: true },
-  antidelete: { key: 'antidelete', group: true, admin: true },
-  antilink: { key: 'antiLink', group: true, admin: true },
-  antilink2: { key: 'antiLink2', group: true, admin: true },
-  modoadmin: { key: 'modoadmin', group: true, admin: true },
-  autosticker: { key: 'autosticker', group: true, admin: true },
-  audios: { key: 'audios', group: true, admin: true },
-  antitoxic: { key: 'antiToxic', group: true, admin: true },
-  afk: { key: 'afkAllowed', group: true, admin: true },
-  restrict: { key: 'restrict', bot: true, owner: true },
-  audios_bot: { key: 'audios_bot', bot: true, owner: true },
-  autoread: { key: 'autoread2', bot: true, owner: true },
-  anticall: { key: 'antiCall', bot: true, owner: true },
-  antispam: { key: 'antispam', bot: true, owner: true },
-  antiprivado: { key: 'antiprivado', file: true, owner: true },
-  modopublico: { key: 'modopublico', file: true, owner: true },
-  vierwimage: { key: 'vierwimage', file: true, owner: true },
-  modogrupos: { key: 'modogrupos', file: true, owner: true }
+  welcome:     { key: 'welcome',    group: true, admin: true },
+  bye:         { key: 'bye',        group: true, admin: true },
+  detect:      { key: 'detect',     group: true, admin: true },
+  detect2:     { key: 'detect2',    group: true, admin: true },
+  antidelete:  { key: 'antidelete', group: true, admin: true },
+  antilink:    { key: 'antiLink',   group: true, admin: true },
+  antilink2:   { key: 'antiLink2',  group: true, admin: true },
+  modoadmin:   { key: 'modoadmin',  group: true, admin: true },
+  autosticker: { key: 'autosticker',group: true, admin: true },
+  audios:      { key: 'audios',     group: true, admin: true },
+  antitoxic:   { key: 'antiToxic',  group: true, admin: true },
+  afk:         { key: 'afkAllowed', group: true, admin: true },
+  restrict:    { key: 'restrict',   bot: true,   owner: true },
+  audios_bot:  { key: 'audios_bot', bot: true,   owner: true },
+  autoread:    { key: 'autoread2',  bot: true,   owner: true },
+  anticall:    { key: 'antiCall',   bot: true,   owner: true },
+  antispam:    { key: 'antispam',   bot: true,   owner: true },
+  antiprivado: { key: 'antiprivado',file: true,  owner: true },
+  modopublico: { key: 'modopublico',file: true,  owner: true },
+  vierwimage:  { key: 'vierwimage', file: true,  owner: true },
+  modogrupos:  { key: 'modogrupos', file: true,  owner: true }
 }
 
 async function getOwnerNumbers(conn) {
@@ -105,13 +106,15 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   }
 
   const scopeText = config.bot || config.file ? t.alcance[0] : t.alcance[1]
+  const featureDesc = t.desc_features?.[type] || ''
 
   const msg =
     `${t.resultado[0]}\n\n` +
     `${isEnable ? '✅' : '❌'} • *${t.resultado[1]}* _${type}_\n` +
     `🔘 • *${t.resultado[2]}* _${isEnable ? t.resultado[3] : t.resultado[4]}_\n` +
     `🌐 • *${t.resultado[5]}* _${scopeText}_\n\n` +
-    t.resultado[6]
+    t.resultado[6] +
+    (featureDesc ? `\n\n📌 ${featureDesc}` : '')
 
   conn.sendMessage(m.chat, { text: msg }, { quoted: m })
 }
