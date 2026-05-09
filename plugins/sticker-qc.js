@@ -1,13 +1,10 @@
-/* Codigo basado en GataBot-MD adaptado para LunaBot */
-
 import { sticker } from '../src/libraries/sticker.js'
 import axios from 'axios'
 import fs from 'fs'
 
 const handler = async (m, { conn, args }) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))
   const tradutor = _translate.plugins.sticker_qc
 
   let text
@@ -27,34 +24,31 @@ const handler = async (m, { conn, args }) => {
     : m.sender
 
   const mentionRegex = new RegExp(
-    `@${who.split('@')[0].replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}\\s*`,
+    `@${who.split('@')[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*`,
     'g'
   )
 
-  const mishi = text.replace(mentionRegex, '')
+  const mishi = text.replace(mentionRegex, '').trim()
 
-  if (!mishi || !mishi.trim()) {
-    return m.reply(tradutor.texto2)
-  }
+  if (!mishi) return m.reply(tradutor.texto2)
+  if (mishi.length > 100) return m.reply(tradutor.texto3)
 
-  if (mishi.length > 100) {
-    return m.reply(tradutor.texto3)
-  }
+  const fallbackPp = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+  let ppBase64 = fallbackPp
 
-  let pp
   try {
-    pp = await conn.profilePictureUrl(who, 'image')
+    const ppUrl = await conn.profilePictureUrl(who, 'image')
+    const res = await axios.get(ppUrl, { responseType: 'arraybuffer', timeout: 5000 })
+    ppBase64 = `data:image/jpeg;base64,${Buffer.from(res.data).toString('base64')}`
   } catch {
-    pp = 'https://telegra.ph/file/24fa902ead26340f3df2c.png'
+    try {
+      const res = await axios.get(fallbackPp, { responseType: 'arraybuffer', timeout: 5000 })
+      ppBase64 = `data:image/jpeg;base64,${Buffer.from(res.data).toString('base64')}`
+    } catch {}
   }
 
   let nombre
-  try {
-    nombre = await conn.getName(who)
-  } catch {
-    nombre = 'Usuario'
-  }
-
+  try { nombre = await conn.getName(who) } catch {}
   const safeName = typeof nombre === 'string' && nombre.length > 0 ? nombre : 'Usuario'
 
   const obj = {
@@ -71,7 +65,7 @@ const handler = async (m, { conn, args }) => {
         from: {
           id: 1,
           name: safeName,
-          photo: { url: pp }
+          photo: { url: ppBase64 }
         },
         text: mishi,
         replyMessage: {}
@@ -84,42 +78,22 @@ const handler = async (m, { conn, args }) => {
       'https://bot.lyo.su/quote/generate',
       obj,
       {
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         timeout: 15000
       }
     )
 
-    if (
-      !json ||
-      !json.data ||
-      !json.data.result ||
-      !json.data.result.image
-    ) {
-      return m.reply('No se pudo generar la imagen del quote.')
-    }
+    if (!json?.data?.result?.image) return m.reply(tradutor.texto4)
 
-    const buffer = Buffer.from(json.data.result.image, 'base64')
-    const stiker = await sticker(buffer, false, global.packname, global.author)
+    const imageBuffer = Buffer.from(json.data.result.image, 'base64')
+    const stikerBuffer = await sticker(imageBuffer, false, global.packname, global.author)
 
-    if (!stiker) {
-      return m.reply('No se pudo generar el sticker.')
-    }
+    if (!stikerBuffer) return m.reply(tradutor.texto4)
 
-    return conn.sendFile(m.chat, stiker, 'qc.webp', '', m)
+    await conn.sendMessage(m.chat, { sticker: stikerBuffer }, { quoted: m })
   } catch (e) {
-    console.error('Error en sticker-qc:', e?.response?.status || e)
-
-    if (e?.response?.status === 403) {
-      return m.reply('La API de quotes devolvió "forbidden". Es posible que el servicio haya bloqueado las peticiones. Intenta más tarde o con menos frecuencia.')
-    }
-
-    if (e?.code === 'ECONNABORTED') {
-      return m.reply('La API tardó demasiado en responder.')
-    }
-
-    return m.reply('Ocurrió un error al generar el sticker de quote.')
+    if (e?.code === 'ECONNABORTED') return m.reply(tradutor.texto5)
+    return m.reply(tradutor.texto4)
   }
 }
 
