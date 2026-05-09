@@ -1688,6 +1688,10 @@
       "cant_kick_admin": "*[◉] Não posso expulsar um administrador do grupo.*",
       "kick_success": "✅ @{user} foi expulso do grupo.",
       "kick_success_reason": "✅ @{user} foi expulso do grupo.\n📋 *Motivo:* {motivo}"
+    },
+    "sticker_qc": {
+      "texto4": "❌ Não foi possível gerar o sticker de quote.",
+      "texto5": "⏱️ A API demorou demais para responder. Tente novamente."
     }
   },
   "functions": {

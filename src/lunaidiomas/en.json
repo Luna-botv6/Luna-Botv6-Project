@@ -1686,6 +1686,10 @@
       "cant_kick_admin": "*[◉] I cannot remove a group administrator.*",
       "kick_success": "✅ @{user} has been removed from the group.",
       "kick_success_reason": "✅ @{user} has been removed from the group.\n📋 *Reason:* {motivo}"
+    },
+    "sticker_qc": {
+      "texto4": "❌ Could not generate the quote sticker.",
+      "texto5": "⏱️ The API took too long to respond. Try again."
     }
   },
   "functions": {
