@@ -322,7 +322,30 @@
         "Scope:",
         "✨──────────────────✨"
       ],
-      "descripcion": "🎉 *WELCOME* - {prefix}{command} welcome\n   Enables or disables the welcome message when someone joins the group.\n\n🚫 *ANTILINK* - {prefix}{command} antilink\n   Deletes messages containing WhatsApp group links.\n\n🚫 *ANTILINK2* - {prefix}{command} antilink2\n   Stronger anti-link system, detects almost any link.\n\n🔐 *RESTRICT* - {prefix}{command} restrict {value}\n   Enables group restrictions (owner only).\n\n📖 *AUTOREAD* - {prefix}{command} autoread {value}\n   Automatically marks all messages as read.\n\n🎵 *AUDIOS* - {prefix}{command} audios\n   Enables or disables automatic audio responses.\n\n🏷️ *AUTOSTICKER* - {prefix}{command} autosticker\n   Automatically converts images or videos into stickers.\n\n📞 *ANTICALL* - {prefix}{command} anticall {value}\n   Automatically blocks incoming calls.\n\n☢️ *ANTITOXIC* - {prefix}{command} antitoxic\n   Detects and removes toxic messages.\n\n👑 *ADMINMODE* - {prefix}{command} modoadmin\n   Only admins can use commands.\n\n⏰ *AFK* - {prefix}{command} afk\n   Controls AFK mode usage.\n\n🗑️ *ANTIDELETE* - {prefix}{command} antidelete\n   Prevents message deletion.\n\n📊 *AUDIOS_BOT* - {prefix}{command} audios_bot {value}\n   Enables or disables bot audios.\n\n🎯 *ANTISPAM* - {prefix}{command} antispam {value}\n   Blocks spam users.\n\n📝 *ANTIPRIVATE* - {prefix}{command} antiprivado {value}\n   Blocks private messages.\n\n🌐 *PUBLICMODE* - {prefix}{command} modopublico {value}\n   Switches to public mode.\n\n👀 *VIEWIMAGE* - {prefix}{command} viewimage {value}\n   Enables image preview.\n\n🢀 *GROUPMODE* - {prefix}{command} modogrupos {value}\n   Restricts usage to groups only."
+      "descripcion": "🎉 *WELCOME* - {prefix}{command} welcome\n   Enables or disables the welcome message when someone joins the group.\n\n👋 *BYE* - {prefix}{command} bye\n   Enables or disables the goodbye message when someone leaves the group.\n\n🚫 *ANTILINK* - {prefix}{command} antilink\n   Deletes messages containing WhatsApp group links.\n\n🚫 *ANTILINK2* - {prefix}{command} antilink2\n   Stronger anti-link system, detects almost any link.\n\n🔐 *RESTRICT* - {prefix}{command} restrict {value}\n   Enables group restrictions (owner only).\n\n📖 *AUTOREAD* - {prefix}{command} autoread {value}\n   Automatically marks all messages as read.\n\n🎵 *AUDIOS* - {prefix}{command} audios\n   Enables or disables automatic audio responses.\n\n🏷️ *AUTOSTICKER* - {prefix}{command} autosticker\n   Automatically converts images or videos into stickers.\n\n📞 *ANTICALL* - {prefix}{command} anticall {value}\n   Automatically blocks incoming calls.\n\n☢️ *ANTITOXIC* - {prefix}{command} antitoxic\n   Detects and removes toxic messages.\n\n👑 *ADMINMODE* - {prefix}{command} modoadmin\n   Only admins can use bot commands.\n\n⏰ *AFK* - {prefix}{command} afk\n   Controls AFK mode usage.\n\n🗑️ *ANTIDELETE* - {prefix}{command} antidelete\n   Prevents message deletion.\n\n📊 *AUDIOS_BOT* - {prefix}{command} audios_bot {value}\n   Enables or disables bot audios.\n\n🎯 *ANTISPAM* - {prefix}{command} antispam {value}\n   Blocks spam users.\n\n📝 *ANTIPRIVATE* - {prefix}{command} antiprivado {value}\n   Blocks private messages.\n\n🌐 *PUBLICMODE* - {prefix}{command} modopublico {value}\n   Switches to public mode.\n\n👀 *VIEWIMAGE* - {prefix}{command} viewimage {value}\n   Enables image preview.\n\n🢀 *GROUPMODE* - {prefix}{command} modogrupos {value}\n   Restricts usage to groups only.",
+      "desc_features": {
+        "welcome": "Sends a welcome message when someone *joins* the group.",
+        "bye": "Sends a goodbye message when someone *leaves* the group.",
+        "detect": "Notifies changes like name, description or group icon.",
+        "detect2": "Detects changes in the group internal settings.",
+        "antidelete": "Resends messages that someone *deleted* in the group.",
+        "antilink": "Removes messages containing links from other groups.",
+        "antilink2": "Strict version of antilink, blocks almost any link.",
+        "modoadmin": "Only *admins* can run bot commands.",
+        "autosticker": "Converts images and videos into stickers automatically.",
+        "audios": "Enables automatic audio responses in the group.",
+        "antitoxic": "Detects and removes messages with offensive words.",
+        "afk": "Allows members to activate *AFK* mode in the group.",
+        "restrict": "Enables global bot restrictions (owner only).",
+        "audios_bot": "Enables or disables bot audio responses.",
+        "autoread": "Automatically marks all received messages as read.",
+        "anticall": "Automatically blocks and rejects incoming calls.",
+        "antispam": "Detects and bans users who send spam.",
+        "antiprivado": "Prevents users from messaging the bot privately.",
+        "modopublico": "Allows *any user* to use the bot commands.",
+        "vierwimage": "Enables automatic profile picture preview.",
+        "modogrupos": "Restricts bot usage to groups only."
+      }
     },
     "audio_efectos": {
       "texto1": "⚠️ Reply to an audio using the command",
