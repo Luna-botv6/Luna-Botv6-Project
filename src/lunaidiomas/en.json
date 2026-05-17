@@ -1687,9 +1687,30 @@
       "kick_success": "✅ @{user} has been removed from the group.",
       "kick_success_reason": "✅ @{user} has been removed from the group.\n📋 *Reason:* {motivo}"
     },
-    "sticker_qc": {
-      "texto4": "❌ Could not generate the quote sticker.",
-      "texto5": "⏱️ The API took too long to respond. Try again."
+    "gc_setwelcome": {
+      "texto1": "✅ Welcome message updated successfully.",
+      "texto2": [
+        "⚠️ You must write the welcome text. You can use:"
+      ],
+      "cooldown": "⏰ You must wait {min}m {seg}s before using this command again."
+    },
+    "gc_setbye": {
+      "texto1": "✅ Goodbye message updated successfully.",
+      "texto2": "⚠️ You must write the goodbye text. You can use:",
+      "texto3": "(mention of the user leaving)",
+      "cooldown": "⏰ You must wait {min}m {seg}s before using this command again."
+    },
+    "gc_imgwelc": {
+      "texto1": "✅ Welcome image saved successfully.",
+      "texto2": "❌ You must send or quote an image to use as the welcome background.",
+      "texto3": "❌ An error occurred while saving the image. Try again.",
+      "texto4": "🗑️ Welcome image removed. The user profile picture will be used."
+    },
+    "gc_imgbye": {
+      "texto1": "✅ Goodbye image saved successfully.",
+      "texto2": "❌ You must send or quote an image to use as the goodbye background.",
+      "texto3": "❌ An error occurred while saving the image. Try again.",
+      "texto4": "🗑️ Goodbye image removed. The user profile picture will be used."
     }
   },
   "functions": {

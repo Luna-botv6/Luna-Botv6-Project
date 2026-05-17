@@ -1689,9 +1689,30 @@
       "kick_success": "✅ @{user} ha sido expulsado del grupo.",
       "kick_success_reason": "✅ @{user} ha sido expulsado del grupo.\n📋 *Motivo:* {motivo}"
     },
-    "sticker_qc": {
-      "texto4": "❌ No se pudo generar el sticker de quote.",
-      "texto5": "⏱️ La API tardó demasiado en responder. Intentá de nuevo."
+    "gc_setwelcome": {
+      "texto1": "✅ Mensaje de bienvenida actualizado correctamente.",
+      "texto2": [
+        "⚠️ Debes escribir el texto de bienvenida. Puedes usar:"
+      ],
+      "cooldown": "⏰ Debes esperar {min}m {seg}s antes de usar este comando nuevamente."
+    },
+    "gc_setbye": {
+      "texto1": "✅ Mensaje de despedida actualizado correctamente.",
+      "texto2": "⚠️ Debes escribir el texto de despedida. Puedes usar:",
+      "texto3": "(mención del usuario que sale)",
+      "cooldown": "⏰ Debes esperar {min}m {seg}s antes de usar este comando nuevamente."
+    },
+    "gc_imgwelc": {
+      "texto1": "✅ Imagen de bienvenida guardada correctamente.",
+      "texto2": "❌ Debes enviar o citar una imagen para usarla como fondo de bienvenida.",
+      "texto3": "❌ Ocurrió un error al guardar la imagen. Intentá de nuevo.",
+      "texto4": "🗑️ Imagen de bienvenida eliminada. Se usará la foto de perfil del usuario."
+    },
+    "gc_imgbye": {
+      "texto1": "✅ Imagen de despedida guardada correctamente.",
+      "texto2": "❌ Debes enviar o citar una imagen para usarla como fondo de despedida.",
+      "texto3": "❌ Ocurrió un error al guardar la imagen. Intentá de nuevo.",
+      "texto4": "🗑️ Imagen de despedida eliminada. Se usará la foto de perfil del usuario."
     }
   },
   "functions": {

@@ -1689,9 +1689,30 @@
       "kick_success": "✅ @{user} foi expulso do grupo.",
       "kick_success_reason": "✅ @{user} foi expulso do grupo.\n📋 *Motivo:* {motivo}"
     },
-    "sticker_qc": {
-      "texto4": "❌ Não foi possível gerar o sticker de quote.",
-      "texto5": "⏱️ A API demorou demais para responder. Tente novamente."
+    "gc_setwelcome": {
+      "texto1": "✅ Mensagem de boas-vindas atualizada com sucesso.",
+      "texto2": [
+        "⚠️ Você precisa escrever o texto de boas-vindas. Você pode usar:"
+      ],
+      "cooldown": "⏰ Você precisa esperar {min}m {seg}s antes de usar este comando novamente."
+    },
+    "gc_setbye": {
+      "texto1": "✅ Mensagem de despedida atualizada com sucesso.",
+      "texto2": "⚠️ Você precisa escrever o texto de despedida. Você pode usar:",
+      "texto3": "(menção do usuário que sai)",
+      "cooldown": "⏰ Você precisa esperar {min}m {seg}s antes de usar este comando novamente."
+    },
+    "gc_imgwelc": {
+      "texto1": "✅ Imagem de boas-vindas salva com sucesso.",
+      "texto2": "❌ Você precisa enviar ou citar uma imagem para usar como fundo de boas-vindas.",
+      "texto3": "❌ Ocorreu um erro ao salvar a imagem. Tente novamente.",
+      "texto4": "🗑️ Imagem de boas-vindas removida. A foto de perfil do usuário será usada."
+    },
+    "gc_imgbye": {
+      "texto1": "✅ Imagem de despedida salva com sucesso.",
+      "texto2": "❌ Você precisa enviar ou citar uma imagem para usar como fundo de despedida.",
+      "texto3": "❌ Ocorreu um erro ao salvar a imagem. Tente novamente.",
+      "texto4": "🗑️ Imagem de despedida removida. A foto de perfil do usuário será usada."
     }
   },
   "functions": {
