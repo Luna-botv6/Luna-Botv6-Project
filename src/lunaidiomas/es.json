@@ -145,7 +145,10 @@
     "ia_boton": "🤖 *Luna IA* — Hablame de forma natural mencionándome.\nSin comandos, sin prefijos. Solo hablá 💜",
     "ia_boton_ver": "Ver menú de IA",
     "creado": "Creado con ❤️",
-    "error_menu": "❌ Ocurrió un error al mostrar el menú"
+    "error_menu": "❌ Ocurrió un error al mostrar el menú",
+    "personalizar_titulo": "🎨 Personalizar Menú",
+    "personalizar_desc": "Solo el owner puede cambiar el media del menú",
+    "personalizar_restaurar": "Restaurar al original"
   },
   "plugins": {
     "wink": {
@@ -1713,6 +1716,18 @@
       "texto2": "❌ Debes enviar o citar una imagen para usarla como fondo de despedida.",
       "texto3": "❌ Ocurrió un error al guardar la imagen. Intentá de nuevo.",
       "texto4": "🗑️ Imagen de despedida eliminada. Se usará la foto de perfil del usuario."
+    },
+    "menu_media": {
+      "no_owner": "👑 *Solo el owner puede cambiar el media del menú.*",
+      "img_guardada": "✅ *Imagen del menú actualizada correctamente.*\n_Reinicia el menú para verla._",
+      "img_eliminada": "🗑️ *Imagen personalizada eliminada.*\n_El menú volverá al video original._",
+      "img_no_existe": "⚠️ *No hay imagen personalizada configurada actualmente.*",
+      "vid_guardado": "✅ *Video del menú actualizado correctamente.*\n_Reinicia el menú para verlo._",
+      "vid_eliminado": "🗑️ *Video personalizado eliminado.*\n_El menú volverá al video original._",
+      "vid_no_existe": "⚠️ *No hay video personalizado configurado actualmente.*",
+      "no_media_img": "🖼️ *Debes enviar o citar una imagen para usar este comando.*",
+      "no_media_vid": "🎥 *Debes enviar o citar un video corto para usar este comando.*",
+      "error": "❌ *No se pudo guardar el archivo. Intenta de nuevo.*"
     }
   },
   "functions": {

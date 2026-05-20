@@ -145,7 +145,10 @@
     "ia_boton": "🤖 *Luna AI* — Talk to me naturally by mentioning me.\nNo commands, no prefixes. Just talk 💜",
     "ia_boton_ver": "View AI menu",
     "creado": "Created with ❤️",
-    "error_menu": "❌ An error occurred while showing the menu"
+    "error_menu": "❌ An error occurred while showing the menu",
+    "personalizar_titulo": "🎨 Customize Menu",
+    "personalizar_desc": "Only the owner can change the menu media",
+    "personalizar_restaurar": "Restore to original"
   },
   "plugins": {
     "wink": {
@@ -1711,6 +1714,18 @@
       "texto2": "❌ You must send or quote an image to use as the goodbye background.",
       "texto3": "❌ An error occurred while saving the image. Try again.",
       "texto4": "🗑️ Goodbye image removed. The user profile picture will be used."
+    },
+    "menu_media": {
+      "no_owner": "👑 *Only the owner can change the menu media.*",
+      "img_guardada": "✅ *Menu image updated successfully.*\n_Reopen the menu to see it._",
+      "img_eliminada": "🗑️ *Custom image removed.*\n_The menu will return to the original video._",
+      "img_no_existe": "⚠️ *No custom image is currently configured.*",
+      "vid_guardado": "✅ *Menu video updated successfully.*\n_Reopen the menu to see it._",
+      "vid_eliminado": "🗑️ *Custom video removed.*\n_The menu will return to the original video._",
+      "vid_no_existe": "⚠️ *No custom video is currently configured.*",
+      "no_media_img": "🖼️ *You must send or quote an image to use this command.*",
+      "no_media_vid": "🎥 *You must send or quote a short video to use this command.*",
+      "error": "❌ *Could not save the file. Please try again.*"
     }
   },
   "functions": {
