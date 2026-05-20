@@ -1,34 +1,39 @@
+import { readFileSync } from 'fs';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
+const normalizeJid = (jid = '') => jid.replace(/:\d+@/, '@').trim();
+
 const handler = async (m, { conn, isOwner }) => {
-  if (!m.isGroup) {
-    return m.reply('*[◉] Este comando solo puede usarse en grupos.*');
-  }
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
+  const txt = JSON.parse(readFileSync(`./src/lunaidiomas/${idioma}.json`, 'utf-8')).plugins.gc_delete;
+
+  if (!m.isGroup) return m.reply(txt.solo_grupos);
 
   const { groupMetadata, isAdmin, isBotAdmin } =
     await getGroupDataForPlugin(conn, m.chat, m.sender);
 
-  if (!isAdmin && !isOwner) {
-    return m.reply('*[◉] Solo los administradores pueden usar este comando.*');
-  }
+  const botJid = normalizeJid(conn.user?.id || '');
+  const isBotAdminReal =
+    isBotAdmin ||
+    groupMetadata.participants.some(
+      (p) =>
+        normalizeJid(p.id) === botJid &&
+        (p.admin === 'admin' || p.admin === 'superadmin')
+    );
 
-  if (!isBotAdmin) {
-    return m.reply('*[◉] El bot necesita ser administrador para eliminar mensajes.*');
-  }
+  if (!isAdmin && !isOwner) return m.reply(txt.no_admin);
+  if (!isBotAdminReal) return m.reply(txt.no_bot_admin);
+  if (!m.quoted) return m.reply(txt.no_quoted);
 
-  if (!m.quoted) {
-    return m.reply('*[◉] Debes citar un mensaje para eliminarlo.*');
-  }
-
-  const resolveLidToId = (jidOrLid) => {
+  const resolveLid = (jidOrLid) => {
     if (!jidOrLid) return null;
     if (!jidOrLid.includes('@lid')) return jidOrLid;
-    const pdata = groupMetadata.participants.find(p => p.lid === jidOrLid);
-    return pdata ? pdata.id : null;
+    const match = groupMetadata.participants.find((p) => p.lid === jidOrLid);
+    return match ? match.id : null;
   };
 
   const quotedSender = m.quoted.sender
-    ? resolveLidToId(m.quoted.sender) || m.quoted.sender
+    ? resolveLid(m.quoted.sender) || m.quoted.sender
     : null;
 
   const messageId =
@@ -39,9 +44,7 @@ const handler = async (m, { conn, isOwner }) => {
     quotedSender ||
     m.message?.extendedTextMessage?.contextInfo?.participant;
 
-  if (!messageId || !participant) {
-    return m.reply('*[◉] No se pudo eliminar el mensaje.*');
-  }
+  if (!messageId || !participant) return m.reply(txt.error);
 
   try {
     await conn.sendMessage(m.chat, {
@@ -49,14 +52,12 @@ const handler = async (m, { conn, isOwner }) => {
         remoteJid: m.chat,
         fromMe: false,
         id: messageId,
-        participant
-      }
+        participant,
+      },
     });
-  } catch (e) {
-    console.error(e);
-    await m.reply(
-      '*[◉] No se pudo eliminar el mensaje. Asegúrate de que el bot sea administrador.*'
-    );
+    await m.reply(txt.success);
+  } catch {
+    await m.reply(txt.error);
   }
 };
 
