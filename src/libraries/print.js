@@ -15,12 +15,18 @@ const getMedia = (type) => {
   return null;
 };
 
-const TZ = { timeZone: "America/Argentina/Buenos_Aires" };
-const _seen = new Set();
+const TZ          = { timeZone: "America/Argentina/Buenos_Aires" };
+const _seen       = new Set();
 const _recentKeys = new Map();
 const _groupNames = new Map();
-const MAX_SEEN = 300;
-const KEY_TTL = 60000;
+const MAX_SEEN    = 300;
+const KEY_TTL     = 60000;
+
+const W      = 51;
+const STARS  = "  ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦";
+const TOP    = "╭" + "─".repeat(W) + "╮";
+const DIV    = "├" + "┄".repeat(W) + "┤";
+const BOTTOM = "╰" + "─".repeat(W) + "╯";
 
 const isEdited = (m) => {
   const mtype = m.mtype || "";
@@ -38,16 +44,16 @@ const isEdited = (m) => {
 };
 
 const buildFallbackKey = (m, chat, msgType) => {
-  const ts = m.messageTimestamp || Math.floor(Date.now() / 1000);
+  const ts   = m.messageTimestamp || Math.floor(Date.now() / 1000);
   const text = (m.text || m.msg?.conversation || "").slice(0, 40);
   return `${chat}:${msgType}:${ts}:${text}`;
 };
 
 const isDuplicate = (m, chat, msgType) => {
   const keyId = m.key?.id;
-  const key = keyId ? `id:${keyId}` : buildFallbackKey(m, chat, msgType);
-  const now = Date.now();
-  const last = _recentKeys.get(key);
+  const key   = keyId ? `id:${keyId}` : buildFallbackKey(m, chat, msgType);
+  const now   = Date.now();
+  const last  = _recentKeys.get(key);
   if (last && now - last < KEY_TTL) return true;
   _recentKeys.set(key, now);
   if (_recentKeys.size > 300) {
@@ -76,8 +82,12 @@ export default async function printMessage(m, conn = { user: {} }) {
     const chat = m.chat || m.key?.remoteJid || "";
     if (!chat || isEdited(m)) return;
 
-    if (m.msg?.messageStubType || m.message?.messageStubType ||
-        m.mtype === 'messageStubType' || m.mtype === 'protocolMessage') return;
+    if (
+      m.msg?.messageStubType    ||
+      m.message?.messageStubType ||
+      m.mtype === "messageStubType" ||
+      m.mtype === "protocolMessage"
+    ) return;
 
     const msgType = (
       m.mtype?.replace(/message$/i, "") ||
@@ -106,34 +116,72 @@ export default async function printMessage(m, conn = { user: {} }) {
     if (/[🟩⬜]{3,}/.test(text)) return;
 
     const isGroup   = chat.endsWith("@g.us");
-    const time      = new Date((m.messageTimestamp || Date.now() / 1000) * 1000).toLocaleTimeString("es-AR", TZ);
+    const time      = new Date((m.messageTimestamp || Date.now() / 1000) * 1000)
+                        .toLocaleTimeString("es-AR", TZ);
     const botNum    = conn.user?.jid?.split("@")[0] || "Bot";
     const groupId   = isGroup ? chat.split("@")[0] : null;
-    const command   = CMD_RE.exec(text)?.[1] ?? null;
+    const command   = global._lastCmd ?? CMD_RE.exec(text)?.[1] ?? null;
+    global._lastCmd = null;
     const media     = getMedia(msgType);
-    const preview   = text.length > 200 ? text.slice(0, 200) + chalk.grey(" ...") : text;
+    const firstLine = text.split("\n")[0].trim();
+    const multiline = text.includes("\n");
+    const truncated = firstLine.length > 120 ? firstLine.slice(0, 120) : firstLine;
+    const preview   = truncated + (multiline || firstLine.length > 120 ? chalk.hex("#5a5278")(" ...") : "");
     const groupName = isGroup ? await getGroupName(conn, chat) : null;
 
-    const C   = chalk.cyanBright;
-    const row = (icon, label, val) => C("├") + ` ${icon} ${chalk.bold(label)} ${val}`;
+    const cStars  = chalk.hex("#7c6af7");
+    const cBorder = chalk.hex("#4a4080");
+    const cTitle  = chalk.bold.hex("#f7c97a");
+    const cSys    = chalk.bold.hex("#5dd9a4");
+    const cBadge  = chalk.bold.hex("#00bfff");
+    const cLbl    = chalk.bold.hex("#ff9f43");
+    const cTag    = chalk.bold.hex("#50fa7b");
+    const cBot    = chalk.bold.hex("#00e5ff");
+    const cHrs    = chalk.bold.hex("#ffd166");
+    const cGrp    = chalk.bold.hex("#ff79c6");
+    const cGid    = chalk.bold.hex("#8be9fd");
+    const cEvt    = chalk.bold.hex("#50fa7b");
+    const cNom    = chalk.bold.hex("#ffb86c");
+    const cCmd    = chalk.bold.hex("#FF00FF");
+    const cMed    = chalk.bold.hex("#bd93f9");
+    const cArrow  = chalk.bold.hex("#c490f5");
+    const cMsg    = chalk.bold.hex("#f8f8f2");
+
+    const chatBadge = isGroup ? "▶ BOT" : "▶ PRIVADO";
+    const row = (label, value) =>
+      cBorder("│") + "  " + cLbl(label + " ⟩") + "  " + value;
 
     const lines = [
-      chalk.bold.cyanBright("╭⋙════ ⋆★⋆ ════⋘•🌙•⋙════ ⋆★⋆ ════⋙╮"),
-      chalk.bold.magentaBright("        ✧°ˆ Luna-BotV6 ˆ°✧        ") + "  " + chalk.greenBright("▶ BOT"),
-      row("🤖", "Bot:    ", botNum),
-      row("⏰", "Hora:   ", chalk.yellow(time)),
-      row("📍", "Chat:   ", isGroup
-        ? "👥 Grupo: " + chalk.cyanBright(groupName || "Desconocido")
-        : "👤 Privado"),
+      cBorder(TOP),
+      cBorder("│") + "  " +
+        cTitle("◈ LUNA-BOTV6") + "  " +
+        chalk.hex("#5a5278")("·····") + "  " +
+        cSys("SYS:OK") + "  " +
+        chalk.hex("#5a5278")("·····") + "  " +
+        cBadge(chatBadge),
+      cBorder(DIV),
+      row("BOT", cBot(botNum)),
+      row("HRS", cHrs(time)),
     ];
 
-    if (groupId)    lines.push(row("🆔", "ID:     ", chalk.grey(groupId)));
-    if (m.pushname) lines.push(row("👤", "Para:   ", chalk.magentaBright(m.pushname)));
-    if (command)    lines.push(row("⚡", "Comando:", chalk.greenBright(command)));
-    lines.push(     row("📋", "Tipo:   ", chalk.green(msgType)));
-    if (media)      lines.push(row("📎", "Media:  ", media));
-    if (text)       lines.push(row("💬", "Texto:  ", chalk.whiteBright(preview)));
-    lines.push(chalk.bold.cyanBright("╰⋙════ ⋆★⋆ ════⋘•🌙•⋙════ ⋆★⋆ ════⋙╯"));
+    if (isGroup) {
+      lines.push(row("GRP", cGrp("👥 " + (groupName || "Desconocido")) + "  " + cTag("‹ grupo ›")));
+      lines.push(row("GID", cGid(groupId)));
+    } else {
+      const whom = m.pushname || m.sender?.split("@")[0] || "privado";
+      lines.push(row("USR", cGrp(whom) + "  " + cTag("‹ privado ›")));
+    }
+
+    if (isGroup && m.pushname) lines.push(row("NOM", cNom(m.pushname)));
+    if (command)               lines.push(row("CMD", cCmd(command)));
+    lines.push(                row("EVT", cEvt(msgType)));
+    if (media)                 lines.push(row("MED", cMed(media)));
+
+    lines.push(cBorder(DIV));
+    lines.push(
+      cBorder("│") + "  " + cArrow("⟫") + "  " + (text ? cMsg(preview) : cLbl("sin texto"))
+    );
+    lines.push(cBorder(BOTTOM));
 
     console.log(lines.join("\n"));
   } catch {}
