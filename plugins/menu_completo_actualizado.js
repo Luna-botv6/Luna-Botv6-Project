@@ -1,5 +1,10 @@
-import { readFile } from 'fs/promises'
+import { readFile, writeFile, mkdir, unlink, access } from 'fs/promises'
 import { getUserStats, getRoleByLevel } from '../lib/stats.js'
+
+
+const MENU_DIR = './database/WELCOME'
+const CUSTOM_IMG = `${MENU_DIR}/menu_image.jpg`
+const CUSTOM_VID = `${MENU_DIR}/menu_video.mp4`
 
 async function loadTranslation(idioma) {
   try {
@@ -10,32 +15,110 @@ async function loadTranslation(idioma) {
   }
 }
 
-const handler = async (m, { conn, usedPrefix, isPrems }) => {
-let t = {}
+async function fileExists(path) {
+  try {
+    await access(path)
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function ensureDir() {
+  try {
+    await mkdir(MENU_DIR, { recursive: true })
+  } catch {}
+}
+
+const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
+  const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje || 'es'
+  const _translate = await loadTranslation(idioma)
+  const t = _translate?.menu || {}
+  const tm = _translate?.plugins?.menu_media || {}
+
+  const cmd = (m.text || '').trim().toLowerCase().replace(/^[^a-z0-9]*/i, '')
 
   if (usedPrefix == 'a' || usedPrefix == 'A') return
 
+  if (/^(imgmenu|delimgmenu|vidmenu|delvidmenu)$/i.test(cmd)) {
+   
+
+    await ensureDir()
+
+    if (/^delimgmenu$/i.test(cmd)) {
+      if (!(await fileExists(CUSTOM_IMG))) return m.reply(tm.img_no_existe)
+      await unlink(CUSTOM_IMG)
+      return m.reply(tm.img_eliminada)
+    }
+
+    if (/^delvidmenu$/i.test(cmd)) {
+      if (!(await fileExists(CUSTOM_VID))) return m.reply(tm.vid_no_existe)
+      await unlink(CUSTOM_VID)
+      return m.reply(tm.vid_eliminado)
+    }
+
+    if (/^imgmenu$/i.test(cmd)) {
+      let imgBuffer = null
+      if (m.quoted?.mimetype?.startsWith('image/')) {
+        imgBuffer = await m.quoted.download().catch(() => null)
+      } else if (m.mimetype?.startsWith('image/')) {
+        imgBuffer = await m.download().catch(() => null)
+      }
+      if (!imgBuffer) return m.reply(tm.no_media_img)
+      try {
+        await writeFile(CUSTOM_IMG, imgBuffer)
+        if (await fileExists(CUSTOM_VID)) await unlink(CUSTOM_VID)
+        return m.reply(tm.img_guardada)
+      } catch {
+        return m.reply(tm.error)
+      }
+    }
+
+    if (/^vidmenu$/i.test(cmd)) {
+      let vidBuffer = null
+      if (m.quoted?.mimetype?.startsWith('video/')) {
+        vidBuffer = await m.quoted.download().catch(() => null)
+      } else if (m.mimetype?.startsWith('video/')) {
+        vidBuffer = await m.download().catch(() => null)
+      }
+      if (!vidBuffer) return m.reply(tm.no_media_vid)
+      try {
+        await writeFile(CUSTOM_VID, vidBuffer)
+        if (await fileExists(CUSTOM_IMG)) await unlink(CUSTOM_IMG)
+        return m.reply(tm.vid_guardado)
+      } catch {
+        return m.reply(tm.error)
+      }
+    }
+
+    return
+  }
+
   try {
-    const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje || 'es'
-    const _translate = await loadTranslation(idioma)
-    t = _translate?.menu || {}
+    let mediaPath = null
+    let mediaType = 'video'
 
-    let videoPath = `./src/assets/images/menu/languages/${idioma}/VID-20250527-WA0006.mp4`
-
-try {
-  await readFile(videoPath)
-} catch {
-  videoPath = `./src/assets/images/menu/languages/es/VID-20250527-WA0006.mp4`
-}
+    if (await fileExists(CUSTOM_VID)) {
+      mediaPath = CUSTOM_VID
+      mediaType = 'video'
+    } else if (await fileExists(CUSTOM_IMG)) {
+      mediaPath = CUSTOM_IMG
+      mediaType = 'image'
+    } else {
+      mediaPath = `./src/assets/images/menu/languages/${idioma}/VID-20250527-WA0006.mp4`
+      const fallbackExists = await fileExists(mediaPath)
+      if (!fallbackExists) {
+        mediaPath = `./src/assets/images/menu/languages/es/VID-20250527-WA0006.mp4`
+      }
+      mediaType = 'video'
+    }
 
     const stats = getUserStats(m.sender)
     const currentRole = getRoleByLevel(stats.level)
-
     const { money, joincount, exp, level, premiumTime, limit } = stats
 
     const more = String.fromCharCode(8206)
     const readMore = more.repeat(850)
-
     const taguser = `@${m.sender.split('@')[0]}`
 
     const str = `╭━━━━━━━━━━━━━━━━━━━╮
@@ -52,6 +135,15 @@ try {
 ┃ 🎫 ${t.limite}: ${limit}
 ┃ 📝 ${t.registro}: ${joincount}
 ┃ 💎 ${t.premium}: ${premiumTime > 0 || isPrems ? '✅' : '❌'}
+╰━━━━━━━━━━━━━━━━━━╯
+
+╭━『 ${t.personalizar_titulo} 』━╮
+┃ ${t.personalizar_desc}
+┃
+┃ 🖼️ ${usedPrefix}imgmenu <${t.imagen}>
+┃ 🎥 ${usedPrefix}vidmenu <${t.video}>
+┃ 🗑️ ${usedPrefix}delimgmenu · ${t.personalizar_restaurar}
+┃ 🗑️ ${usedPrefix}delvidmenu · ${t.personalizar_restaurar}
 ╰━━━━━━━━━━━━━━━━━━╯
 ${readMore}
 
@@ -436,22 +528,25 @@ ${readMore}
       key: { participants: '0@s.whatsapp.net', remoteJid: 'status@broadcast', fromMe: false, id: 'Halo' },
       message: {
         contactMessage: {
-          vcard: `BEGIN:VCARD
-VERSION:3.0
-N:Luna;Bot;;;
-FN:LunaBot
-TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}
-END:VCARD`
+          vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Luna;Bot;;;\nFN:LunaBot\nTEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nEND:VCARD`
         }
       }
     }
 
-    await conn.sendMessage(m.chat, {
-      video: { url: videoPath },
-      gifPlayback: true,
-      caption: str,
-      mentions: [m.sender]
-    }, { quoted: fkontak })
+    if (mediaType === 'video') {
+      await conn.sendMessage(m.chat, {
+        video: { url: mediaPath },
+        gifPlayback: true,
+        caption: str,
+        mentions: [m.sender]
+      }, { quoted: fkontak })
+    } else {
+      await conn.sendMessage(m.chat, {
+        image: { url: mediaPath },
+        caption: str,
+        mentions: [m.sender]
+      }, { quoted: fkontak })
+    }
 
     await conn.sendButton(
       m.chat,
@@ -466,12 +561,13 @@ END:VCARD`
       m
     )
 
-  } catch (e) {
+  } catch {
     conn.reply(m.chat, t.error_menu || '❌ Error al mostrar el menú', m)
   }
 }
 
-handler.command = /^(menu|menú|memu|memú|help|info|comandos|allmenu|ayuda|cmd)$/i
+handler.command = /^(menu|menú|memu|memú|help|info|comandos|allmenu|ayuda|cmd|imgmenu|delimgmenu|vidmenu|delvidmenu)$/i
 handler.exp = 50
 handler.fail = null
+
 export default handler
