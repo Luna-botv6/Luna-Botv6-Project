@@ -368,6 +368,7 @@ chatUpdate.messages = validMessages;
 
           m.plugin = name;
           updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender });
+          global._lastCmd = command;
 
           if (this.user?.jid) {
             this.sendPresenceUpdate('composing', m.chat).catch(() => {});
