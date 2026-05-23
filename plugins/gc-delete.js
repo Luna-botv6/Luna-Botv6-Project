@@ -5,19 +5,21 @@ const normalizeJid = (jid = '') => jid.replace(/:\d+@/, '@').trim();
 
 const handler = async (m, { conn, isOwner }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
-  const txt = JSON.parse(readFileSync(`./src/lunaidiomas/${idioma}.json`, 'utf-8')).plugins.gc_delete;
+  const langData = JSON.parse(readFileSync(`./src/lunaidiomas/${idioma}.json`, 'utf-8'));
+  const txt = langData?.plugins?.gc_delete || langData?.plugins?.gc_delete;
 
+  if (!txt) return m.reply('❌ Error: traducciones no encontradas para gc_delete');
   if (!m.isGroup) return m.reply(txt.solo_grupos);
 
   const { groupMetadata, isAdmin, isBotAdmin } =
     await getGroupDataForPlugin(conn, m.chat, m.sender);
 
+  const participants = groupMetadata?.participants || [];
   const botJid = normalizeJid(conn.user?.id || '');
   const isBotAdminReal =
     isBotAdmin ||
-    groupMetadata.participants.some(
-      (p) =>
-        normalizeJid(p.id) === botJid &&
+    participants.some(
+      (p) => normalizeJid(p.id) === botJid &&
         (p.admin === 'admin' || p.admin === 'superadmin')
     );
 
@@ -28,7 +30,7 @@ const handler = async (m, { conn, isOwner }) => {
   const resolveLid = (jidOrLid) => {
     if (!jidOrLid) return null;
     if (!jidOrLid.includes('@lid')) return jidOrLid;
-    const match = groupMetadata.participants.find((p) => p.lid === jidOrLid);
+    const match = participants.find((p) => p.lid === jidOrLid);
     return match ? match.id : null;
   };
 
