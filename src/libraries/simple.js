@@ -39,7 +39,7 @@ export async function makeWASocket(connectionOptions, options = {}) {
 
   const sock = Object.defineProperties(conn, {
     chats: {
-      value: {...(options.chats || {}), ...(global.groupCache ? Object.fromEntries(global.groupCache) : {})},
+      value: {...(options.chats || {})},
       writable: true,
     },
 
