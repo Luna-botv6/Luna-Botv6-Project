@@ -33,6 +33,7 @@ import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.
 import mentionListener from './plugins/game-ialuna.js';
 import { startBirthdayChecker } from './plugins/cumple.js';
 import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
+import { installUsersProxy } from './lib/funcion/databaseManager.js';
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
 let stopped = 'close';  
@@ -127,6 +128,7 @@ global.loadDatabase = async function loadDatabase() {
   global.db.chain = chain(global.db.data);
 };
 await loadDatabase();
+installUsersProxy();
 await restaurarConfiguraciones();
 
 global.chatgpt = new Low(new JSONFile(path.join(__dirname, '/db/chatgpt.json')));
@@ -309,8 +311,6 @@ function applyPrintWrapper(conn) {
 }
 
 applyPrintWrapper(global.conn);
-
-conn.ev.on('creds.update', saveCreds);
 
 setInterval(async () => {
   if (global.conn?.user && !global.isProcessing) {
@@ -635,13 +635,17 @@ if (connection === 'open') {
       console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
     }
     
-    setTimeout(async () => {
-      try {
-        await global.reloadHandler(false);
-      } catch (e) {
-        console.error(chalk.red('[ ✖ ] Error reinicializando listeners:'), e.message);
-      }
-    }, 2000);
+    if (!global._reloadHandlerPending) {
+      global._reloadHandlerPending = true;
+      setTimeout(async () => {
+        global._reloadHandlerPending = false;
+        try {
+          await global.reloadHandler(false);
+        } catch (e) {
+          console.error(chalk.red('[ ✖ ] Error reinicializando listeners:'), e.message);
+        }
+      }, 2000);
+    }
     
     if (!global._subbotReconnectDone) {
       global._subbotReconnectDone = true;
@@ -720,8 +724,6 @@ if (connection === 'close') {
     }
   }
 }
-
-process.on('uncaughtException', console.error);
 
 let isInit = true;
 
@@ -841,24 +843,18 @@ await global.reloadHandler();
 
 conn.ev.on('groups.update', async ([event]) => {
   try {
-    const metadata = await conn.groupMetadata(event.id);
-    if (global.groupCache && metadata) {
-      const existing = global.groupCache.get(event.id);
-      const participants = existing?.data?.participants || (metadata.participants || []).map(p => ({
-        id: p.id || p.jid, lid: p.lid || null, admin: p.admin || null
-      }));
+    if (!global.groupCache) return;
+    const existing = global.groupCache.get(event.id);
+    if (existing?.data) {
+      const updated = { ...existing.data.groupMetadata, ...event };
       global.groupCache.set(event.id, {
-        data: { groupMetadata: metadata, participants },
+        data: { ...existing.data, groupMetadata: updated },
         timestamp: Date.now()
       });
+      return;
     }
-  } catch {}
-});
-
-conn.ev.on('group-participants.update', async (event) => {
-  try {
     const metadata = await conn.groupMetadata(event.id);
-    if (global.groupCache && metadata) {
+    if (metadata) {
       const participants = (metadata.participants || []).map(p => ({
         id: p.id || p.jid, lid: p.lid || null, admin: p.admin || null
       }));
@@ -914,7 +910,7 @@ setInterval(async () => {
   const uptime = clockString(_uptime);
   const hora = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
   
-  const gruposActivos = Object.keys(global.conn.chats || {}).filter(jid => jid.endsWith('@g.us')).length;
+  const gruposActivos = global.groupCache ? global.groupCache.size : 0;
   
   const bio = `🌙 Luna-Bot v6 - Online
 ⏱️ Activo: ${uptime}
@@ -923,7 +919,7 @@ setInterval(async () => {
 ✨ Powered by TheMystic-Bot-MD`;
   
   await global.conn?.updateProfileStatus(bio).catch(() => {});
-}, 60000);
+}, 10 * 60 * 1000);
 
 function clockString(ms) {
   const d = isNaN(ms) ? '--' : Math.floor(ms / 86400000);
@@ -935,12 +931,4 @@ function clockString(ms) {
 
 _quickTest().catch(console.error);
 
-process.on('uncaughtException', (err) => {
-  secureLogger.error('🚨 Error inesperado no capturado');
-  secureLogger.error('📄 Mensaje:', err?.message || err);
-});
 
-process.on('unhandledRejection', (reason, promise) => {
-  secureLogger.warn('⚠️ Promesa rechazada sin manejar');
-  secureLogger.warn('📄 Razón:', reason);
-});

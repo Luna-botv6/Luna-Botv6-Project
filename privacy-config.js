@@ -1,3 +1,6 @@
+import fs from 'fs'
+import path from 'path'
+
 export const privacyConfig = {
     dataRetention: {
         enabled: true,
@@ -5,7 +8,7 @@ export const privacyConfig = {
         autoCleanup: true
     },
     userConsent: {
-        required: false, // Cambiar a true si quieres activar consentimiento
+        required: false,
         message: "🔒 Necesitamos tu consentimiento para procesar datos básicos del bot"
     },
     logging: {
@@ -17,58 +20,50 @@ export const privacyConfig = {
         minimizeDataCollection: true,
         autoDeleteMedia: true
     }
-};
-
-// Función para limpiar datos antiguos
-export function cleanOldUserData() {
-    if (!global.db?.data) return;
-    
-    const retentionDays = privacyConfig.dataRetention.days;
-    const cutoffTime = Date.now() - (retentionDays * 24 * 60 * 60 * 1000);
-    
-    // Limpiar datos de usuarios inactivos
-    Object.keys(global.db.data.users || {}).forEach(userId => {
-        const user = global.db.data.users[userId];
-        if (user && user.lastActivity && user.lastActivity < cutoffTime) {
-            // Mantener solo datos esenciales
-            global.db.data.users[userId] = {
-                registered: user.registered,
-                name: user.name,
-                lastActivity: user.lastActivity
-            };
-        }
-    });
-    
-    console.log('[PRIVACY] Limpieza de datos antiguos completada');
 }
 
-// Logger seguro que oculta información sensible
-export const secureLogger = {
-    info: (msg) => {
-        if (!privacyConfig.logging.sanitizePhoneNumbers) {
-            console.log('[INFO]', msg);
-            return;
+export function cleanOldUserData() {
+    const USERS_DIR = './database/users'
+    const retentionDays = privacyConfig.dataRetention.days
+    const cutoffTime = Date.now() - (retentionDays * 24 * 60 * 60 * 1000)
+
+    try {
+        if (!fs.existsSync(USERS_DIR)) return
+        const files = fs.readdirSync(USERS_DIR).filter(f => f.endsWith('.json') && !f.startsWith('.'))
+        let cleaned = 0
+        for (const file of files) {
+            const fp = path.join(USERS_DIR, file)
+            try {
+                const data = JSON.parse(fs.readFileSync(fp, 'utf8'))
+                if (data.lastActivity && data.lastActivity < cutoffTime) {
+                    const minimal = {
+                        registered: data.registered,
+                        name: data.name,
+                        lastActivity: data.lastActivity,
+                        language: data.language
+                    }
+                    fs.writeFileSync(fp, JSON.stringify(minimal))
+                    cleaned++
+                }
+            } catch {}
         }
-        const sanitized = typeof msg === 'string' ? 
-            msg.replace(/\+?\d{10,15}/g, '[PHONE_REDACTED]') : msg;
-        console.log('[INFO]', sanitized);
-    },
-    error: (msg) => {
-        if (!privacyConfig.logging.sanitizeUserData) {
-            console.error('[ERROR]', msg);
-            return;
-        }
-        const sanitized = typeof msg === 'string' ? 
-            msg.replace(/\+?\d{10,15}/g, '[PHONE_REDACTED]') : msg;
-        console.error('[ERROR]', sanitized);
-    },
-    warn: (msg) => {
-        if (!privacyConfig.logging.sanitizeUserData) {
-            console.warn('[WARN]', msg);
-            return;
-        }
-        const sanitized = typeof msg === 'string' ? 
-            msg.replace(/\+?\d{10,15}/g, '[PHONE_REDACTED]') : msg;
-        console.warn('[WARN]', sanitized);
+        if (cleaned > 0) console.log(`[PRIVACY] ${cleaned} usuarios inactivos compactados`)
+    } catch (e) {
+        console.error('[PRIVACY] Error en limpieza:', e.message)
     }
-};
+}
+
+export const secureLogger = {
+    info: (...args) => {
+        const sanitized = args.map(a => typeof a === 'string' ? a.replace(/\+?\d{10,15}/g, '[PHONE]') : a)
+        console.log('[INFO]', ...sanitized)
+    },
+    error: (...args) => {
+        const sanitized = args.map(a => typeof a === 'string' ? a.replace(/\+?\d{10,15}/g, '[PHONE]') : a)
+        console.error('[ERROR]', ...sanitized)
+    },
+    warn: (...args) => {
+        const sanitized = args.map(a => typeof a === 'string' ? a.replace(/\+?\d{10,15}/g, '[PHONE]') : a)
+        console.warn('[WARN]', ...sanitized)
+    }
+}

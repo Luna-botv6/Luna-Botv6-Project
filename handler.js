@@ -22,6 +22,7 @@ import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
 import { getGroupDataForPlugin } from './lib/funcion/pluginHelper.js';
+import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
 
 EventEmitter.defaultMaxListeners = 30;
@@ -134,7 +135,7 @@ chatUpdate.messages = validMessages;
     if (!isValidMessage(m)) return;
     if (m.key?.id && isDuplicate(m.key.id, m.key.participant || m.key.remoteJid, extractMessageText(m), recentMessages, DUPLICATE_TIMEOUT, MAX_CACHE_SIZE)) return;
 
-    const { sender, chat } = extractSenderAndChat(m, this);
+    let { sender, chat } = extractSenderAndChat(m, this);
     if (!sender || !chat) return;
 
     const _mute = global.db?.data?.mutes?.[chat + '_' + sender];
@@ -191,6 +192,18 @@ chatUpdate.messages = validMessages;
       m.exp = 0;
       m.money = false;
       m.limit = false;
+
+      if (m.isGroup && sender.includes('@lid')) {
+        const _cachedGrp = global.groupCache?.get(chat)
+        if (_cachedGrp?.data?.participants) {
+          const _lidNum = sender.replace(/[^0-9]/g, '')
+          const _match = _cachedGrp.data.participants.find(p => p.lid && p.lid.replace(/[^0-9]/g, '') === _lidNum)
+          if (_match?.id) {
+            registerLidToJid(sender, _match.id)
+            sender = _match.id
+          }
+        }
+      }
 
       await ensureUserData(sender, chat);
       await ensureBotSettings(this.user.jid);
@@ -411,11 +424,17 @@ chatUpdate.messages = validMessages;
             user.commandCount = 1;
           }
 
+          let _isAdmin = false, _isBotAdmin = false, _isRAdmin = false, _groupDataResolved = false;
+
           if (m.isGroup && chat?.modoadmin && !isOwner && !isROwner) {
             let userIsAdmin = false;
             try {
               const groupData = await getGroupDataForPlugin(this, m.chat, m.sender);
-              userIsAdmin = groupData.isAdmin;
+              userIsAdmin        = groupData.isAdmin;
+              _isAdmin           = groupData.isAdmin;
+              _isBotAdmin        = groupData.isBotAdmin;
+              _isRAdmin          = groupData.groupMetadata?.participants?.find(p => this.decodeJid(p.id) === this.decodeJid(m.sender))?.admin === 'superadmin';
+              _groupDataResolved = true;
             } catch (e) {}
             if (!userIsAdmin) continue;
           }
@@ -440,11 +459,19 @@ chatUpdate.messages = validMessages;
             fail('group', m, this);
             continue;
           }
-          if (plugin.botAdmin && m.isGroup && !isBotAdmin) {
+          if ((plugin.botAdmin || plugin.admin) && m.isGroup && !_groupDataResolved) {
+            try {
+              const _gd = await getGroupDataForPlugin(this, m.chat, m.sender);
+              _isAdmin           = _gd.isAdmin;
+              _isBotAdmin        = _gd.isBotAdmin;
+              _groupDataResolved = true;
+            } catch (e) {}
+          }
+          if (plugin.botAdmin && m.isGroup && !_isBotAdmin) {
             fail('botAdmin', m, this);
             continue;
           }
-          if (plugin.admin && m.isGroup && !isAdmin) {
+          if (plugin.admin && m.isGroup && !_isAdmin) {
             fail('admin', m, this);
             continue;
           }
@@ -474,8 +501,7 @@ chatUpdate.messages = validMessages;
             continue;
           }
 
-          let _isAdmin = false, _isBotAdmin = false, _isRAdmin = false;
-          if (m.isGroup) {
+          if (m.isGroup && !_groupDataResolved) {
             try {
               const _gd = await getGroupDataForPlugin(this, m.chat, m.sender);
               _isAdmin    = _gd.isAdmin;
@@ -592,6 +618,40 @@ export async function participantsUpdate({ id, participants, action }) {
   try {
     const conn = currentConn || mconn?.conn || mconn;
     if (!conn?.user?.jid) return;
+
+    if (global.groupCache?.has(id)) {
+      const cached = global.groupCache.get(id);
+      if (cached?.data?.participants) {
+        const normalizedParticipants = Array.isArray(participants)
+          ? participants.map(p => (typeof p === 'string' ? p : p.id || p.phoneNumber || '')).filter(Boolean)
+          : [participants].filter(Boolean);
+
+        let updatedParticipants = [...cached.data.participants];
+
+        if (action === 'add') {
+          for (const jid of normalizedParticipants) {
+            if (!updatedParticipants.find(p => p.id === jid)) {
+              updatedParticipants.push({ id: jid, lid: null, admin: null });
+            }
+          }
+        } else if (action === 'remove' || action === 'leave') {
+          updatedParticipants = updatedParticipants.filter(p => !normalizedParticipants.includes(p.id));
+        } else if (action === 'promote') {
+          updatedParticipants = updatedParticipants.map(p =>
+            normalizedParticipants.includes(p.id) ? { ...p, admin: 'admin' } : p
+          );
+        } else if (action === 'demote') {
+          updatedParticipants = updatedParticipants.map(p =>
+            normalizedParticipants.includes(p.id) ? { ...p, admin: null } : p
+          );
+        }
+
+        global.groupCache.set(id, {
+          data: { ...cached.data, participants: updatedParticipants },
+          timestamp: Date.now()
+        });
+      }
+    }
 
     const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
     const _translate = await loadTranslation(idioma);
