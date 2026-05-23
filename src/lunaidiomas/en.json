@@ -1726,6 +1726,24 @@
       "no_media_img": "🖼️ *You must send or quote an image to use this command.*",
       "no_media_vid": "🎥 *You must send or quote a short video to use this command.*",
       "error": "❌ *Could not save the file. Please try again.*"
+    },
+    "gc_delete": {
+      "solo_grupos": "❌ This command only works in groups.",
+      "no_admin": "❌ Only admins can use this command.",
+      "no_bot_admin": "❌ I need to be admin to delete messages.",
+      "no_quoted": "❌ Reply to the message you want to delete.",
+      "success": "🗑️ Message deleted successfully.",
+      "error": "❌ Could not delete the message."
+    },
+    "gc_config_time": {
+      "no_admin": "❌ Only admins can use this command.",
+      "no_bot_admin": "❌ I need to be admin to change group settings.",
+      "uso": "📋 Usage:\n*{prefix}{command} open <hours>* — Open group\n*{prefix2}{command2} close <hours>* — Close group\n\nExample: *{prefix}{command} close 1* closes the group for 1 hour.",
+      "cerrado": "Group closed",
+      "abierto": "Group opened",
+      "durante": "for",
+      "reabrir": "✅ Time is up. The group has been reopened!",
+      "recruzar": "✅ Time is up. The group has been closed again!"
     }
   },
   "functions": {

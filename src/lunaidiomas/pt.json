@@ -1728,6 +1728,24 @@
       "no_media_img": "🖼️ *Você deve enviar ou citar uma imagem para usar este comando.*",
       "no_media_vid": "🎥 *Você deve enviar ou citar um vídeo curto para usar este comando.*",
       "error": "❌ *Não foi possível salvar o arquivo. Tente novamente.*"
+    },
+    "gc_delete": {
+      "solo_grupos": "❌ Este comando só funciona em grupos.",
+      "no_admin": "❌ Apenas administradores podem usar este comando.",
+      "no_bot_admin": "❌ Preciso ser administrador para apagar mensagens.",
+      "no_quoted": "❌ Responda à mensagem que deseja apagar.",
+      "success": "🗑️ Mensagem apagada com sucesso.",
+      "error": "❌ Não foi possível apagar a mensagem."
+    },
+    "gc_config_time": {
+      "no_admin": "❌ Apenas administradores podem usar este comando.",
+      "no_bot_admin": "❌ Preciso ser administrador para alterar as configurações do grupo.",
+      "uso": "📋 Uso:\n*{prefix}{command} open <horas>* — Abrir grupo\n*{prefix2}{command2} close <horas>* — Fechar grupo\n\nExemplo: *{prefix}{command} close 1* fecha o grupo por 1 hora.",
+      "cerrado": "Grupo fechado",
+      "abierto": "Grupo aberto",
+      "durante": "durante",
+      "reabrir": "✅ Tempo esgotado. O grupo foi aberto novamente!",
+      "recruzar": "✅ Tempo esgotado. O grupo foi fechado novamente!"
     }
   },
   "functions": {
