@@ -191,8 +191,8 @@ if (check.needsRelaunch) {
         process.exit(1);
       }
 
-      if (signal === 'SIGINT' || code === 0) {
-        process.exit(code || 0);
+      if (signal === 'SIGINT') {
+        process.exit(0);
       }
 
       console.log(chalk.yellow(`\n⚡ Reiniciando sistema... (${restartCount}/${MAX_RESTART})\n`));

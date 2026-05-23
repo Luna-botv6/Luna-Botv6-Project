@@ -629,6 +629,7 @@ async function connectionUpdate(update) {
   }
 
 if (connection === 'open') {
+    global._softReconnectCount = 0;
     stopped = 'open';
     if (!global._connectedLogged) {
       global._connectedLogged = true;
@@ -703,24 +704,48 @@ if (connection === 'close') {
       setTimeout(() => process.exit(1), 2000);
       return;
     } else if (reason === DisconnectReason.connectionClosed) {
-      conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando en 2 segundos...`);
-      setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
+      conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando...`);
+      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
+      if (global._softReconnectCount >= 3) {
+        console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
+        setTimeout(() => process.exit(0), 1000);
+      } else {
+        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
+      }
     } else if (reason === DisconnectReason.connectionLost) {
-      conn.logger.warn(`[ ⚠ ] Conexión perdida con el servidor, reconectando en 2 segundos...`);
-      setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
+      conn.logger.warn(`[ ⚠ ] Conexión perdida, reconectando...`);
+      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
+      if (global._softReconnectCount >= 3) {
+        console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
+        setTimeout(() => process.exit(0), 1000);
+      } else {
+        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
+      }
     } else if (reason === DisconnectReason.connectionReplaced) {
       conn.logger.error(`[ ⚠ ] Conexión reemplazada, se ha abierto otra nueva sesión. Por favor, cierra la sesión actual primero.`);
     } else if (reason === DisconnectReason.loggedOut) {
       conn.logger.error(`[ ⚠ ] Conexion cerrada, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
     } else if (reason === DisconnectReason.restartRequired) {
-      conn.logger.info(`[ ⚠ ] Reinicio necesario, reinicie el servidor si presenta algún problema.`);
-      await global.reloadHandler(true).catch(console.error);
+      conn.logger.info(`[ ⚠ ] Reinicio necesario, reiniciando proceso limpio...`);
+      setTimeout(() => process.exit(0), 1000);
     } else if (reason === DisconnectReason.timedOut) {
-      conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando en 2 segundos...`);
-      setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
+      conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando...`);
+      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
+      if (global._softReconnectCount >= 3) {
+        console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
+        setTimeout(() => process.exit(0), 1000);
+      } else {
+        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
+      }
     } else {
       conn.logger.warn(`[ ⚠ ] Razón de desconexión desconocida. ${reason || ''}: ${connection || ''}`);
-      await global.reloadHandler(true).catch(console.error);
+      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
+      if (global._softReconnectCount >= 3) {
+        console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
+        setTimeout(() => process.exit(0), 1000);
+      } else {
+        await global.reloadHandler(true).catch(console.error);
+      }
     }
   }
 }
