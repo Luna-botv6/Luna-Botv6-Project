@@ -1744,6 +1744,11 @@
       "durante": "for",
       "reabrir": "✅ Time is up. The group has been reopened!",
       "recruzar": "✅ Time is up. The group has been closed again!"
+    },
+    "setnamebot": {
+      "uso": "⚙️ *Usage:* _.setnamebot <name>_\n\n_Example: .setnamebot MyBot_\n\n📝 The name will replace the bot brand in all messages.",
+      "ok": "✅ Bot name updated to *{nombre}*\n\n_All messages will now use your brand._",
+      "muy_largo": "❌ The name is too long. Maximum 40 characters."
     }
   },
   "functions": {

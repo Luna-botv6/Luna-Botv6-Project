@@ -1746,6 +1746,11 @@
       "durante": "durante",
       "reabrir": "✅ El tiempo terminó. ¡El grupo ha sido abierto nuevamente!",
       "recruzar": "✅ El tiempo terminó. ¡El grupo ha sido cerrado nuevamente!"
+    },
+    "setnamebot": {
+      "uso": "⚙️ *Uso:* _.setnamebot <nombre>_\n\n_Ejemplo: .setnamebot MiBot_\n\n📝 El nombre reemplazará la marca del bot en todos los mensajes.",
+      "ok": "✅ Nombre del bot actualizado a *{nombre}*\n\n_Todos los mensajes ahora usarán tu marca._",
+      "muy_largo": "❌ El nombre es demasiado largo. Máximo 40 caracteres."
     }
   },
   "functions": {
