@@ -187,6 +187,7 @@ try {
   opcion = '1';
 }
 
+const isFirstTimeLink = !fs.existsSync(`./${authFolder}/creds.json`);
 const {state, saveCreds} = await useMultiFileAuthState(authFolder);
 
 let version;
@@ -312,12 +313,26 @@ function applyPrintWrapper(conn) {
 
 applyPrintWrapper(global.conn);
 
-setInterval(async () => {
+const _presenceInterval = setInterval(async () => {
   if (global.conn?.user && !global.isProcessing) {
     try {
       await global.conn.sendPresenceUpdate('available');
     } catch (e) {
-      secureLogger?.error?.('Error enviando presencia:', e.message);
+      if (!global._presenceErrorLogged) {
+        global._presenceErrorLogged = true;
+        clearInterval(_presenceInterval);
+        console.log(chalk.magenta('[ ✖ ] Ups, algo falló y no me pude reconectar. Limpiando sesión y reiniciando...'));
+        const carpetas = [global.authFile, 'MysticSession'];
+        await Promise.allSettled(
+          carpetas.map(async (carpeta) => {
+            const ruta = `./${carpeta}`;
+            if (fs.existsSync(ruta)) {
+              await fs.promises.rm(ruta, { recursive: true, force: true });
+            }
+          })
+        );
+        setTimeout(() => process.exit(1), 2000);
+      }
     }
   }
 }, 30000);
@@ -629,6 +644,7 @@ async function connectionUpdate(update) {
   }
 
 if (connection === 'open') {
+    global._hasBeenConnected = true;
     global._softReconnectCount = 0;
     stopped = 'open';
     if (!global._connectedLogged) {
@@ -670,7 +686,10 @@ if (connection === 'open') {
 
   } else if (connection === 'close') {
     global._connectedLogged = false;
-    console.log(chalk.red('[ ✖ ] Conexión cerrada'));
+    const _closeReason = new Boom(lastDisconnect?.error)?.output?.statusCode;
+    if (_closeReason !== DisconnectReason.restartRequired) {
+      console.log(chalk.red('[ ✖ ] Conexión cerrada'));
+    }
   }
 
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
@@ -705,18 +724,16 @@ if (connection === 'close') {
       return;
     } else if (reason === DisconnectReason.connectionClosed) {
       conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando...`);
-      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
-      if (global._softReconnectCount >= 3) {
-        console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
+      if (global._hasBeenConnected) {
+        console.log('[ ♻ ] Reinicio limpio para liberar memoria...');
         setTimeout(() => process.exit(0), 1000);
       } else {
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
       }
     } else if (reason === DisconnectReason.connectionLost) {
       conn.logger.warn(`[ ⚠ ] Conexión perdida, reconectando...`);
-      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
-      if (global._softReconnectCount >= 3) {
-        console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
+      if (global._hasBeenConnected) {
+        console.log('[ ♻ ] Reinicio limpio para liberar memoria...');
         setTimeout(() => process.exit(0), 1000);
       } else {
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
@@ -726,8 +743,13 @@ if (connection === 'close') {
     } else if (reason === DisconnectReason.loggedOut) {
       conn.logger.error(`[ ⚠ ] Conexion cerrada, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
     } else if (reason === DisconnectReason.restartRequired) {
-      conn.logger.info(`[ ⚠ ] Reinicio necesario, reiniciando proceso limpio...`);
-      setTimeout(() => process.exit(0), 1000);
+      if (isFirstTimeLink) {
+        conn.logger.info(`[ ⚠ ] Primera vinculación completada, continuando...`);
+        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
+      } else {
+        conn.logger.info(`[ ⚠ ] Reinicio necesario, reiniciando proceso limpio...`);
+        setTimeout(() => process.exit(0), 1000);
+      }
     } else if (reason === DisconnectReason.timedOut) {
       conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando...`);
       global._softReconnectCount = (global._softReconnectCount || 0) + 1;
