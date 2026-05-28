@@ -40,6 +40,8 @@ const MAX_CACHE_SIZE = 50;
 const MAX_VOICE_CACHE = 200;
 
 global.groupCache = groupCache;
+global.translationsCache = translationsCache;
+global.BotName = global.db?.data?.config?.botName || 'Luna-Botv6';
 
 const isNumber = (x) => typeof x === 'number' && !isNaN(x);
 const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(() => resolve(), ms));
@@ -48,8 +50,18 @@ async function loadTranslation(idioma) {
   const cached = translationsCache.get(idioma);
   if (cached) return cached;
   try {
-    const data = await readFile(`./src/lunaidiomas/${idioma}.json`, 'utf8');
-    const parsed = JSON.parse(data);
+    const raw = await readFile(`./src/lunaidiomas/${idioma}.json`, 'utf8');
+    const botName = global.BotName || 'Luna-Botv6';
+    let patched = raw;
+    if (botName !== 'Luna-Botv6') {
+      const upper = botName.toUpperCase();
+      patched = raw
+        .replace(/Luna-Botv6-Project/g, botName)
+        .replace(/Luna-Botv6/g, botName)
+        .replace(/LUNA IA/g, `${upper} IA`)
+        .replace(/Luna IA/g, `${botName} IA`);
+    }
+    const parsed = JSON.parse(patched);
     translationsCache.set(idioma, parsed);
     return parsed;
   } catch (e) {
@@ -114,6 +126,26 @@ export async function handler(chatUpdate) {
       return;
     }
     currentConn = this;
+    if (!this._sendMessagePatched) {
+      const _origSend = this.sendMessage.bind(this);
+      this.sendMessage = async (jid, content, options) => {
+        const name = global.BotName;
+        if (name && name !== 'Luna-Botv6') {
+          const _applyName = (str) => str
+            .replace(/Luna-Botv6-Project/gi, name)
+            .replace(/LUNA BOT MENU/gi, `${name.toUpperCase()} MENU`)
+            .replace(/LUNA BOT/gi, name.toUpperCase())
+            .replace(/Luna-Botv6/gi, name)
+            .replace(/LunaBot/gi, name.replace(/[^a-zA-Z0-9]/g, ''))
+          if (typeof content?.text === 'string') content = { ...content, text: _applyName(content.text) };
+          if (typeof content?.caption === 'string') content = { ...content, caption: _applyName(content.caption) };
+          if (typeof content?.buttonText === 'string') content = { ...content, buttonText: _applyName(content.buttonText) };
+          if (Array.isArray(content?.sections)) content = { ...content, sections: JSON.parse(_applyName(JSON.stringify(content.sections))) };
+        }
+        return _origSend(jid, content, options);
+      };
+      this._sendMessagePatched = true;
+    }
     this.msgqueque = this.msgqueque || [];
     this.uptime = this.uptime || Date.now();
     
