@@ -799,17 +799,206 @@ npm start
 
 ---
 
-### 🪟 **Windows**
+<div align="center">
+
+# 🤖 LUNA-BOTv6 — INSTALACIÓN EN WINDOWS
+
+[![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-Bot-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://github.com/)
+[![Windows](https://img.shields.io/badge/Windows-10%2F11-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://www.microsoft.com/windows)
+
+</div>
+
+---
+
+## 📋 ÍNDICE
+
+1. [Requisitos](#-1--requisitos)
+2. [Instalar Git](#-2--instalar-git)
+3. [Instalar Node.js](#-3--instalar-nodejs)
+4. [Arreglar PowerShell](#-4--arreglar-powershell)
+5. [Instalar Chocolatey](#-5--instalar-chocolatey)
+6. [Instalar Dependencias](#-6--instalar-dependencias)
+7. [Clonar el Proyecto](#-7--clonar-el-proyecto)
+8. [Instalar el Bot](#-8--instalar-el-bot)
+9. [Errores Comunes](#-9--errores-comunes)
+10. [Iniciar el Bot](#-10--iniciar-el-bot)
+11. [Vincular WhatsApp](#-11--vincular-whatsapp)
+
+---
+
+## 🟢 1 · REQUISITOS
+
+| Requisito | Detalle |
+|-----------|---------|
+| 💻 Sistema | Windows 10 / Windows 11 |
+| 🌐 Conexión | Internet activa |
+| 🔑 Permisos | Administrador en el equipo |
+
+---
+
+## 🟡 2 · INSTALAR GIT
+
+Descargar Git desde el sitio oficial:
+
+🔗 **https://git-scm.com/download/win**
+
+> Instalar con todas las opciones por defecto. Asegurarse de marcar **"Add Git to PATH"**.
+
+Verificar instalación:
+
+```bash
+git --version
+```
+
+✅ Si muestra una versión, está correcto.
+
+---
+
+## 🔵 3 · INSTALAR NODE.JS
+
+Descargar Node.js LTS desde:
+
+🔗 **https://nodejs.org/**
+
+Pasos del instalador:
+- Abrir el `.msi` descargado
+- Siguiente → Siguiente → Aceptar
+- ⚠️ Marcar: **"Add to PATH"** (IMPORTANTE)
+- Finalizar instalación
+
+Verificar instalación:
+
+```bash
+node -v
+npm -v
+```
+
+✅ Si muestra versiones, está correcto.
+
+---
+
+## 🟠 4 · ARREGLAR POWERSHELL
+
+Abrir **PowerShell como Administrador** y ejecutar:
 
 ```powershell
-git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
-cd Luna-Botv6-Project
-choco install nodejs python3 ffmpeg imagemagick
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+> Cuando pregunte, escribir `Y` y presionar Enter.
+
+---
+
+## 🟣 5 · INSTALAR CHOCOLATEY
+
+En **PowerShell como Administrador** ejecutar:
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; `
+[System.Net.ServicePointManager]::SecurityProtocol = `
+[System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
+iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+```
+
+> 🔄 Reiniciar PowerShell después de instalar.
+
+Verificar:
+
+```bash
+choco -v
+```
+
+✅ Si muestra la versión, está correcto.
+
+---
+
+## 🔴 6 · INSTALAR DEPENDENCIAS
+
+```bash
+choco install python3 ffmpeg imagemagick -y
+```
+
+---
+
+## 📁 7 · CLONAR EL PROYECTO
+
+```bash
+git clone https://github.com/TU_USUARIO/Luna-Botv6.git
+cd Luna-Botv6
+```
+
+> ⚠️ Reemplazar `TU_USUARIO` con el usuario real del repositorio.
+
+---
+
+## ⚙️ 8 · INSTALAR EL BOT
+
+```bash
 npm install
-copy config.example.js config.js
-notepad config.js
+```
+
+---
+
+## 🛠️ 9 · ERRORES COMUNES
+
+<details>
+<summary>❌ Error con <code>sharp</code></summary>
+
+```bash
+npm uninstall sharp
+npm install sharp --os=win32 --cpu=x64
+npm rebuild sharp
+```
+
+</details>
+
+<details>
+<summary>❌ Error con <code>tmp</code></summary>
+
+```bash
+mkdir C:\tmp
+```
+
+</details>
+
+<details>
+<summary>❌ Error de permisos en npm</summary>
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+```
+
+</details>
+
+---
+
+## 🚀 10 · INICIAR EL BOT
+
+```bash
 npm start
 ```
+
+> ℹ️ Los `npm warnings` y `vulnerabilities` son normales y no bloquean el bot.
+
+---
+
+## 📱 11 · VINCULAR WHATSAPP
+
+```
+WhatsApp → ⋮ Menú → Dispositivos vinculados → Vincular dispositivo
+```
+
+Escanear el código QR que aparece en la terminal.
+
+---
+
+<div align="center">
+
+**¿Problemas con la instalación?**
+Abrí un [issue](../../issues) o escribinos al grupo de soporte.
+
+</div>
 
 ---
 
