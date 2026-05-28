@@ -924,11 +924,9 @@ choco install python3 ffmpeg imagemagick -y
 ## 📁 7 · CLONAR EL PROYECTO
 
 ```bash
-git clone https://github.com/TU_USUARIO/Luna-Botv6.git
-cd Luna-Botv6
+git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
+cd Luna-Botv6-Project
 ```
-
-> ⚠️ Reemplazar `TU_USUARIO` con el usuario real del repositorio.
 
 ---
 
