@@ -741,7 +741,20 @@ if (connection === 'close') {
     } else if (reason === DisconnectReason.connectionReplaced) {
       conn.logger.error(`[ ⚠ ] Conexión reemplazada, se ha abierto otra nueva sesión. Por favor, cierra la sesión actual primero.`);
     } else if (reason === DisconnectReason.loggedOut) {
-      conn.logger.error(`[ ⚠ ] Conexion cerrada, por favor elimina la carpeta ${global.authFile} y escanea nuevamente.`);
+      if (!global._loggedOutHandled) {
+        global._loggedOutHandled = true;
+        console.log(chalk.magenta('[ ✖ ] Sesión cerrada o bot baneado. Limpiando sesión y reiniciando...'));
+        const _carpetas = [global.authFile, 'MysticSession'];
+        await Promise.allSettled(
+          _carpetas.map(async (carpeta) => {
+            const _ruta = `./${carpeta}`;
+            if (fs.existsSync(_ruta)) {
+              await fs.promises.rm(_ruta, { recursive: true, force: true });
+            }
+          })
+        );
+        setTimeout(() => process.exit(1), 2000);
+      }
     } else if (reason === DisconnectReason.restartRequired) {
       if (isFirstTimeLink) {
         conn.logger.info(`[ ⚠ ] Primera vinculación completada, continuando...`);

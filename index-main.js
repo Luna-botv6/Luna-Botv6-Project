@@ -230,6 +230,14 @@ async function start(file) {
     const args = [join(__dirname, file), ...process.argv.slice(2)];
     setupMaster({ exec: args[0], args: args.slice(1) });
     const p = fork();
+    p.on('exit', (_, code) => {
+      isRunning = false;
+      if (process.env.pm_id) {
+        process.exit(1);
+      } else {
+        process.exit();
+      }
+    });
     return;
   }
 
