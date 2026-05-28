@@ -1,10 +1,10 @@
-import fs from 'fs'
 import { getUserStats, getRoleByLevel } from '../lib/stats.js'
 
 const handler = async (m, { conn, usedPrefix, isPrems }) => {
   try {
     const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje || 'es'
-    const t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.iamenu
+    const _tr = await global.loadTranslation(idioma)
+    const t = _tr?.plugins?.iamenu || {}
 
     const stats = getUserStats(m.sender)
     const role = getRoleByLevel(stats.level)

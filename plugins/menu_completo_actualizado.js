@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, unlink, access } from 'fs/promises'
+import { writeFile, mkdir, unlink, access } from 'fs/promises'
 import { getUserStats, getRoleByLevel } from '../lib/stats.js'
 
 
@@ -6,14 +6,7 @@ const MENU_DIR = './database/WELCOME'
 const CUSTOM_IMG = `${MENU_DIR}/menu_image.jpg`
 const CUSTOM_VID = `${MENU_DIR}/menu_video.mp4`
 
-async function loadTranslation(idioma) {
-  try {
-    const data = await readFile(`./src/lunaidiomas/${idioma}.json`, 'utf8')
-    return JSON.parse(data)
-  } catch {
-    return {}
-  }
-}
+
 
 async function fileExists(path) {
   try {
@@ -32,7 +25,7 @@ async function ensureDir() {
 
 const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
   const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje || 'es'
-  const _translate = await loadTranslation(idioma)
+  const _translate = await global.loadTranslation(idioma)
   const t = _translate?.menu || {}
   const tm = _translate?.plugins?.menu_media || {}
 
@@ -122,7 +115,7 @@ const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
     const taguser = `@${m.sender.split('@')[0]}`
 
     const str = `╭━━━━━━━━━━━━━━━━━━━╮
-┃  🌙 *LUNA BOT MENU* 🌙
+┃  🌙 *${global.BotName || 'Luna-Botv6'} MENU* 🌙
 ╰━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━『 👤 ${t.perfil_titulo} 』━━━╮
@@ -520,7 +513,7 @@ ${readMore}
 ╰━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━━━━━━━━━━━━━━━━━╮
-┃  🌙 *LUNA BOT* 🌙
+┃  🌙 *${global.BotName || 'Luna-Botv6'}* 🌙
 ┃  ${t.creado}
 ╰━━━━━━━━━━━━━━━━━━━╯`.trim()
 
@@ -528,7 +521,7 @@ ${readMore}
       key: { participants: '0@s.whatsapp.net', remoteJid: 'status@broadcast', fromMe: false, id: 'Halo' },
       message: {
         contactMessage: {
-          vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Luna;Bot;;;\nFN:LunaBot\nTEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nEND:VCARD`
+          vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${global.BotName || 'Luna'};Bot;;;\nFN:${(global.BotName || 'LunaBot').replace(/[^a-zA-Z0-9]/g, '')}\nTEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nEND:VCARD`
         }
       }
     }
@@ -551,7 +544,7 @@ ${readMore}
     await conn.sendButton(
       m.chat,
       t.ia_boton,
-      'Luna-Botv6-Project 🌙',
+      (global.BotName && global.BotName !== 'Luna-Botv6' ? global.BotName : 'Luna-Botv6-Project') + ' 🌙',
       null,
       [
         [`🤖 ${t.ia_boton_ver}`, `${usedPrefix}iamenu`]
