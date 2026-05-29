@@ -102,20 +102,48 @@ const LunaBot = {
 
 ---
 
-## 🆕 Últimas Actualizaciones
+╔══════════════════════════════════════════════════════════╗
+║           🆕  ÚLTIMAS ACTUALIZACIONES — Luna-Botv6       ║
+╚══════════════════════════════════════════════════════════╝
 
-<table>
-<tr>
-<td>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🌍  28/05/2026 — Sistema Multi-Idioma Integrado 🌐
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## 🌍 11/04/2026 – Sistema Multi-Idioma Integrado 🌐
+🧠 Sistema de Traducciones
 
-### 🧠 Sistema de Traducciones
-- ✅ Se implementó el sistema global de idiomas usando archivos JSON (`es.json`, `en.json`, `pt.json`)
-- ✅ Todos los plugins ahora utilizan variables dinámicas (`t.*`) en lugar de textos directos
-- ✅ Eliminado el hardcodeo de mensajes dentro del código
-- ✅ Estructura unificada: `plugins.nombre_del_plugin`
-- ✅ Compatibilidad total con el sistema existente del bot
+  ✅  Sistema global de idiomas: es.json | en.json | pt.json
+  ✅  Todos los plugins usan variables dinámicas (t.*)
+  ✅  Eliminado el hardcodeo de mensajes en el código
+  ✅  Estructura unificada: plugins.nombre_del_plugin
+  ✅  Compatibilidad total con el sistema existente del bot
+
+──────────────────────────────────────────────────────────
+
+✏️  ¿Cómo cambiar el nombre del bot?
+
+  Solo el OWNER puede usar este comando.
+
+  1. Escribí en el chat:  .setnamebot NuevoNombre
+  2. El nombre se guarda en la DB y se aplica de inmediato
+  3. Máximo 40 caracteres
+
+  Ejemplo:  .setnamebot Luna IA 🤖
+
+──────────────────────────────────────────────────────────
+
+🖼️  ¿Cómo cambiar la imagen / GIF / video del menú?
+
+  Personalizá el fondo del menú del bot:
+
+  📸  Imagen       → Enviá una foto y respondé con  .imgmenu
+  🎞️  GIF animado  → Enviá un GIF y respondé con    .vidmenu
+  🎬  Video        → Enviá un video (hasta 5 seg)
+                     y respondé con                 .vidmenu
+
+  Solo el OWNER puede cambiar el fondo del menú.
+
+══════════════════════════════════════════════════════════
 
 ### 🌐 Comando de Idioma
 - 🗣️ Ahora puedes cambiar el idioma del bot por usuario usando:
