@@ -109,7 +109,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   const featureDesc = t.desc_features?.[type] || ''
 
   const msg =
-    `${t.resultado[0]}\n\n` +
+  `✧─── ☾ 𝗖𝗢𝗡𝗙𝗜𝗚 ${global.BotName || 'LUNA'} ☽ ───✧\n\n` +
     `${isEnable ? '✅' : '❌'} • *${t.resultado[1]}* _${type}_\n` +
     `🔘 • *${t.resultado[2]}* _${isEnable ? t.resultado[3] : t.resultado[4]}_\n` +
     `🌐 • *${t.resultado[5]}* _${scopeText}_\n\n` +
