@@ -102,48 +102,106 @@ const LunaBot = {
 
 ---
 
-╔══════════════════════════════════════════════════════════╗
-║           🆕  ÚLTIMAS ACTUALIZACIONES — Luna-Botv6       ║
-╚══════════════════════════════════════════════════════════╝
+<div align="center">
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🌍  28/05/2026 — Sistema Multi-Idioma Integrado 🌐
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=26&pause=1000&color=FFD700&center=true&vCenter=true&width=700&lines=🆕+Últimas+Actualizaciones;✨+Sistema+Multi-Idioma+Integrado;🖼️+Personalizá+el+Menú+del+Bot;✏️+Cambiá+el+Nombre+del+Bot" alt="Actualizaciones" />
 
-🧠 Sistema de Traducciones
+</div>
 
-  ✅  Sistema global de idiomas: es.json | en.json | pt.json
-  ✅  Todos los plugins usan variables dinámicas (t.*)
-  ✅  Eliminado el hardcodeo de mensajes en el código
-  ✅  Estructura unificada: plugins.nombre_del_plugin
-  ✅  Compatibilidad total con el sistema existente del bot
+<table>
+<tr>
+<td>
 
-──────────────────────────────────────────────────────────
+---
 
-✏️  ¿Cómo cambiar el nombre del bot?
+## 🌍 28/05/2026 – Sistema Multi-Idioma Integrado 🌐
 
-  Solo el OWNER puede usar este comando.
+<div align="center">
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=18&pause=1000&color=10B981&center=true&vCenter=true&width=600&lines=🌐+Español+·+English+·+Português;✅+Traducción+automática+por+usuario;🧩+Plugins+organizados+y+centralizados" alt="Idiomas" />
+</div>
 
-  1. Escribí en el chat:  .setnamebot NuevoNombre
-  2. El nombre se guarda en la DB y se aplica de inmediato
-  3. Máximo 40 caracteres
+### 🧠 Sistema de Traducciones
 
-  Ejemplo:  .setnamebot Luna IA 🤖
+<p>
+  <img src="https://img.shields.io/badge/✅%20es.json-Español-10B981?style=flat-square&labelColor=065F46"/>
+  <img src="https://img.shields.io/badge/✅%20en.json-English-3B82F6?style=flat-square&labelColor=1E3A8A"/>
+  <img src="https://img.shields.io/badge/✅%20pt.json-Português-F59E0B?style=flat-square&labelColor=78350F"/>
+</p>
 
-──────────────────────────────────────────────────────────
+- ✅ Sistema global de idiomas usando archivos JSON (`es.json`, `en.json`, `pt.json`)
+- ✅ Todos los plugins usan variables dinámicas (`t.*`) en lugar de textos directos
+- ✅ Eliminado el hardcodeo de mensajes dentro del código
+- ✅ Estructura unificada: `plugins.nombre_del_plugin`
+- ✅ Compatibilidad total con el sistema existente del bot
 
-🖼️  ¿Cómo cambiar la imagen / GIF / video del menú?
+### 🌐 Comando de Idioma
 
-  Personalizá el fondo del menú del bot:
+```bash
+.idioma es   # 🇦🇷 Español
+.idioma en   # 🇺🇸 English
+.idioma pt   # 🇧🇷 Português
+```
 
-  📸  Imagen       → Enviá una foto y respondé con  .imgmenu
-  🎞️  GIF animado  → Enviá un GIF y respondé con    .vidmenu
-  🎬  Video        → Enviá un video (hasta 5 seg)
-                     y respondé con                 .vidmenu
+- ✅ El idioma se guarda automáticamente por usuario
+- ✅ Todos los mensajes del bot se adaptan al idioma seleccionado
 
-  Solo el OWNER puede cambiar el fondo del menú.
+### ⚙️ Beneficios
 
-══════════════════════════════════════════════════════════
+- ✅ Soporte completo para Español, Inglés y Portugués
+- ✅ Sistema escalable para agregar nuevos idiomas fácilmente
+- ✅ Código más limpio y mantenible
+- ✅ Mejor experiencia para usuarios internacionales
+
+### 📈 Resultado
+
+- 🌍 Bot completamente multilenguaje
+- 🧩 Plugins organizados y centralizados
+- ⚡ Base lista para futuras expansiones sin modificar lógica
+
+---
+
+## ✏️ ¿Cómo cambiar el nombre del bot?
+
+<p>
+  <img src="https://img.shields.io/badge/🔐%20Solo-Owner-8B5CF6?style=for-the-badge&labelColor=5B21B6"/>
+  <img src="https://img.shields.io/badge/📏%20Máximo-40%20caracteres-EC4899?style=for-the-badge&labelColor=9F1239"/>
+</p>
+
+```bash
+.setnamebot NuevoNombre
+```
+
+1. Escribí el comando en el chat con el nombre que quieras
+2. El nombre se guarda en la base de datos y se aplica de inmediato en todo el bot
+3. Máximo **40 caracteres** — el bot avisará si el nombre es muy largo
+
+> **Ejemplo:** `.setnamebot Luna IA 🤖`
+
+---
+
+## 🖼️ ¿Cómo cambiar la imagen / GIF / video del menú?
+
+<p>
+  <img src="https://img.shields.io/badge/🔐%20Solo-Owner-8B5CF6?style=for-the-badge&labelColor=5B21B6"/>
+  <img src="https://img.shields.io/badge/🎬%20Video-hasta%205%20seg-10B981?style=for-the-badge&labelColor=065F46"/>
+</p>
+
+Podés personalizar el fondo visual del menú del bot con imagen, GIF animado o video:
+
+| Tipo | Cómo hacerlo | Comando |
+|:----:|-------------|:-------:|
+| 📸 Imagen | Enviá una foto y respondé | `.imgmenu` |
+| 🎞️ GIF animado | Enviá un GIF y respondé | `.vidmenu` |
+| 🎬 Video corto | Enviá un video (hasta 5 seg) y respondé | `.vidmenu` |
+
+> [!TIP]
+> Respondé directamente el mensaje de la imagen o video con el comando. ¡No hace falta reenviarlo!
+
+---
+
+</td>
+</tr>
+</table>
 
 ### 🌐 Comando de Idioma
 - 🗣️ Ahora puedes cambiar el idioma del bot por usuario usando:
