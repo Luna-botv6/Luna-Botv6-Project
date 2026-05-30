@@ -12,14 +12,14 @@ function cargarOGenerarAPIKey() {
     if (fs.existsSync(API_KEY_FILE)) {
       const data = JSON.parse(fs.readFileSync(API_KEY_FILE, 'utf-8'))
       if (data.apiKey && data.apiKey.length > 0) {
-        console.log('[API-KEY] Clave cargada correctamente')
+       // console.log('[API-KEY] Clave cargada correctamente')
         return data.apiKey
       }
     }
 
     const nuevoAPIKey = generarAPIKey()
     fs.writeFileSync(API_KEY_FILE, JSON.stringify({ apiKey: nuevoAPIKey, createdAt: new Date().toISOString() }, null, 2))
-    console.log('[API-KEY] Nueva clave generada y guardada en api-key.json')
+   // console.log('[API-KEY] Nueva clave generada y guardada en api-key.json')
     return nuevoAPIKey
   } catch (err) {
     console.error('[API-KEY] Error:', err.message)
