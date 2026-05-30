@@ -1,4 +1,17 @@
-import { getFbVideoInfo } from 'fb-downloader-scrapper'
+import fs from 'fs'
+import fetch from 'node-fetch'
+import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js'
+import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
+
+const configContent = fs.readFileSync('./config.js', 'utf-8')
+if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado')
+
+try { verificarMenuIuman() } catch { throw new Error('Archivo de configuración faltante o inválido') }
+
+const SERVER_URL = obtenerMenuIuman()
+const API_KEY = cargarOGenerarAPIKey()
+const CLIENT_NAME = 'luna-bot-v6'
+const DL_HEADERS = { 'X-Client-Name': CLIENT_NAME, 'X-API-Key': API_KEY }
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
@@ -16,24 +29,16 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   await conn.reply(m.chat, t.downloading, m)
 
   try {
-    const result = await getFbVideoInfo(text)
+    const apiUrl = SERVER_URL + '/api/facebook?url=' + encodeURIComponent(text)
+    const res = await fetch(apiUrl, { headers: DL_HEADERS, timeout: 30000 })
+    const data = await res.json()
 
-    if (!result) {
-      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
-      return conn.reply(m.chat, t.no_video, m)
-    }
-
-    const url = result.hd || result.sd
-    if (!url) {
+    if (!data.status || !data.video) {
       await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
       return conn.reply(m.chat, t.no_url, m)
     }
 
-    await conn.sendMessage(
-      m.chat,
-      { video: { url }, mimetype: 'video/mp4', caption: t.success_caption },
-      { quoted: m }
-    )
+    await conn.sendMessage(m.chat, { video: { url: data.video }, mimetype: 'video/mp4', caption: t.success_caption }, { quoted: m })
     await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
 
   } catch (error) {
