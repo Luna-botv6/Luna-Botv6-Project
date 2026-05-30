@@ -1,7 +1,21 @@
 {
-  "active": false,
-  "participants": [],
-  "startTime": null,
-  "endTime": null,
+  "active": true,
+  "participants": [
+    {
+      "id": "6421647196351@lid",
+      "username": "rafael",
+      "numbers": [
+        11,
+        24,
+        32,
+        4,
+        12,
+        43
+      ],
+      "joinTime": 1778864891195
+    }
+  ],
+  "startTime": 1776129207775,
+  "endTime": 1776131007775,
   "winningNumbers": []
 }
