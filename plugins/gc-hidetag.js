@@ -1,29 +1,48 @@
 import fs from 'fs'
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
+import { getGroupDataForPlugin, isAdminNoTTL } from '../lib/funcion/pluginHelper.js'
+import { hasGroup, getJids, resolveLidFromCache, setGroupData } from '../lib/funcion/hidetag-cache.js'
 
 const cooldowns = new Map()
+const _langCache = new Map()
+
+function getLang(idioma) {
+  if (_langCache.has(idioma)) return _langCache.get(idioma)
+  const t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.gc_hidetag
+  _langCache.set(idioma, t)
+  return t
+}
 
 const handler = async (m, { conn, text, isOwner }) => {
   const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje
-  const t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.gc_hidetag
+  const t = getLang(idioma)
 
   try {
     if (!conn?.user?.jid) return m.reply(t.no_sesion)
     if (!m.isGroup) return m.reply(t.solo_grupos)
 
-    const { participants, isAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender)
-
+    const chatId = m.chat
     const senderNum = conn.decodeJid(m.sender).replace('@s.whatsapp.net', '')
     const isLidOwner = global.lidOwners?.includes(senderNum)
     const isGlobalOwner = global.owner?.some(([num]) => num === senderNum)
 
-    if (!isAdmin && !isOwner && !isLidOwner && !isGlobalOwner) return m.reply(t.solo_admins)
+    let jids
+
+    if (hasGroup(chatId)) {
+      const isAdmin = isAdminNoTTL(chatId, m.sender)
+      if (!isAdmin && !isOwner && !isLidOwner && !isGlobalOwner) return m.reply(t.solo_admins)
+      jids = getJids(chatId)
+    } else {
+      const data = await getGroupDataForPlugin(conn, chatId, m.sender)
+      if (!data.isAdmin && !isOwner && !isLidOwner && !isGlobalOwner) return m.reply(t.solo_admins)
+      setGroupData(chatId, data.participants)
+      jids = data.participants.map(p => p.id).filter(j => j && !j.includes('@lid'))
+    }
 
     const cooldownTime = 2 * 60 * 1000
     const now = Date.now()
 
     if (!isOwner && !isLidOwner && !isGlobalOwner) {
-      const key = `${m.chat}_${m.sender}`
+      const key = `${chatId}_${m.sender}`
       if (cooldowns.has(key)) {
         const expire = cooldowns.get(key) + cooldownTime
         if (now < expire) {
@@ -34,14 +53,7 @@ const handler = async (m, { conn, text, isOwner }) => {
       cooldowns.set(key, now)
     }
 
-    const resolveLid = jid => {
-      if (!jid?.includes('@lid')) return conn.decodeJid(jid)
-      const p = participants.find(x => x.lid === jid)
-      return p ? conn.decodeJid(p.id) : null
-    }
-
-    const mentionSet = new Set()
-    participants.forEach(p => mentionSet.add(conn.decodeJid(p.id)))
+    const mentionSet = new Set(jids)
 
     const quoted = m.quoted || m
     const mime = (quoted.msg || quoted).mimetype || ''
@@ -53,31 +65,23 @@ const handler = async (m, { conn, text, isOwner }) => {
 
     const mentionPattern = /@(\d+)/g
     let match
-    const numbersInText = []
-    while ((match = mentionPattern.exec(finalText)) !== null) numbersInText.push(match[1])
-
-    if (numbersInText.length > 0) {
-      for (const numInText of numbersInText) {
-        for (const p of participants) {
-          const pId = conn.decodeJid(p.id)
-          const pNum = pId.split('@')[0]
-          const pLid = p.lid ? p.lid.split('@')[0] : null
-          if (pNum === numInText || pLid === numInText) {
-            mentionSet.add(pId)
-            const regex = new RegExp(`@${numInText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g')
-            finalText = finalText.replace(regex, `@${pNum}`)
-            break
-          }
-        }
-      }
+    while ((match = mentionPattern.exec(finalText)) !== null) {
+      const num = match[1]
+      const found = jids.find(j => j.split('@')[0] === num)
+      if (found) mentionSet.add(found)
     }
 
     if (m.mentionedJid?.length) {
       for (const lid of m.mentionedJid) {
-        const real = resolveLid(lid)
-        if (!real) continue
-        mentionSet.add(real)
-        finalText = finalText.replace(/@\S+/, `@${real.split('@')[0]}`)
+        if (!lid.includes('@lid')) {
+          mentionSet.add(conn.decodeJid(lid))
+        } else {
+          const real = resolveLidFromCache(chatId, lid)
+          if (real) {
+            mentionSet.add(real)
+            finalText = finalText.replace(/@\S+/, `@${real.split('@')[0]}`)
+          }
+        }
       }
     }
 
@@ -85,20 +89,20 @@ const handler = async (m, { conn, text, isOwner }) => {
 
     if (isMedia && quoted.mtype === 'imageMessage') {
       const media = await quoted.download()
-      await conn.sendMessage(m.chat, { image: media, caption: finalText, mentions }, { quoted: m })
+      await conn.sendMessage(chatId, { image: media, caption: finalText, mentions }, { quoted: m })
     } else if (isMedia && quoted.mtype === 'videoMessage') {
       const media = await quoted.download()
-      await conn.sendMessage(m.chat, { video: media, caption: finalText, mentions }, { quoted: m })
+      await conn.sendMessage(chatId, { video: media, caption: finalText, mentions }, { quoted: m })
     } else if (isMedia && quoted.mtype === 'audioMessage') {
       const media = await quoted.download()
-      await conn.sendMessage(m.chat, { audio: media, mimetype: 'audio/mpeg', mentions }, { quoted: m })
+      await conn.sendMessage(chatId, { audio: media, mimetype: 'audio/mpeg', mentions }, { quoted: m })
     } else if (isMedia && quoted.mtype === 'stickerMessage') {
       const media = await quoted.download()
-      await conn.sendMessage(m.chat, { sticker: media, mentions }, { quoted: m })
+      await conn.sendMessage(chatId, { sticker: media, mentions }, { quoted: m })
     } else {
-      await conn.sendMessage(m.chat, { text: finalText, mentions }, { quoted: m })
+      await conn.sendMessage(chatId, { text: finalText, mentions }, { quoted: m })
     }
-  } catch (e) {
+  } catch {
     await m.reply(t.error)
   }
 }

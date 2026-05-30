@@ -1,20 +1,37 @@
 import fs from 'fs'
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
+import { getGroupDataForPlugin, isAdminNoTTL } from '../lib/funcion/pluginHelper.js'
+import { hasGroup, getJids, setGroupData } from '../lib/funcion/hidetag-cache.js'
 
 const cooldowns = new Map()
+const _langCache = new Map()
+
+function getLang(idioma) {
+  if (_langCache.has(idioma)) return _langCache.get(idioma)
+  const t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.gc_tagall
+  _langCache.set(idioma, t)
+  return t
+}
 
 const handler = async (m, { conn, args, isOwner }) => {
   const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje
-  const t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.gc_tagall
+  const t = getLang(idioma)
 
   try {
     if (!m.isGroup) return m.reply(t.solo_grupos)
 
-    const { participants, isAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender)
-
-    if (!isAdmin && !isOwner) return m.reply(t.solo_admins)
-
     const chatId = m.chat
+    let jids
+
+    if (hasGroup(chatId)) {
+      if (!isAdminNoTTL(chatId, m.sender) && !isOwner) return m.reply(t.solo_admins)
+      jids = getJids(chatId)
+    } else {
+      const data = await getGroupDataForPlugin(conn, chatId, m.sender)
+      if (!data.isAdmin && !isOwner) return m.reply(t.solo_admins)
+      setGroupData(chatId, data.participants)
+      jids = data.participants.map(p => p.id).filter(j => j && !j.includes('@lid'))
+    }
+
     const cooldownTime = 2 * 60 * 1000
     const now = Date.now()
 
@@ -27,41 +44,23 @@ const handler = async (m, { conn, args, isOwner }) => {
     }
     cooldowns.set(chatId, now)
 
-    const resolveLid = jid => {
-      if (!jid?.includes('@lid')) return conn.decodeJid(jid)
-      const p = participants.find(x => x.lid === jid)
-      return p ? conn.decodeJid(p.id) : null
-    }
-
-    const mentionSet = new Set()
-    participants.forEach(p => mentionSet.add(conn.decodeJid(p.id)))
-
-    let messageText = args.join(' ') || t.atencion
-
-    if (m.mentionedJid?.length) {
-      for (const lid of m.mentionedJid) {
-        const real = resolveLid(lid)
-        if (!real) continue
-        mentionSet.add(real)
-        messageText = messageText.replace(/@\S+/, `@${real.split('@')[0]}`)
-      }
-    }
-
+    const mentionSet = new Set(jids)
+    const messageText = args.join(' ') || t.atencion
     const total = mentionSet.size
-    let teks = `${t.titulo}\n`
-    teks += `┃\n`
-    teks += `┃ ${t.mensaje_label}\n`
-    teks += `┃ ${messageText}\n`
-    teks += `┃\n`
-    teks += `┃ ${t.usuarios_label} (${total})\n`
-    for (const jid of mentionSet) {
-      teks += `┃ 👤 @${jid.split('@')[0]}\n`
-    }
-    teks += `┃\n`
-    teks += `${t.footer}`
 
-    await conn.sendMessage(chatId, { text: teks, mentions: [...mentionSet] })
-  } catch (e) {
+    const lines = [
+      t.titulo,
+      `┃`,
+      `┃ ${t.mensaje_label}`,
+      `┃ ${messageText}`,
+      `┃`,
+      `┃ ${t.usuarios_label} (${total})`
+    ]
+    for (const jid of mentionSet) lines.push(`┃ 👤 @${jid.split('@')[0]}`)
+    lines.push(`┃`, t.footer)
+
+    await conn.sendMessage(chatId, { text: lines.join('\n'), mentions: [...mentionSet] })
+  } catch {
     await m.reply(t.error)
   }
 }
