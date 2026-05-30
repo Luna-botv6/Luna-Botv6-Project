@@ -6,81 +6,121 @@ import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
 
 const configContent = fs.readFileSync('./config.js', 'utf-8')
 if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado')
-
-try { verificarMenuIuman() } catch { throw new Error('Archivo de configuración faltante o inválido') }
+try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
 
 const SERVER_URL = obtenerMenuIuman()
 const API_KEY = cargarOGenerarAPIKey()
-const CLIENT_NAME = 'luna-bot-v6'
-const DL_HEADERS = { 'X-Client-Name': CLIENT_NAME, 'X-API-Key': API_KEY }
+const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
+const TIMEOUT = 60000
 
-const sleep = ms => new Promise(r => setTimeout(r, ms))
+const BOT = () => global.BotName || 'LUNA'
 
-const progressBar = (step, total = 5) => {
-  const filled = '█'.repeat(step)
-  const empty = '░'.repeat(total - step)
-  const percent = Math.round((step / total) * 100)
-  return filled + empty + ` ${percent}%`
+const safeEdit = async (conn, jid, text, key) => {
+  try { if (key && jid) await conn.sendMessage(jid, { text, edit: key }) } catch {}
 }
 
-const handler = async (m, { conn, text, args, usedPrefix, command }) => {
-  const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = await import(`../src/lunaidiomas/${idioma}.json`, { assert: { type: 'json' } })
-  const t = _translate.default.plugins.tiktok_dl
+const ft = async (url, headers = {}) => {
+  const c = new AbortController()
+  const t = setTimeout(() => c.abort(), TIMEOUT)
+  try { const r = await fetch(url, { signal: c.signal, headers }); clearTimeout(t); return r }
+  catch (e) { clearTimeout(t); throw e }
+}
 
-  const example = `${usedPrefix + command} https://www.tiktok.com/@lunabotv6/video/7562318278455037191`
+const card = (tipo, estado, data = {}) => {
+  let body = '🎵 TikTok ' + (tipo === 'audio' ? 'Audio' : 'Video')
 
-  if (!text) return conn.reply(m.chat, t.no_text.replace('{example}', example), m)
+  if (estado === 'conectando') {
+    body += '\n⏳ Conectando...'
+  } else if (estado === 'descargando') {
+    body += '\n⬇️ Descargando...'
+  } else if (estado === 'listo') {
+    body += '\n📌 ' + (data.titulo || 'Contenido encontrado')
 
-  if (!/(?:https?:\/\/)?(?:www|vm|vt|t)?\.?tiktok\.com\/([^\s&]+)/gi.test(text)) {
-    return conn.reply(m.chat, t.invalid_url.replace('{example}', example), m)
-  }
-
-  await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } })
-
-  const steps = [
-    t.step1.replace('{progress}', progressBar(1)),
-    t.step2.replace('{progress}', progressBar(2)),
-    t.step3.replace('{progress}', progressBar(3)),
-    t.step4.replace('{progress}', progressBar(4)),
-    t.step5.replace('{progress}', progressBar(5)),
-  ]
-
-  const sent = await conn.reply(m.chat, steps[0], m)
-
-  for (let i = 1; i < steps.length; i++) {
-    await sleep(800)
-    await conn.sendMessage(m.chat, { text: steps[i], edit: sent.key })
-  }
-
-  try {
-    const apiUrl = SERVER_URL + '/api/tiktok?url=' + encodeURIComponent(args[0])
-    const res = await fetch(apiUrl, { headers: DL_HEADERS, timeout: 30000 })
-    const data = await res.json()
-
-    if (!data.status || !data.video) {
-      await conn.sendMessage(m.chat, { text: t.no_video.replace('{progress}', progressBar(0)), edit: sent.key })
-      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
-      return
+    if (data.autor) {
+      body += '\n👤 ' + data.autor
     }
 
-    await conn.sendMessage(m.chat, { text: t.ready.replace('{progress}', progressBar(5)), edit: sent.key })
+    body += '\n◀◀ • ▶ • ▶▶'
+    body += '\n📥 Descarga lista'
+  } else if (estado === 'error') {
+    body += '\n❌ ' + (data.error || 'Error desconocido')
+  }
 
-    await conn.sendMessage(m.chat, { video: { url: data.video }, caption: t.caption }, { quoted: m })
+  body += '\n🌙 ' + BOT()
+  return body
+}
 
-    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
+async function descargar(conn, msg, tipo, url) {
+  let editKey = null, jid = null
+  try {
+    const sent = await conn.sendMessage(msg.chat, { text: card(tipo, 'conectando') }, { quoted: msg })
+    if (sent?.key) { editKey = sent.key; jid = sent.key.remoteJid }
+    await safeEdit(conn, jid, card(tipo, 'descargando'), editKey)
 
+    if (tipo === 'video') {
+      const res = await ft(SERVER_URL + '/api/tiktok?url=' + encodeURIComponent(url), DL_HEADERS)
+      const data = await res.json()
+      if (!data.status || !data.video) throw new Error(data.error || 'Sin video')
+      await safeEdit(conn, jid, card(tipo, 'listo', { titulo: data.titulo, autor: data.autor }), editKey)
+      await conn.sendMessage(msg.chat, { video: { url: data.video }, caption: `🎵 ${data.titulo || ''}` }, { quoted: msg })
+    } else {
+      const res = await ft(SERVER_URL + '/api/social/audio?url=' + encodeURIComponent(url) + '&plataforma=tiktok', DL_HEADERS)
+      if (!res.ok) throw new Error('Error del servidor')
+      const titulo = decodeURIComponent(res.headers.get('x-title') || 'audio')
+      const buffer = Buffer.from(await res.arrayBuffer())
+      if (buffer.length < 10000) throw new Error('Audio muy pequeño')
+      await safeEdit(conn, jid, card(tipo, 'listo', { titulo }), editKey)
+      await conn.sendMessage(msg.chat, { audio: buffer, mimetype: 'audio/mpeg', fileName: titulo + '.mp3', ptt: false }, { quoted: msg })
+    }
   } catch (e) {
-    await conn.sendMessage(m.chat, {
-      text: t.error.replace('{error}', e?.message || 'unknown').replace('{progress}', progressBar(0)),
-      edit: sent.key
-    })
-    await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
+    await safeEdit(conn, jid, card(tipo, 'error', { error: e.message }), editKey)
   }
 }
 
-handler.help = ['tiktok', 'tt']
-handler.tags = ['downloader']
-handler.command = /^(tiktok|ttdl|tiktokdl|tiktoknowm|tt|ttnowm|tiktokaudio)$/i
+const handler = async (m, { conn, text, usedPrefix, command }) => {
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
+  const _t = await import(`../src/lunaidiomas/${idioma}.json`, { with: { type: 'json' } })
+  const t = _t.default.plugins.tiktok_dl
+  const example = `${usedPrefix + command} https://www.tiktok.com/@user/video/123`
 
+  if (command === 'tiktok' || command === 'tt' || command === 'tiktokdl' || command === 'ttdl') {
+    if (!text) return conn.reply(m.chat, t.no_text.replace('{example}', example), m)
+    if (!/(?:https?:\/\/)?(?:www|vm|vt|t)?\.?tiktok\.com\/([^\s&]+)/gi.test(text))
+      return conn.reply(m.chat, t.invalid_url.replace('{example}', example), m)
+
+    const msg_carousel =
+  '🎵 TikTok\n' +
+  '🔗 Enlace detectado\n' +
+  '◀◀ • ▶ • ▶▶\n' +
+  '📥 Selecciona un formato\n' +
+  '🌙 ' + BOT()
+
+
+    try {
+      await interactiveUtils.sendNCarousel(conn, m.chat, msg_carousel, BOT(),
+        'https://i.imgur.com/5TWWBHJ.jpeg',
+        [['🎬 Video', usedPrefix + 'ttvideo ' + text], ['🎵 Audio', usedPrefix + 'ttaudio ' + text]],
+        null, null, null, m, {})
+    } catch {
+      await conn.reply(m.chat, `🎬 *${usedPrefix}ttvideo url*\n🎵 *${usedPrefix}ttaudio url*`, m)
+    }
+    return
+  }
+
+  if (command === 'ttvideo' || command === 'tiktoknowm') {
+    if (!text) return conn.reply(m.chat, t.no_text.replace('{example}', example), m)
+    descargar(conn, m, 'video', text).catch(() => {})
+    return
+  }
+
+  if (command === 'ttaudio' || command === 'tiktokaudio' || command === 'ttnowm') {
+    if (!text) return conn.reply(m.chat, t.no_text.replace('{example}', example), m)
+    descargar(conn, m, 'audio', text).catch(() => {})
+    return
+  }
+}
+
+handler.help = ['tiktok url', 'ttvideo url', 'ttaudio url']
+handler.tags = ['downloader']
+handler.command = /^(tiktok|ttdl|tiktokdl|tiktoknowm|tt|ttnowm|tiktokaudio|ttvideo|ttaudio)$/i
 export default handler

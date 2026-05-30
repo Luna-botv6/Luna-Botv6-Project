@@ -1,54 +1,127 @@
 import fs from 'fs'
 import fetch from 'node-fetch'
+import { interactiveUtils } from '../src/libraries/base/interactive.js'
 import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js'
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
 
 const configContent = fs.readFileSync('./config.js', 'utf-8')
 if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado')
-
-try { verificarMenuIuman() } catch { throw new Error('Archivo de configuración faltante o inválido') }
+try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
 
 const SERVER_URL = obtenerMenuIuman()
 const API_KEY = cargarOGenerarAPIKey()
-const CLIENT_NAME = 'luna-bot-v6'
-const DL_HEADERS = { 'X-Client-Name': CLIENT_NAME, 'X-API-Key': API_KEY }
+const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
+const TIMEOUT = 60000
 
-const handler = async (m, { conn, text, usedPrefix, command }) => {
-  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
-  const _translate = await import(`../src/lunaidiomas/${idioma}.json`, { with: { type: 'json' } })
-  const t = _translate.default.plugins.facebook_dl
-  const example = `${usedPrefix + command} https://www.facebook.com/reel/1341328334215918`
+const BOT = () => global.BotName || 'LUNA'
 
-  if (!text) return conn.reply(m.chat, t.no_text.replace('{example}', example), m)
+const safeEdit = async (conn, jid, text, key) => {
+  try { if (key && jid) await conn.sendMessage(jid, { text, edit: key }) } catch {}
+}
 
-  if (!/(?:https?:\/\/)?(?:www\.|m\.)?(?:facebook\.com|fb\.watch)\/\S+/i.test(text)) {
-    return conn.reply(m.chat, t.invalid_url.replace('{example}', example), m)
-  }
+const ft = async (url, headers = {}) => {
+  const c = new AbortController()
+  const t = setTimeout(() => c.abort(), TIMEOUT)
+  try { const r = await fetch(url, { signal: c.signal, headers }); clearTimeout(t); return r }
+  catch (e) { clearTimeout(t); throw e }
+}
 
-  await conn.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
-  await conn.reply(m.chat, t.downloading, m)
+const card = (tipo, estado, data = {}) => {
+  let body = `📘 Facebook ${tipo === 'audio' ? 'Audio' : 'Video'}`
 
-  try {
-    const apiUrl = SERVER_URL + '/api/facebook?url=' + encodeURIComponent(text)
-    const res = await fetch(apiUrl, { headers: DL_HEADERS, timeout: 30000 })
-    const data = await res.json()
+  if (estado === 'conectando') {
+    body += `\n⏳ Conectando...`
+  } else if (estado === 'descargando') {
+    body += `\n⬇️ Descargando...`
+  } else if (estado === 'listo') {
+    body += `\n📌 ${data.titulo || 'Contenido encontrado'}`
 
-    if (!data.status || !data.video) {
-      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
-      return conn.reply(m.chat, t.no_url, m)
+    if (data.autor) {
+      body += `\n👤 ${data.autor}${data.hd ? ' • 📺 HD' : ''}`
+    } else if (data.hd) {
+      body += `\n📺 HD`
     }
 
-    await conn.sendMessage(m.chat, { video: { url: data.video }, mimetype: 'video/mp4', caption: t.success_caption }, { quoted: m })
-    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
+    body += `\n◀◀ • ▶ • ▶▶`
+    body += `\n📥 Descarga lista`
+  } else if (estado === 'error') {
+    body += `\n❌ ${data.error || 'Error desconocido'}`
+  }
 
-  } catch (error) {
-    console.error('[FB-DL] Error:', error?.message)
-    await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
-    return conn.reply(m.chat, t.error, m)
+  body += `\n🌙 ${BOT()}`
+  return body
+}
+
+async function descargar(conn, msg, tipo, url) {
+  let editKey = null, jid = null
+  try {
+    const sent = await conn.sendMessage(msg.chat, { text: card(tipo, 'conectando') }, { quoted: msg })
+    if (sent?.key) { editKey = sent.key; jid = sent.key.remoteJid }
+    await safeEdit(conn, jid, card(tipo, 'descargando'), editKey)
+
+    if (tipo === 'video') {
+      const res = await ft(SERVER_URL + '/api/facebook?url=' + encodeURIComponent(url), DL_HEADERS)
+      const data = await res.json()
+      if (!data.status || !data.video) throw new Error(data.error || 'Sin video')
+      await safeEdit(conn, jid, card(tipo, 'listo', { titulo: data.titulo, hd: !!data.hd }), editKey)
+      await conn.sendMessage(msg.chat, { video: { url: data.video }, mimetype: 'video/mp4', caption: `🎬 ${data.titulo || ''}` }, { quoted: msg })
+    } else {
+      const res = await ft(SERVER_URL + '/api/social/audio?url=' + encodeURIComponent(url) + '&plataforma=facebook', DL_HEADERS)
+      if (!res.ok) throw new Error('Error del servidor')
+      const titulo = decodeURIComponent(res.headers.get('x-title') || 'audio')
+      const buffer = Buffer.from(await res.arrayBuffer())
+      if (buffer.length < 10000) throw new Error('Audio muy pequeño')
+      await safeEdit(conn, jid, card(tipo, 'listo', { titulo }), editKey)
+      await conn.sendMessage(msg.chat, { audio: buffer, mimetype: 'audio/mpeg', fileName: titulo + '.mp3', ptt: false }, { quoted: msg })
+    }
+  } catch (e) {
+    await safeEdit(conn, jid, card(tipo, 'error', { error: e.message }), editKey)
   }
 }
 
-handler.help = ['facebook', 'fb']
+const handler = async (m, { conn, text, usedPrefix, command }) => {
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
+  const _t = await import(`../src/lunaidiomas/${idioma}.json`, { with: { type: 'json' } })
+  const t = _t.default.plugins.facebook_dl
+  const example = `${usedPrefix + command} https://www.facebook.com/reel/123`
+
+  if (command === 'facebook' || command === 'fb' || command === 'facebookdl' || command === 'fbdl') {
+    if (!text) return conn.reply(m.chat, t.no_text.replace('{example}', example), m)
+    if (!/(?:https?:\/\/)?(?:www\.|m\.)?(?:facebook\.com|fb\.watch)\/\S+/i.test(text))
+      return conn.reply(m.chat, t.invalid_url.replace('{example}', example), m)
+
+   const msg_carousel =
+  `📘 Facebook
+🔗 Enlace detectado
+◀◀ • ▶ • ▶▶
+📥 Selecciona un formato
+🌙 ${BOT()}`
+
+    try {
+      await interactiveUtils.sendNCarousel(conn, m.chat, msg_carousel, BOT(),
+        'https://i.imgur.com/5TWWBHJ.jpeg',
+        [['🎬 Video', usedPrefix + 'fbvideo ' + text], ['🎵 Audio', usedPrefix + 'fbaudio ' + text]],
+        null, null, null, m, {})
+    } catch {
+      await conn.reply(m.chat, `🎬 *${usedPrefix}fbvideo url*\n🎵 *${usedPrefix}fbaudio url*`, m)
+    }
+    return
+  }
+
+  if (command === 'fbvideo') {
+    if (!text) return conn.reply(m.chat, t.no_text.replace('{example}', example), m)
+    descargar(conn, m, 'video', text).catch(() => {})
+    return
+  }
+
+  if (command === 'fbaudio') {
+    if (!text) return conn.reply(m.chat, t.no_text.replace('{example}', example), m)
+    descargar(conn, m, 'audio', text).catch(() => {})
+    return
+  }
+}
+
+handler.help = ['facebook url', 'fbvideo url', 'fbaudio url']
 handler.tags = ['downloader']
-handler.command = /^(facebook|fb|facebookdl|fbdl)$/i
+handler.command = /^(facebook|fb|facebookdl|fbdl|fbvideo|fbaudio)$/i
 export default handler
