@@ -313,26 +313,18 @@ function applyPrintWrapper(conn) {
 
 applyPrintWrapper(global.conn);
 
+let _presenceFailCount = 0;
+const MAX_PRESENCE_FAILS = 5;
 const _presenceInterval = setInterval(async () => {
-  if (global.conn?.user && !global.isProcessing) {
-    try {
-      await global.conn.sendPresenceUpdate('available');
-    } catch (e) {
-      if (!global._presenceErrorLogged) {
-        global._presenceErrorLogged = true;
-        clearInterval(_presenceInterval);
-        console.log(chalk.magenta('[ ✖ ] Ups, algo falló y no me pude reconectar. Limpiando sesión y reiniciando...'));
-        const carpetas = [global.authFile, 'MysticSession'];
-        await Promise.allSettled(
-          carpetas.map(async (carpeta) => {
-            const ruta = `./${carpeta}`;
-            if (fs.existsSync(ruta)) {
-              await fs.promises.rm(ruta, { recursive: true, force: true });
-            }
-          })
-        );
-        setTimeout(() => process.exit(1), 2000);
-      }
+  if (!global.conn?.user || global.isProcessing) return;
+  try {
+    await global.conn.sendPresenceUpdate('available');
+    _presenceFailCount = 0;
+  } catch (e) {
+    _presenceFailCount++;
+    if (_presenceFailCount >= MAX_PRESENCE_FAILS) {
+      clearInterval(_presenceInterval);
+      console.log(chalk.yellow(`[ ⚠ ] Presence falló ${MAX_PRESENCE_FAILS} veces seguidas, dejando que connectionUpdate maneje la reconexión`));
     }
   }
 }, 30000);
@@ -623,9 +615,20 @@ function runCleaner() {
 let lastQR = null;
 let codigoSolicitado = false;
 
+const REASON_LABELS = {
+  401: 'loggedOut — sesión desvinculada o baneada',
+  408: 'timedOut — tiempo de conexión agotado',
+  410: 'restartRequired — reinicio requerido por WA',
+  428: 'connectionClosed — conexión cerrada por WA',
+  500: 'badSession — sesión corrupta',
+  515: 'connectionLost — pérdida de conexión',
+  440: 'connectionReplaced — sesión reemplazada',
+  405: 'error de protocolo (405)',
+};
+
 async function connectionUpdate(update) {
   const { connection, lastDisconnect, isNewLogin, qr } = update;
-  
+
   stopped = connection;
   if (isNewLogin) conn.isInit = true;
 
@@ -643,15 +646,17 @@ async function connectionUpdate(update) {
     }
   }
 
-if (connection === 'open') {
+  if (connection === 'open') {
     global._hasBeenConnected = true;
     global._softReconnectCount = 0;
+    global._manualWsClose = false;
+    _presenceFailCount = 0;
     stopped = 'open';
     if (!global._connectedLogged) {
       global._connectedLogged = true;
       console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
     }
-    
+
     if (!global._reloadHandlerPending) {
       global._reloadHandlerPending = true;
       setTimeout(async () => {
@@ -663,7 +668,7 @@ if (connection === 'open') {
         }
       }, 2000);
     }
-    
+
     if (!global._subbotReconnectDone) {
       global._subbotReconnectDone = true;
       setTimeout(async () => {
@@ -678,8 +683,8 @@ if (connection === 'open') {
     codigoSolicitado = false;
 
     if (opcion === '2' && pairingTimeout) {
-        clearTimeout(pairingTimeout);
-        pairingTimeout = null;
+      clearTimeout(pairingTimeout);
+      pairingTimeout = null;
     }
 
   } else if (connection === 'connecting') {
@@ -694,22 +699,33 @@ if (connection === 'open') {
 
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
 
+  if (connection === 'close') {
+    const rawError = lastDisconnect?.error;
+    const errorMsg = rawError?.message || rawError?.toString() || 'sin mensaje';
+    const errorOutput = rawError?.output || {};
+    const statusCode = reason || errorOutput?.statusCode || 'N/A';
+    const payload = errorOutput?.payload || {};
+
+    global._lastDisconnectCode = statusCode;
+    global._lastDisconnectReason = REASON_LABELS[statusCode] || errorMsg;
+    global._lastDisconnectPayload = payload;
+    global._lastDisconnectTime = Date.now();
+  }
+
   if (reason === 405) {
-    global._reconnect405Count = (global._reconnect405Count || 0) + 1
+    global._reconnect405Count = (global._reconnect405Count || 0) + 1;
     if (global._reconnect405Count >= 3) {
-      console.log(chalk.red('[ ✖ ] Error de protocolo persistente (405). Esperando 60 segundos...'))
-      global._reconnect405Count = 0
+      console.log(chalk.red('[ ✖ ] Error de protocolo persistente (405). Esperando 60 segundos...'));
+      global._reconnect405Count = 0;
       setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 60000);
       return;
     }
-    console.log(chalk.yellow('[ ⚠ ] Reconectando...'));
-    setTimeout(async () => { 
-      await global.reloadHandler(true).catch(console.error); 
-    }, 5000);
+    console.log(chalk.yellow('[ ⚠ ] Reconectando (405)...'));
+    setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 5000);
     return;
   }
 
-if (connection === 'close') {
+  if (connection === 'close') {
     if (reason === DisconnectReason.badSession) {
       console.log(chalk.red('[ ✖ ] Sesión corrupta detectada'));
       console.log(chalk.yellow('[ ⚠ ] Limpiando sesión...'));
@@ -722,28 +738,70 @@ if (connection === 'close') {
       console.log(chalk.yellow('[ ⚠ ] Por favor reinicia con: npm start'));
       setTimeout(() => process.exit(1), 2000);
       return;
+
     } else if (reason === DisconnectReason.connectionClosed) {
       conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando...`);
-      if (global._hasBeenConnected) {
+      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
+      if (global._hasBeenConnected && global._softReconnectCount >= 4) {
         console.log('[ ♻ ] Reinicio limpio para liberar memoria...');
         setTimeout(() => process.exit(0), 1000);
       } else {
-        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
+        const delay = 3000 + Math.floor(Math.random() * 4000);
+        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/3 en ${Math.round(delay / 1000)}s...`);
+        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
+
     } else if (reason === DisconnectReason.connectionLost) {
       conn.logger.warn(`[ ⚠ ] Conexión perdida, reconectando...`);
-      if (global._hasBeenConnected) {
+      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
+      if (global._hasBeenConnected && global._softReconnectCount >= 4) {
         console.log('[ ♻ ] Reinicio limpio para liberar memoria...');
         setTimeout(() => process.exit(0), 1000);
       } else {
-        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
+        const delay = 3000 + Math.floor(Math.random() * 4000);
+        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/3 en ${Math.round(delay / 1000)}s...`);
+        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
+
     } else if (reason === DisconnectReason.connectionReplaced) {
       conn.logger.error(`[ ⚠ ] Conexión reemplazada, se ha abierto otra nueva sesión. Por favor, cierra la sesión actual primero.`);
+
     } else if (reason === DisconnectReason.loggedOut) {
-      if (!global._loggedOutHandled) {
+      const rawMsg = (lastDisconnect?.error?.message || '').toLowerCase();
+      const retries = global._softReconnectCount || 0;
+
+      const isConflict = rawMsg.includes('conflict') || rawMsg.includes('stream errored');
+      const isFirstConnectionFailure = rawMsg.includes('connection failure') && retries === 0;
+      const shouldReconnect = global._manualWsClose || isConflict || isFirstConnectionFailure;
+      const isRealLogout = !shouldReconnect;
+
+      if (shouldReconnect) {
+        const motivo = global._manualWsClose ? 'cierre manual (testrecon)' : `401 transitorio (${rawMsg})`;
+        console.log(chalk.yellow(`[ ⚠ ] 401 detectado pero NO es logout real: ${motivo}. Reconectando...`));
+        global._manualWsClose = false;
+        global._softReconnectCount = (global._softReconnectCount || 0) + 1;
+        if (global._softReconnectCount >= 4) {
+          console.log('[ ♻ ] Demasiados conflictos seguidos. Reinicio limpio...');
+          setTimeout(() => process.exit(0), 1000);
+        } else {
+          const delay = 4000 + Math.floor(Math.random() * 4000);
+          console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/3 en ${Math.round(delay / 1000)}s...`);
+          setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
+        }
+        return;
+      }
+
+      if (isRealLogout && !global._loggedOutHandled) {
         global._loggedOutHandled = true;
-        console.log(chalk.magenta('[ ✖ ] Sesión cerrada o bot baneado. Limpiando sesión y reiniciando...'));
+        console.log(chalk.red('┌─────────────────────────────────────────────┐'));
+        console.log(chalk.red.bold('🚫 BOT DESVINCULADO / BANEADO DETECTADO'));
+        console.log(chalk.red(`  Código: ${reason} (loggedOut)`));
+        console.log(chalk.red(`  Mensaje: ${lastDisconnect?.error?.message || 'sin mensaje'}`));
+        console.log(chalk.red(`  Esto significa que:`));
+        console.log(chalk.red(`  - El usuario desvinculó el bot desde WhatsApp`));
+        console.log(chalk.red(`  - O la cuenta fue baneada por WA`));
+        console.log(chalk.red(`  Acción: limpiando sesión y reiniciando para re-vincular`));
+        console.log(chalk.red('└─────────────────────────────────────────────┘'));
         const _carpetas = [global.authFile, 'MysticSession'];
         await Promise.allSettled(
           _carpetas.map(async (carpeta) => {
@@ -755,31 +813,45 @@ if (connection === 'close') {
         );
         setTimeout(() => process.exit(1), 2000);
       }
+
     } else if (reason === DisconnectReason.restartRequired) {
       if (isFirstTimeLink) {
         conn.logger.info(`[ ⚠ ] Primera vinculación completada, continuando...`);
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
       } else {
-        conn.logger.info(`[ ⚠ ] Reinicio necesario, reiniciando proceso limpio...`);
-        setTimeout(() => process.exit(0), 1000);
+        global._restartRequiredCount = (global._restartRequiredCount || 0) + 1;
+        if (global._restartRequiredCount >= 3) {
+          console.log(chalk.yellow('[ ⚠ ] restartRequired repetido — posible bug de WA. Reinicio limpio...'));
+          global._restartRequiredCount = 0;
+          setTimeout(() => process.exit(0), 1000);
+        } else {
+          conn.logger.info(`[ ⚠ ] Reinicio necesario, reiniciando proceso limpio...`);
+          setTimeout(() => process.exit(0), 1000);
+        }
       }
+
     } else if (reason === DisconnectReason.timedOut) {
       conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando...`);
       global._softReconnectCount = (global._softReconnectCount || 0) + 1;
-      if (global._softReconnectCount >= 3) {
+      if (global._softReconnectCount >= 4) {
         console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
         setTimeout(() => process.exit(0), 1000);
       } else {
-        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
+        const delay = 4000 + Math.floor(Math.random() * 5000);
+        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/3 en ${Math.round(delay / 1000)}s...`);
+        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
+
     } else {
       conn.logger.warn(`[ ⚠ ] Razón de desconexión desconocida. ${reason || ''}: ${connection || ''}`);
       global._softReconnectCount = (global._softReconnectCount || 0) + 1;
-      if (global._softReconnectCount >= 3) {
+      if (global._softReconnectCount >= 4) {
         console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
         setTimeout(() => process.exit(0), 1000);
       } else {
-        await global.reloadHandler(true).catch(console.error);
+        const delay = 3000 + Math.floor(Math.random() * 4000);
+        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/3 en ${Math.round(delay / 1000)}s...`);
+        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
     }
   }
@@ -803,6 +875,7 @@ global.reloadHandler = async function(restatConn) {
     } catch { }
     
     conn.ev.removeAllListeners();
+    await new Promise(resolve => setTimeout(resolve, 1500 + Math.floor(Math.random() * 1000)));
     global.conn = await makeWASocket(connectionOptions, {chats: oldChats});
     applyPrintWrapper(global.conn);
     
