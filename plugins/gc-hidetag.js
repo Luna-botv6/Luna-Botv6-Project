@@ -1,6 +1,7 @@
 import fs from 'fs'
-import { getGroupDataForPlugin, isAdminNoTTL } from '../lib/funcion/pluginHelper.js'
+import { getGroupDataForPlugin, isAdminNoTTL, hasAdminCacheForGroup } from '../lib/funcion/pluginHelper.js'
 import { hasGroup, getJids, resolveLidFromCache, setGroupData } from '../lib/funcion/hidetag-cache.js'
+import { getLidMapping } from '../lib/stats.js'
 
 const cooldowns = new Map()
 const _langCache = new Map()
@@ -27,7 +28,9 @@ const handler = async (m, { conn, text, isOwner }) => {
 
     let jids
 
-    if (hasGroup(chatId)) {
+    const cacheCompleto = hasGroup(chatId) && hasAdminCacheForGroup(chatId)
+
+    if (cacheCompleto) {
       const isAdmin = isAdminNoTTL(chatId, m.sender)
       if (!isAdmin && !isOwner && !isLidOwner && !isGlobalOwner) return m.reply(t.solo_admins)
       jids = getJids(chatId)
@@ -61,14 +64,27 @@ const handler = async (m, { conn, text, isOwner }) => {
 
     let finalText = text || ''
     if (!finalText && quoted && quoted !== m) finalText = quoted.text || quoted.caption || quoted.body || ''
+    if (!finalText) {
+      const bodyRaw = m.body || m.text || ''
+      const cmdMatch = bodyRaw.match(/^[.!/]?\w+\s+([\s\S]+)/)
+      finalText = cmdMatch ? cmdMatch[1].trim() : ''
+    }
     if (!finalText) finalText = t.texto_default
 
     const mentionPattern = /@(\d+)/g
     let match
     while ((match = mentionPattern.exec(finalText)) !== null) {
       const num = match[1]
-      const found = jids.find(j => j.split('@')[0] === num)
-      if (found) mentionSet.add(found)
+      const fromJid = jids.find(j => j.split('@')[0] === num)
+      if (fromJid) {
+        mentionSet.add(fromJid)
+      } else {
+        const fromStats = getLidMapping(num + '@lid')
+        if (fromStats) {
+          mentionSet.add(fromStats)
+          finalText = finalText.replace(`@${num}`, `@${fromStats.split('@')[0]}`)
+        }
+      }
     }
 
     if (m.mentionedJid?.length) {
@@ -76,10 +92,10 @@ const handler = async (m, { conn, text, isOwner }) => {
         if (!lid.includes('@lid')) {
           mentionSet.add(conn.decodeJid(lid))
         } else {
-          const real = resolveLidFromCache(chatId, lid)
+          const real = resolveLidFromCache(chatId, lid) || getLidMapping(lid)
           if (real) {
             mentionSet.add(real)
-            finalText = finalText.replace(/@\S+/, `@${real.split('@')[0]}`)
+            finalText = finalText.replace(`@${lid.split('@')[0]}`, `@${real.split('@')[0]}`)
           }
         }
       }

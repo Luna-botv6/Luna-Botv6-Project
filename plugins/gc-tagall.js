@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { getGroupDataForPlugin, isAdminNoTTL } from '../lib/funcion/pluginHelper.js'
+import { getGroupDataForPlugin, isAdminNoTTL, hasAdminCacheForGroup } from '../lib/funcion/pluginHelper.js'
 import { hasGroup, getJids, setGroupData } from '../lib/funcion/hidetag-cache.js'
 
 const cooldowns = new Map()
@@ -22,7 +22,9 @@ const handler = async (m, { conn, args, isOwner }) => {
     const chatId = m.chat
     let jids
 
-    if (hasGroup(chatId)) {
+    const cacheCompleto = hasGroup(chatId) && hasAdminCacheForGroup(chatId)
+
+    if (cacheCompleto) {
       if (!isAdminNoTTL(chatId, m.sender) && !isOwner) return m.reply(t.solo_admins)
       jids = getJids(chatId)
     } else {
