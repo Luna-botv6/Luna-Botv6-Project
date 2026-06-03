@@ -1,1 +1,179 @@
-const _0x51830a=_0x37dc;(function(_0x4d98bd,_0xce3243){const _0x3d714e=_0x37dc,_0xb10c01=_0x4d98bd();while(!![]){try{const _0x157049=-parseInt(_0x3d714e(0x16f))/0x1*(parseInt(_0x3d714e(0x19d))/0x2)+-parseInt(_0x3d714e(0x16c))/0x3*(-parseInt(_0x3d714e(0x170))/0x4)+parseInt(_0x3d714e(0x177))/0x5+-parseInt(_0x3d714e(0x1b1))/0x6+parseInt(_0x3d714e(0x188))/0x7*(-parseInt(_0x3d714e(0x1a8))/0x8)+-parseInt(_0x3d714e(0x1b5))/0x9*(-parseInt(_0x3d714e(0x18f))/0xa)+parseInt(_0x3d714e(0x1a7))/0xb;if(_0x157049===_0xce3243)break;else _0xb10c01['push'](_0xb10c01['shift']());}catch(_0x562038){_0xb10c01['push'](_0xb10c01['shift']());}}}(_0x11d6,0x7abad));import _0x3c8a4f from'fs';function _0x37dc(_0x418611,_0x342d1c){const _0x11d601=_0x11d6();return _0x37dc=function(_0x37dc41,_0x4fb70b){_0x37dc41=_0x37dc41-0x16b;let _0x23121b=_0x11d601[_0x37dc41];return _0x23121b;},_0x37dc(_0x418611,_0x342d1c);}const configContent=_0x3c8a4f['readFileSync'](_0x51830a(0x187),_0x51830a(0x17d));if(!configContent[_0x51830a(0x19c)](_0x51830a(0x173)))throw new Error(_0x51830a(0x1af));import _0x59fb62 from'node-fetch';import _0x5e31f8 from'yt-search';import{generateWAMessageFromContent,proto}from'@whiskeysockets/baileys';function _0x11d6(){const _0x461a5d=['ytmp3\x20','\x0aitem1.X-ABLabel:Ponsel\x0aEND:VCARD','chat','🎧\x20DESCARGAR\x20AUDIO\x20MP3','...','\x20segundo','title','./config.js','49xLjgsG','\x20minuto,\x20','\x20|\x20Descargar\x20video','length','\x20|\x20👁️\x20','command','❌\x20Error\x20al\x20procesar\x20la\x20búsqueda.\x20Intenta\x20nuevamente.','10XFXCHL','status@broadcast','\x20vistas','Message','toString','floor','🎵\x20RESULTADOS\x20DE\x20BÚSQUEDA','quoted','mimetype','error','sender','single_select','BEGIN:VCARD\x0aVERSION:3.0\x0aN:Sy;Bot;;;\x0aFN:🎵\x20Luna-Botv6\x20Playlist\x0aitem1.TEL;waid=','includes','50teKOOr','\x0a│🎧\x20Selecciona\x20audio\x20o\x20video\x0a╰─────°.🌙.°·─────','substring','\x20segundos','url','split','\x20horas,\x20','\x20minutos,\x20','fromObject','name','6012831OwhDtL','116360HxqMHg','fileName','duration','stringify','seconds','sendMessage','relayMessage','Handler\x20bloqueado:\x20Luna-Botv6\x20no\x20encontrado.','slice','2846802OCJuZj','map','$1.','\x0a│👤\x20Usuario:\x20','7745589vKcrhl','getName','\x0a│📊\x20Resultados:\x20','12uSxqIR','0@s.whatsapp.net','playsearch','32611rmdQbU','190156swSGTm','playlist','views','Luna-Botv6','\x20hora,\x20','ytmp4\x20','join','1484300JjFnHW','⏱️\x20','🎬\x20DESCARGAR\x20VIDEO\x20MP4','videos','\x20días,\x20','VIDEO\x20','utf-8','trim','author'];_0x11d6=function(){return _0x461a5d;};return _0x11d6();}const _0x5678=(function(){const _0x525544=_0x51830a,_0x644483=['sendMessage',_0x525544(0x1ae),'audio',_0x525544(0x1a9),_0x525544(0x197),_0x525544(0x196)];return function(_0xaa129d){return _0x644483[_0xaa129d];};}());let handler=async(_0x163314,{conn:_0x16f0dd,text:_0x26df01,usedPrefix:_0x542a16,command:_0x30e9f0})=>{const _0x4a8f3a=_0x51830a;try{if(!_0x26df01||!_0x26df01[_0x4a8f3a(0x17e)]())return await _0x16f0dd[_0x4a8f3a(0x1ad)](_0x163314[_0x4a8f3a(0x182)],{'text':'⚠️\x20Escribe\x20el\x20nombre\x20de\x20la\x20canción\x20o\x20artista\x0a\x0aEjemplo:\x20/playlist\x20ozuna\x20el\x20mar'},{'quoted':_0x163314});const _0x4d400d=await _0x5e31f8(_0x26df01),_0x29ad25=_0x4d400d[_0x4a8f3a(0x17a)][_0x4a8f3a(0x1b0)](0x0,0x14);if(!_0x29ad25||_0x29ad25[_0x4a8f3a(0x18b)]===0x0)return await _0x16f0dd['sendMessage'](_0x163314['chat'],{'text':'❌\x20No\x20se\x20encontraron\x20resultados\x20para:\x20\x22'+_0x26df01+'\x22'},{'quoted':_0x163314});let _0x285473={'key':{'participants':_0x4a8f3a(0x16d),'remoteJid':_0x4a8f3a(0x190),'fromMe':![],'id':'Luna-Playlist'},'message':{'contactMessage':{'vcard':_0x4a8f3a(0x19b)+_0x163314[_0x4a8f3a(0x199)]['split']('@')[0x0]+':'+_0x163314[_0x4a8f3a(0x199)][_0x4a8f3a(0x1a2)]('@')[0x0]+_0x4a8f3a(0x181)}},'participant':_0x4a8f3a(0x16d)};const _0x22be8d={'title':_0x4a8f3a(0x195),'sections':[{'title':_0x4a8f3a(0x183),'rows':_0x29ad25[_0x4a8f3a(0x1b2)]((_0x354efd,_0x2aaa43)=>({'header':_0x2aaa43+0x1+'.\x20'+_0x354efd[_0x4a8f3a(0x186)][_0x4a8f3a(0x19f)](0x0,0x32)+(_0x354efd[_0x4a8f3a(0x186)][_0x4a8f3a(0x18b)]>0x32?_0x4a8f3a(0x184):''),'title':''+_0x354efd[_0x4a8f3a(0x17f)][_0x4a8f3a(0x1a6)],'description':'⏱️\x20'+secondString(_0x354efd[_0x4a8f3a(0x1aa)][_0x4a8f3a(0x1ac)])+_0x4a8f3a(0x18c)+MilesNumber(_0x354efd[_0x4a8f3a(0x172)])+_0x4a8f3a(0x191),'id':_0x542a16+_0x4a8f3a(0x180)+_0x354efd['url']}))},{'title':_0x4a8f3a(0x179),'rows':_0x29ad25[_0x4a8f3a(0x1b0)](0x0,0xa)[_0x4a8f3a(0x1b2)]((_0x47151b,_0x3ba9b0)=>({'header':_0x4a8f3a(0x17c)+(_0x3ba9b0+0x1)+':\x20'+_0x47151b[_0x4a8f3a(0x186)][_0x4a8f3a(0x19f)](0x0,0x2d)+_0x4a8f3a(0x184),'title':''+_0x47151b['author']['name'],'description':_0x4a8f3a(0x178)+secondString(_0x47151b[_0x4a8f3a(0x1aa)]['seconds'])+_0x4a8f3a(0x18a),'id':_0x542a16+_0x4a8f3a(0x175)+_0x47151b[_0x4a8f3a(0x1a1)]}))}]},_0x7bd3ea=await _0x16f0dd[_0x4a8f3a(0x1b6)](_0x163314['sender']),_0x446cc7=generateWAMessageFromContent(_0x163314[_0x4a8f3a(0x182)],proto[_0x4a8f3a(0x192)][_0x4a8f3a(0x1a5)]({'interactiveMessage':{'header':{'title':'','subtitle':'🎵\x20Selecciona\x20tu\x20música','hasMediaAttachment':![]},'body':{'text':'╭─────°.🌙.°·─────\x0a│🎵\x20Luna-Botv6\x20Playlist\x0a│🔍\x20Búsqueda:\x20'+_0x26df01+_0x4a8f3a(0x16b)+_0x29ad25[_0x4a8f3a(0x18b)]+_0x4a8f3a(0x1b4)+_0x7bd3ea+_0x4a8f3a(0x19e)},'footer':{'text':'🌙\x20Luna-Botv6\x20|\x20Sistema\x20de\x20Descargas'},'nativeFlowMessage':{'buttons':[{'name':_0x4a8f3a(0x19a),'buttonParamsJson':JSON[_0x4a8f3a(0x1ab)](_0x22be8d)}]}}}),{'quoted':_0x285473});await _0x16f0dd['relayMessage'](_0x163314[_0x4a8f3a(0x182)],_0x446cc7['message'],{'messageId':_0x446cc7['key']['id']});}catch(_0x59a666){console[_0x4a8f3a(0x198)](_0x59a666),await _0x16f0dd[_0x4a8f3a(0x1ad)](_0x163314[_0x4a8f3a(0x182)],{'text':_0x4a8f3a(0x18e)},{'quoted':_0x163314});}};handler[_0x51830a(0x18d)]=['playlist',_0x51830a(0x16e),'pl'],handler['help']=[_0x51830a(0x171)],handler['tags']=['downloader'];export default handler;function MilesNumber(_0x1a53c5){const _0x1c2cd8=_0x51830a,_0x588821=/(\d)(?=(\d{3})+(?!\d))/g,_0x2d6dea=_0x1c2cd8(0x1b3),_0x469742=_0x1a53c5[_0x1c2cd8(0x193)]()[_0x1c2cd8(0x1a2)]('.');return _0x469742[0x0]=_0x469742[0x0]['replace'](_0x588821,_0x2d6dea),_0x469742[0x1]?_0x469742[_0x1c2cd8(0x176)]('.'):_0x469742[0x0];}function secondString(_0x4f629b){const _0x37e2ea=_0x51830a;_0x4f629b=Number(_0x4f629b);const _0x4e4c7b=Math[_0x37e2ea(0x194)](_0x4f629b/(0xe10*0x18)),_0x25c791=Math[_0x37e2ea(0x194)](_0x4f629b%(0xe10*0x18)/0xe10),_0x3f2326=Math['floor'](_0x4f629b%0xe10/0x3c),_0x424529=Math['floor'](_0x4f629b%0x3c),_0x4ff477=_0x4e4c7b>0x0?_0x4e4c7b+(_0x4e4c7b==0x1?'\x20día,\x20':_0x37e2ea(0x17b)):'',_0x4123ea=_0x25c791>0x0?_0x25c791+(_0x25c791==0x1?_0x37e2ea(0x174):_0x37e2ea(0x1a3)):'',_0xd95616=_0x3f2326>0x0?_0x3f2326+(_0x3f2326==0x1?_0x37e2ea(0x189):_0x37e2ea(0x1a4)):'',_0x3293c7=_0x424529>0x0?_0x424529+(_0x424529==0x1?_0x37e2ea(0x185):_0x37e2ea(0x1a0)):'';return _0x4ff477+_0x4123ea+_0xd95616+_0x3293c7;}
+import fs from 'fs'
+import fetch from 'node-fetch'
+import { generateWAMessageFromContent, proto } from '@whiskeysockets/baileys'
+import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js'
+import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
+
+const configContent = fs.readFileSync('./config.js', 'utf-8')
+if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado: Luna-Botv6 no encontrado.')
+try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
+
+const SERVER_URL = obtenerMenuIuman()
+const API_KEY = cargarOGenerarAPIKey()
+const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
+const TIMEOUT = 15000
+
+const BOT = () => global.BotName || 'LUNA'
+
+const ft = async (url, headers = {}) => {
+  const c = new AbortController()
+  const t = setTimeout(() => c.abort(), TIMEOUT)
+  try { const r = await fetch(url, { signal: c.signal, headers }); clearTimeout(t); return r }
+  catch (e) { clearTimeout(t); throw e }
+}
+
+function MilesNumber(n) {
+  return n.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
+}
+
+function secondString(secs) {
+  secs = Number(secs)
+  const d  = Math.floor(secs / (3600 * 24))
+  const h  = Math.floor(secs % (3600 * 24) / 3600)
+  const m  = Math.floor(secs % 3600 / 60)
+  const s  = Math.floor(secs % 60)
+  const ds = d > 0 ? d + (d === 1 ? ' día, '    : ' días, ')    : ''
+  const hs = h > 0 ? h + (h === 1 ? ' hora, '   : ' horas, ')   : ''
+  const ms = m > 0 ? m + (m === 1 ? ' minuto, '  : ' minutos, ') : ''
+  const ss = s > 0 ? s + (s === 1 ? ' segundo'   : ' segundos')  : ''
+  return ds + hs + ms + ss
+}
+
+let handler = async (m, { conn, text, usedPrefix, command }) => {
+  try {
+    if (!text || !text.trim()) {
+      return await conn.sendMessage(m.chat, {
+        text: (
+          `🎵 *${BOT()} — Buscador de Playlist*\n` +
+          `\n` +
+          `⚠️ No escribiste ningún artista o canción\n` +
+          `\n` +
+          `💡 Usá el formato correcto:\n` +
+          `_/${command} ozuna el mar_\n` +
+          `_/${command} bad bunny tití me preguntó_\n` +
+          `\n` +
+          `_Indicame qué querés escuchar_ 🌙`
+        )
+      }, { quoted: m })
+    }
+
+    const res = await ft(SERVER_URL + '/api/yt/search?q=' + encodeURIComponent(text), DL_HEADERS)
+    if (!res.ok) throw new Error('Error al conectar con el servidor')
+    const data = await res.json()
+
+    const videos = data?.videos?.slice(0, 20)
+
+    if (!videos || videos.length === 0) {
+      return await conn.sendMessage(m.chat, {
+        text: (
+          `🎵 *${BOT()} — Buscador de Playlist*\n` +
+          `\n` +
+          `😔 No encontré resultados para:\n` +
+          `"${text}"\n` +
+          `\n` +
+          `💡 Intentá con otro nombre o revisá la ortografía\n` +
+          `_A veces funciona mejor escribirlo en inglés_ 🌙`
+        )
+      }, { quoted: m })
+    }
+
+    const userName = await conn.getName(m.sender)
+
+    const fakeQuoted = {
+      key: {
+        participants: '0@s.whatsapp.net',
+        remoteJid: 'status@broadcast',
+        fromMe: false,
+        id: 'Luna-Playlist'
+      },
+      message: {
+        contactMessage: {
+          vcard:
+            'BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:🎵 ' + BOT() + ' Playlist\n' +
+            'item1.TEL;waid=' + m.sender.split('@')[0] + ':' + m.sender.split('@')[0] +
+            '\nitem1.X-ABLabel:Ponsel\nEND:VCARD'
+        }
+      },
+      participant: '0@s.whatsapp.net'
+    }
+
+    const listContent = {
+      title: '🎵 RESULTADOS DE BÚSQUEDA',
+      sections: [
+        {
+          title: '🎧 DESCARGAR AUDIO MP3',
+          rows: videos.map((v, i) => ({
+            header: (i + 1) + '. ' + (v.title || '').substring(0, 50) + (v.title?.length > 50 ? '...' : ''),
+            title: '' + (v.author?.name || v.author || 'Desconocido'),
+            description:
+              '⏱️ ' + secondString(v.duration?.seconds || 0) +
+              ' | 👁️ ' + MilesNumber(v.views || 0) + ' vistas',
+            id: usedPrefix + 'ytmp3 ' + v.url
+          }))
+        },
+        {
+          title: '🎬 DESCARGAR VIDEO MP4',
+          rows: videos.slice(0, 10).map((v, i) => ({
+            header: 'VIDEO ' + (i + 1) + ': ' + (v.title || '').substring(0, 45) + '...',
+            title: '' + (v.author?.name || v.author || 'Desconocido'),
+            description: '⏱️ ' + secondString(v.duration?.seconds || 0) + ' | Descargar video',
+            id: usedPrefix + 'ytmp4 ' + v.url
+          }))
+        }
+      ]
+    }
+
+    const bodyText =
+      `╭─────°.🌙.°·─────\n` +
+      `│🎵 ${BOT()} Playlist\n` +
+      `│\n` +
+      `│🔍 Búsqueda: ${text}\n` +
+      `│📊 Resultados: ${videos.length}\n` +
+      `│👤 Usuario: ${userName}\n` +
+      `│\n` +
+      `│🎧 Seleccioná audio o video\n` +
+      `╰─────°.🌙.°·─────`
+
+    const waMsg = generateWAMessageFromContent(m.chat,
+      proto.Message.fromObject({
+        interactiveMessage: {
+          header: {
+            title: '',
+            subtitle: `🎵 Seleccioná tu música`,
+            hasMediaAttachment: false
+          },
+          body: { text: bodyText },
+          footer: { text: `🌙 ${BOT()} | Sistema de Descargas` },
+          nativeFlowMessage: {
+            buttons: [{
+              name: 'single_select',
+              buttonParamsJson: JSON.stringify(listContent)
+            }]
+          }
+        }
+      }),
+      { quoted: fakeQuoted }
+    )
+
+    await conn.relayMessage(m.chat, waMsg.message, { messageId: waMsg.key.id })
+
+  } catch (err) {
+    console.error(err)
+    await conn.sendMessage(m.chat, {
+      text: (
+        `🎵 *${BOT()} — Buscador de Playlist*\n` +
+        `\n` +
+        `❌ No se pudo procesar la búsqueda\n` +
+        `📛 ${err.message || 'Error desconocido'}\n` +
+        `\n` +
+        `_Intentá de nuevo en unos segundos_ 🌙`
+      )
+    }, { quoted: m })
+  }
+}
+
+handler.command = ['playlist', 'playsearch', 'pl']
+handler.help    = ['playlist nombre de canción']
+handler.tags    = ['downloader']
+
+export default handler
