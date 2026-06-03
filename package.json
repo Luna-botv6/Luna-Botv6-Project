@@ -45,12 +45,10 @@
     "syntax-error": "^1.4.0",
     "url-regex-safe": "^3.0.0",
     "jimp": "^0.22.12",
-    "ruhend-scraper": "^9.0.8",
     "omggif": "^1.0.10",
-    "yt-search": "^2.10.3",
     "mathjs": "^13.0.0",
-    "mumaker": "^2.0.0",
-    "fb-downloader-scrapper": "3.0.1"
+    "mumaker": "^2.0.0"
+   
   },
   "optionalDependencies": {
     "wa-sticker-formatter": "^4.3.2"
