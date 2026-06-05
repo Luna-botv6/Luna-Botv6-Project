@@ -194,6 +194,6 @@ export function reportBan(customReason) {
 // Iniciar el monitoreo automáticamente
 startMonitoring();
 
-console.log(chalk.cyan('🛡️  Sistema de detección de baneos cargado'));
-console.log(chalk.cyan('📝 Los logs se guardarán en la carpeta: ./logs_bans/'));
-console.log(chalk.cyan('🔍 Monitoreando actividad del bot...'));
+//console.log(chalk.cyan('🛡️  Sistema de detección de baneos cargado'));
+//console.log(chalk.cyan('📝 Los logs se guardarán en la carpeta: ./logs_bans/'));
+//console.log(chalk.cyan('🔍 Monitoreando actividad del bot...'));
