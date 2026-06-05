@@ -35,30 +35,38 @@ const handler = async (m, { conn, usedPrefix }) => {
   const neww = performance.now()
   const rtime = (neww - old).toFixed(7)
 
-  const info = `╭━━〔 *${tradutor.texto1[0]}* 〕━━⬣
-┃👑 *${tradutor.texto1[1]}* EHL VILLANO
-┃📞 *${tradutor.texto1[2]}* wa.me/5493483466763
-┃📢 *${tradutor.texto1[3]}* https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y
-┃🚀 *${tradutor.texto1[4]}* ${rtime}
-┃⏰ *${tradutor.texto1[5]}* ${uptime}
-┃💻 *${tradutor.texto1[6]}* ${usedPrefix}
-┃🌐 *${tradutor.texto1[7]}* ${self ? "privado" : "público"}
-┃🧍 *${tradutor.texto1[8]}* ${totalusrReg}
-┃📊 *${tradutor.texto1[9]}* ${totalusr}
-┃🤖 *${tradutor.texto1[10]}* ${(conn.user.jid == global.conn.user.jid ? '' : `Sub-bot de:\n ▢ +${global.conn.user.jid.split`@`[0]}`) || 'No es sub-bot'}
-┃💬 *${tradutor.texto1[11]}* ${chats.length - groups.length}
-┃👥 *${tradutor.texto1[12]}* ${groups.length}
-┃📈 *${tradutor.texto1[13]}* ${chats.length}
-┃📖 *${tradutor.texto1[14]}* ${autoread ? "activo" : "desactivado"}
-┃🔐 *${tradutor.texto1[15]}* ${restrict ? "activo" : "desactivado"}
-┃📲 *${tradutor.texto1[16]}* ${pconly ? "activado" : "desactivado"}
-┃🖥️ *${tradutor.texto1[17]}* ${gconly ? "activado" : "desactivado"}
-┃📵 *${tradutor.texto1[18]}* ${antiprivado ? "activado" : "desactivado"}
-┃📞 *${tradutor.texto1[19]}* ${antiCall ? "activado" : "desactivado"}
-┃🤖 *${tradutor.texto1[20]}* ${modejadibot ? "activado" : "desactivado"}
-╰━━━━━━━━━━━━━━━━━━⬣`.trim()
+  const header = `*${tradutor.texto1[0]}* \n${tradutor.texto1[1]}\n`
 
-  await conn.sendMessage(m.chat, { text: info }, { quoted: m })
+  const lines = [
+    `⏱️ Uptime: *${uptime}*`,
+    `⚡ Respuesta: *${rtime}ms*`,
+    `👤 Usuarios registrados: *${totalusrReg}* / *${totalusr}*`,
+    `💬 Chats: *${chats.length}*`,
+    `👥 Grupos: *${groups.length}*`,
+    `🔒 Restricciones: *${restrict ? 'ON' : 'OFF'}*`,
+    `📖 Autoread: *${autoread ? 'ON' : 'OFF'}*`,
+    `📲 Privado solo: *${pconly ? 'ON' : 'OFF'}*`,
+    `🖥️ Grupo solo: *${gconly ? 'ON' : 'OFF'}*`,
+    `📞 AntiCall: *${antiCall ? 'ON' : 'OFF'}*`,
+  ]
+
+  const info = `*${tradutor.texto1[0]}*\n\n${lines.join('\n')}\n\n` +
+    `*Enlaces:* wa.me/5493483466763 | https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y`
+
+  const footer = 'Usa los botones para interactuar rápidamente'
+
+  const buttons = [
+    { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '📚 Menu' }, type: 1 },
+    { buttonId: `${usedPrefix}owner`, buttonText: { displayText: '👤 Owner' }, type: 1 },
+    { buttonId: `${usedPrefix}donar`, buttonText: { displayText: '💖 Donar' }, type: 1 }
+  ]
+
+  await conn.sendMessage(m.chat, {
+    text: info,
+    footer: footer,
+    buttons: buttons,
+    headerType: 1
+  }, { quoted: m })
 }
 
 handler.command = /^(ping|info|status|estado|infobot)$/i

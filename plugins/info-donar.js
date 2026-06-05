@@ -2,25 +2,25 @@ const handler = async (m, { conn }) => {
   const name = await conn.getName(m.sender);
   const donar = `
 ┏━━━━━━━━━━━━━━━━━┓
-┃ 🌙 *LunaBot V6* -             ┃
+┃ 🌙 *LunaBot V6* ┃
 ┗━━━━━━━━━━━━━━━━━┛
 
 ¡Hola, *${name}*!  
 Gracias por usar *LunaBot V6*.
 
-Este bot está inspirado en el gran trabajo de *Bruno Sobrino* y su bot *Mystic-Bot*.  
-Gracias a su aporte, fue posible crear nuevas herramientas y funciones útiles para ti.
+✨ *Donaciones*
 
-✨ *Si quieres hacer una donación*  
-Puedes hacerlo desde el siguiente enlace:
-👉 _https://www.paypal.me/BrunoSob_
+• *Principal (PayPal)*: gercoto17@gmail.com
+  https://www.paypal.com/donate?business=gercoto17%40gmail.com
 
-Cualquier donación es muy apreciada ❤️
+• *Bruno Sobrino* (apoyo alternativo):
+  https://www.paypal.me/BrunoSob
 
-¡Gracias por tu confianza y apoyo!
+Toda ayuda es bienvenida y permite mantener el bot activo y mejorar funciones. ❤️
+
+¡Gracias por tu apoyo!
 
 ⚙️ *Versión*: LunaBot V6  
-❤️ *Creado con cariño para ti*  
 `.trim();
 
   await conn.sendMessage(m.chat, { text: donar }, { quoted: m });
