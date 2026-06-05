@@ -110,7 +110,7 @@ async function cleanStaleGroups() {
     if (removed > 0) {
       console.log(chalk.green(`✅ [auto-cleaner] ${removed} grupos obsoletos eliminados del caché`));
     } else {
-      console.log(chalk.blue(`ℹ️  [auto-cleaner] Caché de grupos limpio, sin obsoletos`));
+      //console.log(chalk.blue(`ℹ️  [auto-cleaner] Caché de grupos limpio, sin obsoletos`));
     }
   } catch (err) {
     console.error(chalk.red(`❌ [auto-cleaner] Error limpiando grupos: ${err.message}`));
@@ -193,7 +193,7 @@ export function startGroupCleanService() {
     return;
   }
 
-  console.log(chalk.cyan.bold('🚀 [auto-cleaner] Limpieza de grupos obsoletos cada 30 min iniciada'));
+  //console.log(chalk.cyan.bold('🚀 [auto-cleaner] Limpieza de grupos obsoletos cada 30 min iniciada'));
 
   setTimeout(() => cleanStaleGroups(), 60000);
 
