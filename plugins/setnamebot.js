@@ -19,7 +19,11 @@ const handler = async (m, { conn, args, text, isOwner }) => {
 
   if (global.translationsCache) global.translationsCache.clear()
 
-  await global.db.write()
+  try {
+    await global.db.write()
+  } catch (e) {
+    console.error('[setnamebot] Error guardando nombre en DB:', e.message)
+  }
 
   const respuesta = (t.ok || '').replace('{nombre}', nuevoNombre)
   m.reply(respuesta)
