@@ -36,12 +36,12 @@ function getMutesDB() {
 }
 
 function formatDuration(minutes, t) {
-  if (!minutes) return t.sin_limite_fmt
-  if (minutes < 60) return `${minutes} ${minutes !== 1 ? t.formato_minutos_pl : t.formato_minutos}`
+  if (!minutes) return t?.sin_limite_fmt || 'sin límite'
+  if (minutes < 60) return `${minutes} ${minutes !== 1 ? (t?.formato_minutos_pl || 'minutos') : (t?.formato_minutos || 'minuto')}`
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
-  let str = `${h} ${h !== 1 ? t.formato_horas_pl : t.formato_horas}`
-  if (m > 0) str += ` ${t.formato_y} ${m} ${m !== 1 ? t.formato_minutos_pl : t.formato_minutos}`
+  let str = `${h} ${h !== 1 ? (t?.formato_horas_pl || 'horas') : (t?.formato_horas || 'hora')}`
+  if (m > 0) str += ` ${t?.formato_y || 'y'} ${m} ${m !== 1 ? (t?.formato_minutos_pl || 'minutos') : (t?.formato_minutos || 'minuto')}`
   return str
 }
 
@@ -52,7 +52,7 @@ function scheduleUnmute(muteKey, minutes, conn, chat, user, t) {
     if (db[muteKey]) {
       delete db[muteKey]
       await conn.sendMessage(chat, {
-        text: `🔊 @${user.split('@')[0]} ${t.auto_unmute}`,
+        text: `🔊 @${user.split('@')[0]} ${t?.auto_unmute || 'ya puede volver a escribir 😊'}`,
         mentions: [user],
       })
     }
@@ -67,7 +67,7 @@ export async function muteUser({ conn, chat, user, mutedBy, minutes, participant
   db[muteKey] = entry
   const pEntry = (participants || []).find(p => p.id === user)
   if (pEntry?.lid) db[`${chat}_${pEntry.lid}`] = entry
-  scheduleUnmute(muteKey, minutes, conn, chat, user, t)
+  scheduleUnmute(muteKey, minutes, conn, chat, user, t || {})
   return { muteKey, until, duration: formatDuration(minutes, t) }
 }
 
