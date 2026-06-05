@@ -5,6 +5,8 @@ import fs from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import chalk from 'chalk';
+import os from 'os';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -77,7 +79,8 @@ if (check.needsRelaunch) {
   let logMonitorInterval = null;
   let isRestarting = false;
 
-  const logFilePath = '/tmp/bot-stderr.log';
+ const logFilePath = (process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp') + '/bot-stderr.log';
+
   
   function startChild() {
     if (isRestarting) return;

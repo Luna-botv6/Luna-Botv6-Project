@@ -48,7 +48,6 @@
     "omggif": "^1.0.10",
     "mathjs": "^13.0.0",
     "mumaker": "^2.0.0"
-   
   },
   "optionalDependencies": {
     "wa-sticker-formatter": "^4.3.2"
@@ -56,5 +55,8 @@
   "devDependencies": {
     "eslint": "^8.45.0",
     "eslint-config-google": "^0.14.0"
+  },
+  "overrides": {
+    "sharp": "0.34.5"
   }
 }
