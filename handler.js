@@ -17,7 +17,7 @@ import { getSinPrefijo } from './lib/sinPrefijo.js';
 import { isValidMessage, isDuplicate, extractMessageText, extractSenderAndChat, normalizeMessageText } from './lib/funcion/messageValidation.js';
 import { checkUserPermissions } from './lib/funcion/userPermissions.js';
 import { matchPrefix, parseCommandWithPrefix, checkCommandAcceptance, parseCommandText } from './lib/funcion/commandParser.js';
-import { ensureUserData, ensureBotSettings } from './lib/funcion/databaseManager.js';
+import { ensureBotSettings } from './lib/funcion/databaseManager.js';
 import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
@@ -237,7 +237,6 @@ chatUpdate.messages = validMessages;
         }
       }
 
-      await ensureUserData(sender, chat);
       await ensureBotSettings(this.user.jid);
 
       if (!global.chatgpt.data.users[sender]) {

@@ -118,6 +118,7 @@ global.loadDatabase = async function loadDatabase() {
     msgs: {},
     sticker: {},
     settings: {},
+    config: {},
     privacy: {
       dataRetentionDays: privacyConfig.dataRetention.days,
       lastCleanup: Date.now(),
@@ -125,10 +126,12 @@ global.loadDatabase = async function loadDatabase() {
     },
     ...(global.db.data || {}),
   };
+  global.db.data.config = global.db.data.config || {};
   global.db.chain = chain(global.db.data);
 };
 await loadDatabase();
 installUsersProxy();
+global.BotName = global.db.data.config.botName || 'Luna-Botv6';
 await restaurarConfiguraciones();
 
 global.chatgpt = new Low(new JSONFile(path.join(__dirname, '/db/chatgpt.json')));
