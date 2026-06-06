@@ -30,9 +30,9 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
 
   target = finalCheck.id
   const reason = text?.replace(/@\d+/g, '').trim() || t.sin_motivo
-  const warns = await addWarning(target, reason)
-  const tag = target.split('@')[0]
   const senderTag = m.sender.split('@')[0]
+  const warns = await addWarning(target, reason, senderTag)
+  const tag = target.split('@')[0]
 
   const now = new Date()
   const fecha = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`

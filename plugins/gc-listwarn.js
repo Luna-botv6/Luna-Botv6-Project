@@ -20,7 +20,12 @@ const handler = async (m, { conn, isOwner }) => {
     const tag = u.id.split('@')[0]
     const reasons = u.reasons?.length ? u.reasons : []
     const motivosStr = reasons.length > 0
-      ? reasons.map((r, i) => t.motivo_item.replace('{n}', i + 1).replace('{motivo}', r || t.sin_motivo) + '\n').join('')
+      ? reasons.map((r, i) => {
+          const motivo = typeof r === 'object' ? r.motivo : r
+          const fecha = typeof r === 'object' && r.fecha ? ` 📅 ${r.fecha}` : ''
+          const por = typeof r === 'object' && r.por ? ` ${t.por} @${r.por}` : ''
+          return t.motivo_item.replace('{n}', i + 1).replace('{motivo}', motivo || t.sin_motivo) + fecha + por + '\n'
+        }).join('')
       : t.motivo_item.replace('{n}', 1).replace('{motivo}', t.sin_motivo) + '\n'
 
     msg += '\n' + t.entrada
