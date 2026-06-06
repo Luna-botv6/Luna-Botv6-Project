@@ -50,7 +50,7 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
       .replace('{fecha}', fecha)
       .replace('{motivo}', reason)
       .replace('{warns}', warns),
-    null, { mentions: [target, m.sender] }
+    null, { mentions: [target, resolvedSender] }
   )
 
   if (warns >= 3) {
