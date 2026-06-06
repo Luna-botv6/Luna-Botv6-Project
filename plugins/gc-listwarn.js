@@ -14,19 +14,22 @@ const handler = async (m, { conn, isOwner }) => {
   const filtered = users.filter(u => participants.find(p => p.id === u.id))
   if (filtered.length === 0) return m.reply(t.sin_advertencias)
 
-  let msg = `${t.titulo}\n`
+  let msg = t.titulo
+
   for (const u of filtered) {
     const tag = u.id.split('@')[0]
-    msg += `\n${t.usuario.replace('{tag}', tag).replace('{warns}', u.warns)}\n`
     const reasons = u.reasons?.length ? u.reasons : []
-    if (reasons.length > 0) {
-      reasons.forEach((r, i) => {
-        msg += `${t.razon.replace('{n}', i + 1).replace('{motivo}', r || t.sin_motivo)}\n`
-      })
-    } else {
-      msg += `${t.razon.replace('{n}', 1).replace('{motivo}', t.sin_motivo)}\n`
-    }
+    const motivosStr = reasons.length > 0
+      ? reasons.map((r, i) => t.motivo_item.replace('{n}', i + 1).replace('{motivo}', r || t.sin_motivo) + '\n').join('')
+      : t.motivo_item.replace('{n}', 1).replace('{motivo}', t.sin_motivo) + '\n'
+
+    msg += '\n' + t.entrada
+      .replace('{tag}', tag)
+      .replace('{warns}', u.warns)
+      .replace('{motivos}', motivosStr)
   }
+
+  msg += '\n' + t.footer
 
   await conn.sendMessage(m.chat, { text: msg.trim(), mentions: filtered.map(u => u.id) })
 }
