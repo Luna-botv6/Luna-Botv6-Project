@@ -651,9 +651,10 @@ async function connectionUpdate(update) {
   }
 
   if (connection === 'open') {
-    global._hasBeenConnected = true;
+   global._hasBeenConnected = true;
     global._softReconnectCount = 0;
     global._manualWsClose = false;
+    global._loggedOutHandled = false;
     _presenceFailCount = 0;
     stopped = 'open';
     if (!global._connectedLogged) {
@@ -775,7 +776,7 @@ async function connectionUpdate(update) {
       const retries = global._softReconnectCount || 0;
 
       const isConflict = rawMsg.includes('conflict') || rawMsg.includes('stream errored');
-      const isFirstConnectionFailure = rawMsg.includes('connection failure') && retries === 0;
+      const isFirstConnectionFailure = rawMsg.includes('connection failure') && retries <= 2;
       const shouldReconnect = global._manualWsClose || isConflict || isFirstConnectionFailure;
       const isRealLogout = !shouldReconnect;
 
