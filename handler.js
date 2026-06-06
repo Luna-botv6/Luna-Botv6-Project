@@ -21,6 +21,7 @@ import { ensureBotSettings } from './lib/funcion/databaseManager.js';
 import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
+import { invalidateGroupCount } from './src/libraries/print.js';
 import { getGroupDataForPlugin } from './lib/funcion/pluginHelper.js';
 import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
@@ -649,6 +650,7 @@ export async function participantsUpdate({ id, participants, action }) {
   try {
     const conn = currentConn || mconn?.conn || mconn;
     if (!conn?.user?.jid) return;
+    try { invalidateGroupCount(); } catch {}
 
     if (global.groupCache?.has(id)) {
       const cached = global.groupCache.get(id);

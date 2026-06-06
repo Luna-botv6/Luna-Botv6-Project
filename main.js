@@ -20,6 +20,7 @@ import Pino from 'pino';
 import { Boom } from '@hapi/boom';
 import { isJidBroadcast } from '@whiskeysockets/baileys';
 import { makeWASocket, protoType, serialize } from './src/libraries/simple.js';
+import { invalidateGroupCount } from './src/libraries/print.js';
 import { Low, JSONFile } from 'lowdb';
 import store from './src/libraries/store.js';
 const { DisconnectReason, useMultiFileAuthState, fetchLatestBaileysVersion, fetchLatestWaWebVersion, makeCacheableSignalKeyStore, jidNormalizedUser, PHONENUMBER_MCC } = await import("@whiskeysockets/baileys");
@@ -979,6 +980,7 @@ await global.reloadHandler();
 
 conn.ev.on('groups.update', async ([event]) => {
   try {
+    try { invalidateGroupCount(); } catch {}
     if (!global.groupCache) return;
     const existing = global.groupCache.get(event.id);
     if (existing?.data) {
