@@ -30,7 +30,8 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
 
   target = finalCheck.id
   const reason = text?.replace(/@\d+/g, '').trim() || t.sin_motivo
-  const senderTag = m.sender.split('@')[0]
+  const resolvedSender = resolveLid(m.sender) || m.sender
+  const senderTag = resolvedSender.split('@')[0]
   const warns = await addWarning(target, reason, senderTag)
   const tag = target.split('@')[0]
 
