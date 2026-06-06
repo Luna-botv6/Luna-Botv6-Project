@@ -30,7 +30,12 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
 
   target = finalCheck.id
   const reason = text?.replace(/@\d+/g, '').trim() || t.sin_motivo
-  const resolvedSender = resolveLid(m.sender) || m.sender
+  const resolvedSender = (() => {
+    const byLid = resolveLid(m.sender)
+    if (byLid) return byLid
+    const p = participants.find(x => x.id === m.sender)
+    return p?.id || m.sender
+  })()
   const senderTag = resolvedSender.split('@')[0]
   const warns = await addWarning(target, reason, senderTag, resolvedSender)
   const tag = target.split('@')[0]
