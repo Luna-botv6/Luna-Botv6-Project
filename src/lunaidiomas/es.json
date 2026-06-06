@@ -1427,8 +1427,8 @@
       "no_auto": "❌ No puedo advertirme a mí mismo.",
       "no_en_grupo": "◉ El usuario mencionado no se encuentra en este grupo.",
       "sin_motivo": "Sin motivo especificado.",
-      "advertido": "⚠️ El usuario @{tag} ha sido advertido.\n📄 Motivo: {motivo}\n📊 Advertencias: {warns}/3",
-      "expulsado": "🚷 El usuario @{tag} fue expulsado por acumular 3 advertencias."
+      "advertido": "╭──「 🔨 *SANCIÓN REGISTRADA* 」──╮\n│\n│ 👤 *Usuario:* @{tag}\n│ 👮 *Sancionado por:* @{sancionadoPor}\n│ 📅 *Fecha:* {fecha}\n│ ⚠️ *Advertencia:* {warns}/3\n│ 📄 *Motivo:* {motivo}\n│\n│ 📌 _Al llegar a 3/3 el usuario será expulsado._\n╰─────────────────────────╯",
+      "expulsado": "╭──「 🚫 *USUARIO EXPULSADO* 」──╮\n│\n│ 👤 *Usuario:* @{tag}\n│ ❌ *Razón:* Acumuló 3/3 advertencias.\n│\n╰─────────────────────────╯"
     },
     "gc_unwarn": {
       "solo_admins": "⚠️ Solo los administradores pueden usar este comando.",
