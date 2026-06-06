@@ -1427,8 +1427,8 @@
       "no_auto": "❌ Não posso me advertir.",
       "no_en_grupo": "◉ O usuário mencionado não está neste grupo.",
       "sin_motivo": "Sem motivo especificado.",
-      "advertido": "╭──「 🔨 *SANÇÃO REGISTRADA* 」──╮\n│\n│ 👤 *Usuário:* @{tag}\n│ 👮 *Sancionado por:* @{sancionadoPor}\n│ 📅 *Data:* {fecha}\n│ ⚠️ *Advertência:* {warns}/3\n│ 📄 *Motivo:* {motivo}\n│\n│ 📌 _Ao atingir 3/3 o usuário será expulso._\n╰─────────────────────────╯",
-      "expulsado": "╭──「 🚫 *USUÁRIO EXPULSO* 」──╮\n│\n│ 👤 *Usuário:* @{tag}\n│ ❌ *Motivo:* Acumulou 3/3 advertências.\n│\n╰─────────────────────────╯"
+      "advertido": "╭─「 🔨 *SANÇÃO REGISTRADA* 」─╮\n│\n│ 👤 *Usuário:* @{tag}\n│ 👮 *Sancionado por:* @{sancionadoPor}\n│ 📅 *Data:* {fecha}\n│ ⚠️ *Advertência:* {warns}/3\n│ 📄 *Motivo:* {motivo}\n│\n│ 📌 _Ao atingir 3/3 o usuário será expulso._\n╰─────────────────────────╯",
+      "expulsado": "🚷 O usuário @{tag} foi expulso por acumular 3 advertências."
     },
     "gc_unwarn": {
       "solo_admins": "⚠️ Apenas administradores podem usar este comando.",
@@ -1439,10 +1439,13 @@
     "gc_listwarn": {
       "solo_admins": "⚠️ Apenas administradores podem usar este comando.",
       "sin_advertencias": "✅ Não há usuários com advertências neste grupo.",
-      "titulo": "📋 *Lista de advertências atuais:*",
+      "titulo": "╭─「 📋 *LISTA DE ADVERTÊNCIAS* 」─╮",
       "usuario": "👤 @{tag} — {warns}/3 warns",
       "razon": "  ↳ {n}. {motivo}",
-      "sin_motivo": "Sem motivo especificado."
+      "sin_motivo": "Sem motivo especificado.",
+      "entrada": "│\n│ 👤 *Usuário:* @{tag}\n│ ⚠️ *Advertências:* {warns}/3\n│ 📄 *Motivos:*\n{motivos}│",
+      "motivo_item": "│    {n}. {motivo}",
+      "footer": "│\n╰─────────────────────────╯"
     },
     "game_aventura": {
       "cooldown": "⏳ Você ainda está se recuperando de sua última aventura...\nVolte em *{seg} segundos*.",

@@ -1427,8 +1427,8 @@
       "no_auto": "❌ No puedo advertirme a mí mismo.",
       "no_en_grupo": "◉ El usuario mencionado no se encuentra en este grupo.",
       "sin_motivo": "Sin motivo especificado.",
-      "advertido": "╭──「 🔨 *SANCIÓN REGISTRADA* 」──╮\n│\n│ 👤 *Usuario:* @{tag}\n│ 👮 *Sancionado por:* @{sancionadoPor}\n│ 📅 *Fecha:* {fecha}\n│ ⚠️ *Advertencia:* {warns}/3\n│ 📄 *Motivo:* {motivo}\n│\n│ 📌 _Al llegar a 3/3 el usuario será expulsado._\n╰─────────────────────────╯",
-      "expulsado": "╭──「 🚫 *USUARIO EXPULSADO* 」──╮\n│\n│ 👤 *Usuario:* @{tag}\n│ ❌ *Razón:* Acumuló 3/3 advertencias.\n│\n╰─────────────────────────╯"
+      "advertido": "╭─「 🔨 *SANCIÓN REGISTRADA* 」─╮\n│\n│ 👤 *Usuario:* @{tag}\n│ 👮 *Sancionado por:* @{sancionadoPor}\n│ 📅 *Fecha:* {fecha}\n│ ⚠️ *Advertencia:* {warns}/3\n│ 📄 *Motivo:* {motivo}\n│\n│ 📌 _Al llegar a 3/3 el usuario será expulsado._\n╰─────────────────────────╯",
+      "expulsado": "🚷 El usuario @{tag} fue expulsado por acumular 3 advertencias."
     },
     "gc_unwarn": {
       "solo_admins": "⚠️ Solo los administradores pueden usar este comando.",
@@ -1437,12 +1437,15 @@
       "removida": "♻️ Se eliminó una advertencia a @{tag}.\n📊 Advertencias actuales: {warns}/3"
     },
     "gc_listwarn": {
-      "solo_admins": "⚠️ Solo los administradores pueden usar este comando.",
+      "solo_admins": "⚠️ Solo administradores pueden usar este comando.",
       "sin_advertencias": "✅ No hay usuarios con advertencias en este grupo.",
-      "titulo": "📋 *Lista de advertencias actuales:*",
+      "titulo": "╭─「 📋 *LISTA DE ADVERTENCIAS* 」─╮",
       "usuario": "👤 @{tag} — {warns}/3 warns",
       "razon": "  ↳ {n}. {motivo}",
-      "sin_motivo": "Sin motivo especificado."
+      "sin_motivo": "Sin motivo especificado.",
+      "entrada": "│\n│ 👤 *Usuario:* @{tag}\n│ ⚠️ *Advertencias:* {warns}/3\n│ 📄 *Motivos:*\n{motivos}│",
+      "motivo_item": "│    {n}. {motivo}",
+      "footer": "│\n╰─────────────────────────╯"
     },
     "game_aventura": {
       "cooldown": "⏳ Aún estás recuperándote de tu última aventura...\nVuelve en *{seg} segundos*.",

@@ -1426,8 +1426,8 @@
       "no_auto": "❌ I cannot warn myself.",
       "no_en_grupo": "◉ The mentioned user is not in this group.",
       "sin_motivo": "No reason specified.",
-      "advertido": "╭──「 🔨 *SANCTION REGISTERED* 」──╮\n│\n│ 👤 *User:* @{tag}\n│ 👮 *Sanctioned by:* @{sancionadoPor}\n│ 📅 *Date:* {fecha}\n│ ⚠️ *Warning:* {warns}/3\n│ 📄 *Reason:* {motivo}\n│\n│ 📌 _Upon reaching 3/3 the user will be kicked._\n╰─────────────────────────╯",
-      "expulsado": "╭──「 🚫 *USER KICKED* 」──╮\n│\n│ 👤 *User:* @{tag}\n│ ❌ *Reason:* Accumulated 3/3 warnings.\n│\n╰─────────────────────────╯"
+      "advertido": "╭─「 🔨 *SANCTION REGISTERED* 」─╮\n│\n│ 👤 *User:* @{tag}\n│ 👮 *Sanctioned by:* @{sancionadoPor}\n│ 📅 *Date:* {fecha}\n│ ⚠️ *Warning:* {warns}/3\n│ 📄 *Reason:* {motivo}\n│\n│ 📌 _Upon reaching 3/3 the user will be kicked._\n╰─────────────────────────╯",
+      "expulsado": "🚷 User @{tag} was kicked for accumulating 3 warnings."
     },
     "gc_unwarn": {
       "solo_admins": "⚠️ Only administrators can use this command.",
@@ -1438,10 +1438,13 @@
     "gc_listwarn": {
       "solo_admins": "⚠️ Only administrators can use this command.",
       "sin_advertencias": "✅ No users with warnings in this group.",
-      "titulo": "📋 *Current warnings list:*",
+      "titulo": "╭─「 📋 *WARNINGS LIST* 」─╮",
       "usuario": "👤 @{tag} — {warns}/3 warnings",
       "razon": "  ↳ {n}. {motivo}",
-      "sin_motivo": "No reason specified."
+      "sin_motivo": "No reason specified.",
+      "entrada": "│\n│ 👤 *User:* @{tag}\n│ ⚠️ *Warnings:* {warns}/3\n│ 📄 *Reasons:*\n{motivos}│",
+      "motivo_item": "│    {n}. {motivo}",
+      "footer": "│\n╰─────────────────────────╯"
     },
     "game_aventura": {
       "cooldown": "⏳ You are still recovering from your last adventure...\nCome back in *{seg} seconds*.",
