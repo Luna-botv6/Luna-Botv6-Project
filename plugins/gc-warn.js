@@ -28,13 +28,23 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
   const finalCheck = participants.find(p => p.id === target)
   if (!finalCheck) return m.reply(t.no_en_grupo)
 
+  target = finalCheck.id
   const reason = text?.replace(/@\d+/g, '').trim() || t.sin_motivo
   const warns = await addWarning(target, reason)
   const tag = target.split('@')[0]
+  const senderTag = m.sender.split('@')[0]
+
+  const now = new Date()
+  const fecha = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`
 
   await m.reply(
-    t.advertido.replace('{tag}', tag).replace('{motivo}', reason).replace('{warns}', warns),
-    null, { mentions: [target] }
+    t.advertido
+      .replace('{tag}', tag)
+      .replace('{sancionadoPor}', senderTag)
+      .replace('{fecha}', fecha)
+      .replace('{motivo}', reason)
+      .replace('{warns}', warns),
+    null, { mentions: [target, m.sender] }
   )
 
   if (warns >= 3) {
@@ -45,6 +55,6 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
   }
 }
 
-handler.command = /^(warn|advertir|advertencia|warning)$/i
+handler.command = /^(warn|advertir|advertencia|warning|sancion|sanción)$/i
 handler.group = true
 export default handler
