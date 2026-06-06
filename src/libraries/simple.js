@@ -4,6 +4,7 @@ import {messagingUtils} from './base/messaging.js';
 import {interactiveUtils} from './base/interactive.js';
 import {advancedUtils} from './base/advanced.js';
 import {smsg, serialize, protoType, pushMessage, logic} from './base/serialization.js';
+import { invalidateGroupCount } from './print.js';
 
 const {
   default: _makeWaSocket,
@@ -36,6 +37,18 @@ export async function makeWASocket(connectionOptions, options = {}) {
     }
   }
   const conn = (global.opts['legacy'] ? makeWALegacySocket : _makeWaSocket)(connectionOptions);
+
+  // Wrap groupParticipantsUpdate to invalidate group count cache after changes
+  try {
+    const origGPUpdate = conn.groupParticipantsUpdate?.bind(conn);
+    if (origGPUpdate) {
+      conn.groupParticipantsUpdate = async (...args) => {
+        const res = await origGPUpdate(...args);
+        try { invalidateGroupCount(); } catch {}
+        return res;
+      };
+    }
+  } catch {}
 
   const sock = Object.defineProperties(conn, {
     chats: {

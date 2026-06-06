@@ -19,6 +19,8 @@ const TZ          = { timeZone: "America/Argentina/Buenos_Aires" };
 const _seen       = new Set();
 const _recentKeys = new Map();
 const _groupNames = new Map();
+const _groupCountCache = { ts: 0, count: 0 };
+const GROUP_COUNT_TTL = 3000;
 const MAX_SEEN    = 300;
 const KEY_TTL     = 60000;
 
@@ -75,6 +77,36 @@ const getGroupName = async (conn, chat) => {
   }
 };
 
+const getGroupCount = async (conn) => {
+  try {
+    const now = Date.now();
+    if (now - _groupCountCache.ts < GROUP_COUNT_TTL) return _groupCountCache.count;
+    let count = 0;
+    if (conn?.chats && typeof conn.chats === "object") {
+      try {
+        count = Object.keys(conn.chats).filter(k => typeof k === 'string' && k.endsWith('@g.us')).length;
+      } catch {
+        count = 0;
+      }
+    }
+    if (!count && _groupNames.size) count = _groupNames.size;
+    _groupCountCache.ts = now;
+    _groupCountCache.count = count;
+    return count;
+  } catch {
+    return _groupCountCache.count || 0;
+  }
+};
+
+export const invalidateGroupCount = () => {
+  _groupCountCache.ts = 0;
+};
+
+export const forceGroupCount = (n) => {
+  _groupCountCache.ts = Date.now();
+  _groupCountCache.count = Number(n) || 0;
+};
+
 export default async function printMessage(m, conn = { user: {} }) {
   try {
     if (!m?.fromMe) return;
@@ -128,6 +160,7 @@ export default async function printMessage(m, conn = { user: {} }) {
     const truncated = firstLine.length > 120 ? firstLine.slice(0, 120) : firstLine;
     const preview   = truncated + (multiline || firstLine.length > 120 ? chalk.hex("#5a5278")(" ...") : "");
     const groupName = isGroup ? await getGroupName(conn, chat) : null;
+    const groupCount = await getGroupCount(conn);
 
     const cStars  = chalk.hex("#7c6af7");
     const cBorder = chalk.hex("#4a4080");
@@ -156,7 +189,7 @@ export default async function printMessage(m, conn = { user: {} }) {
       cBorder("│") + "  " +
         cTitle("◈ LUNA-BOTV6") + "  " +
         chalk.hex("#5a5278")("·····") + "  " +
-        cSys("SYS:OK") + "  " +
+        cSys("GROUP: " + String(groupCount)) + "  " +
         chalk.hex("#5a5278")("·····") + "  " +
         cBadge(chatBadge),
       cBorder(DIV),
