@@ -1445,7 +1445,8 @@
       "sin_motivo": "Sin motivo especificado.",
       "entrada": "│\n│ 👤 *Usuario:* @{tag}\n│ ⚠️ *Advertencias:* {warns}/3\n│ 📄 *Motivos:*\n{motivos}│",
       "motivo_item": "│    {n}. {motivo}",
-      "footer": "│\n╰─────────────────────────╯"
+      "footer": "│\n╰─────────────────────────╯",
+      "por": "por"
     },
     "game_aventura": {
       "cooldown": "⏳ Aún estás recuperándote de tu última aventura...\nVuelve en *{seg} segundos*.",
