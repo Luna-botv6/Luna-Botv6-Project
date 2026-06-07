@@ -1,4 +1,3 @@
-import fs from 'fs'
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
 
 const BASE_IMG = 'https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/otros/'
@@ -33,8 +32,26 @@ const resolveLid = async (jid, conn, m) => {
 
 var handler = async (m, { conn, text }) => {
 
-  const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
-  const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.personalidad
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
+  const _translate = await global.loadTranslation(idioma)
+  const DEFAULT_TRADUCTOR = {
+    titulo: 'PERSONALIDAD',
+    nombre: 'Nombre',
+    genero: 'Género',
+    buena: 'Buena Moral',
+    mala: 'Mala Moral',
+    tipo: 'Tipo de persona',
+    estado: 'Siempre está',
+    inteligencia: 'Inteligencia',
+    morosidad: 'Morosidad',
+    coraje: 'Coraje',
+    miedo: 'Miedo',
+    fama: 'Fama',
+    generos: ['Hombre','Mujer','Homosexual','Bisexual','Pansexual','Feminista','Heterosexual','Macho alfa','Marimacha','PlayStationSexual','Sr. Manuela','Pollosexual'],
+    tipos: ['De buen corazón','Arrogante','Tacaño','Generoso','Humilde','Tímido','Cobarde','Entrometido','Cristal','No binarie XD','Pendejo'],
+    estados: ['Pesado','De malas','Distraído','De molestoso','Chismoso','De compras','Viendo anime','Chateando porque está soltero','Acostado bueno para nada','De mujeriego','En el celular']
+  }
+  const tradutor = _translate?.plugins?.personalidad || DEFAULT_TRADUCTOR
 
   let nombre = text?.trim()
   let mentions = []
