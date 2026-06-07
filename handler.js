@@ -79,7 +79,6 @@ global.getIdioma = (m) => {
 async function loadCustomCommandsOnce(customCommandsDir) {
   if (!fs.existsSync(customCommandsDir)) return;
   if (customCommandsCache.size > 0) return;
-  
   try {
     const files = await fs.promises.readdir(customCommandsDir);
     for (const file of files.filter(f => f.endsWith('.js'))) {
@@ -111,21 +110,17 @@ setInterval(() => {
     limitCache(recentMessages, 50);
     limitCache(recentParticipantEvents, 30);
     limitCache(translationsCache, 5);
-    
     if (processedVoiceMessages.size > MAX_VOICE_CACHE) {
       const toDelete = Array.from(processedVoiceMessages).slice(0, 100);
       toDelete.forEach(id => processedVoiceMessages.delete(id));
     }
-    
     gcIfNeeded('intervalo-60s');
   } catch (e) {}
 }, 60000);
 
 export async function handler(chatUpdate) {
   try {
-    if (!this?.user?.jid) {
-      return;
-    }
+    if (!this?.user?.jid) return;
     currentConn = this;
     if (!this._sendMessagePatched) {
       const _origSend = this.sendMessage.bind(this);
@@ -137,7 +132,7 @@ export async function handler(chatUpdate) {
             .replace(/LUNA BOT MENU/gi, `${name.toUpperCase()} MENU`)
             .replace(/LUNA BOT/gi, name.toUpperCase())
             .replace(/Luna-Botv6/gi, name)
-            .replace(/LunaBot/gi, name.replace(/[^a-zA-Z0-9]/g, ''))
+            .replace(/LunaBot/gi, name.replace(/[^a-zA-Z0-9]/g, ''));
           if (typeof content?.text === 'string') content = { ...content, text: _applyName(content.text) };
           if (typeof content?.caption === 'string') content = { ...content, caption: _applyName(content.caption) };
           if (typeof content?.buttonText === 'string') content = { ...content, buttonText: _applyName(content.buttonText) };
@@ -149,18 +144,16 @@ export async function handler(chatUpdate) {
     }
     this.msgqueque = this.msgqueque || [];
     this.uptime = this.uptime || Date.now();
-    
-if (!chatUpdate?.messages?.length) return;
 
-const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+    if (!chatUpdate?.messages?.length) return;
 
-const validMessages = chatUpdate.messages.filter(msg => {
-  const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
-  return msgTimestamp >= connectionTime;
-});
-
-if (validMessages.length === 0) return;
-chatUpdate.messages = validMessages;
+    const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+    const validMessages = chatUpdate.messages.filter(msg => {
+      const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
+      return msgTimestamp >= connectionTime;
+    });
+    if (validMessages.length === 0) return;
+    chatUpdate.messages = validMessages;
 
     this.pushMessage(chatUpdate.messages).catch(console.error);
 
@@ -190,7 +183,7 @@ chatUpdate.messages = validMessages;
       const jid = m.key.remoteJid;
       const settings = global.db?.data?.settings?.[this?.user?.jid];
       if (settings?.iaLunaActive !== false) {
-        await handleVoiceMessage(this, m, jid, processedVoiceMessages).catch(e => 
+        await handleVoiceMessage(this, m, jid, processedVoiceMessages).catch(e =>
           console.error(`Error en mensaje de voz: ${e.message}`)
         );
         return;
@@ -227,13 +220,13 @@ chatUpdate.messages = validMessages;
       m.limit = false;
 
       if (m.isGroup && sender.includes('@lid')) {
-        const _cachedGrp = global.groupCache?.get(chat)
+        const _cachedGrp = global.groupCache?.get(chat);
         if (_cachedGrp?.data?.participants) {
-          const _lidNum = sender.replace(/[^0-9]/g, '')
-          const _match = _cachedGrp.data.participants.find(p => p.lid && p.lid.replace(/[^0-9]/g, '') === _lidNum)
+          const _lidNum = sender.replace(/[^0-9]/g, '');
+          const _match = _cachedGrp.data.participants.find(p => p.lid && p.lid.replace(/[^0-9]/g, '') === _lidNum);
           if (_match?.id) {
-            registerLidToJid(sender, _match.id)
-            sender = _match.id
+            registerLidToJid(sender, _match.id);
+            sender = _match.id;
           }
         }
       }
@@ -313,8 +306,8 @@ chatUpdate.messages = validMessages;
           if (!allOwnersNum.includes(senderNum)) continue;
         }
 
-        const __filename = name.startsWith('custom-') 
-          ? join(customCommandsDir, name.replace('custom-', '')) 
+        const __filename = name.startsWith('custom-')
+          ? join(customCommandsDir, name.replace('custom-', ''))
           : join(___dirname, name);
 
         if (typeof plugin.all === 'function') {
@@ -373,6 +366,7 @@ chatUpdate.messages = validMessages;
 
           if (matchSin) {
             m.plugin = name;
+            updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender, chat: m.chat });
             const extra = {
               match: null,
               usedPrefix: '',
@@ -392,7 +386,6 @@ chatUpdate.messages = validMessages;
               __dirname: name.startsWith('custom-') ? customCommandsDir : ___dirname,
               __filename
             };
-
             try {
               await plugin.call(this, m, extra);
             } catch (e) {
@@ -412,7 +405,7 @@ chatUpdate.messages = validMessages;
           if (!isAccept) continue;
 
           m.plugin = name;
-          updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender });
+          updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender, chat: m.chat });
           global._lastCmd = command;
 
           if (this.user?.jid) {
@@ -471,26 +464,14 @@ chatUpdate.messages = validMessages;
             if (!userIsAdmin) continue;
           }
 
-          if (plugin.rowner && !isROwner) {
-            fail('rowner', m, this);
-            continue;
-          }
-          if (plugin.owner && !isOwner) {
-            fail('owner', m, this);
-            continue;
-          }
-          if (plugin.mods && !isMods) {
-            fail('mods', m, this);
-            continue;
-          }
-          if (plugin.premium && !isPrems) {
-            fail('premium', m, this);
-            continue;
-          }
-          if (plugin.group && !m.isGroup) {
-            fail('group', m, this);
-            continue;
-          }
+          if (plugin.rowner && !isROwner) { fail('rowner', m, this); continue; }
+          if (plugin.owner && !isOwner) { fail('owner', m, this); continue; }
+          if (plugin.mods && !isMods) { fail('mods', m, this); continue; }
+          if (plugin.premium && !isPrems) { fail('premium', m, this); continue; }
+          if (plugin.group && !m.isGroup) { fail('group', m, this); continue; }
+          if (plugin.private && m.isGroup) { fail('private', m, this); continue; }
+          if (plugin.register && !user?.registered) { fail('unreg', m, this); continue; }
+
           if ((plugin.botAdmin || plugin.admin) && m.isGroup && !_groupDataResolved) {
             try {
               const _gd = await getGroupDataForPlugin(this, m.chat, m.sender);
@@ -499,22 +480,8 @@ chatUpdate.messages = validMessages;
               _groupDataResolved = true;
             } catch (e) {}
           }
-          if (plugin.botAdmin && m.isGroup && !_isBotAdmin) {
-            fail('botAdmin', m, this);
-            continue;
-          }
-          if (plugin.admin && m.isGroup && !_isAdmin) {
-            fail('admin', m, this);
-            continue;
-          }
-          if (plugin.private && m.isGroup) {
-            fail('private', m, this);
-            continue;
-          }
-          if (plugin.register && !user?.registered) {
-            fail('unreg', m, this);
-            continue;
-          }
+          if (plugin.botAdmin && m.isGroup && !_isBotAdmin) { fail('botAdmin', m, this); continue; }
+          if (plugin.admin && m.isGroup && !_isAdmin) { fail('admin', m, this); continue; }
 
           m.isCommand = true;
           const xp = 'exp' in plugin ? parseInt(plugin.exp) : 17;
@@ -592,7 +559,7 @@ chatUpdate.messages = validMessages;
             if (m.limit) {
               m.reply(`${tradutor.texto4?.[0]} ${m.limit} ${tradutor.texto4?.[1]}`);
             }
-             gcIfNeeded(m?.plugin || 'plugin');
+            gcIfNeeded(m?.plugin || 'plugin');
           }
           break;
         }
@@ -804,41 +771,29 @@ if (!global._errorHandlersRegistered) {
 
   process.on('unhandledRejection', (reason) => {
     const msg = reason?.message || reason?.toString() || 'Error desconocido';
-    
-    if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-      return;
-    }
-    
+    if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) return;
     if (msg.includes('presence') || msg.includes('sending presence') || msg.includes('enviando presencia')) {
       console.log(chalk.yellow('⚠️ BOT BANEADO - Elimina "MysticSession" y vuelve a vincular'));
       return;
     }
-    
     if (msg.includes('Connection') || msg.includes('Conexión') || msg.includes('WebSocket')) {
       console.log(chalk.yellow('⚠️ Error de conexión - Verifica tu internet'));
       return;
     }
-    
     console.log(chalk.red(`🛠️ ERROR: ${msg}`));
   });
 
   process.on('uncaughtException', (err) => {
     const msg = err?.message || err?.toString() || 'Error desconocido';
-    
-    if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) {
-      return;
-    }
-    
+    if (msg.includes('Unsupported state') || msg.includes('unable to authenticate')) return;
     if (msg.includes('authenticate') || msg.includes('autenticación') || msg.includes('QR')) {
       console.log(chalk.yellow('⚠️ Error de autenticación - Elimina "MysticSession" y reinicia'));
       return;
     }
-    
     if (msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT') || msg.includes('ENOTFOUND')) {
       console.log(chalk.yellow('⚠️ Error de red - Verifica tu conexión'));
       return;
     }
-    
     console.log(chalk.red(`⚠️ EXCEPCIÓN CRÍTICA: ${msg}`));
   });
 }

@@ -1,5 +1,5 @@
 "use strict";
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1'; 
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1';
 import './config.js';
 import './api.js';
 import { createRequire } from 'module';
@@ -35,9 +35,11 @@ import mentionListener from './plugins/game-ialuna.js';
 import { startBirthdayChecker } from './plugins/cumple.js';
 import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
 import { installUsersProxy } from './lib/funcion/databaseManager.js';
+import { updateConnectionState, reportBan } from './logBans.js';
+
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
-let stopped = 'close';  
+let stopped = 'close';
 let pairingTimeout = null;
 let pairingStartTime = null;
 const PAIRING_TIMEOUT_DURATION = 120000;
@@ -64,32 +66,27 @@ global.API = (name, path = '/', query = {}, apikeyqueryname) => (name in global.
 global.timestamp = { start: new Date };
 
 async function clearSessionAndRestart() {
-    console.log(chalk.red('[ ✖ ] Timeout de pareado alcanzado. Limpiando sesión...'));
-    
-    if (pairingTimeout) {
-        clearTimeout(pairingTimeout);
-        pairingTimeout = null;
-    }
-    
-    const carpetas = [global.authFile, 'MysticSession'];
-    const eliminadas = [];
-    
-    await Promise.allSettled(
-        carpetas.map(async (carpeta) => {
-            const ruta = `./${carpeta}`;
-            if (fs.existsSync(ruta)) {
-                await fs.promises.rm(ruta, { recursive: true, force: true });
-                eliminadas.push(carpeta);
-            }
-        })
-    );
-    
-    if (eliminadas.length > 0) {
-        console.log(chalk.yellow(`[ ℹ️ ] Limpieza completada: ${eliminadas.join(', ')}`));
-    }
-    
-    console.log(chalk.yellow('[ ℹ️ ] Reiniciando en 2 segundos...'));
-    setTimeout(() => process.exit(1), 2000);
+  console.log(chalk.red('[ ✖ ] Timeout de pareado alcanzado. Limpiando sesión...'));
+  if (pairingTimeout) {
+    clearTimeout(pairingTimeout);
+    pairingTimeout = null;
+  }
+  const carpetas = [global.authFile, 'MysticSession'];
+  const eliminadas = [];
+  await Promise.allSettled(
+    carpetas.map(async (carpeta) => {
+      const ruta = `./${carpeta}`;
+      if (fs.existsSync(ruta)) {
+        await fs.promises.rm(ruta, { recursive: true, force: true });
+        eliminadas.push(carpeta);
+      }
+    })
+  );
+  if (eliminadas.length > 0) {
+    console.log(chalk.yellow(`[ ℹ️ ] Limpieza completada: ${eliminadas.join(', ')}`));
+  }
+  console.log(chalk.yellow('[ ℹ️ ] Reiniciando en 2 segundos...'));
+  setTimeout(() => process.exit(1), 2000);
 }
 
 global.videoList = [];
@@ -142,7 +139,7 @@ global.loadChatgptDB = async function loadChatgptDB() {
       setInterval(async function() {
         if (!global.chatgpt.READ) {
           clearInterval(this);
-          resolve( global.chatgpt.data === null ? global.loadChatgptDB() : global.chatgpt.data );
+          resolve(global.chatgpt.data === null ? global.loadChatgptDB() : global.chatgpt.data);
         }
       }, 1 * 1000));
   }
@@ -196,86 +193,75 @@ const {state, saveCreds} = await useMultiFileAuthState(authFolder);
 
 let version;
 try {
-  const result = await fetchLatestWaWebVersion()
-  version = result.version
-  console.log(chalk.green('[ ✅ ] Versión WA Web obtenida de sw.js: [' + version.join(', ') + ']'))
+  const result = await fetchLatestWaWebVersion();
+  version = result.version;
+  console.log(chalk.green('[ ✅ ] Versión WA Web obtenida de sw.js: [' + version.join(', ') + ']'));
 } catch (e) {
-  console.log(chalk.yellow('[ ⚠ ] No se pudo obtener versión WaWeb: ' + e.message))
+  console.log(chalk.yellow('[ ⚠ ] No se pudo obtener versión WaWeb: ' + e.message));
   try {
-    const r = await fetchLatestBaileysVersion()
-    version = r.version
-    console.log(chalk.yellow('[ ⚠ ] Usando versión de Baileys: [' + version.join(', ') + ']'))
+    const r = await fetchLatestBaileysVersion();
+    version = r.version;
+    console.log(chalk.yellow('[ ⚠ ] Usando versión de Baileys: [' + version.join(', ') + ']'));
   } catch {
-    version = [2, 3000, 1037641644]
-    console.log(chalk.yellow('[ ⚠ ] Usando versión hardcodeada de fallback: [' + version.join(', ') + ']'))
+    version = [2, 3000, 1037641644];
+    console.log(chalk.yellow('[ ⚠ ] Usando versión hardcodeada de fallback: [' + version.join(', ') + ']'));
   }
 }
 
-console.info = () => {}
+console.info = () => {};
 
 const connectionOptions = {
-    logger: Pino({ level: 'silent' }),
-    printQRInTerminal: opcion === '1',
-    mobile: false,
-    browser: ['Ubuntu', 'Chrome', '20.0.04'],
-    auth: {
-        creds: state.creds,
-        keys: makeCacheableSignalKeyStore(
-            state.keys,
-            Pino({ level: 'fatal' }).child({ level: 'fatal' })
-        ),
-    },
-
-    markOnlineOnConnect: true,
-    generateHighQualityLinkPreview: false,
-
-    qrTimeout: 40000,
-    connectTimeoutMs: 60000,
-    defaultQueryTimeoutMs: 60000,
-    keepAliveIntervalMs: 30000,
-    syncFullHistory: false,
-    fireInitQueries: false,
-    emitOwnEvents: false,
-
-    version,
-
-getMessage: async (key) => {
+  logger: Pino({ level: 'silent' }),
+  printQRInTerminal: opcion === '1',
+  mobile: false,
+  browser: ['Ubuntu', 'Chrome', '20.0.04'],
+  auth: {
+    creds: state.creds,
+    keys: makeCacheableSignalKeyStore(
+      state.keys,
+      Pino({ level: 'fatal' }).child({ level: 'fatal' })
+    ),
+  },
+  markOnlineOnConnect: true,
+  generateHighQualityLinkPreview: false,
+  qrTimeout: 40000,
+  connectTimeoutMs: 60000,
+  defaultQueryTimeoutMs: 60000,
+  keepAliveIntervalMs: 30000,
+  syncFullHistory: false,
+  fireInitQueries: false,
+  emitOwnEvents: false,
+  version,
+  getMessage: async (key) => {
     const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
     const msgTimestamp = (key.messageTimestamp || 0) * 1000;
-    
-if (msgTimestamp < connectionTime) {
-    return null;
-}
-
+    if (msgTimestamp < connectionTime) return null;
     try {
-        let jid = jidNormalizedUser(key.remoteJid);
-        let msg = await store.loadMessage(jid, key.id);
-        return msg?.message || "";
+      let jid = jidNormalizedUser(key.remoteJid);
+      let msg = await store.loadMessage(jid, key.id);
+      return msg?.message || "";
     } catch (e) {
-        return '';
+      return '';
     }
-},
-
-    patchMessageBeforeSending: async (message) => {
-        return message;
-    },
-
-    msgRetryCounterCache: new NodeCache({
-        stdTTL: 300,
-        checkperiod: 60,
-        useClones: false
-    }),
-    userDevicesCache: new NodeCache({
-        stdTTL: 3600,
-        checkperiod: 300,
-        useClones: false
-    }),
-
-    cachedGroupMetadata: async (jid) => {
-        const cached = global.groupCache?.get(jid);
-        if (cached?.data?.groupMetadata?.participants) return cached.data.groupMetadata;
-        return null;
-    },
+  },
+  patchMessageBeforeSending: async (message) => {
+    return message;
+  },
+  msgRetryCounterCache: new NodeCache({
+    stdTTL: 300,
+    checkperiod: 60,
+    useClones: false
+  }),
+  userDevicesCache: new NodeCache({
+    stdTTL: 3600,
+    checkperiod: 300,
+    useClones: false
+  }),
+  cachedGroupMetadata: async (jid) => {
+    const cached = global.groupCache?.get(jid);
+    if (cached?.data?.groupMetadata?.participants) return cached.data.groupMetadata;
+    return null;
+  },
 };
 
 global.conn = await makeWASocket(connectionOptions);
@@ -291,20 +277,13 @@ function applyPrintWrapper(conn) {
     const result = await originalSendMessage(jid, content, options);
     try {
       const fakeMsg = {
-        key: {
-          fromMe: true,
-          remoteJid: jid
-        },
+        key: { fromMe: true, remoteJid: jid },
         fromMe: true,
         sender: conn.user?.jid,
         chat: jid,
         mtype: Object.keys(content || {})[0] || 'unknown',
         messageTimestamp: Math.floor(Date.now() / 1000),
-        text:
-          content?.text ||
-          content?.caption ||
-          content?.conversation ||
-          null,
+        text: content?.text || content?.caption || content?.conversation || null,
         msg: content
       };
       await printMessage(fakeMsg, conn);
@@ -333,7 +312,6 @@ const _presenceInterval = setInterval(async () => {
   }
 }, 30000);
 
-//restaurarConfiguraciones(global.conn);
 const ownerConfig = getOwnerFunction();
 if (ownerConfig.modopublico) global.conn.public = true;
 if (ownerConfig.auread) global.opts['autoread'] = true;
@@ -341,175 +319,157 @@ if (ownerConfig.modogrupos) global.conn.modogrupos = true;
 conn.logger.info(`[ ℹ️ ] Cargando...\n`);
 
 if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
-    console.log(chalk.yellow('[ ℹ️ ] Modo código de 8 dígitos seleccionado'));
-    
-    if (MethodMobile) {
-        console.log(chalk.red('[ ● ] No se puede usar código de emparejamiento con API móvil'));
-        process.exit(1);
+  console.log(chalk.yellow('[ ℹ️ ] Modo código de 8 dígitos seleccionado'));
+
+  if (MethodMobile) {
+    console.log(chalk.red('[ ● ] No se puede usar código de emparejamiento con API móvil'));
+    process.exit(1);
+  }
+
+  let numeroTelefono;
+
+  if (phoneNumber) {
+    numeroTelefono = phoneNumber.replace(/[^0-9]/g, '');
+    console.log(chalk.green('[ ℹ️ ] Usando número proporcionado:'), phoneNumber);
+    if (!numeroTelefono.match(/^\d+$/) || !Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
+      console.log(chalk.red('[ ● ] Número de teléfono inválido:'), phoneNumber);
+      console.log(chalk.yellow('[ ℹ️ ] Formato correcto: +5493483511079'));
+      process.exit(1);
     }
-
-    let numeroTelefono;
-    
-    if (phoneNumber) {
-        numeroTelefono = phoneNumber.replace(/[^0-9]/g, '');
-        console.log(chalk.green('[ ℹ️ ] Usando número proporcionado:'), phoneNumber);
-        
-        if (!numeroTelefono.match(/^\d+$/) || !Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
-            console.log(chalk.red('[ ● ] Número de teléfono inválido:'), phoneNumber);
-            console.log(chalk.yellow('[ ℹ️ ] Formato correcto: +5493483511079'));
-            process.exit(1);
-        }
-    } else {
-        while (true) {
-            numeroTelefono = await question(chalk.bgBlack(chalk.bold.yellowBright('[ ℹ️ ] Escriba su número de WhatsApp (incluya código de país):\nEjemplo: +5493483511079\n---> ')));
-
-            if (numeroTelefono.match(/^\d+$/) && Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
-                break;
-            } else {
-                console.log(chalk.red('[ ● ] Número inválido. Use formato: +5493483511079'));
-            }
-        }
+  } else {
+    while (true) {
+      numeroTelefono = await question(chalk.bgBlack(chalk.bold.yellowBright('[ ℹ️ ] Escriba su número de WhatsApp (incluya código de país):\nEjemplo: +5493483511079\n---> ')));
+      if (numeroTelefono.match(/^\d+$/) && Object.keys(PHONENUMBER_MCC).some(v => numeroTelefono.startsWith(v))) {
+        break;
+      } else {
+        console.log(chalk.red('[ ● ] Número inválido. Use formato: +5493483511079'));
+      }
     }
+  }
 
-    if (!phoneNumber) {
-        rl.close();
+  if (!phoneNumber) {
+    rl.close();
+  }
+
+  global.conn.phoneNumber = numeroTelefono;
+  pairingStartTime = Date.now();
+
+  pairingTimeout = setTimeout(() => {
+    if (!global.conn?.user) {
+      clearSessionAndRestart();
     }
+  }, PAIRING_TIMEOUT_DURATION);
 
-    global.conn.phoneNumber = numeroTelefono;
-    pairingStartTime = Date.now();
-    
-    pairingTimeout = setTimeout(() => {
-        if (!global.conn?.user) {
-            clearSessionAndRestart();
-        }
-    }, PAIRING_TIMEOUT_DURATION);
-    
-    console.log(chalk.yellow(`[ ⏰ ] Tienes ${PAIRING_TIMEOUT_DURATION / 1000} segundos para completar el pareado`));
-    
-    setTimeout(async () => {
+  console.log(chalk.yellow(`[ ⏰ ] Tienes ${PAIRING_TIMEOUT_DURATION / 1000} segundos para completar el pareado`));
+
+  setTimeout(async () => {
+    try {
+      console.log(chalk.yellow('[ ℹ️ ] Preparando solicitud de código de emparejamiento...'));
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      let codigo;
+      let intentos = 0;
+      const maxIntentos = 3;
+
+      while (intentos < maxIntentos && !global.conn?.user) {
         try {
-            console.log(chalk.yellow('[ ℹ️ ] Preparando solicitud de código de emparejamiento...'));
-            
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            let codigo;
-            let intentos = 0;
-            const maxIntentos = 3;
-            
-            while (intentos < maxIntentos && !global.conn?.user) {
-                try {
-                    intentos++;
-                    console.log(chalk.yellow(`[ ℹ️ ] Solicitando código de emparejamiento... (Intento ${intentos}/${maxIntentos})`));
-                    
-                    codigo = await global.conn.requestPairingCode(numeroTelefono);
-                    
-                    if (codigo) {
-                        codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo;
-                        
-                        console.log(chalk.green('┌─────────────────────────────────────────────┐'));
-                        console.log(chalk.green.bold('📱 CÓDIGO DE EMPAREJAMIENTO:'));
-                        console.log(chalk.yellow.bold('   ' + codigo));
-                        console.log(chalk.green('└─────────────────────────────────────────────┘'));
-                        console.log(chalk.cyan('[ ℹ️ ] Pasos para vincular:'));
-                        console.log(chalk.cyan('1. Abre WhatsApp en tu teléfono'));
-                        console.log(chalk.cyan('2. Ve a Configuración > Dispositivos vinculados'));
-                        console.log(chalk.cyan('3. Toca "Vincular dispositivo"'));
-                        console.log(chalk.cyan('4. Selecciona "Vincular con número de teléfono"'));
-                        console.log(chalk.cyan('5. Ingresa el código de arriba'));
-                        console.log(chalk.red.bold(`6. IMPORTANTE: Tienes ${Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000)} segundos restantes`));
-                        console.log(chalk.green('└─────────────────────────────────────────────┘'));
-                        
-                        break;
-                    }
-                    
-                } catch (error) {
-                    console.log(chalk.red(`[ ● ] Error en intento ${intentos}:`, error.message));
-                    
-                    if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
-                        console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad alcanzado. Esperando...'));
-                        await new Promise(resolve => setTimeout(resolve, 10000));
-                    } else if (intentos < maxIntentos) {
-                        console.log(chalk.yellow(`[ ℹ️ ] Reintentando en 3 segundos...`));
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                    }
-                }
-            }
-            
-            if (!codigo) {
-                console.log(chalk.red('[ ● ] No se pudo obtener el código después de varios intentos'));
-                clearSessionAndRestart();
-                return;
-            }
-            
-            let codigoRenovado = false;
-            const intervaloCodigo = setInterval(async () => {
-                if (global.conn?.user) {
-                    clearInterval(intervaloCodigo);
-                    if (pairingTimeout) {
-                        clearTimeout(pairingTimeout);
-                        pairingTimeout = null;
-                    }
-                    
-                    console.log(chalk.green('[ ✅ ] ¡Dispositivo vinculado exitosamente!'));
-                    console.log(chalk.green('[ ℹ️ ] Sesión guardada correctamente en ' + authFolder));
-                    
-                    return;
-                }
-                
-                if (!pairingTimeout) {
-                    clearInterval(intervaloCodigo);
-                    return;
-                }
-                
-                const tiempoRestante = Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000);
-                if (tiempoRestante <= 0) {
-                    clearInterval(intervaloCodigo);
-                    return;
-                }
-                
-                if (!codigoRenovado && tiempoRestante < 90) {
-                    try {
-                        console.log(chalk.yellow(`[ ℹ️ ] Renovando código... (${tiempoRestante}s restantes)`));
-                        const nuevoCodigo = await global.conn.requestPairingCode(numeroTelefono);
-                        const codigoFormateado = nuevoCodigo?.match(/.{1,4}/g)?.join("-") || nuevoCodigo;
-                        
-                        console.log(chalk.green('┌─────────────────────────────────────────────┐'));
-                        console.log(chalk.green.bold('📱 NUEVO CÓDIGO DE EMPAREJAMIENTO:'));
-                        console.log(chalk.yellow.bold('   ' + codigoFormateado));
-                        console.log(chalk.red.bold(`⏰ Tiempo restante: ${tiempoRestante} segundos`));
-                        console.log(chalk.green('└─────────────────────────────────────────────┘'));
-                        
-                        codigoRenovado = true;
-                        
-                    } catch (error) {
-                        console.log(chalk.red('[ ● ] Error al renovar código:', error.message));
-                        
-                        if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
-                            console.log(chalk.yellow('[ ⚠️ ] Límite de velocidad alcanzado. Continuando con código actual...'));
-                        }
-                    }
-                }
-            }, 15000);
-            
+          intentos++;
+          console.log(chalk.yellow(`[ ℹ️ ] Solicitando código de emparejamiento... (Intento ${intentos}/${maxIntentos})`));
+          codigo = await global.conn.requestPairingCode(numeroTelefono);
+
+          if (codigo) {
+            codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo;
+            console.log(chalk.green('┌─────────────────────────────────────────────┐'));
+            console.log(chalk.green.bold('📱 CÓDIGO DE EMPAREJAMIENTO:'));
+            console.log(chalk.yellow.bold('   ' + codigo));
+            console.log(chalk.green('└─────────────────────────────────────────────┘'));
+            console.log(chalk.cyan('[ ℹ️ ] Pasos para vincular:'));
+            console.log(chalk.cyan('1. Abre WhatsApp en tu teléfono'));
+            console.log(chalk.cyan('2. Ve a Configuración > Dispositivos vinculados'));
+            console.log(chalk.cyan('3. Toca "Vincular dispositivo"'));
+            console.log(chalk.cyan('4. Selecciona "Vincular con número de teléfono"'));
+            console.log(chalk.cyan('5. Ingresa el código de arriba'));
+            console.log(chalk.red.bold(`6. IMPORTANTE: Tienes ${Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000)} segundos restantes`));
+            console.log(chalk.green('└─────────────────────────────────────────────┘'));
+            break;
+          }
         } catch (error) {
-            console.error(chalk.red('[ ● ] Error crítico al solicitar código de emparejamiento:'), error.message);
-            
-            if (pairingTimeout) {
-                clearTimeout(pairingTimeout);
-                pairingTimeout = null;
-            }
-            
-            if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
-                console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad detectado. Reiniciando proceso...'));
-                clearSessionAndRestart();
-            } else {
-                console.log(chalk.yellow('[ ℹ️ ] Error inesperado. Limpiando sesión...'));
-                setTimeout(() => {
-                    process.exit(1);
-                }, 3000);
-            }
+          console.log(chalk.red(`[ ● ] Error en intento ${intentos}:`, error.message));
+          if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+            console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad alcanzado. Esperando...'));
+            await new Promise(resolve => setTimeout(resolve, 10000));
+          } else if (intentos < maxIntentos) {
+            console.log(chalk.yellow(`[ ℹ️ ] Reintentando en 3 segundos...`));
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
         }
-    }, 5000);
+      }
+
+      if (!codigo) {
+        console.log(chalk.red('[ ● ] No se pudo obtener el código después de varios intentos'));
+        clearSessionAndRestart();
+        return;
+      }
+
+      let codigoRenovado = false;
+      const intervaloCodigo = setInterval(async () => {
+        if (global.conn?.user) {
+          clearInterval(intervaloCodigo);
+          if (pairingTimeout) {
+            clearTimeout(pairingTimeout);
+            pairingTimeout = null;
+          }
+          console.log(chalk.green('[ ✅ ] ¡Dispositivo vinculado exitosamente!'));
+          console.log(chalk.green('[ ℹ️ ] Sesión guardada correctamente en ' + authFolder));
+          return;
+        }
+
+        if (!pairingTimeout) {
+          clearInterval(intervaloCodigo);
+          return;
+        }
+
+        const tiempoRestante = Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000);
+        if (tiempoRestante <= 0) {
+          clearInterval(intervaloCodigo);
+          return;
+        }
+
+        if (!codigoRenovado && tiempoRestante < 90) {
+          try {
+            console.log(chalk.yellow(`[ ℹ️ ] Renovando código... (${tiempoRestante}s restantes)`));
+            const nuevoCodigo = await global.conn.requestPairingCode(numeroTelefono);
+            const codigoFormateado = nuevoCodigo?.match(/.{1,4}/g)?.join("-") || nuevoCodigo;
+            console.log(chalk.green('┌─────────────────────────────────────────────┐'));
+            console.log(chalk.green.bold('📱 NUEVO CÓDIGO DE EMPAREJAMIENTO:'));
+            console.log(chalk.yellow.bold('   ' + codigoFormateado));
+            console.log(chalk.red.bold(`⏰ Tiempo restante: ${tiempoRestante} segundos`));
+            console.log(chalk.green('└─────────────────────────────────────────────┘'));
+            codigoRenovado = true;
+          } catch (error) {
+            console.log(chalk.red('[ ● ] Error al renovar código:', error.message));
+            if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+              console.log(chalk.yellow('[ ⚠️ ] Límite de velocidad alcanzado. Continuando con código actual...'));
+            }
+          }
+        }
+      }, 15000);
+
+    } catch (error) {
+      console.error(chalk.red('[ ● ] Error crítico al solicitar código de emparejamiento:'), error.message);
+      if (pairingTimeout) {
+        clearTimeout(pairingTimeout);
+        pairingTimeout = null;
+      }
+      if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+        console.log(chalk.yellow('[ ℹ️ ] Límite de velocidad detectado. Reiniciando proceso...'));
+        clearSessionAndRestart();
+      } else {
+        console.log(chalk.yellow('[ ℹ️ ] Error inesperado. Limpiando sesión...'));
+        setTimeout(() => { process.exit(1); }, 3000);
+      }
+    }
+  }, 5000);
 }
 
 if (isCleanerEnabled()) runCleaner();
@@ -573,16 +533,41 @@ async function clearLibrariesTmp() {
 
 setInterval(async () => {
   if (stopped === 'close' || !global.conn || !global.conn?.user) return;
+  clearTmp();
+  if (privacyConfig.dataRetention.enabled) cleanOldUserData();
+}, 1000 * 60 * 60 * 2);
+
+setInterval(() => {
+  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
+  if (isCleanerEnabled()) runCleaner();
+}, 1000 * 60 * 60 * 6);
+
+setInterval(async () => {
+  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
+  const _uptime = process.uptime() * 1000;
+  const uptime = clockString(_uptime);
+  const hora = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const gruposActivos = global.groupCache ? global.groupCache.size : 0;
+  const bio = `🌙 Luna-Bot v6 - Online
+⏱️ Activo: ${uptime}
+🕐 Hora: ${hora}
+👥 Grupos: ${gruposActivos}
+✨ Powered by TheMystic-Bot-MD`;
+  await global.conn?.updateProfileStatus(bio).catch(() => {});
+}, 10 * 60 * 1000);
+
+setInterval(async () => {
+  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
   await clearLibrariesTmp();
 }, 1000 * 60 * 60 * 24);
 
 clearLibrariesTmp();
 
 if (privacyConfig.dataRetention.enabled) {
-    setInterval(() => {
-        if (stopped === 'close' || !global.conn || !global.conn?.user) return;
-        cleanOldUserData();
-    }, 1000 * 60 * 60 * 24);
+  setInterval(() => {
+    if (stopped === 'close' || !global.conn || !global.conn?.user) return;
+    cleanOldUserData();
+  }, 1000 * 60 * 60 * 24);
 }
 
 const dirToWatchccc = path.join(__dirname, './');
@@ -616,6 +601,14 @@ function runCleaner() {
   cleaner.on('exit', code => console.log(`[cleaner] terminó con código ${code}`));
 }
 
+function clockString(ms) {
+  const d = isNaN(ms) ? '--' : Math.floor(ms / 86400000);
+  const h = isNaN(ms) ? '--' : Math.floor(ms / 3600000) % 24;
+  const m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60;
+  const s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60;
+  return [d, 'd ️', h, 'h ', m, 'm ', s, 's '].map((v) => v.toString().padStart(2, 0)).join('');
+}
+
 let lastQR = null;
 let codigoSolicitado = false;
 
@@ -636,6 +629,10 @@ async function connectionUpdate(update) {
   stopped = connection;
   if (isNewLogin) conn.isInit = true;
 
+  if (connection) {
+    updateConnectionState(connection);
+  }
+
   const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
   if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
     await global.reloadHandler(true).catch(console.error);
@@ -651,7 +648,7 @@ async function connectionUpdate(update) {
   }
 
   if (connection === 'open') {
-   global._hasBeenConnected = true;
+    global._hasBeenConnected = true;
     global._softReconnectCount = 0;
     global._manualWsClose = false;
     global._loggedOutHandled = false;
@@ -802,11 +799,14 @@ async function connectionUpdate(update) {
         console.log(chalk.red.bold('🚫 BOT DESVINCULADO / BANEADO DETECTADO'));
         console.log(chalk.red(`  Código: ${reason} (loggedOut)`));
         console.log(chalk.red(`  Mensaje: ${lastDisconnect?.error?.message || 'sin mensaje'}`));
-        console.log(chalk.red(`  Esto significa que:`));
-        console.log(chalk.red(`  - El usuario desvinculó el bot desde WhatsApp`));
-        console.log(chalk.red(`  - O la cuenta fue baneada por WA`));
-        console.log(chalk.red(`  Acción: limpiando sesión y reiniciando para re-vincular`));
         console.log(chalk.red('└─────────────────────────────────────────────┘'));
+
+        reportBan(`loggedOut real — código ${reason}: ${lastDisconnect?.error?.message || 'sin mensaje'}`, {
+          disconnectCode: reason,
+          rawMessage: lastDisconnect?.error?.message || '',
+          softReconnectCount: global._softReconnectCount || 0,
+        });
+
         const _carpetas = [global.authFile, 'MysticSession'];
         await Promise.allSettled(
           _carpetas.map(async (carpeta) => {
@@ -872,21 +872,19 @@ global.reloadHandler = async function(restatConn) {
   } catch (e) {
     console.error(e);
   }
-  
+
   if (restatConn) {
     const oldChats = global.conn.chats;
     try {
       global.conn.ws.close();
     } catch { }
-    
     conn.ev.removeAllListeners();
     await new Promise(resolve => setTimeout(resolve, 1500 + Math.floor(Math.random() * 1000)));
     global.conn = await makeWASocket(connectionOptions, {chats: oldChats});
     applyPrintWrapper(global.conn);
-    
     isInit = true;
   }
-  
+
   if (!isInit) {
     conn.ev.off('messages.upsert', conn.handler);
     conn.ev.off('group-participants.update', conn.participantsUpdate);
@@ -903,7 +901,7 @@ global.reloadHandler = async function(restatConn) {
   conn.connectionUpdate = connectionUpdate.bind(global.conn);
   conn.credsUpdate = saveCreds.bind(global.conn, true);
 
-conn.ev.on('messages.upsert', async (msg) => {
+  conn.ev.on('messages.upsert', async (msg) => {
     try {
       await conn.handler(msg);
     } catch (err) {
@@ -926,7 +924,7 @@ conn.ev.on('messages.upsert', async (msg) => {
       global.mentionListenerInitialized = false;
     }
   }
-  
+
   isInit = false;
   return true;
 };
@@ -1007,6 +1005,7 @@ conn.ev.on('groups.update', async ([event]) => {
 
 manejarEventosGrupo(conn);
 startGroupCleanService();
+
 async function _quickTest() {
   const test = await Promise.all([
     spawn('ffmpeg'),
@@ -1019,55 +1018,16 @@ async function _quickTest() {
   ].map((p) => {
     return Promise.race([
       new Promise((resolve) => {
-        p.on('close', (code) => {
-          resolve(code !== 127);
-        });
+        p.on('close', (code) => { resolve(code !== 127); });
       }),
       new Promise((resolve) => {
         p.on('error', (_) => resolve(false));
-      })]);
+      })
+    ]);
   }));
   const [ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find] = test;
   global.support = {ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find};
   Object.freeze(global.support);
 }
 
-setInterval(() => {
-  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
-  clearTmp();
-  if (privacyConfig.dataRetention.enabled) cleanOldUserData();
-}, 1000 * 60 * 60 * 2);
-
-setInterval(() => {
-  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
-  if (isCleanerEnabled()) runCleaner();
-}, 1000 * 60 * 60 * 6);
-
-setInterval(async () => {
-  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
-  const _uptime = process.uptime() * 1000;
-  const uptime = clockString(_uptime);
-  const hora = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-  
-  const gruposActivos = global.groupCache ? global.groupCache.size : 0;
-  
-  const bio = `🌙 Luna-Bot v6 - Online
-⏱️ Activo: ${uptime}
-🕐 Hora: ${hora}
-👥 Grupos: ${gruposActivos}
-✨ Powered by TheMystic-Bot-MD`;
-  
-  await global.conn?.updateProfileStatus(bio).catch(() => {});
-}, 10 * 60 * 1000);
-
-function clockString(ms) {
-  const d = isNaN(ms) ? '--' : Math.floor(ms / 86400000);
-  const h = isNaN(ms) ? '--' : Math.floor(ms / 3600000) % 24;
-  const m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60;
-  const s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60;
-  return [d, 'd ️', h, 'h ', m, 'm ', s, 's '].map((v) => v.toString().padStart(2, 0)).join('');
-}
-
 _quickTest().catch(console.error);
-
-
