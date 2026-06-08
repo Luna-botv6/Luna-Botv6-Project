@@ -892,6 +892,7 @@ global.reloadHandler = async function(restatConn) {
     conn.ev.removeAllListeners('call');
     conn.ev.removeAllListeners('connection.update');
     conn.ev.removeAllListeners('creds.update');
+    global.mentionListenerInitialized = false;
   }
 
   conn.handler = handler.handler.bind(global.conn);
