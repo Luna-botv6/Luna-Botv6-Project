@@ -10,7 +10,7 @@
 
 */
 import fetch from 'node-fetch';
-import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from "@whiskeysockets/baileys";
+import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from '@whiskeysockets/baileys';
 
 let data;
 let buff;
@@ -30,7 +30,7 @@ const handler = async (m, { command, usedPrefix, conn, text }) => {
   device = await getDevice(m.key.id);
 
   if (!text) throw `${tradutor.texto1[0]} _${usedPrefix + command} ${tradutor.texto1[1]} _${usedPrefix + command} https://youtu.be/JLWRZ8eWyZo?si=EmeS9fJvS_OkDk7p_`;
-  if (command === 'playyt' && (device == 'desktop' || device == 'web')) throw `*[❗] Los mensajes de botones aun no estan disponibles en WhatsApp web, acceda a su celular para poder ver y usar los mensajes con botones.*`;
+  if (command === 'playyt' && (device == 'desktop' || device == 'web')) throw '*[❗] Los mensajes de botones aun no estan disponibles en WhatsApp web, acceda a su celular para poder ver y usar los mensajes con botones.*';
   if (enviando) return;
   enviando = true;
 
@@ -42,9 +42,9 @@ const handler = async (m, { command, usedPrefix, conn, text }) => {
     ];
     const linkyt = await isValidYouTubeLink(text);
     if (linkyt) apiUrlsz = [
-        `https://api.cafirexos.com/api/ytinfo?url=${text}`,
-        `https://api-brunosobrino-koiy.onrender.com/api/ytinfo?url=${text}&apikey=BrunoSobrino`,
-        `https://api-brunosobrino-dcaf9040.koyeb.app/api/ytinfo?url=${text}`
+      `https://api.cafirexos.com/api/ytinfo?url=${text}`,
+      `https://api-brunosobrino-koiy.onrender.com/api/ytinfo?url=${text}&apikey=BrunoSobrino`,
+      `https://api-brunosobrino-dcaf9040.koyeb.app/api/ytinfo?url=${text}`
     ];
     let success = false;
     for (const url of apiUrlsz) {
@@ -69,37 +69,37 @@ const handler = async (m, { command, usedPrefix, conn, text }) => {
     if (command === 'playyt') {
       var messa = await prepareWAMessageMedia({ image: {url: data.resultado.image}}, { upload: conn.waUploadToServer });
       let msg = generateWAMessageFromContent(m.chat, {
-          viewOnceMessage: {
-              message: {
-                  interactiveMessage: {
-                      body: { text: dataMessage },
-                      footer: { text: `${global.wm}`.trim() },
-                      header: {
-                          hasMediaAttachment: true,
-                          imageMessage: messa.imageMessage,
-                      },
-                      nativeFlowMessage: {
-                          buttons: [
-                              {
-                                  name: 'quick_reply',
-                                  buttonParamsJson: JSON.stringify({
-                                      display_text: 'AUDIO',
-                                      id: `${usedPrefix}play.1 ${data.resultado.url} SN@`
-                                  })
-                              },
-                              {
-                                  name: 'quick_reply',
-                                  buttonParamsJson: JSON.stringify({
-                                      display_text: 'VIDEO',
-                                      id: `${usedPrefix}play.2 ${data.resultado.url} SN@`
-                                  })
-                              },   
-                          ],
-                          messageParamsJson: "",
-                      },
-                  },
+        viewOnceMessage: {
+          message: {
+            interactiveMessage: {
+              body: { text: dataMessage },
+              footer: { text: `${global.wm}`.trim() },
+              header: {
+                hasMediaAttachment: true,
+                imageMessage: messa.imageMessage,
               },
-          }
+              nativeFlowMessage: {
+                buttons: [
+                  {
+                    name: 'quick_reply',
+                    buttonParamsJson: JSON.stringify({
+                      display_text: 'AUDIO',
+                      id: `${usedPrefix}play.1 ${data.resultado.url} SN@`
+                    })
+                  },
+                  {
+                    name: 'quick_reply',
+                    buttonParamsJson: JSON.stringify({
+                      display_text: 'VIDEO',
+                      id: `${usedPrefix}play.2 ${data.resultado.url} SN@`
+                    })
+                  },   
+                ],
+                messageParamsJson: '',
+              },
+            },
+          },
+        }
       }, { userJid: conn.user.jid, quoted: m});
       await conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id});
       enviando = false;    
@@ -153,7 +153,7 @@ const handler = async (m, { command, usedPrefix, conn, text }) => {
             success2 = true;
             break;
           } catch (e) {
-             console.log(e.message) 
+            console.log(e.message); 
           }
         }
 
@@ -163,7 +163,7 @@ const handler = async (m, { command, usedPrefix, conn, text }) => {
         }
       }
     } catch (ee) {
-      console.log(ee.message)  
+      console.log(ee.message);  
       enviando = false;
       throw `${tradutor.texto3}`;
     }
@@ -186,6 +186,6 @@ handler.command = /^(play.1|play.2|playyt)$/i;
 export default handler;
 
 async function isValidYouTubeLink(link) {
-    const validPatterns = [/youtube\.com\/watch\?v=/i, /youtube\.com\/shorts\//i, /youtu\.be\//i, /youtube\.com\/embed\//i, /youtube\.com\/v\//i, /youtube\.com\/attribution_link\?a=/i, /yt\.be\//i, /googlevideo\.com\//i, /youtube\.com\.br\//i, /youtube-nocookie\.com\//i, /youtubeeducation\.com\//i, /m\.youtube\.com\//i, /youtubei\.googleapis\.com\//i];
-    return validPatterns.some(pattern => pattern.test(link));
+  const validPatterns = [/youtube\.com\/watch\?v=/i, /youtube\.com\/shorts\//i, /youtu\.be\//i, /youtube\.com\/embed\//i, /youtube\.com\/v\//i, /youtube\.com\/attribution_link\?a=/i, /yt\.be\//i, /googlevideo\.com\//i, /youtube\.com\.br\//i, /youtube-nocookie\.com\//i, /youtubeeducation\.com\//i, /m\.youtube\.com\//i, /youtubei\.googleapis\.com\//i];
+  return validPatterns.some(pattern => pattern.test(link));
 }

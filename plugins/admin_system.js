@@ -405,9 +405,9 @@ const handler = async (m, { conn, args, command, usedPrefix, isOwner }) => {
         mensaje += `${index + 1}. ${lid}\n`;
       });
     } else {
-      mensaje += `*No hay LID owners específicos (solo se usan owners normales)*\n`;
+      mensaje += '*No hay LID owners específicos (solo se usan owners normales)*\n';
     }
-    mensaje += `\n💡 *Nota:* Los owners normales tienen acceso automático como LID owners.`;
+    mensaje += '\n💡 *Nota:* Los owners normales tienen acceso automático como LID owners.';
     conn.reply(m.chat, mensaje, m);
   }
 

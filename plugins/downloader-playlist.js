@@ -1,42 +1,42 @@
-import fs from 'fs'
-import fetch from 'node-fetch'
-import { generateWAMessageFromContent, proto } from '@whiskeysockets/baileys'
-import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js'
-import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
+import fs from 'fs';
+import fetch from 'node-fetch';
+import { generateWAMessageFromContent, proto } from '@whiskeysockets/baileys';
+import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js';
+import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
 
-const configContent = fs.readFileSync('./config.js', 'utf-8')
-if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado: Luna-Botv6 no encontrado.')
-try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
+const configContent = fs.readFileSync('./config.js', 'utf-8');
+if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado: Luna-Botv6 no encontrado.');
+try { verificarMenuIuman(); } catch { throw new Error('Archivo de configuracion faltante o invalido'); }
 
-const SERVER_URL = obtenerMenuIuman()
-const API_KEY = cargarOGenerarAPIKey()
-const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
-const TIMEOUT = 15000
+const SERVER_URL = obtenerMenuIuman();
+const API_KEY = cargarOGenerarAPIKey();
+const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY };
+const TIMEOUT = 15000;
 
-const BOT = () => global.BotName || 'LUNA'
+const BOT = () => global.BotName || 'LUNA';
 
 const ft = async (url, headers = {}) => {
-  const c = new AbortController()
-  const t = setTimeout(() => c.abort(), TIMEOUT)
-  try { const r = await fetch(url, { signal: c.signal, headers }); clearTimeout(t); return r }
-  catch (e) { clearTimeout(t); throw e }
-}
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), TIMEOUT);
+  try { const r = await fetch(url, { signal: c.signal, headers }); clearTimeout(t); return r; }
+  catch (e) { clearTimeout(t); throw e; }
+};
 
 function MilesNumber(n) {
-  return n.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.')
+  return n.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
 }
 
 function secondString(secs) {
-  secs = Number(secs)
-  const d  = Math.floor(secs / (3600 * 24))
-  const h  = Math.floor(secs % (3600 * 24) / 3600)
-  const m  = Math.floor(secs % 3600 / 60)
-  const s  = Math.floor(secs % 60)
-  const ds = d > 0 ? d + (d === 1 ? ' día, '    : ' días, ')    : ''
-  const hs = h > 0 ? h + (h === 1 ? ' hora, '   : ' horas, ')   : ''
-  const ms = m > 0 ? m + (m === 1 ? ' minuto, '  : ' minutos, ') : ''
-  const ss = s > 0 ? s + (s === 1 ? ' segundo'   : ' segundos')  : ''
-  return ds + hs + ms + ss
+  secs = Number(secs);
+  const d  = Math.floor(secs / (3600 * 24));
+  const h  = Math.floor(secs % (3600 * 24) / 3600);
+  const m  = Math.floor(secs % 3600 / 60);
+  const s  = Math.floor(secs % 60);
+  const ds = d > 0 ? d + (d === 1 ? ' día, '    : ' días, ')    : '';
+  const hs = h > 0 ? h + (h === 1 ? ' hora, '   : ' horas, ')   : '';
+  const ms = m > 0 ? m + (m === 1 ? ' minuto, '  : ' minutos, ') : '';
+  const ss = s > 0 ? s + (s === 1 ? ' segundo'   : ' segundos')  : '';
+  return ds + hs + ms + ss;
 }
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
@@ -45,39 +45,39 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
       return await conn.sendMessage(m.chat, {
         text: (
           `🎵 *${BOT()} — Buscador de Playlist*\n` +
-          `\n` +
-          `⚠️ No escribiste ningún artista o canción\n` +
-          `\n` +
-          `💡 Usá el formato correcto:\n` +
+          '\n' +
+          '⚠️ No escribiste ningún artista o canción\n' +
+          '\n' +
+          '💡 Usá el formato correcto:\n' +
           `_/${command} ozuna el mar_\n` +
           `_/${command} bad bunny tití me preguntó_\n` +
-          `\n` +
-          `_Indicame qué querés escuchar_ 🌙`
+          '\n' +
+          '_Indicame qué querés escuchar_ 🌙'
         )
-      }, { quoted: m })
+      }, { quoted: m });
     }
 
-    const res = await ft(SERVER_URL + '/api/yt/search?q=' + encodeURIComponent(text), DL_HEADERS)
-    if (!res.ok) throw new Error('Error al conectar con el servidor')
-    const data = await res.json()
+    const res = await ft(SERVER_URL + '/api/yt/search?q=' + encodeURIComponent(text), DL_HEADERS);
+    if (!res.ok) throw new Error('Error al conectar con el servidor');
+    const data = await res.json();
 
-    const videos = data?.videos?.slice(0, 20)
+    const videos = data?.videos?.slice(0, 20);
 
     if (!videos || videos.length === 0) {
       return await conn.sendMessage(m.chat, {
         text: (
           `🎵 *${BOT()} — Buscador de Playlist*\n` +
-          `\n` +
-          `😔 No encontré resultados para:\n` +
+          '\n' +
+          '😔 No encontré resultados para:\n' +
           `"${text}"\n` +
-          `\n` +
-          `💡 Intentá con otro nombre o revisá la ortografía\n` +
-          `_A veces funciona mejor escribirlo en inglés_ 🌙`
+          '\n' +
+          '💡 Intentá con otro nombre o revisá la ortografía\n' +
+          '_A veces funciona mejor escribirlo en inglés_ 🌙'
         )
-      }, { quoted: m })
+      }, { quoted: m });
     }
 
-    const userName = await conn.getName(m.sender)
+    const userName = await conn.getName(m.sender);
 
     const fakeQuoted = {
       key: {
@@ -95,7 +95,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         }
       },
       participant: '0@s.whatsapp.net'
-    }
+    };
 
     const listContent = {
       title: '🎵 RESULTADOS DE BÚSQUEDA',
@@ -121,25 +121,25 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
           }))
         }
       ]
-    }
+    };
 
     const bodyText =
-      `╭─────°.🌙.°·─────\n` +
+      '╭─────°.🌙.°·─────\n' +
       `│🎵 ${BOT()} Playlist\n` +
-      `│\n` +
+      '│\n' +
       `│🔍 Búsqueda: ${text}\n` +
       `│📊 Resultados: ${videos.length}\n` +
       `│👤 Usuario: ${userName}\n` +
-      `│\n` +
-      `│🎧 Seleccioná audio o video\n` +
-      `╰─────°.🌙.°·─────`
+      '│\n' +
+      '│🎧 Seleccioná audio o video\n' +
+      '╰─────°.🌙.°·─────';
 
     const waMsg = generateWAMessageFromContent(m.chat,
       proto.Message.fromObject({
         interactiveMessage: {
           header: {
             title: '',
-            subtitle: `🎵 Seleccioná tu música`,
+            subtitle: '🎵 Seleccioná tu música',
             hasMediaAttachment: false
           },
           body: { text: bodyText },
@@ -153,27 +153,27 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         }
       }),
       { quoted: fakeQuoted }
-    )
+    );
 
-    await conn.relayMessage(m.chat, waMsg.message, { messageId: waMsg.key.id })
+    await conn.relayMessage(m.chat, waMsg.message, { messageId: waMsg.key.id });
 
   } catch (err) {
-    console.error(err)
+    console.error(err);
     await conn.sendMessage(m.chat, {
       text: (
         `🎵 *${BOT()} — Buscador de Playlist*\n` +
-        `\n` +
-        `❌ No se pudo procesar la búsqueda\n` +
+        '\n' +
+        '❌ No se pudo procesar la búsqueda\n' +
         `📛 ${err.message || 'Error desconocido'}\n` +
-        `\n` +
-        `_Intentá de nuevo en unos segundos_ 🌙`
+        '\n' +
+        '_Intentá de nuevo en unos segundos_ 🌙'
       )
-    }, { quoted: m })
+    }, { quoted: m });
   }
-}
+};
 
-handler.command = ['playlist', 'playsearch', 'pl']
-handler.help    = ['playlist nombre de canción']
-handler.tags    = ['downloader']
+handler.command = ['playlist', 'playsearch', 'pl'];
+handler.help    = ['playlist nombre de canción'];
+handler.tags    = ['downloader'];
 
-export default handler
+export default handler;

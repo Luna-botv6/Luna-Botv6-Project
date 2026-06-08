@@ -10,16 +10,16 @@ const handler = async (m, {conn, text, usedPrefix, command}) => {
     tradutor = _translate.plugins.cmd_add;
   } catch (e) {
     tradutor = {
-      texto1: "❌ Responde a un sticker",
-      texto2: "❌ El sticker debe tener un hash válido",
+      texto1: '❌ Responde a un sticker',
+      texto2: '❌ El sticker debe tener un hash válido',
       texto3: [
-        "❌ Falta el texto del comando",
-        "texto de respuesta",
-        "Ejemplo con mención:",
-        "Hola @usuario"
+        '❌ Falta el texto del comando',
+        'texto de respuesta',
+        'Ejemplo con mención:',
+        'Hola @usuario'
       ],
-      texto4: "❌ Este comando está bloqueado",
-      texto5: "✅ Comando agregado exitosamente"
+      texto4: '❌ Este comando está bloqueado',
+      texto5: '✅ Comando agregado exitosamente'
     };
   }
   

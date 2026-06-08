@@ -10,7 +10,7 @@ const handler = async (m, { conn, text }) => {
   if (!text) return conn.reply(m.chat, tradutor.texto1, m);  
 
   try {
-    const response = await axios.get("https://delirius-apiofc.vercel.app/tools/tiktokstalk", {
+    const response = await axios.get('https://delirius-apiofc.vercel.app/tools/tiktokstalk', {
       params: { q: text }
     });
 
@@ -32,7 +32,7 @@ ${tradutor.texto2[6]} ${user.signature || 'Sin Información'}
 
       const imageUrl = user.avatarLarger;
       const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-      const imageBuffer = Buffer.from(imageResponse.data, "binary");
+      const imageBuffer = Buffer.from(imageResponse.data, 'binary');
 
       await conn.sendFile(m.chat, imageBuffer, 'profile.jpg', Mystic, m);
     } else {

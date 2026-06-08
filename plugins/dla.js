@@ -4,10 +4,10 @@
 // 2. Cobrar a otros por el acceso, la distribución o cualquier otro uso comercial del Software.
 // 3. Usar el Software como parte de un producto comercial o una oferta de servicio.
 
-import fs from "fs";
-import path, { join, basename } from "path";
-import { exec } from "child_process";
-import { promisify } from "util";  // Para hacer que exec sea promisificado.
+import fs from 'fs';
+import path, { join, basename } from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';  // Para hacer que exec sea promisificado.
 
 const execPromise = promisify(exec);
 const __dirname = path.resolve();
@@ -17,7 +17,7 @@ const maxDownloads = 5; // Instancias Permitidas
 let activeDownloads = 0;
 const queue = [];
 
-const cleanCommand = (text) => text.replace(/^\.(dla)\s*/i, "").trim();
+const cleanCommand = (text) => text.replace(/^\.(dla)\s*/i, '').trim();
 const filterArgs = (args, filter) => args.filter(filter);
 
 const processQueue = () => {
@@ -51,25 +51,25 @@ let handler = (m) => {
 const handleRequest = async (m) => {
   const command = cleanCommand(m.text.trim());
   const args = command.split(/\s+/);
-  const urls = filterArgs(args, arg => arg.startsWith("http"));
+  const urls = filterArgs(args, arg => arg.startsWith('http'));
 
   if (args[0] === 'update') return await updateYtDlp(m);
 
   if (args[0] === 'curl' && urls.length) {
-    const options = filterArgs(args, arg => !arg.startsWith("http") && arg !== 'curl').join(' ');
+    const options = filterArgs(args, arg => !arg.startsWith('http') && arg !== 'curl').join(' ');
     await Promise.all(urls.map(url => downloadWithCurl(m, url, options)));
     return;
   }
 
   if (!urls.length) return await execWithoutUrl(m, args.join(' '));
 
-  const options = filterArgs(args, arg => !arg.startsWith("http")).join(' ');
+  const options = filterArgs(args, arg => !arg.startsWith('http')).join(' ');
   await Promise.all(urls.map(url => downloadAndSend(m, url, options)));
 };
 
 const execWithoutUrl = async (m, options) => {
   try {
-    await m.reply(`⏳ Ejecutando...`);
+    await m.reply('⏳ Ejecutando...');
     const result = await execPromise(`yt-dlp ${options}`);
     await m.reply(`✅ \n${result}`);
   } catch (error) {
@@ -82,7 +82,7 @@ const downloadAndSend = async (m, url, options) => {
   let outputFilePathPrefix = join(ytDlpTempDirectory, `download_${Date.now()}`);
   try {
     await prepareDirectory(ytDlpTempDirectory);
-    await m.reply(`⏳ Descargando con YT-DLP...`);
+    await m.reply('⏳ Descargando con YT-DLP...');
     await execPromise(`yt-dlp ${options} --max-filesize 1500M --yes-playlist --abort-on-error -o "${outputFilePathPrefix}_%(title)s.%(ext)s" "${url}"`);
 
     const downloadedFiles = await findDownloadedFiles(outputFilePathPrefix, ytDlpTempDirectory);
@@ -103,7 +103,7 @@ const downloadWithCurl = async (m, url, options) => {
 
   try {
     await prepareDirectory(curlTempDirectory);
-    await m.reply(`⏳ Descargando con CURL...`);
+    await m.reply('⏳ Descargando con CURL...');
     
     // Ejecutamos curl
     await execPromise(`curl --max-filesize 1500000000 ${options} -o "${outputFilePath}" "${url}"`);
@@ -123,15 +123,15 @@ const downloadWithCurl = async (m, url, options) => {
 // YT-DLP
 const updateYtDlp = async (m) => {
   try {
-    await m.reply(`⏳ Actualizando YT-DLP...`);
-    await execPromise(`python3 -m pip install -U --pre "yt-dlp[default]"`);
-    await m.reply(`✅ YT-DLP actualizado (python3).`);
+    await m.reply('⏳ Actualizando YT-DLP...');
+    await execPromise('python3 -m pip install -U --pre "yt-dlp[default]"');
+    await m.reply('✅ YT-DLP actualizado (python3).');
   } catch (error) {
     try {
-      const result = await execPromise(`python -m pip install -U --pre "yt-dlp[default]"`);
+      const result = await execPromise('python -m pip install -U --pre "yt-dlp[default]"');
       await m.reply(`✅ YT-DLP actualizado (python).\n${result}`);
     } catch (error2) {
-      await sendErrorMessage(m, error2, "python -m pip install -U --pre yt-dlp");
+      await sendErrorMessage(m, error2, 'python -m pip install -U --pre yt-dlp');
     }
   }
 };
@@ -162,18 +162,18 @@ const sendDownloadedFile = (m, filePath) => {
         fs.unlink(filePath, (err) => { if (err) console.error(err); });
       });
     } else {
-      console.error("Error al enviar el archivo:", err);
+      console.error('Error al enviar el archivo:', err);
     }
   });
 };
 
 const cleanupFiles = (directory, filePathPrefix) => {
   fs.readdir(directory, (err, files) => {
-    if (err) return console.error("Error al limpiar los archivos:", err);
+    if (err) return console.error('Error al limpiar los archivos:', err);
     files.forEach(file => {
       if (file.startsWith(path.basename(filePathPrefix))) {
         fs.unlink(join(directory, file), (err) => {
-          if (err) console.error("Error al eliminar el archivo:", err);
+          if (err) console.error('Error al eliminar el archivo:', err);
         });
       }
     });

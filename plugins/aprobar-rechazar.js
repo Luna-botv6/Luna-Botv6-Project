@@ -137,10 +137,10 @@ const handler = async (m, { conn, text, command, usedPrefix }) => {
           await conn.groupRequestParticipantsUpdate(m.chat, users, 'approve');
           m.reply(`✅ *Aprobación Automática Activada*\n\n🌟 Se han aprobado ${users.length} solicitud(es) pendiente(s)\n\n💫 Ahora aprobaré automáticamente todas las nuevas solicitudes`);
         } else {
-          m.reply(`✅ *Aprobación Automática Activada*\n\n🌟 Ahora aprobaré automáticamente todas las solicitudes de ingreso`);
+          m.reply('✅ *Aprobación Automática Activada*\n\n🌟 Ahora aprobaré automáticamente todas las solicitudes de ingreso');
         }
       } else {
-        m.reply(`❌ *Aprobación Automática Desactivada*\n\n💫 Las solicitudes deberán ser gestionadas manualmente`);
+        m.reply('❌ *Aprobación Automática Desactivada*\n\n💫 Las solicitudes deberán ser gestionadas manualmente');
       }
     }
 
@@ -165,10 +165,10 @@ const handler = async (m, { conn, text, command, usedPrefix }) => {
           await conn.groupRequestParticipantsUpdate(m.chat, users, 'reject');
           m.reply(`❌ *Rechazo Automático Activado*\n\n💫 Se han rechazado ${users.length} solicitud(es) pendiente(s)\n\n⚠️ Ahora rechazaré automáticamente todas las nuevas solicitudes`);
         } else {
-          m.reply(`❌ *Rechazo Automático Activado*\n\n💫 Ahora rechazaré automáticamente todas las solicitudes de ingreso`);
+          m.reply('❌ *Rechazo Automático Activado*\n\n💫 Ahora rechazaré automáticamente todas las solicitudes de ingreso');
         }
       } else {
-        m.reply(`✅ *Rechazo Automático Desactivado*\n\n💫 Las solicitudes deberán ser gestionadas manualmente`);
+        m.reply('✅ *Rechazo Automático Desactivado*\n\n💫 Las solicitudes deberán ser gestionadas manualmente');
       }
     }
 
@@ -183,7 +183,7 @@ const handler = async (m, { conn, text, command, usedPrefix }) => {
           return m.reply(`💫 No hay solicitudes pendientes\n\n✦ *Estado actual:*\n• Aprobar auto: ${autoApprove}\n• Rechazar auto: ${autoReject}`);
         }
 
-        let message = `🌙 *Solicitudes de Ingreso Pendientes*\n\n`;
+        let message = '🌙 *Solicitudes de Ingreso Pendientes*\n\n';
         message += `📊 Total: ${requests.length}\n\n`;
 
         requests.forEach((req, i) => {
@@ -191,7 +191,7 @@ const handler = async (m, { conn, text, command, usedPrefix }) => {
           message += `${i + 1}. 📱 +${number}\n`;
         });
 
-        message += `\n✦ *Comandos:*\n`;
+        message += '\n✦ *Comandos:*\n';
         message += `• ${usedPrefix}aprobar 1\n`;
         message += `• ${usedPrefix}rechazar 1\n`;
         message += `• ${usedPrefix}aprobartodos\n`;
@@ -205,7 +205,7 @@ const handler = async (m, { conn, text, command, usedPrefix }) => {
     }
 
     if (command === 'aprobar' || command === 'aceptar') {
-      if (!text) return m.reply(`Indica el número de la solicitud`);
+      if (!text) return m.reply('Indica el número de la solicitud');
 
       try {
         const requests = await conn.groupRequestParticipantsList(m.chat);
@@ -226,7 +226,7 @@ const handler = async (m, { conn, text, command, usedPrefix }) => {
     }
 
     if (command === 'rechazar' || command === 'denegar') {
-      if (!text) return m.reply(`Indica el número de la solicitud`);
+      if (!text) return m.reply('Indica el número de la solicitud');
 
       try {
         const requests = await conn.groupRequestParticipantsList(m.chat);

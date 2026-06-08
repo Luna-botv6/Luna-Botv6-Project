@@ -10,9 +10,9 @@ const handler = async (m, {conn, usedPrefix, text, command}) => {
     tradutor = _translate.plugins.cmd_del;
   } catch (e) {
     tradutor = {
-      texto1: "Proporciona un hash o cita un sticker. Usa",
-      texto2: "Este comando está bloqueado y no se puede eliminar",
-      texto3: "Comando eliminado exitosamente"
+      texto1: 'Proporciona un hash o cita un sticker. Usa',
+      texto2: 'Este comando está bloqueado y no se puede eliminar',
+      texto3: 'Comando eliminado exitosamente'
     };
   }
 
@@ -36,7 +36,7 @@ const handler = async (m, {conn, usedPrefix, text, command}) => {
   
   const sticker = global.db.data.sticker;
   
-  if (!sticker[hash]) throw `*No existe un comando para este sticker*`;
+  if (!sticker[hash]) throw '*No existe un comando para este sticker*';
   
   if (sticker[hash] && sticker[hash].locked) throw `*${tradutor.texto2}*`;
   

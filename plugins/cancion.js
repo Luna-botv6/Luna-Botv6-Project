@@ -1,12 +1,12 @@
-import fetch from 'node-fetch'
-import { getUserStats, getRoleByLevel } from '../lib/stats.js'
-import { xpRange } from '../lib/levelling.js'
+import fetch from 'node-fetch';
+import { getUserStats, getRoleByLevel } from '../lib/stats.js';
+import { xpRange } from '../lib/levelling.js';
 
-let juegos = global.cancionJuegos = global.cancionJuegos || {}
+let juegos = global.cancionJuegos = global.cancionJuegos || {};
 
-const TIMEOUT   = 60_000
-const XP_WIN    = 1_000
-const MONEY_WIN = 500
+const TIMEOUT   = 60_000;
+const XP_WIN    = 1_000;
+const MONEY_WIN = 500;
 
 const CANCIONES = [
   { query: 'Ella Baila Sola Eslabon Armado Peso Pluma', respuesta: 'Ella Baila Sola',   artista: 'Eslabon Armado & Peso Pluma', genero: '🤠' },
@@ -29,132 +29,132 @@ const CANCIONES = [
   { query: 'Bichota Karol G',                           respuesta: 'Bichota',            artista: 'Karol G',                     genero: '👑' },
   { query: 'Pepas Farruko',                             respuesta: 'Pepas',              artista: 'Farruko',                     genero: '🎡' },
   { query: 'Yonaguni Bad Bunny',                        respuesta: 'Yonaguni',           artista: 'Bad Bunny',                   genero: '🌊' },
-]
+];
 
 async function buscarPreviewDeezer(query) {
-  const url = `https://api.deezer.com/search?q=${encodeURIComponent(query)}&limit=5`
-  const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } })
-  if (!res.ok) throw new Error(`Deezer HTTP ${res.status}`)
-  const data = await res.json()
-  const pistas = (data.data || []).filter(t => t.preview)
-  if (!pistas.length) throw new Error(`Sin preview para: "${query}"`)
-  return pistas[0].preview
+  const url = `https://api.deezer.com/search?q=${encodeURIComponent(query)}&limit=5`;
+  const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+  if (!res.ok) throw new Error(`Deezer HTTP ${res.status}`);
+  const data = await res.json();
+  const pistas = (data.data || []).filter(t => t.preview);
+  if (!pistas.length) throw new Error(`Sin preview para: "${query}"`);
+  return pistas[0].preview;
 }
 
 async function descargarAudio(previewUrl) {
-  const res = await fetch(previewUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } })
-  if (!res.ok) throw new Error(`HTTP ${res.status} al descargar preview`)
-  return Buffer.from(await res.arrayBuffer())
+  const res = await fetch(previewUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+  if (!res.ok) throw new Error(`HTTP ${res.status} al descargar preview`);
+  return Buffer.from(await res.arrayBuffer());
 }
 
 function generarPista(respuesta, nivel) {
-  const palabras = respuesta.split(' ')
+  const palabras = respuesta.split(' ');
   if (nivel === 1) {
     return palabras.map(p =>
       p.length <= 2 ? p : p[0] + '_'.repeat(p.length - 2) + p[p.length - 1]
-    ).join(' ')
+    ).join(' ');
   }
-  const pct = nivel === 2 ? 0.4 : 0.7
+  const pct = nivel === 2 ? 0.4 : 0.7;
   return respuesta.split('').map(c =>
     c === ' ' ? ' ' : Math.random() < pct ? c : '_'
-  ).join('')
+  ).join('');
 }
 
 function formatNumber(num) {
-  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + 'B'
-  if (num >= 1_000_000)     return (num / 1_000_000).toFixed(1) + 'M'
-  if (num >= 1_000)         return (num / 1_000).toFixed(1) + 'K'
-  return num.toString()
+  if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + 'B';
+  if (num >= 1_000_000)     return (num / 1_000_000).toFixed(1) + 'M';
+  if (num >= 1_000)         return (num / 1_000).toFixed(1) + 'K';
+  return num.toString();
 }
 
 function formatearEstado(userId) {
-  const stats       = getUserStats(userId)
-  const currentRole = getRoleByLevel(stats.level)
-  const { max }     = xpRange(stats.level, global.multiplier || 1)
-  const falta       = max - stats.exp
+  const stats       = getUserStats(userId);
+  const currentRole = getRoleByLevel(stats.level);
+  const { max }     = xpRange(stats.level, global.multiplier || 1);
+  const falta       = max - stats.exp;
   return [
-    `╭━━〔 *📊 Tu perfil musical* 〕━━⬣`,
+    '╭━━〔 *📊 Tu perfil musical* 〕━━⬣',
     `┃ *👤 Usuario:* @${userId.split('@')[0]}`,
-    `┃`,
+    '┃',
     `┃ *📈 Nivel:* ${stats.level}  •  *🏅 Rango:* ${currentRole}`,
     `┃ *⚡ XP:* ${formatNumber(stats.exp)} / ${formatNumber(max)}`,
     `┃ *🎯 Para subir:* ${formatNumber(falta)} XP`,
-    `┃`,
-    `┃ *💰 Recursos:*`,
+    '┃',
+    '┃ *💰 Recursos:*',
     `┃ *💎 Diamantes:*  ${formatNumber(stats.money)}`,
     `┃ *🌙 Luna Coins:* ${formatNumber(stats.lunaCoins)}`,
     `┃ *🔮 Mystic:*     ${formatNumber(stats.mysticcoins)}`,
-    `╰━━━━━━━━━━━━━━━━━━━━━━━━━⬣`,
-  ].join('\n')
+    '╰━━━━━━━━━━━━━━━━━━━━━━━━━⬣',
+  ].join('\n');
 }
 
 async function procesarRespuesta(m, conn, id, user, intento) {
-  const j = juegos[id]
-  if (!j) return
+  const j = juegos[id];
+  if (!j) return;
 
-  const objetivo    = j.cancion.respuesta.toLowerCase()
-  const tituloCorto = objetivo.split(' - ')[0]
+  const objetivo    = j.cancion.respuesta.toLowerCase();
+  const tituloCorto = objetivo.split(' - ')[0];
 
   const esCorrecto =
     intento === objetivo ||
     intento === tituloCorto ||
-    (objetivo.includes(intento) && intento.length >= 4)
+    (objetivo.includes(intento) && intento.length >= 4);
 
   if (esCorrecto) {
-    clearTimeout(j.timer)
-    delete juegos[id]
-    const stats = getUserStats(user)
-    stats.exp   = (stats.exp   || 0) + XP_WIN
-    stats.money = (stats.money || 0) + MONEY_WIN
+    clearTimeout(j.timer);
+    delete juegos[id];
+    const stats = getUserStats(user);
+    stats.exp   = (stats.exp   || 0) + XP_WIN;
+    stats.money = (stats.money || 0) + MONEY_WIN;
     return conn.reply(id,
-      `🎉 *¡CORRECTO!* 🎉\n\n` +
+      '🎉 *¡CORRECTO!* 🎉\n\n' +
       `🎵 Era: *${j.cancion.respuesta}* ${j.cancion.genero}\n` +
       `🎤 Artista: _${j.cancion.artista}_\n\n` +
-      `✨ *Recompensas obtenidas:*\n` +
+      '✨ *Recompensas obtenidas:*\n' +
       `   ⚡ +${formatNumber(XP_WIN)} XP\n` +
       `   💎 +${formatNumber(MONEY_WIN)} Diamantes\n\n` +
       formatearEstado(user),
       j.msgPregunta,
       { mentions: [user] }
-    )
+    );
   }
 
   return conn.reply(id,
-    `❌ *¡Incorrecto!* Seguí intentando 💪\n\n` +
-    `┌─────────────────────────\n` +
-    `│ 💬 *¿Cómo responder?*\n` +
-    `│ • Escribí el nombre directamente\n` +
-    `│ • O usá */rpcancion nombre*\n` +
-    `│ • Pedí ayuda con */pista4*\n` +
-    `└──────────────────────────`,
+    '❌ *¡Incorrecto!* Seguí intentando 💪\n\n' +
+    '┌─────────────────────────\n' +
+    '│ 💬 *¿Cómo responder?*\n' +
+    '│ • Escribí el nombre directamente\n' +
+    '│ • O usá */rpcancion nombre*\n' +
+    '│ • Pedí ayuda con */pista4*\n' +
+    '└──────────────────────────',
     j.msgPregunta
-  )
+  );
 }
 
 const handler = async (m, { conn, command, args }) => {
-  const id   = m.chat
-  const user = m.sender
+  const id   = m.chat;
+  const user = m.sender;
 
   if (command === 'rpcancion') {
-    if (!juegos[id]) return m.reply('❌ No hay ningún juego activo. Iniciá uno con */cancion*')
-    const intento = args.join(' ').toLowerCase().trim()
-    if (!intento) return m.reply('⚠️ Escribí tu respuesta así: */rpcancion nombre de la canción*')
-    return procesarRespuesta(m, conn, id, user, intento)
+    if (!juegos[id]) return m.reply('❌ No hay ningún juego activo. Iniciá uno con */cancion*');
+    const intento = args.join(' ').toLowerCase().trim();
+    if (!intento) return m.reply('⚠️ Escribí tu respuesta así: */rpcancion nombre de la canción*');
+    return procesarRespuesta(m, conn, id, user, intento);
   }
 
   if (/^pista4$/i.test(command)) {
-    if (!juegos[id]) return m.reply('❌ No hay ningún juego activo.')
-    const j = juegos[id]
-    j.nivelPista = Math.min((j.nivelPista || 0) + 1, 3)
-    const pista = generarPista(j.cancion.respuesta, j.nivelPista)
+    if (!juegos[id]) return m.reply('❌ No hay ningún juego activo.');
+    const j = juegos[id];
+    j.nivelPista = Math.min((j.nivelPista || 0) + 1, 3);
+    const pista = generarPista(j.cancion.respuesta, j.nivelPista);
     return conn.reply(id,
       `💡 *Pista #${j.nivelPista}/3*\n` +
-      `┌───────────────────\n` +
+      '┌───────────────────\n' +
       `│ 🎵 *${pista}*\n` +
       `│ 🎤 Artista: _${j.cancion.artista}_\n` +
-      `└───────────────────`,
+      '└───────────────────',
       j.msgPregunta
-    )
+    );
   }
 
   if (juegos[id]) {
@@ -167,75 +167,75 @@ const handler = async (m, { conn, command, args }) => {
       '│ • Pedí ayuda con */pista4*\n' +
       '└──────────────────────────',
       juegos[id].msgPregunta
-    )
+    );
   }
 
-  const cancion = CANCIONES[Math.floor(Math.random() * CANCIONES.length)]
+  const cancion = CANCIONES[Math.floor(Math.random() * CANCIONES.length)];
 
   const caption = [
     `🎧 *¡Adivina la canción!* ${cancion.genero}`,
-    ``,
+    '',
     `⏳ Tenés *${TIMEOUT / 1000}s* para responder`,
-    ``,
-    `┌──────────────────────────`,
-    `│ 💬 *¿Cómo responder?*`,
-    `│ • Escribí el nombre directamente en el chat`,
-    `│ • O usá */rpcancion nombre*`,
-    `│ • Pedí pistas con */pista4* (hasta 3)`,
-    `└──────────────────────────`,
-    ``,
+    '',
+    '┌──────────────────────────',
+    '│ 💬 *¿Cómo responder?*',
+    '│ • Escribí el nombre directamente en el chat',
+    '│ • O usá */rpcancion nombre*',
+    '│ • Pedí pistas con */pista4* (hasta 3)',
+    '└──────────────────────────',
+    '',
     `🏆 Premio: *+${formatNumber(XP_WIN)} XP* y *+${formatNumber(MONEY_WIN)} 💎*`,
-  ].join('\n')
+  ].join('\n');
 
-  const msgPregunta = await m.reply(caption)
+  const msgPregunta = await m.reply(caption);
 
   const timer = setTimeout(async () => {
-    if (!juegos[id]) return
-    const j = juegos[id]
-    delete juegos[id]
+    if (!juegos[id]) return;
+    const j = juegos[id];
+    delete juegos[id];
     await conn.reply(id,
-      `⏱️ *¡Tiempo agotado!*\n\n` +
+      '⏱️ *¡Tiempo agotado!*\n\n' +
       `🎵 Era: *${j.cancion.respuesta}* ${j.cancion.genero}\n` +
       `🎤 Artista: _${j.cancion.artista}_\n\n` +
       formatearEstado(j.iniciador),
       j.msgPregunta,
       { mentions: [j.iniciador] }
-    )
-  }, TIMEOUT)
+    );
+  }, TIMEOUT);
 
-  juegos[id] = { cancion, msgPregunta, iniciador: user, nivelPista: 0, timer }
+  juegos[id] = { cancion, msgPregunta, iniciador: user, nivelPista: 0, timer };
 
   try {
-    const previewUrl  = await buscarPreviewDeezer(cancion.query)
-    const audioBuffer = await descargarAudio(previewUrl)
+    const previewUrl  = await buscarPreviewDeezer(cancion.query);
+    const audioBuffer = await descargarAudio(previewUrl);
     await conn.sendMessage(id, {
       audio: audioBuffer,
       fileName: 'cancion.mp3',
       mimetype: 'audio/mpeg'
-    }, { quoted: msgPregunta })
+    }, { quoted: msgPregunta });
   } catch (err) {
-    clearTimeout(timer)
-    delete juegos[id]
+    clearTimeout(timer);
+    delete juegos[id];
     return conn.reply(id,
       `❌ *No se pudo cargar el audio*\n_${err.message}_\n\nIntentá de nuevo con */cancion*`,
       m
-    )
+    );
   }
-}
+};
 
 handler.before = async function (m, { conn }) {
-  if (m.fromMe) return
-  const id   = m.chat
-  const user = m.sender
-  const j    = juegos[id]
-  if (!j) return
+  if (m.fromMe) return;
+  const id   = m.chat;
+  const user = m.sender;
+  const j    = juegos[id];
+  if (!j) return;
 
-  const texto = (m.text || '').trim()
-  if (!texto) return
-  if (/^[\/\.\!#\$]/.test(texto)) return
+  const texto = (m.text || '').trim();
+  if (!texto) return;
+  if (/^[\/\.\!#\$]/.test(texto)) return;
 
-  await procesarRespuesta(m, conn, id, user, texto.toLowerCase())
-}
+  await procesarRespuesta(m, conn, id, user, texto.toLowerCase());
+};
 
-handler.command = /^cancion|canción|rpcancion|pista4$/i
-export default handler
+handler.command = /^cancion|canción|rpcancion|pista4$/i;
+export default handler;

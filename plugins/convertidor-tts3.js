@@ -17,7 +17,7 @@ const handler = async (m, { conn, usedPrefix, command, text }) => {
   }
   const audio = await convertTextToSpeech(inputText, voice.voice_id);
   if (audio) {
-    conn.sendMessage(m.chat, { audio: audio.audio, fileName: `error.mp3`, mimetype: 'audio/mpeg', ptt: true }, { quoted: m });
+    conn.sendMessage(m.chat, { audio: audio.audio, fileName: 'error.mp3', mimetype: 'audio/mpeg', ptt: true }, { quoted: m });
   }
 };
 

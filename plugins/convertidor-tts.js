@@ -1,13 +1,13 @@
-import * as googleTTS from '@sefinek/google-tts-api'
+import * as googleTTS from '@sefinek/google-tts-api';
 import {readFileSync, unlinkSync} from 'fs';
 import {join} from 'path';
 const defaultLang = 'es';
 
 const handler = async (m, {conn, args, usedPrefix, command}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.convertidor_tts
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.convertidor_tts;
 
   let lang = args[0];
   let text = args.slice(1).join(' ');
@@ -26,8 +26,8 @@ const handler = async (m, {conn, args, usedPrefix, command}) => {
     res = await tts(text, defaultLang);
   } finally {
     if (res) {
-        conn.sendPresenceUpdate('recording', m.chat);
-        conn.sendMessage(m.chat, {audio: {url: res}, fileName: 'tts.mp3', mimetype: 'audio/mpeg', ptt: true}, {quoted: m});
+      conn.sendPresenceUpdate('recording', m.chat);
+      conn.sendMessage(m.chat, {audio: {url: res}, fileName: 'tts.mp3', mimetype: 'audio/mpeg', ptt: true}, {quoted: m});
     }
   }
 };

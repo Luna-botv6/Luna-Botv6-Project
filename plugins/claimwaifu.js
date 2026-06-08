@@ -1,7 +1,7 @@
 import { getUserWaifuData, saveWaifuClaim } from '../lib/datoswaifuusuarios.js'
 
 let handler = async (m, { conn, usedPrefix }) => {
-  const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
+  const idioma = global.db.data.users?.[m.sender]?.language || global.defaultLenguaje || 'es'
 
   const _translate = await import(`../src/lunaidiomas/${idioma}.json`, { with: { type: 'json' } })
 

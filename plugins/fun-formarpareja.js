@@ -1,25 +1,25 @@
-import fs from 'fs'
+import fs from 'fs';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const toM = (a) => '@' + a.split('@')[0];
 
 async function handler(m, { conn }) {
   try {
-    const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
-    const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.formarpareja
+    const idioma = global.db.data.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
+    const traductor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.formarpareja;
 
     const chatId = m.chat;
     const senderId = m.sender;
-    
+
     const groupData = await getGroupDataForPlugin(conn, chatId, senderId);
     const participants = groupData?.participants || [];
-    
+
     if (!participants || participants.length === 0) {
       return m.reply(tradutor.texto1);
     }
 
     const ps = participants.map((v) => v.id);
-    
+
     if (ps.length < 2) {
       return m.reply(tradutor.texto2);
     }

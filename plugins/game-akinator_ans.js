@@ -1,18 +1,19 @@
 import fetch from 'node-fetch';
-
+import fs from 'fs';
 
 import translate from '@vitalets/google-translate-api';
 
 export async function before(m) {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.game_akinator_ans
+  const datas = global;
+  const idioma = datas.db.data.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.game_akinator_ans;
   const teks = tradutor.texto1;
 
-
-  if (global.db.data.users[m.sender].banned) return;
+  if (global.db.data.users?.[m.sender]?.banned) return;
   if (!m.quoted || !m.quoted.fromMe || !m.quoted.isBaileys || !m.text) return !0;
+  if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = {};
+  if (!global.db.data.users[m.sender].akinator) global.db.data.users[m.sender].akinator = {};
   const aki = global.db.data.users[m.sender].akinator;
   if (!aki.sesi || m.quoted.id != aki.soal.key.id) return;
   if (!somematch(['0', '1', '2', '3', '4', '5'], m.text)) return this.sendMessage(m.chat, {text: `${tradutor.texto2} \n\n${teks}`}, {quoted: aki.soal});

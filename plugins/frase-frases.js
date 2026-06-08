@@ -2,10 +2,10 @@ import translate from '@vitalets/google-translate-api';
 import fetch from 'node-fetch';
 
 const handler = async (m, { conn, command }) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.frase_frases
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.frase_frases;
 
   global.frasesromanticas = tradutor.texto3;
 
@@ -25,7 +25,7 @@ const handler = async (m, { conn, command }) => {
 
   if (command == 'historiaromantica') {
     try {
-      const cerpe = await cerpen(`cinta romantis`);
+      const cerpe = await cerpen('cinta romantis');
       const storytime = await translate(cerpe.cerita, { to: 'es', autoCorrect: true }).catch((_) => null);
       const titletime = await translate(cerpe.title, { to: 'es', autoCorrect: true }).catch((_) => null);
       conn.reply(m.chat, `᭥🫐᭢ Título: ${titletime.text}

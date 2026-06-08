@@ -1,4 +1,4 @@
-import { proto, generateWAMessage, areJidsSameUser } from '@whiskeysockets/baileys'
+import { proto, generateWAMessage, areJidsSameUser } from '@whiskeysockets/baileys';
 
 const handler = async function (m, { conn, chatUpdate }) {
   if (m.isBaileys || !m.message) return;

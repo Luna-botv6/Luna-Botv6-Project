@@ -1,4 +1,4 @@
-import { addExp } from '../lib/ahorcado.js'
+import { addExp } from '../lib/ahorcado.js';
 
 const HANGMAN_PICS = [
   `
@@ -51,7 +51,7 @@ const HANGMAN_PICS = [
   / \\  |
        |
   =========`
-]
+];
 
 const palabras = {
   facil: [
@@ -155,23 +155,23 @@ const palabras = {
     'telecommunicaciones', 'responsabilidad', 'extraordinariedad', 'internacionalizacion', 'institucionalizar', 'intelectualidad', 'instrumentalizacion', 'intercomunicacion',
     'esternocleidomastoideo', 'hipopotomonstrosesquipedaliofobia', 'paralelepipedo', 'electroencefalografista', 'inconstitucionalidad', 'desproporcionalidad', 'ininteligibilidad', 'hipermegasupercalifragilistico'
   ]
-}
+};
 
 async function handler(m, { conn, args, usedPrefix, command }) {
-  conn.hangman = conn.hangman || {}
-  const id = m.chat
+  conn.hangman = conn.hangman || {};
+  const id = m.chat;
   
   if (!conn.hangman[id]) {
-    let dificultad = (args[0] || '').toLowerCase()
+    let dificultad = (args[0] || '').toLowerCase();
     if (!['facil', 'medio', 'dificil'].includes(dificultad)) {
       return m.reply(`Elige una dificultad para empezar:
 *${usedPrefix + command} facil*
 *${usedPrefix + command} medio*
-*${usedPrefix + command} dificil*`)
+*${usedPrefix + command} dificil*`);
     }
     
-    let lista = palabras[dificultad]
-    let palabra = lista[Math.floor(Math.random() * lista.length)]
+    let lista = palabras[dificultad];
+    let palabra = lista[Math.floor(Math.random() * lista.length)];
     
     conn.hangman[id] = {
       palabra,
@@ -179,68 +179,68 @@ async function handler(m, { conn, args, usedPrefix, command }) {
       intentos: 6,
       mostrar: palabra.replace(/./g, '_'),
       dificultad
-    }
+    };
     
     return m.reply(`¡Nuevo juego del ahorcado iniciado!
 Dificultad: *${dificultad.toUpperCase()}*
 ${HANGMAN_PICS[0]}
 Palabra: ${conn.hangman[id].mostrar.split('').join(' ')}
 Escribe una letra con:
-*${usedPrefix + command} <letra>*`)
+*${usedPrefix + command} <letra>*`);
   }
   
-  const juego = conn.hangman[id]
+  const juego = conn.hangman[id];
   
   if (!args[0] || args[0].length !== 1 || !/[a-zñ]/i.test(args[0])) {
-    return m.reply(`Debes escribir una sola letra. Ejemplo:\n*${usedPrefix + command} a*`)
+    return m.reply(`Debes escribir una sola letra. Ejemplo:\n*${usedPrefix + command} a*`);
   }
   
-  const letra = args[0].toLowerCase()
+  const letra = args[0].toLowerCase();
   
   if (juego.letras.includes(letra)) {
-    return m.reply(`Ya escribiste la letra *${letra}*. Prueba con otra.`)
+    return m.reply(`Ya escribiste la letra *${letra}*. Prueba con otra.`);
   }
   
-  juego.letras.push(letra)
+  juego.letras.push(letra);
   
   if (juego.palabra.includes(letra)) {
-    let nuevaMostrar = ''
+    let nuevaMostrar = '';
     for (let i = 0; i < juego.palabra.length; i++) {
-      nuevaMostrar += juego.letras.includes(juego.palabra[i]) ? juego.palabra[i] : '_'
+      nuevaMostrar += juego.letras.includes(juego.palabra[i]) ? juego.palabra[i] : '_';
     }
-    juego.mostrar = nuevaMostrar
+    juego.mostrar = nuevaMostrar;
     
     if (!juego.mostrar.includes('_')) {
-      let expGanada = juego.dificultad === 'facil' ? 50 : juego.dificultad === 'medio' ? 100 : 200
-      addExp(m.sender, expGanada)
-      delete conn.hangman[id]
+      let expGanada = juego.dificultad === 'facil' ? 50 : juego.dificultad === 'medio' ? 100 : 200;
+      addExp(m.sender, expGanada);
+      delete conn.hangman[id];
       return m.reply(`¡Felicidades! Adivinaste la palabra: *${juego.palabra}*
-Ganaste *+${expGanada} EXP*`)
+Ganaste *+${expGanada} EXP*`);
     } else {
       return m.reply(`¡Bien! La letra *${letra}* está en la palabra.
 ${HANGMAN_PICS[6 - juego.intentos]}
 Palabra: ${juego.mostrar.split('').join(' ')}
 Letras usadas: ${juego.letras.join(', ')}
-Intentos restantes: ${juego.intentos}`)
+Intentos restantes: ${juego.intentos}`);
     }
   } else {
-    juego.intentos--
+    juego.intentos--;
     
     if (juego.intentos <= 0) {
-      const palabraFinal = juego.palabra
-      const dibujoFinal = HANGMAN_PICS[6]
-      delete conn.hangman[id]
+      const palabraFinal = juego.palabra;
+      const dibujoFinal = HANGMAN_PICS[6];
+      delete conn.hangman[id];
       return m.reply(`${dibujoFinal}
-¡Perdiste! La palabra era: *${palabraFinal}*`)
+¡Perdiste! La palabra era: *${palabraFinal}*`);
     } else {
       return m.reply(`La letra *${letra}* no está en la palabra.
 ${HANGMAN_PICS[6 - juego.intentos]}
 Palabra: ${juego.mostrar.split('').join(' ')}
 Letras usadas: ${juego.letras.join(', ')}
-Intentos restantes: ${juego.intentos}`)
+Intentos restantes: ${juego.intentos}`);
     }
   }
 }
 
-handler.command = /^ahorcado$/i
-export default handler
+handler.command = /^ahorcado$/i;
+export default handler;

@@ -1,23 +1,23 @@
-import fs from 'fs'
+import fs from 'fs';
 
 const handler = async (m, { conn, command, text }) => {
-  const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
-  const traductor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.fun_calculador
+  const idioma = global.db.data.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
+  const traductor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.fun_calculador;
 
-  let mencionadoJid = (m.mentionedJid && m.mentionedJid[0]) || null
+  let mencionadoJid = (m.mentionedJid && m.mentionedJid[0]) || null;
 
   if (!mencionadoJid && text) {
-    const posibleNumero = text.replace(/\D/g, '')
-    if (posibleNumero) mencionadoJid = `${posibleNumero}@s.whatsapp.net`
+    const posibleNumero = text.replace(/\D/g, '');
+    if (posibleNumero) mencionadoJid = `${posibleNumero}@s.whatsapp.net`;
   }
 
-  if (!mencionadoJid) throw traductor.texto26
+  if (!mencionadoJid) throw traductor.texto26;
 
-  const porcentaje = Math.floor(Math.random() * 101)
+  const porcentaje = Math.floor(Math.random() * 101);
 
-  const totalBarra = 10
-  const barraLlena = Math.floor(porcentaje / (100 / totalBarra))
-  const barra = '▰'.repeat(barraLlena) + '▱'.repeat(totalBarra - barraLlena)
+  const totalBarra = 10;
+  const barraLlena = Math.floor(porcentaje / (100 / totalBarra));
+  const barra = '▰'.repeat(barraLlena) + '▱'.repeat(totalBarra - barraLlena);
 
   const configuracion = {
     gay2: { emoji: '🏳️‍🌈', textos: [traductor.texto1, traductor.texto2, traductor.texto3] },
@@ -31,19 +31,19 @@ const handler = async (m, { conn, command, text }) => {
     rata: { emoji: '🐁', textos: [traductor.texto16, traductor.texto17, traductor.texto18] },
     prostituto: { emoji: '🫦👅', textos: [traductor.texto19, traductor.texto20, traductor.texto21] },
     prostituta: { emoji: '🫦👅', textos: [traductor.texto19, traductor.texto20, traductor.texto21] }
-  }
+  };
 
-  const datos = configuracion[command]
-  if (!datos) throw traductor.texto22
+  const datos = configuracion[command];
+  if (!datos) throw traductor.texto22;
 
-  const [textosMenor, textosMayor, textosIntermedio] = datos.textos
-  const textos = porcentaje < 50 ? textosMenor : porcentaje > 100 ? textosMayor : textosIntermedio
+  const [textosMenor, textosMayor, textosIntermedio] = datos.textos;
+  const textos = porcentaje < 50 ? textosMenor : porcentaje > 100 ? textosMayor : textosIntermedio;
 
-  const nombreMostrar = `@${mencionadoJid.split('@')[0]}`
+  const nombreMostrar = `@${mencionadoJid.split('@')[0]}`;
 
-  const descripcion = `${textos[0]} *${nombreMostrar}* ${textos[1]} *${porcentaje}%* ${command} ${datos.emoji}\n${barra}\n${textos[2]}`
+  const descripcion = `${textos[0]} *${nombreMostrar}* ${textos[1]} *${porcentaje}%* ${command} ${datos.emoji}\n${barra}\n${textos[2]}`;
 
-  const mensajeAleatorio = traductor.texto23[Math.floor(Math.random() * traductor.texto23.length)]
+  const mensajeAleatorio = traductor.texto23[Math.floor(Math.random() * traductor.texto23.length)];
 
   const resultadoFinal = `
 ┏━━━━━━━━━━━━━━━┓
@@ -57,20 +57,20 @@ ${descripcion}
 ┏━━━━━━━━━━━━━━━┓
 ┃ 🔮 *${traductor.texto24}* 🔮
 ┗━━━━━━━━━━━━━━━┛
-`.trim()
+`.trim();
 
-  await conn.sendMessage(m.chat, { text: `⌛ *${traductor.texto25}* ⌛` }, { quoted: m })
+  await conn.sendMessage(m.chat, { text: `⌛ *${traductor.texto25}* ⌛` }, { quoted: m });
 
-  await new Promise(resolve => setTimeout(resolve, 3000))
+  await new Promise(resolve => setTimeout(resolve, 3000));
 
   await conn.sendMessage(m.chat, {
     text: resultadoFinal,
     mentions: [mencionadoJid]
-  }, { quoted: m })
-}
+  }, { quoted: m });
+};
 
-handler.help = ['gay2', 'lesbiana', 'pajero', 'pajera', 'puto', 'puta', 'manco', 'manca', 'rata', 'prostituta', 'prostituto'].map(v => v + ' @tag | nombre')
-handler.tags = ['calculator']
-handler.command = /^(gay2|lesbiana|pajero|pajera|puto|puta|manco|manca|rata|prostituto|prostituta)$/i
+handler.help = ['gay2', 'lesbiana', 'pajero', 'pajera', 'puto', 'puta', 'manco', 'manca', 'rata', 'prostituta', 'prostituto'].map(v => v + ' @tag | nombre');
+handler.tags = ['calculator'];
+handler.command = /^(gay2|lesbiana|pajero|pajera|puto|puta|manco|manca|rata|prostituto|prostituta)$/i;
 
-export default handler
+export default handler;

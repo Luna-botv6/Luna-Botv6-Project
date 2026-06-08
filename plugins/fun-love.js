@@ -1,11 +1,11 @@
-import fs from 'fs'
+import fs from 'fs';
 
 const handler = async (m, { args, usedPrefix, command, conn }) => {
-  const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
-  const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.love
+  const idioma = global.db.data.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
+  const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.love;
 
   let user1, user2, name1, name2;
-  
+
   if (m.mentionedJid && m.mentionedJid.length >= 2) {
     user1 = m.mentionedJid[0];
     user2 = m.mentionedJid[1];
@@ -49,7 +49,7 @@ const handler = async (m, { args, usedPrefix, command, conn }) => {
   else mensajeFinal = tradutor.texto7;
 
   let resultText;
-  
+
   if (user1 && user2) {
     resultText = `
 ╭━━━〔 *💕 ${tradutor.texto8}* 〕━━━⬣
@@ -68,7 +68,7 @@ const handler = async (m, { args, usedPrefix, command, conn }) => {
 
 💬 ${getLoveMessage(percentage, tradutor)}
     `.trim();
-    
+
     await m.reply(resultText, null, { mentions: [user1, user2] });
   } else {
     resultText = `
@@ -88,7 +88,7 @@ const handler = async (m, { args, usedPrefix, command, conn }) => {
 
 💬 ${getLoveMessage(percentage, tradutor)}
     `.trim();
-    
+
     await m.reply(resultText);
   }
 };

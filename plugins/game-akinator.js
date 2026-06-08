@@ -1,13 +1,16 @@
 import fetch from 'node-fetch';
+import fs from 'fs';
 import translate from '@vitalets/google-translate-api';
 
 const handler = async (m, {conn, usedPrefix, command, text}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.game_akinator
+  const datas = global;
+  const idioma = datas.db.data.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.game_akinator;
 
   if (m.isGroup) return;
+  if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = {};
+  if (!global.db.data.users[m.sender].akinator) global.db.data.users[m.sender].akinator = {};
   const aki = global.db.data.users[m.sender].akinator;
   if (text == 'end') {
     if (!aki.sesi) return m.reply(tradutor.texto1);
@@ -31,11 +34,11 @@ const handler = async (m, {conn, usedPrefix, command, text}) => {
       aki.step = step;
       const resultes2 = await translate(question, {to: 'es', autoCorrect: false});
       let txt = `${tradutor.texto5[0]} @${m.sender.split('@')[0]}*\n${tradutor.texto5[1]} ${resultes2.text}*\n\n`;
-      txt += tradutor.texto5[2] 
-      txt += tradutor.texto5[3] 
-      txt += tradutor.texto5[4]
-      txt += tradutor.texto5[5] 
-      txt += tradutor.texto5[6] 
+      txt += tradutor.texto5[2];
+      txt += tradutor.texto5[3];
+      txt += tradutor.texto5[4];
+      txt += tradutor.texto5[5];
+      txt += tradutor.texto5[6];
       txt += `${tradutor.texto5[7]}  ${usedPrefix + command} ${tradutor.texto5[8]}`;
       const soal = await conn.sendMessage(m.chat, {text: txt, mentions: [m.sender]}, {quoted: m});
       aki.soal = soal;

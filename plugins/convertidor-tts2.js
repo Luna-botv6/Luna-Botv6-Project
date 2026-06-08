@@ -15,14 +15,14 @@ import axios from 'axios';
 import fetch from 'node-fetch';
 
 const handler = async (m, { conn, usedPrefix, command, text, args }) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.convertidor_tts2
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.convertidor_tts2;
 
 
-  const [efecto, ...textoArray] = text.split(" ");
-  const texto = textoArray.join("");
+  const [efecto, ...textoArray] = text.split(' ');
+  const texto = textoArray.join('');
 
   if (!efecto) {
     let voiceList = await getVoiceList();

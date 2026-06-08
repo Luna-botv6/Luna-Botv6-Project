@@ -13,7 +13,7 @@ let handler = async (m, { conn, text, participants }) => {
 
   if (global.lidOwners.includes(number)) {
     console.log('ℹ️ El número ya está en la lista.');
-    return m.reply(`Ese número ya es mod (lidOwner).`);
+    return m.reply('Ese número ya es mod (lidOwner).');
   }
 
   global.lidOwners.push(number);
