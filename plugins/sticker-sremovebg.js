@@ -3,10 +3,16 @@ import {sticker} from '../src/libraries/sticker.js';
 
 
 const handler = async (m, {conn, text}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.sticker_sremovebg
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  let _t = {};
+  try {
+    const _lang = idioma || global.defaultLenguaje || 'es';
+    _t = JSON.parse(fs.readFileSync(`./src/languages/${_lang}.json`, 'utf8'));
+  } catch {
+    try { _t = JSON.parse(fs.readFileSync('./src/languages/es.json', 'utf8')); } catch {}
+  }
+  const tradutor = _t.plugins.sticker_sremovebg;
 
   try {
     const q = m.quoted ? m.quoted : m;

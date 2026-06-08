@@ -1,27 +1,27 @@
-import { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, jidNormalizedUser } from "@whiskeysockets/baileys";
-import qrcode from "qrcode";
-import NodeCache from "node-cache";
-import fs from "fs";
-import path from "path";
-import pino from "pino";
-import chalk from "chalk";
-import * as ws from "ws";
+import { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, jidNormalizedUser } from '@whiskeysockets/baileys';
+import qrcode from 'qrcode';
+import NodeCache from 'node-cache';
+import fs from 'fs';
+import path from 'path';
+import pino from 'pino';
+import chalk from 'chalk';
+import * as ws from 'ws';
 const { CONNECTING } = ws;
-import { makeWASocket } from "../src/libraries/simple.js";
-import { Boom } from "@hapi/boom";
-import store from "../src/libraries/store.js";
-import { connectionManager } from "../lib/funcion/connection-manager.js";
+import { makeWASocket } from '../src/libraries/simple.js';
+import { Boom } from '@hapi/boom';
+import store from '../src/libraries/store.js';
+import { connectionManager } from '../lib/funcion/connection-manager.js';
 
 const SUBBOT_CONFIG = {
   messages: {
-    welcome: global.welcomeSubbot || "👋 ¡Bienvenido/a! @user",
-    bye: global.byeSubbot || "👋 ¡Hasta luego! @user",
-    promote: global.promoteSubbot || "*@user Fue promovido a administrador.*",
-    demote: global.demoteSubbot || "*@user Fue degradado de administrador.*",
-    descUpdate: global.descUpdateSubbot || "*La descripción del grupo ha sido modificada.*",
-    nameUpdate: global.nameUpdateSubbot || "*El nombre del grupo ha sido modificado.*",
-    iconUpdate: global.iconUpdateSubbot || "*Se ha cambiado la foto de perfil del grupo.*",
-    linkRevoke: global.linkRevokeSubbot || "*El enlace de invitación al grupo ha sido restablecido.*",
+    welcome: global.welcomeSubbot || '👋 ¡Bienvenido/a! @user',
+    bye: global.byeSubbot || '👋 ¡Hasta luego! @user',
+    promote: global.promoteSubbot || '*@user Fue promovido a administrador.*',
+    demote: global.demoteSubbot || '*@user Fue degradado de administrador.*',
+    descUpdate: global.descUpdateSubbot || '*La descripción del grupo ha sido modificada.*',
+    nameUpdate: global.nameUpdateSubbot || '*El nombre del grupo ha sido modificado.*',
+    iconUpdate: global.iconUpdateSubbot || '*Se ha cambiado la foto de perfil del grupo.*',
+    linkRevoke: global.linkRevokeSubbot || '*El enlace de invitación al grupo ha sido restablecido.*',
   },
   limits: {
     maxSubbots: 40,
@@ -33,9 +33,9 @@ const SUBBOT_CONFIG = {
   },
 };
 
-const rtx = `🤖 *Luna-Bot Sub Bot*\n\n📱 *Escanea el código QR*\n\n*Pasos para vincular:*\n\n1 » Haz clic en los 3 puntos de la parte superior derecha\n\n2 » Toque en dispositivos vinculados\n\n3 » Escanea el código QR para iniciar sesión con el bot\n\n⚠️ *¡Este código QR expira en 45 segundos!*\n\n${global.dev || ""}`;
+const rtx = `🤖 *Luna-Bot Sub Bot*\n\n📱 *Escanea el código QR*\n\n*Pasos para vincular:*\n\n1 » Haz clic en los 3 puntos de la parte superior derecha\n\n2 » Toque en dispositivos vinculados\n\n3 » Escanea el código QR para iniciar sesión con el bot\n\n⚠️ *¡Este código QR expira en 45 segundos!*\n\n${global.dev || ''}`;
 
-const rtx2 = `🤖 *Luna-Bot Sub Bot Code*\n\n✨ Usa este Código para convertirte en Sub-Bot Temporal.\n\n↱ Tres Puntitos\n↱ Dispositivos Vinculados\n↱ Vincular Dispositivo\n↱ Vincular con el número de teléfono.\n\n➤ *Importante:*\n» No es recomendable usar tu cuenta principal.\n» Si el Bot principal se reinicia, todos los Sub-Bots se desconectaran.\n\n${global.dev || ""}`;
+const rtx2 = `🤖 *Luna-Bot Sub Bot Code*\n\n✨ Usa este Código para convertirte en Sub-Bot Temporal.\n\n↱ Tres Puntitos\n↱ Dispositivos Vinculados\n↱ Vincular Dispositivo\n↱ Vincular con el número de teléfono.\n\n➤ *Importante:*\n» No es recomendable usar tu cuenta principal.\n» Si el Bot principal se reinicia, todos los Sub-Bots se desconectaran.\n\n${global.dev || ''}`;
 
 const subbotOptions = {};
 
@@ -66,19 +66,19 @@ async function loadHandlerSafely() {
 
     return Handler;
   } catch (e) {
-    console.error(chalk.red("❌ Error cargando handler:"), e.message);
+    console.error(chalk.red('❌ Error cargando handler:'), e.message);
     return null;
   }
 }
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
-  let time = global.db.data.users[m.sender].Subs + SUBBOT_CONFIG.limits.cooldownTime;
-  if (new Date() - global.db.data.users[m.sender].Subs < SUBBOT_CONFIG.limits.cooldownTime) {
+  let time = (global.db.data.users?.[m.sender]?.Subs || 0) + SUBBOT_CONFIG.limits.cooldownTime;
+  if (new Date() - (global.db.data.users?.[m.sender]?.Subs || 0) < SUBBOT_CONFIG.limits.cooldownTime) {
     return conn.reply(m.chat, `⏳ Debes esperar ${msToTime(time - new Date())} para volver a intentar vincular un subbot.`, m);
   }
 
   if (connectionManager.getActiveConnectionCount() >= SUBBOT_CONFIG.limits.maxSubbots) {
-    return m.reply("❌ No hay espacio disponible para sub-bots.");
+    return m.reply('❌ No hay espacio disponible para sub-bots.');
   }
 
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender;
@@ -99,17 +99,17 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   }
 
   if (!id) {
-    return m.reply("❌ No se pudo resolver tu número.");
+    return m.reply('❌ No se pudo resolver tu número.');
   }
 
-  let subbotPath = path.join(`./sub-lunabot/`, id);
+  let subbotPath = path.join('./sub-lunabot/', id);
 
   if (connectionManager.isConnecting(id)) {
-    return m.reply("⏳ Ya tienes una conexión en progreso. Por favor espera.");
+    return m.reply('⏳ Ya tienes una conexión en progreso. Por favor espera.');
   }
 
   if (connectionManager.isConnected(id)) {
-    return m.reply("✅ Ya tienes un SubBot activo.");
+    return m.reply('✅ Ya tienes un SubBot activo.');
   }
 
   if (!fs.existsSync(subbotPath)) {
@@ -124,12 +124,13 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   subbotOptions.command = command;
   subbotOptions.senderPhone = id;
   initializeSubBot(subbotOptions);
+  if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = {};
   global.db.data.users[m.sender].Subs = new Date() * 1;
 };
 
-handler.command = ["jadibot", "serbot"];
-handler.help = ["serbot", "serbot code"];
-handler.tags = ["socket"];
+handler.command = ['jadibot', 'serbot'];
+handler.help = ['serbot', 'serbot code'];
+handler.tags = ['socket'];
 export default handler;
 
 export async function initializeSubBot(options) {
@@ -150,27 +151,27 @@ export async function initializeSubBot(options) {
   let qrTimeoutId = null;
 
   if (mcode) {
-    args[0] = args[0].replace(/^--code$|^code$/, "").trim();
-    if (args[1]) args[1] = args[1].replace(/^--code$|^code$/, "").trim();
-    if (args[0] == "") args[0] = undefined;
+    args[0] = args[0].replace(/^--code$|^code$/, '').trim();
+    if (args[1]) args[1] = args[1].replace(/^--code$|^code$/, '').trim();
+    if (args[0] == '') args[0] = undefined;
   }
 
-  const pathCreds = path.join(subbotPath, "creds.json");
+  const pathCreds = path.join(subbotPath, 'creds.json');
   if (!fs.existsSync(subbotPath)) fs.mkdirSync(subbotPath, { recursive: true });
 
   if (args[0]) {
     try {
-      const credsData = Buffer.from(args[0], "base64").toString("utf-8");
+      const credsData = Buffer.from(args[0], 'base64').toString('utf-8');
       fs.writeFileSync(pathCreds, JSON.stringify(JSON.parse(credsData), null, 2));
     } catch (e) {
-      console.log(chalk.yellow("⚠️ Credenciales inválidas recibidas, ignorando"));
+      console.log(chalk.yellow('⚠️ Credenciales inválidas recibidas, ignorando'));
     }
   }
 
   if (fs.existsSync(pathCreds)) {
     try {
       let creds = JSON.parse(fs.readFileSync(pathCreds));
-      const rawData = fs.readFileSync(pathCreds, "utf8");
+      const rawData = fs.readFileSync(pathCreds, 'utf8');
 
       const hasImportantData = creds && (creds.me || creds.account || creds.signalIdentities || creds.noiseKey || creds.pairingEphemeralKeyPair || creds.signedIdentityKey || creds.registrationId || rawData.length > 500);
 
@@ -183,7 +184,7 @@ export async function initializeSubBot(options) {
     } catch (e) {
       console.log(chalk.yellow(`⚠️ Error leyendo credenciales para ${userId}`));
       try {
-        const rawData = fs.readFileSync(pathCreds, "utf8");
+        const rawData = fs.readFileSync(pathCreds, 'utf8');
         if (rawData.length < 30) {
           console.log(chalk.yellow(`🗑️ Eliminando credenciales corruptas: ${userId}`));
           fs.unlinkSync(pathCreds);
@@ -202,13 +203,13 @@ export async function initializeSubBot(options) {
     const { state, saveState, saveCreds } = await useMultiFileAuthState(subbotPath);
 
     const connectionOptions = {
-      logger: pino({ level: "silent" }),
+      logger: pino({ level: 'silent' }),
       printQRInTerminal: false,
       mobile: false,
-      browser: mcode ? ["Ubuntu", "Chrome", "110.0.5585.95"] : ["Luna-Bot (Sub Bot)", "Chrome", "2.0.0"],
+      browser: mcode ? ['Ubuntu', 'Chrome', '110.0.5585.95'] : ['Luna-Bot (Sub Bot)', 'Chrome', '2.0.0'],
       auth: {
         creds: state.creds,
-        keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "silent" })),
+        keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })),
       },
       markOnlineOnConnect: true,
       generateHighQualityLinkPreview: true,
@@ -216,9 +217,9 @@ export async function initializeSubBot(options) {
         if (store) {
           let jid = jidNormalizedUser(clave.remoteJid);
           let msg = await store.loadMessage(jid, clave.id);
-          return msg?.message || "";
+          return msg?.message || '';
         }
-        return { conversation: "Luna-Bot" };
+        return { conversation: 'Luna-Bot' };
       },
       msgRetryCounterCache,
       msgRetryCounterMap,
@@ -234,7 +235,7 @@ export async function initializeSubBot(options) {
 
     connectionManager.setSocket(userId, sock);
 
-    function cleanupConnection(sockToClean, userId, reason = "cleanup") {
+    function cleanupConnection(sockToClean, userId, reason = 'cleanup') {
       console.log(chalk.yellow(`🧹 Finalizando sesión de ${userId}`));
 
       if (qrTimeoutId) {
@@ -285,14 +286,14 @@ export async function initializeSubBot(options) {
             },
             m?.sender ? { quoted: m } : {}
           );
-          cleanupConnection(sock, userId, "max_qr_attempts");
+          cleanupConnection(sock, userId, 'max_qr_attempts');
           return;
         }
 
         const attemptNumber = connectionManager.incrementQrAttempts(userId);
         console.log(chalk.blue(`📤 Enviando código QR ${attemptNumber}/${SUBBOT_CONFIG.limits.maxQrAttempts} a ${userId}`));
 
-        const qrMessage = attemptNumber === 1 ? rtx.trim() : rtx.trim() + `\n\n⚠️ *Último intento* - Si no escaneas este QR en 45 segundos, deberás usar */serbot* nuevamente.`;
+        const qrMessage = attemptNumber === 1 ? rtx.trim() : rtx.trim() + '\n\n⚠️ *Último intento* - Si no escaneas este QR en 45 segundos, deberás usar */serbot* nuevamente.';
 
         txtQR = await conn.sendMessage(m.chat, { image: await qrcode.toBuffer(qr, { scale: 8 }), caption: qrMessage }, m?.sender ? { quoted: m } : {});
 
@@ -304,12 +305,12 @@ export async function initializeSubBot(options) {
             await conn.sendMessage(
               m.chat,
               {
-                text: `❌ Tiempo agotado para vincular el SubBot. No se conectó en el tiempo límite.\n\nIntenta nuevamente usando el comando */serbot*`,
+                text: '❌ Tiempo agotado para vincular el SubBot. No se conectó en el tiempo límite.\n\nIntenta nuevamente usando el comando */serbot*',
                 mentions: [m.sender],
               },
               m?.sender ? { quoted: m } : {}
             );
-            cleanupConnection(sock, userId, "qr_timeout");
+            cleanupConnection(sock, userId, 'qr_timeout');
           }
         }, SUBBOT_CONFIG.limits.qrTimeout);
 
@@ -335,13 +336,13 @@ export async function initializeSubBot(options) {
           }
         }
         let secret = await sock.requestPairingCode(phoneForCode);
-        secret = secret.match(/.{1,4}/g)?.join("-");
+        secret = secret.match(/.{1,4}/g)?.join('-');
         codeBot = await m.reply(secret);
       }
 
-      const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode || lastDisconnect?.error?.statusCode || (lastDisconnect?.error instanceof Error ? "unknown_error" : "unknown");
+      const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode || lastDisconnect?.error?.statusCode || (lastDisconnect?.error instanceof Error ? 'unknown_error' : 'unknown');
 
-      if (connection == "open") {
+      if (connection == 'open') {
         connectionEstablished = true;
 
         if (qrTimeoutId) {
@@ -357,13 +358,13 @@ export async function initializeSubBot(options) {
 
         const nameOrNumber = conn.getName(`${path.basename(subbotPath)}@s.whatsapp.net`);
         const baseName = path.basename(subbotPath);
-        const displayName = nameOrNumber.replace(/\D/g, "") === baseName ? `+${baseName}` : `${nameOrNumber} (${baseName})`;
+        const displayName = nameOrNumber.replace(/\D/g, '') === baseName ? `+${baseName}` : `${nameOrNumber} (${baseName})`;
         console.log(chalk.bold.cyanBright(`✅ ${displayName} conectado correctamente`));
 
         sock.isInit = true;
 
         if (m?.chat) {
-          await conn.sendMessage(m.chat, { text: `✅ SubBot conectado correctamente.`, mentions: [m.sender] }, m?.sender ? { quoted: m } : {});
+          await conn.sendMessage(m.chat, { text: '✅ SubBot conectado correctamente.', mentions: [m.sender] }, m?.sender ? { quoted: m } : {});
         }
 
         sock.welcome = SUBBOT_CONFIG.messages.welcome;
@@ -376,7 +377,7 @@ export async function initializeSubBot(options) {
         sock.sRevoke = SUBBOT_CONFIG.messages.linkRevoke;
       }
 
-      if (connection === "close") {
+      if (connection === 'close') {
         if (qrTimeoutId) {
           clearTimeout(qrTimeoutId);
           qrTimeoutId = null;
@@ -399,15 +400,15 @@ export async function initializeSubBot(options) {
 
         if (code === DisconnectReason.badSession) {
           console.log(chalk.red(`❌ Sesión inválida: ${userId}`));
-          if (m) m.reply(`❌ La sesión se ha corrompido. Usa .deletebot y vuelve a vincular.`);
-          cleanupConnection(sock, userId, "bad_session");
+          if (m) m.reply('❌ La sesión se ha corrompido. Usa .deletebot y vuelve a vincular.');
+          cleanupConnection(sock, userId, 'bad_session');
         } else if (code === DisconnectReason.loggedOut) {
           console.log(chalk.red(`🚪 Sesión cerrada: ${userId}`));
-          if (m) m.reply(`🚪 Sesión cerrada. Usa .deletebot y vuelve a vincular.`);
-          cleanupConnection(sock, userId, "logged_out");
+          if (m) m.reply('🚪 Sesión cerrada. Usa .deletebot y vuelve a vincular.');
+          cleanupConnection(sock, userId, 'logged_out');
         } else if (code === DisconnectReason.connectionReplaced) {
           console.log(chalk.yellow(`🔄 Conexión reemplazada: ${userId}`));
-          cleanupConnection(sock, userId, "connection_replaced");
+          cleanupConnection(sock, userId, 'connection_replaced');
         } else if (shouldReconnect(code)) {
           const newAttempts = reconnectAttempts + 1;
           const delay = calculateBackoffDelay(newAttempts);
@@ -425,14 +426,14 @@ export async function initializeSubBot(options) {
               await reloadHandler(true);
             } catch (e) {
               console.error(chalk.red(`❌ Error reconectando ${userId}`));
-              cleanupConnection(sock, userId, "reconnect_error");
+              cleanupConnection(sock, userId, 'reconnect_error');
             }
           }, delay);
 
-          connectionManager.addCleanupTimer(userId, "timeout", timeout);
+          connectionManager.addCleanupTimer(userId, 'timeout', timeout);
         } else {
           console.log(chalk.red(`💥 Error no recuperable: ${userId}`));
-          cleanupConnection(sock, userId, "unrecoverable_error");
+          cleanupConnection(sock, userId, 'unrecoverable_error');
         }
       }
     }
@@ -448,9 +449,9 @@ export async function initializeSubBot(options) {
         const oldChats = sock.chats;
         try {
           if (sock.ev) {
-            sock.ev.off("messages.upsert", sock.handler);
-            sock.ev.off("connection.update", sock.connectionUpdate);
-            sock.ev.off("creds.update", sock.credsUpdate);
+            sock.ev.off('messages.upsert', sock.handler);
+            sock.ev.off('connection.update', sock.connectionUpdate);
+            sock.ev.off('creds.update', sock.credsUpdate);
           }
           if (sock.ws?.socket) sock.ws.close();
         } catch (e) {}
@@ -462,18 +463,18 @@ export async function initializeSubBot(options) {
       }
 
       if (!isInit && sock.ev) {
-        sock.ev.off("messages.upsert", sock.handler);
-        sock.ev.off("connection.update", sock.connectionUpdate);
-        sock.ev.off("creds.update", sock.credsUpdate);
+        sock.ev.off('messages.upsert', sock.handler);
+        sock.ev.off('connection.update', sock.connectionUpdate);
+        sock.ev.off('creds.update', sock.credsUpdate);
       }
 
       sock.handler = handlerModule.handler.bind(sock);
       sock.connectionUpdate = connectionUpdate.bind(sock);
       sock.credsUpdate = saveCreds.bind(sock, true);
 
-      sock.ev.on("messages.upsert", sock.handler);
-      sock.ev.on("connection.update", sock.connectionUpdate);
-      sock.ev.on("creds.update", sock.credsUpdate);
+      sock.ev.on('messages.upsert', sock.handler);
+      sock.ev.on('connection.update', sock.connectionUpdate);
+      sock.ev.on('creds.update', sock.credsUpdate);
       isInit = false;
       return true;
     };
@@ -497,8 +498,8 @@ function msToTime(duration) {
     seconds = Math.floor((duration / 1000) % 60),
     minutes = Math.floor((duration / (1000 * 60)) % 60),
     hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-  hours = hours < 10 ? "0" + hours : hours;
-  minutes = minutes < 10 ? "0" + minutes : minutes;
-  seconds = seconds < 10 ? "0" + seconds : seconds;
-  return minutes + " m y " + seconds + " s ";
+  hours = hours < 10 ? '0' + hours : hours;
+  minutes = minutes < 10 ? '0' + minutes : minutes;
+  seconds = seconds < 10 ? '0' + seconds : seconds;
+  return minutes + ' m y ' + seconds + ' s ';
 }

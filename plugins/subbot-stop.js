@@ -1,10 +1,10 @@
-import { connectionManager } from "../lib/funcion/connection-manager.js";
-import fs from "fs";
-import path from "path";
-import chalk from "chalk";
+import { connectionManager } from '../lib/funcion/connection-manager.js';
+import fs from 'fs';
+import path from 'path';
+import chalk from 'chalk';
 
 function findSubbotIdByPhone(phoneNumber) {
-  const subBotDir = "./sub-lunabot/";
+  const subBotDir = './sub-lunabot/';
   if (!fs.existsSync(subBotDir)) return null;
 
   const dirs = fs.readdirSync(subBotDir);
@@ -12,12 +12,12 @@ function findSubbotIdByPhone(phoneNumber) {
   if (dirs.includes(phoneNumber)) return phoneNumber;
 
   for (const dirName of dirs) {
-    const credsPath = path.join(subBotDir, dirName, "creds.json");
+    const credsPath = path.join(subBotDir, dirName, 'creds.json');
     if (!fs.existsSync(credsPath)) continue;
     try {
-      const creds = JSON.parse(fs.readFileSync(credsPath, "utf8"));
+      const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
       if (!creds.me?.jid) continue;
-      const credsPhone = creds.me.jid.split("@")[0];
+      const credsPhone = creds.me.jid.split('@')[0];
       if (credsPhone === phoneNumber) return dirName;
     } catch (e) {}
   }
@@ -44,25 +44,25 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   }
 
   if (!resolvedPhone) {
-    return m.reply("❌ No se pudo resolver tu número real.");
+    return m.reply('❌ No se pudo resolver tu número real.');
   }
 
   const id = findSubbotIdByPhone(resolvedPhone);
-  const subbotPath = path.join(`./sub-lunabot/`, id || resolvedPhone);
+  const subbotPath = path.join('./sub-lunabot/', id || resolvedPhone);
 
-  if (command === "stopbot" || command === "stop") {
+  if (command === 'stopbot' || command === 'stop') {
     if (!id) {
-      return m.reply("❌ No tienes un SubBot activo para detener.");
+      return m.reply('❌ No tienes un SubBot activo para detener.');
     }
 
     const socket = connectionManager.getSocket(id);
 
     if (!socket) {
-      return m.reply("❌ No tienes un SubBot activo para detener.");
+      return m.reply('❌ No tienes un SubBot activo para detener.');
     }
 
     if (!connectionManager.isConnected(id)) {
-      return m.reply("⚠️ Tu SubBot no está conectado actualmente.");
+      return m.reply('⚠️ Tu SubBot no está conectado actualmente.');
     }
 
     try {
@@ -86,9 +86,9 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     }
   }
 
-  if (command === "deletebot" || command === "delbot") {
+  if (command === 'deletebot' || command === 'delbot') {
     if (!id || !fs.existsSync(subbotPath)) {
-      return m.reply("❌ No tienes una sesión de SubBot para eliminar.");
+      return m.reply('❌ No tienes una sesión de SubBot para eliminar.');
     }
 
     try {
@@ -121,7 +121,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   }
 };
 
-handler.command = ["stopbot", "stop", "deletebot", "delbot"];
-handler.help = ["stopbot", "deletebot"];
-handler.tags = ["socket"];
+handler.command = ['stopbot', 'stop', 'deletebot', 'delbot'];
+handler.help = ['stopbot', 'deletebot'];
+handler.tags = ['socket'];
 export default handler;

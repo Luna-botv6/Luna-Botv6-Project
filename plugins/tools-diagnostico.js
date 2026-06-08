@@ -13,7 +13,7 @@ const handler = async (m, { conn, isAdmin, isBotAdmin, isOwner }) => {
   const registrado = user.registered;
 
   const listaDiagnostico = [
-    `📊 *DIAGNÓSTICO DEL BOT EN ESTE CHAT*`,
+    '📊 *DIAGNÓSTICO DEL BOT EN ESTE CHAT*',
     `• ID del chat: ${m.chat}`,
     `• Tú eres admin: ${isAdmin ? '✅' : '❌'}`,
     `• Bot es admin: ${isBotAdmin ? '✅' : '❌'}`,
@@ -25,8 +25,8 @@ const handler = async (m, { conn, isAdmin, isBotAdmin, isOwner }) => {
     `• Usuario registrado: ${registrado ? '✅' : '❌'}`,
     `• Usuario baneado: ${isBannedUser ? '🚫 SÍ' : '✅ NO'}`,
     `• Grupo baneado: ${isBannedChat ? '🚫 SÍ' : '✅ NO'}`,
-    ``,
-    `🛠️ *SUGERENCIAS:*`,
+    '',
+    '🛠️ *SUGERENCIAS:*',
     ...(isBannedChat ? ['🔧 Usa /unbanchat para desbanear este grupo.'] : []),
     ...(isBannedUser ? ['🔧 Usa /unban para desbanearte o pide ayuda al dueño.'] : []),
     ...(modoAdmin && !isAdmin && !isOwner ? ['🔧 Modo admin activo: solo los admins pueden usar comandos.'] : []),

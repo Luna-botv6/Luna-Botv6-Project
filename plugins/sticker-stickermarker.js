@@ -1,20 +1,26 @@
 import uploadImage from '../src/libraries/uploadImage.js';
 import {sticker} from '../src/libraries/sticker.js';
-import MessageType from "@whiskeysockets/baileys";
+import MessageType from '@whiskeysockets/baileys';
 
 const effects = ['jail', 'gay', 'glass', 'wasted', 'triggered', 'lolice', 'simpcard', 'horny'];
 
 const handler = async (m, {conn, usedPrefix, text}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.sticker_stickermarker
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  let _t = {};
+  try {
+    const _lang = idioma || global.defaultLenguaje || 'es';
+    _t = JSON.parse(fs.readFileSync(`./src/languages/${_lang}.json`, 'utf8'));
+  } catch {
+    try { _t = JSON.parse(fs.readFileSync('./src/languages/es.json', 'utf8')); } catch {}
+  }
+  const tradutor = _t.plugins.sticker_stickermarker;
 
   const effect = text.trim().toLowerCase();
   if (!effects.includes(effect)) {
     throw `
 ${tradutor.texto1[0]}
-${tradutor.texto1[1]} ${usedPrefix}stickermaker ${tradutor.texto1[2]} 
+${tradutor.texto1[1]} ${usedPrefix}stickermaker ${tradutor.texto1[2]}
 ${tradutor.texto1[3]}
 ${tradutor.texto1[4]} ${usedPrefix}stickermaker jail
 ${tradutor.texto1[5]}

@@ -43,13 +43,13 @@ const handler = async (m, {command, conn}) => {
   }
 
   if (command == 'wprandom') {
-    const res = (await axios.get(`https://raw.githubusercontent.com/BrunoSobrino/TheMystic-Bot-MD/master/src/JSON/wprandom.json`)).data;
+    const res = (await axios.get('https://raw.githubusercontent.com/BrunoSobrino/TheMystic-Bot-MD/master/src/JSON/wprandom.json')).data;
     const res2 = await res[Math.floor(res.length * Math.random())];
     conn.sendMessage(m.chat, {image: {url: res2}, caption: `_${command}_`.trim()}, {quoted: m});
   }
 
   if (command == 'coffee') {
-    const haha = await conn.getFile(`https://coffee.alexflipnote.dev/random`);
+    const haha = await conn.getFile('https://coffee.alexflipnote.dev/random');
     await conn.reply(m.chat, global.wait, m);
     conn.sendMessage(m.chat, {image: {url: haha.data}, caption: `_${command}_`.trim()}, {quoted: m});
   }

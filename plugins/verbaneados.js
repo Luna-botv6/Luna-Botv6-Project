@@ -1,33 +1,40 @@
-import fs from 'fs'
+import fs from 'fs';
 
 function handler(m, { conn, isOwner }) {
-  if (!isOwner) return m.reply('🚫 Solo el owner puede usar esto.')
+  if (!isOwner) return m.reply('🚫 Solo el owner puede usar esto.');
 
-  const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
-  const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.verbaneados
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
+  let _t = {};
+  try {
+    const _lang = idioma || global.defaultLenguaje || 'es';
+    _t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${_lang}.json`, 'utf8'));
+  } catch {
+    try { _t = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')); } catch {}
+  }
+  const tradutor = _t.plugins.verbaneados;
 
-  const baneados = global.db.data.baneados || {}
-  const keys = Object.keys(baneados)
+  const baneados = global.db.data.baneados || {};
+  const keys = Object.keys(baneados);
 
-  if (!keys.length) return m.reply(tradutor.sinBaneados)
+  if (!keys.length) return m.reply(tradutor.sinBaneados);
 
-  let texto = `${tradutor.titulo}\n\n`
+  let texto = `${tradutor.titulo}\n\n`;
 
   for (const id of keys) {
-    const info = baneados[id]
-    const fecha = new Date(info.fecha).toLocaleString()
+    const info = baneados[id];
+    const fecha = new Date(info.fecha).toLocaleString();
     texto += `🔸 *@${id.split('@')[0]}*\n` +
              `• ${tradutor.motivo}: ${info.motivo}\n` +
              `• ${tradutor.fecha}: ${fecha}\n` +
-             `• ${tradutor.por}: ${info.bloqueadoPor}\n\n`
+             `• ${tradutor.por}: ${info.bloqueadoPor}\n\n`;
   }
 
-  m.reply(texto.trim(), null, { mentions: keys })
+  m.reply(texto.trim(), null, { mentions: keys });
 }
 
-handler.command = ['verbaneados']
-handler.rowner = true
-handler.help = ['verbaneados']
-handler.tags = ['owner']
+handler.command = ['verbaneados'];
+handler.rowner = true;
+handler.help = ['verbaneados'];
+handler.tags = ['owner'];
 
-export default handler
+export default handler;

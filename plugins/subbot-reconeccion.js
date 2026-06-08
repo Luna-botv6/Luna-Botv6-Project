@@ -1,7 +1,7 @@
-import fs from "fs";
-import path from "path";
-import chalk from "chalk";
-import { connectionManager } from "../lib/funcion/connection-manager.js";
+import fs from 'fs';
+import path from 'path';
+import chalk from 'chalk';
+import { connectionManager } from '../lib/funcion/connection-manager.js';
 
 const handler = (m) => m;
 
@@ -12,12 +12,12 @@ handler.all = async function (m, { conn }) {
 export default handler;
 
 export async function autoreconnectSubbots(mainConn) {
-  console.log(chalk.blue("🔄 Iniciando restauración de sesiones..."));
+  console.log(chalk.blue('🔄 Iniciando restauración de sesiones...'));
 
-  const subBotDir = "./sub-lunabot/";
+  const subBotDir = './sub-lunabot/';
 
   if (!fs.existsSync(subBotDir)) {
-    console.log(chalk.yellow("📁 No hay sesiones guardadas"));
+    console.log(chalk.yellow('📁 No hay sesiones guardadas'));
     return;
   }
 
@@ -30,11 +30,11 @@ export async function autoreconnectSubbots(mainConn) {
 
       if (!fs.statSync(userPath).isDirectory()) continue;
 
-      const credsPath = path.join(userPath, "creds.json");
+      const credsPath = path.join(userPath, 'creds.json');
       if (!fs.existsSync(credsPath)) continue;
 
       try {
-        const creds = JSON.parse(fs.readFileSync(credsPath, "utf8"));
+        const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
 
         const hasValidData =
           creds &&
@@ -77,7 +77,7 @@ export async function autoreconnectSubbots(mainConn) {
         console.log(chalk.red(`❌ Error procesando sesión: ${userId}`));
 
         try {
-          const rawData = fs.readFileSync(credsPath, "utf8");
+          const rawData = fs.readFileSync(credsPath, 'utf8');
           if (rawData.length < 10) {
             fs.rmSync(userPath, { recursive: true, force: true });
             console.log(chalk.yellow(`🗑️ Archivo corrupto eliminado: ${userId}`));
@@ -90,18 +90,18 @@ export async function autoreconnectSubbots(mainConn) {
     }
 
     if (validSessions.length === 0) {
-      console.log(chalk.green("✅ No hay sesiones para restaurar"));
+      console.log(chalk.green('✅ No hay sesiones para restaurar'));
       return;
     }
 
     console.log(chalk.blue(`📋 Sesiones encontradas: ${validSessions.length}`));
 
     try {
-      const imported = await import("./subbot.js");
+      const imported = await import('./subbot.js');
       const initializeSubBot = imported.initializeSubBot || imported.default?.initializeSubBot;
 
       if (!initializeSubBot) {
-        console.log(chalk.red("❌ Error: No se pudo importar el módulo"));
+        console.log(chalk.red('❌ Error: No se pudo importar el módulo'));
         return;
       }
 
@@ -132,13 +132,13 @@ export async function autoreconnectSubbots(mainConn) {
       }
     }, 10000);
   } catch (error) {
-    console.error(chalk.red("❌ Error en restauración:"), error.message);
+    console.error(chalk.red('❌ Error en restauración:'), error.message);
   }
 }
 
 function createMockMessage(mainConn, userId) {
   const senderJid = `${userId}@s.whatsapp.net`;
-  const chatJid = mainConn.user?.jid || "status@broadcast";
+  const chatJid = mainConn.user?.jid || 'status@broadcast';
 
   return {
     key: {
@@ -148,9 +148,9 @@ function createMockMessage(mainConn, userId) {
       participant: senderJid,
     },
     message: {
-      conversation: "/serbot",
+      conversation: '/serbot',
       extendedTextMessage: {
-        text: "/serbot",
+        text: '/serbot',
       },
     },
     messageTimestamp: Math.floor(Date.now() / 1000),
@@ -159,8 +159,8 @@ function createMockMessage(mainConn, userId) {
     fromMe: false,
     isGroup: false,
     mentionedJid: [],
-    body: "/serbot",
-    text: "/serbot",
+    body: '/serbot',
+    text: '/serbot',
     reply: async (text) => Promise.resolve(),
   };
 }
@@ -178,7 +178,7 @@ async function simulateSerbot(mockMessage, mainConn, initializeSubBot, userPath)
       banned: false,
       premium: false,
       registered: false,
-      language: "es",
+      language: 'es',
     };
   }
 
@@ -190,8 +190,8 @@ async function simulateSerbot(mockMessage, mainConn, initializeSubBot, userPath)
     m: mockMessage,
     conn: mainConn,
     args: [],
-    usedPrefix: "/",
-    command: "serbot",
+    usedPrefix: '/',
+    command: 'serbot',
     senderPhone: userId,
   };
 
@@ -207,7 +207,7 @@ async function simulateSerbot(mockMessage, mainConn, initializeSubBot, userPath)
 }
 
 export async function validateAndCleanSessions() {
-  const subBotDir = "./sub-lunabot/";
+  const subBotDir = './sub-lunabot/';
 
   if (!fs.existsSync(subBotDir)) return;
 
@@ -217,19 +217,19 @@ export async function validateAndCleanSessions() {
 
     for (const userId of userDirs) {
       const userPath = path.join(subBotDir, userId);
-      const credsPath = path.join(userPath, "creds.json");
+      const credsPath = path.join(userPath, 'creds.json');
 
       if (!fs.statSync(userPath).isDirectory()) continue;
 
       let shouldDelete = false;
-      let reason = "";
+      let reason = '';
 
       if (!fs.existsSync(credsPath)) {
         shouldDelete = true;
-        reason = "sin credenciales";
+        reason = 'sin credenciales';
       } else {
         try {
-          const creds = JSON.parse(fs.readFileSync(credsPath, "utf8"));
+          const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
 
           const hasNoValidData =
             !creds ||
@@ -245,7 +245,7 @@ export async function validateAndCleanSessions() {
 
           if (hasNoValidData) {
             shouldDelete = true;
-            reason = "sin datos válidos";
+            reason = 'sin datos válidos';
           } else {
             const stats = fs.statSync(credsPath);
             const sessionAge = Date.now() - stats.mtime.getTime();
@@ -258,14 +258,14 @@ export async function validateAndCleanSessions() {
           }
         } catch (error) {
           try {
-            const rawData = fs.readFileSync(credsPath, "utf8");
+            const rawData = fs.readFileSync(credsPath, 'utf8');
             if (rawData.length < 10) {
               shouldDelete = true;
-              reason = "archivo corrupto";
+              reason = 'archivo corrupto';
             }
           } catch (e) {
             shouldDelete = true;
-            reason = "ilegible";
+            reason = 'ilegible';
           }
         }
       }
@@ -285,7 +285,7 @@ export async function validateAndCleanSessions() {
       console.log(chalk.green(`✅ Limpieza completada: ${cleanedCount} sesiones eliminadas`));
     }
   } catch (error) {
-    console.error(chalk.red("❌ Error en validación de sesiones"));
+    console.error(chalk.red('❌ Error en validación de sesiones'));
   }
 }
 

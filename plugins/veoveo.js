@@ -19,7 +19,7 @@ const handler = async (m, { conn }) => {
       conn.reply(m.chat, `¡Correcto! El objeto era: ${global.veoveo[m.chat].objeto}. ¡Bien hecho!`, m);
       delete global.veoveo[m.chat]; // El juego termina y se elimina el objeto de ese chat.
     } else {
-      conn.reply(m.chat, `¡Incorrecto! Intenta de nuevo.`, m); // Si la respuesta es incorrecta
+      conn.reply(m.chat, '¡Incorrecto! Intenta de nuevo.', m); // Si la respuesta es incorrecta
     }
   }
 };

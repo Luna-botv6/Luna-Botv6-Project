@@ -157,7 +157,7 @@ ${testConfig.warning ? '⚠️ *ADVERTENCIA:* Este nivel puede activar el reinic
 ✅ Recursos dentro de límites seguros`;
     }
 
-    statusMsg += `\n\n💡 *Nota:* La memoria se liberará automáticamente por el GC`;
+    statusMsg += '\n\n💡 *Nota:* La memoria se liberará automáticamente por el GC';
 
     await m.reply(statusMsg);
 

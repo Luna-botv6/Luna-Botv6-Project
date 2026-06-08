@@ -1,20 +1,20 @@
-import fs from 'fs'
-import { getUserStats } from '../lib/stats.js'
+import fs from 'fs';
+import { getUserStats } from '../lib/stats.js';
 
 const handler = async (m, { conn, usedPrefix }) => {
-  let who
+  let who;
   if (m.isGroup) {
-    who = m.mentionedJid?.[0] || m.sender
+    who = m.mentionedJid?.[0] || m.sender;
   } else {
-    who = m.sender
+    who = m.sender;
   }
 
-  const name = conn.getName(who)
-  const stats = getUserStats(who)
+  const name = conn.getName(who);
+  const stats = getUserStats(who);
 
-  const idioma = stats.language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))
-  const tradutor = _translate.plugins.rpg_balance
+  const idioma = stats.language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
+  const tradutor = _translate.plugins.rpg_balance;
 
   m.reply(`
 ${tradutor.texto1[0]}
@@ -24,11 +24,11 @@ ${tradutor.texto1[3]}
 ${tradutor.texto1[4]}
 ${tradutor.texto1[5]}
 ❏ *${usedPrefix}buy ${tradutor.texto1[6]}
-❏ *${usedPrefix}buyall*`)
-}
+❏ *${usedPrefix}buyall*`);
+};
 
-handler.help = ['bal']
-handler.tags = ['xp']
-handler.command = ['bal', 'diamantes', 'diamond', 'balance']
+handler.help = ['bal'];
+handler.tags = ['xp'];
+handler.command = ['bal', 'diamantes', 'diamond', 'balance'];
 
-export default handler
+export default handler;

@@ -100,7 +100,7 @@ async function systemInfoPlugin(m, extra) {
       getBatteryInfo((batteryStatus) => {
         getStorageInfo((storageInfo) => {
           getLinuxInfo((linuxInfo) => {
-            let infoMessage = `> *📊 Información del Sistema*\n\n`;
+            let infoMessage = '> *📊 Información del Sistema*\n\n';
             infoMessage += `- 🌐 *Plataforma*: _${systemInfo.platform}_\n`;
             infoMessage += `- 💻 *Arquitectura CPU*: ${systemInfo.cpuArch}\n`;
             infoMessage += `- 🧠 *Núcleos CPU*: ${systemInfo.cpus}\n`;
@@ -111,10 +111,10 @@ async function systemInfoPlugin(m, extra) {
             infoMessage += `- 📊 *Carga Promedio (1, 5, 15 min)*: ${systemInfo.loadAverage}\n`;
             infoMessage += `- 🔋 *Energia*: ${batteryStatus}\n\n`;
 
-            infoMessage += `> *💾 Almacenamiento*\n`;
+            infoMessage += '> *💾 Almacenamiento*\n';
             infoMessage += `${storageInfo}\n\n`;
 
-            infoMessage += `> *🛠️ Version Herramientas*\n\n`;
+            infoMessage += '> *🛠️ Version Herramientas*\n\n';
             infoMessage += `- ☕ *Node.js*: ${versions.nodeVersion.trim()}\n`;
             infoMessage += `- 📦 *NPM*: ${versions.npmVersion.trim()}\n`;
             infoMessage += `- 🎥 *FFmpeg*: ${versions.ffmpegVersion.split('\n')[0]}\n`; // Solo primera linea

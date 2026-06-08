@@ -1,7 +1,7 @@
-import fs from 'fs'
-import fetch from 'node-fetch'
+import fs from 'fs';
+import fetch from 'node-fetch';
 
-const FILE_PATH = './src/data/waifus.json'
+const FILE_PATH = './src/data/waifus.json';
 
 const RAREZAS = [
   { tipo: 'Común', prob: 50, mult: 1 },
@@ -9,7 +9,7 @@ const RAREZAS = [
   { tipo: 'Épica', prob: 15, mult: 3 },
   { tipo: 'Legendaria', prob: 8, mult: 5 },
   { tipo: 'Mítica', prob: 2, mult: 10 }
-]
+];
 
 async function fetchPersonajes(page = 1, perPage = 50) {
   const query = `
@@ -25,37 +25,37 @@ async function fetchPersonajes(page = 1, perPage = 50) {
         description(asHtml: false)
       }
     }
-  }`
+  }`;
 
-  const variables = { page, perPage }
+  const variables = { page, perPage };
   const res = await fetch('https://graphql.anilist.co', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query, variables })
-  })
+  });
 
-  const json = await res.json()
-  return json.data.Page.characters
+  const json = await res.json();
+  return json.data.Page.characters;
 }
 
 function generarRareza() {
-  const rand = Math.random() * 100
-  let acumulado = 0
+  const rand = Math.random() * 100;
+  let acumulado = 0;
   for (const r of RAREZAS) {
-    acumulado += r.prob
-    if (rand <= acumulado) return r
+    acumulado += r.prob;
+    if (rand <= acumulado) return r;
   }
-  return RAREZAS[0]
+  return RAREZAS[0];
 }
 
 const handler = async (m, { conn }) => {
   try {
-    await conn.sendMessage(m.chat, { text: '🔄 Actualizando base de waifus desde AniList...' }, { quoted: m })
-    const personajes = await fetchPersonajes(1, 50)
+    await conn.sendMessage(m.chat, { text: '🔄 Actualizando base de waifus desde AniList...' }, { quoted: m });
+    const personajes = await fetchPersonajes(1, 50);
     const lista = personajes.map(p => {
-      const rareza = generarRareza()
-      const anime = p.media?.nodes?.[0]?.title?.romaji || 'Desconocido'
-      const valor = Math.floor(Math.random() * 1000 * rareza.mult) + 100
+      const rareza = generarRareza();
+      const anime = p.media?.nodes?.[0]?.title?.romaji || 'Desconocido';
+      const valor = Math.floor(Math.random() * 1000 * rareza.mult) + 100;
       return {
         id: p.id,
         nombre: p.name.full,
@@ -64,21 +64,21 @@ const handler = async (m, { conn }) => {
         rareza: rareza.tipo,
         valor,
         descripcion: p.description ? p.description.replace(/<[^>]+>/g, '').slice(0, 300) : 'Sin descripción disponible.'
-      }
-    })
+      };
+    });
 
-    if (!fs.existsSync('./src/data')) fs.mkdirSync('./src/data', { recursive: true })
-    fs.writeFileSync(FILE_PATH, JSON.stringify(lista, null, 2))
+    if (!fs.existsSync('./src/data')) fs.mkdirSync('./src/data', { recursive: true });
+    fs.writeFileSync(FILE_PATH, JSON.stringify(lista, null, 2));
 
-    await conn.sendMessage(m.chat, { text: `✅ Se actualizaron ${lista.length} waifus correctamente.` }, { quoted: m })
+    await conn.sendMessage(m.chat, { text: `✅ Se actualizaron ${lista.length} waifus correctamente.` }, { quoted: m });
   } catch (err) {
-    console.error(err)
-    m.reply('❌ Error al actualizar waifus. Intenta más tarde.')
+    console.error(err);
+    m.reply('❌ Error al actualizar waifus. Intenta más tarde.');
   }
-}
+};
 
-handler.help = ['updatewaifus']
-handler.tags = ['gacha']
-handler.command = /^updatewaifus$/i
-handler.owner = true
-export default handler
+handler.help = ['updatewaifus'];
+handler.tags = ['gacha'];
+handler.command = /^updatewaifus$/i;
+handler.owner = true;
+export default handler;

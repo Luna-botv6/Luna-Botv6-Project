@@ -1,18 +1,25 @@
-import { Sticker } from "wa-sticker-formatter"
-import axios from "axios"
-import fs from "fs"
+import { Sticker } from 'wa-sticker-formatter';
+import axios from 'axios';
+import fs from 'fs';
 
 const handler = async (m, { usedPrefix, conn, args, text, command }) => {
 
-  const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje
-  const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.sticker_semoji
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
+  let _t = {};
+  try {
+    const _lang = idioma || global.defaultLenguaje || 'es';
+    _t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${_lang}.json`, 'utf8'));
+  } catch {
+    try { _t = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')); } catch {}
+  }
+  const tradutor = _t.plugins.sticker_semoji;
 
-  let [tipe, emoji] = text.includes("|") ? text.split("|") : args
-  const defaultType = "apple"
+  let [tipe, emoji] = text.includes('|') ? text.split('|') : args;
+  const defaultType = 'apple';
 
   if (tipe && !emoji) {
-    emoji = "😎"
-    tipe = defaultType
+    emoji = '😎';
+    tipe = defaultType;
   }
 
   const err = `${tradutor.texto1[0]}
@@ -21,7 +28,7 @@ const handler = async (m, { usedPrefix, conn, args, text, command }) => {
 ${tradutor.texto1[0]}
 *◉ ${usedPrefix + command}* ${tradutor.texto1[2]}
 
-${tradutor.texto1[3]} 
+${tradutor.texto1[3]}
 
 ${tradutor.texto1[4]}
 ${tradutor.texto1[5]}
@@ -35,36 +42,36 @@ ${tradutor.texto1[12]}
 ${tradutor.texto1[13]}
 ${tradutor.texto1[14]}
 
-${tradutor.texto1[0]}`
+${tradutor.texto1[0]}`;
 
-  if (!emoji) throw err
+  if (!emoji) throw err;
 
   const typess = {
-    mo: "mozilla",
-    op: "openmoji",
-    pi: "joypixels",
-    sa: "samsung",
-    go: "google",
-    wha: "whatsapp",
-    fa: "facebook",
-    ap: "apple",
-    mi: "microsoft",
-    ht: "htc",
-    tw: "twitter",
-  }
+    mo: 'mozilla',
+    op: 'openmoji',
+    pi: 'joypixels',
+    sa: 'samsung',
+    go: 'google',
+    wha: 'whatsapp',
+    fa: 'facebook',
+    ap: 'apple',
+    mi: 'microsoft',
+    ht: 'htc',
+    tw: 'twitter',
+  };
 
-  tipe = tipe && typess[tipe] ? typess[tipe] : defaultType
+  tipe = tipe && typess[tipe] ? typess[tipe] : defaultType;
 
   try {
-    emoji = emoji.trim()
-    tipe = tipe.trim().toLowerCase()
+    emoji = emoji.trim();
+    tipe = tipe.trim().toLowerCase();
 
-    const response = await axios.get("https://deliriusapi-official.vercel.app/tools/emoji", {
+    const response = await axios.get('https://deliriusapi-official.vercel.app/tools/emoji', {
       params: { text: emoji }
-    })
+    });
 
-    const json = response.data
-    let chosenURL = json.data[tipe] || json.data["apple"]
+    const json = response.data;
+    let chosenURL = json.data[tipe] || json.data['apple'];
 
     const stiker = await createSticker(
       false,
@@ -72,28 +79,28 @@ ${tradutor.texto1[0]}`
       global.packname,
       global.author,
       20
-    )
+    );
 
-    m.reply(stiker)
+    m.reply(stiker);
 
   } catch (e) {
-    console.log(new Error(e).message)
-    throw tradutor.texto2
+    console.log(new Error(e).message);
+    throw tradutor.texto2;
   }
-}
+};
 
-handler.help = ["emoji <tipo> <emoji>"]
-handler.tags = ["sticker"]
-handler.command = ["emoji", "smoji", "semoji"]
+handler.help = ['emoji <tipo> <emoji>'];
+handler.tags = ['sticker'];
+handler.command = ['emoji', 'smoji', 'semoji'];
 
-export default handler
+export default handler;
 
 async function createSticker(img, url, packName, authorName, quality) {
   const stickerMetadata = {
-    type: "full",
+    type: 'full',
     pack: packName,
     author: authorName,
     quality,
-  }
-  return new Sticker(img ? img : url, stickerMetadata).toBuffer()
+  };
+  return new Sticker(img ? img : url, stickerMetadata).toBuffer();
 }
