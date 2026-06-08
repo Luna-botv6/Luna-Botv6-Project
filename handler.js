@@ -36,8 +36,8 @@ const customCommandsCache = new Map();
 const processedVoiceMessages = new Set();
 
 const CACHE_TTL = 2 * 60 * 1000;
-const DUPLICATE_TIMEOUT = 3000;
-const MAX_CACHE_SIZE = 50;
+const DUPLICATE_TIMEOUT = 8000;
+const MAX_CACHE_SIZE = 200;
 const MAX_VOICE_CACHE = 200;
 
 global.groupCache = groupCache;
@@ -107,7 +107,7 @@ startCacheCleanupInterval(groupCache, recentMessages, recentParticipantEvents, t
 setInterval(() => {
   try {
     limitCache(groupCache, 30);
-    limitCache(recentMessages, 50);
+    limitCache(recentMessages, 200);
     limitCache(recentParticipantEvents, 30);
     limitCache(translationsCache, 5);
     if (processedVoiceMessages.size > MAX_VOICE_CACHE) {
@@ -147,10 +147,11 @@ export async function handler(chatUpdate) {
 
     if (!chatUpdate?.messages?.length) return;
 
-    const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+    const connectionTime = Math.min(global.timestamp?.connect?.getTime() || Date.now(), Date.now());
+    const TIMESTAMP_TOLERANCE_MS = 30000;
     const validMessages = chatUpdate.messages.filter(msg => {
       const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
-      return msgTimestamp >= connectionTime;
+      return msgTimestamp >= (connectionTime - TIMESTAMP_TOLERANCE_MS);
     });
     if (validMessages.length === 0) return;
     chatUpdate.messages = validMessages;
@@ -567,8 +568,8 @@ export async function handler(chatUpdate) {
     } catch (e) {
       logError(e, m?.plugin || 'handler');
     } finally {
-      if (opts['queque'] && m.text) {
-        const quequeIndex = this.msgqueque.indexOf(m.id || m.key.id);
+      if (opts['queque'] && m?.text) {
+        const quequeIndex = this.msgqueque.indexOf(m.id || m.key?.id);
         if (quequeIndex !== -1) {
           this.msgqueque.splice(quequeIndex, 1);
         }
@@ -601,10 +602,12 @@ export async function handler(chatUpdate) {
         }
       } catch (e) {}
 
-      const settingsREAD = global.db.data.settings[this.user.jid] || {};
-      if (opts['autoread'] || settingsREAD?.autoread2) {
-        this.readMessages([m.key]).catch(() => {});
-      }
+      try {
+        const settingsREAD = global.db.data?.settings?.[this.user?.jid] || {};
+        if (opts['autoread'] || settingsREAD?.autoread2) {
+          if (m?.key) this.readMessages([m.key]).catch(() => {});
+        }
+      } catch (e) {}
 
       m = null;
     }

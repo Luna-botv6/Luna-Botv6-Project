@@ -214,7 +214,7 @@ const connectionOptions = {
   logger: Pino({ level: 'silent' }),
   printQRInTerminal: opcion === '1',
   mobile: false,
-  browser: ['Ubuntu', 'Chrome', '20.0.04'],
+  browser: ['Ubuntu', 'Chrome', '124.0.6367.82'],
   auth: {
     creds: state.creds,
     keys: makeCacheableSignalKeyStore(
@@ -222,7 +222,7 @@ const connectionOptions = {
       Pino({ level: 'fatal' }).child({ level: 'fatal' })
     ),
   },
-  markOnlineOnConnect: true,
+  markOnlineOnConnect: false,
   generateHighQualityLinkPreview: false,
   qrTimeout: 40000,
   connectTimeoutMs: 60000,
@@ -233,9 +233,9 @@ const connectionOptions = {
   emitOwnEvents: false,
   version,
   getMessage: async (key) => {
-    const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+    const connectionTime = Math.min(global.timestamp?.connect?.getTime() || Date.now(), Date.now());
     const msgTimestamp = (key.messageTimestamp || 0) * 1000;
-    if (msgTimestamp < connectionTime) return null;
+    if (msgTimestamp < connectionTime - 30000) return null;
     try {
       let jid = jidNormalizedUser(key.remoteJid);
       let msg = await store.loadMessage(jid, key.id);
@@ -297,20 +297,6 @@ function applyPrintWrapper(conn) {
 applyPrintWrapper(global.conn);
 
 let _presenceFailCount = 0;
-const MAX_PRESENCE_FAILS = 5;
-const _presenceInterval = setInterval(async () => {
-  if (!global.conn?.user || global.isProcessing) return;
-  try {
-    await global.conn.sendPresenceUpdate('available');
-    _presenceFailCount = 0;
-  } catch (e) {
-    _presenceFailCount++;
-    if (_presenceFailCount >= MAX_PRESENCE_FAILS) {
-      clearInterval(_presenceInterval);
-      console.log(chalk.yellow(`[ ⚠ ] Presence falló ${MAX_PRESENCE_FAILS} veces seguidas, dejando que connectionUpdate maneje la reconexión`));
-    }
-  }
-}, 30000);
 
 const ownerConfig = getOwnerFunction();
 if (ownerConfig.modopublico) global.conn.public = true;
@@ -542,19 +528,7 @@ setInterval(() => {
   if (isCleanerEnabled()) runCleaner();
 }, 1000 * 60 * 60 * 6);
 
-setInterval(async () => {
-  if (stopped === 'close' || !global.conn || !global.conn?.user) return;
-  const _uptime = process.uptime() * 1000;
-  const uptime = clockString(_uptime);
-  const hora = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-  const gruposActivos = global.groupCache ? global.groupCache.size : 0;
-  const bio = `🌙 Luna-Bot v6 - Online
-⏱️ Activo: ${uptime}
-🕐 Hora: ${hora}
-👥 Grupos: ${gruposActivos}
-✨ Powered by TheMystic-Bot-MD`;
-  await global.conn?.updateProfileStatus(bio).catch(() => {});
-}, 10 * 60 * 1000);
+
 
 setInterval(async () => {
   if (stopped === 'close' || !global.conn || !global.conn?.user) return;
@@ -650,6 +624,10 @@ async function connectionUpdate(update) {
   if (connection === 'open') {
     global._hasBeenConnected = true;
     global._softReconnectCount = 0;
+    global._reconnectClosed = 0;
+    global._reconnectLost = 0;
+    global._reconnect405Count = 0;
+    global._restartRequiredCount = 0;
     global._manualWsClose = false;
     global._loggedOutHandled = false;
     _presenceFailCount = 0;
@@ -743,25 +721,25 @@ async function connectionUpdate(update) {
 
     } else if (reason === DisconnectReason.connectionClosed) {
       conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando...`);
-      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
-      if (global._hasBeenConnected && global._softReconnectCount >= 4) {
+      global._reconnectClosed = (global._reconnectClosed || 0) + 1;
+      if (global._hasBeenConnected && global._reconnectClosed >= 6) {
         console.log('[ ♻ ] Reinicio limpio para liberar memoria...');
-        setTimeout(() => process.exit(0), 1000);
+        setTimeout(() => process.exit(0), 60000);
       } else {
-        const delay = 3000 + Math.floor(Math.random() * 4000);
-        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/3 en ${Math.round(delay / 1000)}s...`);
+        const delay = Math.min(300000, 3000 * Math.pow(2, global._reconnectClosed - 1)) + Math.floor(Math.random() * 1000);
+        console.log(`[ ⏳ ] Reintento ${global._reconnectClosed}/6 en ${Math.round(delay / 1000)}s...`);
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
 
     } else if (reason === DisconnectReason.connectionLost) {
       conn.logger.warn(`[ ⚠ ] Conexión perdida, reconectando...`);
-      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
-      if (global._hasBeenConnected && global._softReconnectCount >= 4) {
+      global._reconnectLost = (global._reconnectLost || 0) + 1;
+      if (global._hasBeenConnected && global._reconnectLost >= 6) {
         console.log('[ ♻ ] Reinicio limpio para liberar memoria...');
-        setTimeout(() => process.exit(0), 1000);
+        setTimeout(() => process.exit(0), 60000);
       } else {
-        const delay = 3000 + Math.floor(Math.random() * 4000);
-        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/3 en ${Math.round(delay / 1000)}s...`);
+        const delay = Math.min(300000, 3000 * Math.pow(2, global._reconnectLost - 1)) + Math.floor(Math.random() * 1000);
+        console.log(`[ ⏳ ] Reintento ${global._reconnectLost}/6 en ${Math.round(delay / 1000)}s...`);
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
 
@@ -773,8 +751,7 @@ async function connectionUpdate(update) {
       const retries = global._softReconnectCount || 0;
 
       const isConflict = rawMsg.includes('conflict') || rawMsg.includes('stream errored');
-      const isFirstConnectionFailure = rawMsg.includes('connection failure') && retries <= 2;
-      const shouldReconnect = global._manualWsClose || isConflict || isFirstConnectionFailure;
+      const shouldReconnect = global._manualWsClose || isConflict;
       const isRealLogout = !shouldReconnect;
 
       if (shouldReconnect) {
@@ -824,38 +801,60 @@ async function connectionUpdate(update) {
         conn.logger.info(`[ ⚠ ] Primera vinculación completada, continuando...`);
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 2000);
       } else {
+        const sincePairing = pairingStartTime ? (Date.now() - pairingStartTime) : Infinity;
         global._restartRequiredCount = (global._restartRequiredCount || 0) + 1;
-        if (global._restartRequiredCount >= 3) {
-          console.log(chalk.yellow('[ ⚠ ] restartRequired repetido — posible bug de WA. Reinicio limpio...'));
-          global._restartRequiredCount = 0;
-          setTimeout(() => process.exit(0), 1000);
+        if (sincePairing <= 60000) {
+          console.log(chalk.yellow('[ ⚠ ] restartRequired justo después del pareado — reload con backoff...'));
+          const delays = [1000, 2000, 5000];
+          let attempt = 0;
+          const tryReload = async () => {
+            attempt++;
+            try {
+              await global.reloadHandler(true);
+              console.log(chalk.green('[ ✅ ] Reconectado correctamente tras restartRequired'));
+            } catch (e) {
+              console.log(chalk.yellow(`[ ⚠ ] Intento ${attempt} falló: ${e?.message || e}`));
+              if (attempt < delays.length) setTimeout(tryReload, delays[attempt]);
+              else {
+                console.log(chalk.yellow('[ ⚠ ] Reintentos agotados. Reinicio limpio...'));
+                setTimeout(() => process.exit(0), 1000);
+              }
+            }
+          };
+          setTimeout(tryReload, delays[0]);
         } else {
-          conn.logger.info(`[ ⚠ ] Reinicio necesario, reiniciando proceso limpio...`);
-          setTimeout(() => process.exit(0), 1000);
+          if (global._restartRequiredCount >= 3) {
+            console.log(chalk.yellow('[ ⚠ ] restartRequired repetido — posible bug de WA. Reinicio limpio...'));
+            global._restartRequiredCount = 0;
+            setTimeout(() => process.exit(0), 1000);
+          } else {
+            conn.logger.info(`[ ⚠ ] Reinicio necesario, reiniciando proceso limpio...`);
+            setTimeout(() => process.exit(0), 1000);
+          }
         }
       }
 
     } else if (reason === DisconnectReason.timedOut) {
       conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando...`);
       global._softReconnectCount = (global._softReconnectCount || 0) + 1;
-      if (global._softReconnectCount >= 4) {
+      if (global._softReconnectCount >= 6) {
         console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
-        setTimeout(() => process.exit(0), 1000);
+        setTimeout(() => process.exit(0), 60000);
       } else {
-        const delay = 4000 + Math.floor(Math.random() * 5000);
-        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/3 en ${Math.round(delay / 1000)}s...`);
+        const delay = Math.min(300000, 4000 * Math.pow(2, global._softReconnectCount - 1)) + Math.floor(Math.random() * 1000);
+        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/6 en ${Math.round(delay / 1000)}s...`);
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
 
     } else {
       conn.logger.warn(`[ ⚠ ] Razón de desconexión desconocida. ${reason || ''}: ${connection || ''}`);
       global._softReconnectCount = (global._softReconnectCount || 0) + 1;
-      if (global._softReconnectCount >= 4) {
+      if (global._softReconnectCount >= 6) {
         console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
-        setTimeout(() => process.exit(0), 1000);
+        setTimeout(() => process.exit(0), 60000);
       } else {
-        const delay = 3000 + Math.floor(Math.random() * 4000);
-        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/3 en ${Math.round(delay / 1000)}s...`);
+        const delay = Math.min(300000, 3000 * Math.pow(2, global._softReconnectCount - 1)) + Math.floor(Math.random() * 1000);
+        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/6 en ${Math.round(delay / 1000)}s...`);
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
     }
@@ -881,17 +880,18 @@ global.reloadHandler = async function(restatConn) {
     conn.ev.removeAllListeners();
     await new Promise(resolve => setTimeout(resolve, 1500 + Math.floor(Math.random() * 1000)));
     global.conn = await makeWASocket(connectionOptions, {chats: oldChats});
+    global.timestamp.connect = new Date();
     applyPrintWrapper(global.conn);
     isInit = true;
   }
 
   if (!isInit) {
-    conn.ev.off('messages.upsert', conn.handler);
-    conn.ev.off('group-participants.update', conn.participantsUpdate);
-    conn.ev.off('message.delete', conn.onDelete);
-    conn.ev.off('call', conn.onCall);
-    conn.ev.off('connection.update', conn.connectionUpdate);
-    conn.ev.off('creds.update', conn.credsUpdate);
+    conn.ev.removeAllListeners('messages.upsert');
+    conn.ev.removeAllListeners('group-participants.update');
+    conn.ev.removeAllListeners('message.delete');
+    conn.ev.removeAllListeners('call');
+    conn.ev.removeAllListeners('connection.update');
+    conn.ev.removeAllListeners('creds.update');
   }
 
   conn.handler = handler.handler.bind(global.conn);
