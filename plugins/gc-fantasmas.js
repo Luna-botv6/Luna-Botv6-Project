@@ -123,11 +123,11 @@ const handler = async (m, { isOwner, conn, text, usedPrefix }) => {
 
   const texto =
     `${tradutor.texto4}\n` +
-    `┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n` +
+    '┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n' +
     `🏛️ *${tradutor.texto5}:* ${groupName}\n` +
     `👥 *${tradutor.texto6}:* ${limit}\n` +
     `🕸️ *${tradutor.texto7}:* ${fantasmas.length}\n` +
-    `┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n\n` +
+    '┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n\n' +
     `${lista}\n\n` +
     `_${tradutor.texto8}_`;
 

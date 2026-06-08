@@ -4,7 +4,7 @@ import fs from 'fs';
 const cooldownUsuario = 10 * 1000; // 10 segundos
 const MIN_APUESTA = 100;
 const MAX_APUESTA = 10000; // Límite máximo para prevenir apuestas excesivas
-const emojis = ['🍒', '🍋', '🍊', '🍉', '🔔', '⭐', '💎']; 
+const emojis = ['🍒', '🍋', '🍊', '🍉', '🔔', '⭐', '💎'];
 
 
 const slotFile = './database/slot.json';
@@ -40,37 +40,37 @@ const handler = async (m, { args, usedPrefix, command }) => {
     if (!global.db.data.users[m.sender]) {
       global.db.data.users[m.sender] = {};
     }
-    
-    const idioma = global.db.data.users[m.sender].language || global.defaultLenguaje;
-    
+
+    const idioma = global.db.data.users?.[m.sender]?.language || global.defaultLenguaje;
+
     let _translate, tradutor;
     try {
       _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
       tradutor = _translate.plugins.game?.slot || _translate.plugins?.game_slot || {
-        texto1: "🎰 *SLOT MACHINE*",
-        texto2: "Usa el comando con una apuesta:",
-        texto3: ["Espera", "para volver a jugar"],
-        texto4: "La apuesta mínima es 100 XP",
-        texto5: "No tienes suficiente XP",
-        texto6: "¡JACKPOT! Ganaste",
-        texto7: "¡Bien! Ganaste",
-        texto8: "Perdiste"
+        texto1: '🎰 *SLOT MACHINE*',
+        texto2: 'Usa el comando con una apuesta:',
+        texto3: ['Espera', 'para volver a jugar'],
+        texto4: 'La apuesta mínima es 100 XP',
+        texto5: 'No tienes suficiente XP',
+        texto6: '¡JACKPOT! Ganaste',
+        texto7: '¡Bien! Ganaste',
+        texto8: 'Perdiste'
       };
     } catch (langError) {
       console.error('Error cargando idioma:', langError);
       // Fallback a español por defecto
       tradutor = {
-        texto1: "🎰 *SLOT MACHINE*",
-        texto2: "Usa el comando con una apuesta:",
-        texto3: ["Espera", "para volver a jugar"],
-        texto4: "La apuesta mínima es 100 XP",
-        texto5: "No tienes suficiente XP",
-        texto6: "¡JACKPOT! Ganaste",
-        texto7: "¡Bien! Ganaste",
-        texto8: "Perdiste"
+        texto1: '🎰 *SLOT MACHINE*',
+        texto2: 'Usa el comando con una apuesta:',
+        texto3: ['Espera', 'para volver a jugar'],
+        texto4: 'La apuesta mínima es 100 XP',
+        texto5: 'No tienes suficiente XP',
+        texto6: '¡JACKPOT! Ganaste',
+        texto7: '¡Bien! Ganaste',
+        texto8: 'Perdiste'
       };
     }
-    
+
     const mensajeUso = `
 ${tradutor.texto1}
 ${tradutor.texto2}
@@ -81,11 +81,11 @@ ${tradutor.texto2}
     // Validación de argumentos
     if (!args[0]) throw mensajeUso;
     if (isNaN(args[0])) throw `❌ Debes ingresar un número válido\n\n${mensajeUso}`;
-    
+
     const apuesta = parseInt(args[0]);
-    
+
     // Validaciones de apuesta
-    if (apuesta <= 0) throw `❌ La apuesta debe ser un número positivo`;
+    if (apuesta <= 0) throw '❌ La apuesta debe ser un número positivo';
     if (apuesta < MIN_APUESTA) throw `❌ ${tradutor.texto4}\nApuesta mínima: ${MIN_APUESTA} XP`;
     if (apuesta > MAX_APUESTA) throw `❌ Apuesta máxima permitida: ${MAX_APUESTA} XP`;
 
@@ -111,7 +111,7 @@ ${tradutor.texto2}
     // Línea central determina el resultado
     const lineaCentral = [x[1], y[1], z[1]];
     const [a, b, c] = lineaCentral;
-    
+
     let resultado;
     let ganancia = 0;
 
@@ -186,7 +186,7 @@ async function tiempoRestante(user) {
 function msToTime(duration) {
   const seconds = Math.floor((duration / 1000) % 60);
   const minutes = Math.floor((duration / (1000 * 60)) % 60);
-  
+
   if (minutes > 0) {
     return `${minutes}m ${seconds}s`;
   }

@@ -53,7 +53,7 @@ const handler = async (m, { conn }) => {
                   })
                 }
               ],
-              messageParamsJson: "",
+              messageParamsJson: '',
             },
           },
         },

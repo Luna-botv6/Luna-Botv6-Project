@@ -1,11 +1,11 @@
-import fs from 'fs'
-import MessageType from "@whiskeysockets/baileys";
+import fs from 'fs';
+import MessageType from '@whiskeysockets/baileys';
 
 const handler = async (m, {conn, usedPrefix, command}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))
-  const tradutor = _translate.plugins.game_delttt
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
+  const tradutor = _translate.plugins.game_delttt;
 
   const room = Object.values(conn.game).find((room) => 
     room.id.startsWith('tictactoe') && 

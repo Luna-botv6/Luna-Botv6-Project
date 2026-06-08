@@ -1,31 +1,31 @@
-import fs from 'fs'
-import path from 'path'
-import { addExp, addMoney, removeExp, removeMoney, getUserStats } from '../lib/stats.js'
+import fs from 'fs';
+import path from 'path';
+import { addExp, addMoney, removeExp, removeMoney, getUserStats } from '../lib/stats.js';
 
-const COOLDOWN_FILE = './database/cazarcooldown.json'
-const COOLDOWN_BASE = 5 * 60 * 1000
+const COOLDOWN_FILE = './database/cazarcooldown.json';
+const COOLDOWN_BASE = 5 * 60 * 1000;
 
-let cooldowns = {}
+let cooldowns = {};
 if (fs.existsSync(COOLDOWN_FILE)) {
-  cooldowns = JSON.parse(fs.readFileSync(COOLDOWN_FILE))
+  cooldowns = JSON.parse(fs.readFileSync(COOLDOWN_FILE));
 }
 
 function saveCooldowns() {
-  fs.writeFileSync(COOLDOWN_FILE, JSON.stringify(cooldowns, null, 2))
+  fs.writeFileSync(COOLDOWN_FILE, JSON.stringify(cooldowns, null, 2));
 }
 
 function rand(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function pick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)]
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function calcularPerdida(stats, porcentaje) {
-  const exp = Math.floor((stats.exp || 0) * porcentaje)
-  const money = Math.floor((stats.money || 0) * porcentaje)
-  return { exp: Math.max(exp, 200), money: Math.max(money, 80) }
+  const exp = Math.floor((stats.exp || 0) * porcentaje);
+  const money = Math.floor((stats.money || 0) * porcentaje);
+  return { exp: Math.max(exp, 200), money: Math.max(money, 80) };
 }
 
 const mundos = [
@@ -277,7 +277,7 @@ const mundos = [
       { nombre: '🤖 IA Rebelde Suprema', exp: rand(3800, 6800), money: rand(790, 1480) },
     ],
   },
-]
+];
 
 const monstruosDimensionales = [
   { nombre: '🌀 El Olvido Absoluto', exp: rand(5000, 9000), money: rand(1000, 2000) },
@@ -295,7 +295,7 @@ const monstruosDimensionales = [
   { nombre: '💫 El Tiempo Roto', exp: rand(5500, 9800), money: rand(1080, 2200) },
   { nombre: '🧿 El Ojo que Todo lo Ve', exp: rand(4800, 8800), money: rand(960, 1950) },
   { nombre: '🎭 El Actor del Fin', exp: rand(5300, 9400), money: rand(1030, 2080) },
-]
+];
 
 const eventosEspeciales = [
   {
@@ -352,7 +352,7 @@ const eventosEspeciales = [
       (exp, money, espera) => `*💥 ¡APOCALIPSIS PERSONAL!*\n\nNo una sino CINCO criaturas legendarias te encontraron al mismo tiempo.\nCada una se llevó un trozo de tu dignidad y tus recursos.\n\n❌ *-${exp} EXP*\n❌ *-${money} Diamantes*\n\n⏳ Recuperación del ego: *${espera} minutos*\n_"Esto no se lo cuentes a nadie en el gremio."_`,
     ],
   },
-]
+];
 
 const textosExito = [
   (mundo, animal) => `*🎯 ¡MISIÓN CUMPLIDA!*\n\n🌍 Mundo: *${mundo}*\n\nTras una batalla épica lograste derrotar al temible *${animal.nombre}*.\nLos aldeanos cercanos celebran tu hazaña con fuegos artificiales.\n\n✨ *+${animal.exp} EXP*\n💎 *+${animal.money} Diamantes*\n\n_"El que caza con paciencia, regresa con gloria."_`,
@@ -362,7 +362,7 @@ const textosExito = [
   (mundo, animal) => `*🎊 ¡EL PUEBLO TE ACLAMA!*\n\n🌍 Mundo: *${mundo}*\n\nEl *${animal.nombre}* aterrorizaba esta región hace décadas.\nHoy tú pusiste fin a esa pesadilla.\n\n✨ *+${animal.exp} EXP*\n💎 *+${animal.money} Diamantes*\n\n_¡Tu estatua ya está en construcción en la plaza!_`,
   (mundo, animal) => `*🗡️ ¡CAZA PERFECTA!*\n\n🌍 Mundo: *${mundo}*\n\nEl *${animal.nombre}* no tuvo ni tiempo de reaccionar.\nTu técnica fue tan precisa que los otros animales huyeron de miedo.\n\n✨ *+${animal.exp} EXP*\n💎 *+${animal.money} Diamantes*\n\n_¡Un golpe, una victoria!_`,
   (mundo, animal) => `*🔥 ¡LEYENDA VIVIENTE!*\n\n🌍 Mundo: *${mundo}*\n\nBardos ya cantan canciones sobre tu pelea con el *${animal.nombre}*.\nY la batalla terminó hace solo 5 minutos.\n\n✨ *+${animal.exp} EXP*\n💎 *+${animal.money} Diamantes*\n\n_¡Vuelve pronto, el mundo necesita héroes como tú!_`,
-]
+];
 
 const textosDerrota = [
   (mundo, animal, perdExp, perdMoney, espera) => `*💀 ¡DERROTA APLASTANTE!*\n\n🌍 Mundo: *${mundo}*\n\nEl *${animal.nombre}* te mandó de vuelta al pueblo de una sola dentellada.\nLos curanderos tardaron horas en reparar tus huesos.\n\n❌ *-${perdExp} EXP*\n❌ *-${perdMoney} Diamantes*\n\n⏳ Recuperación: *${espera} minutos*\n_"No toda caza termina en gloria..."_`,
@@ -372,14 +372,14 @@ const textosDerrota = [
   (mundo, animal, perdExp, perdMoney, espera) => `*⚡ ¡EMBOSCADA FATAL!*\n\n🌍 Mundo: *${mundo}*\n\nEl *${animal.nombre}* te tendió una trampa y caíste como novato.\nPerdiste todo tu equipo y tuvieron que prestarte ropa del hospital.\n\n❌ *-${perdExp} EXP*\n❌ *-${perdMoney} Diamantes*\n\n⏳ Tiempo de recuperación: *${espera} minutos*`,
   (mundo, animal, perdExp, perdMoney, espera) => `*🩸 ¡DRENADO DE PODER!*\n\n🌍 Mundo: *${mundo}*\n\nEl *${animal.nombre}* no te comió... te absorbió lentamente.\nSentiste cómo tu fuerza y dinero se evaporaban con cada segundo.\n\n❌ *-${perdExp} EXP*\n❌ *-${perdMoney} Diamantes*\n\n⏳ Regeneración: *${espera} minutos*\n_"Algunos ataques no dejan marcas visibles."_`,
   (mundo, animal, perdExp, perdMoney, espera) => `*🤕 ¡HUMILLACIÓN PÚBLICA!*\n\n🌍 Mundo: *${mundo}*\n\nEl *${animal.nombre}* te venció tan rápido que hasta los niños del pueblo se rieron.\nUno de ellos te grabó y ya es viral en los pergaminos de noticias.\n\n❌ *-${perdExp} EXP*\n❌ *-${perdMoney} Diamantes*\n\n⏳ Recuperación del ego: *${espera} minutos*\n_"No lo superas ni con terapia."_`,
-]
+];
 
 const textosMonstruoExito = [
   (nombre, exp, money) => `*🌀 ¡ALERTA DIMENSIONAL SUPERADA!*\n\nUn portal se abrió ante ti y emergió *${nombre}*.\nSus rugidos hicieron temblar la realidad misma.\nConvocaste toda tu energía y lo devolviste a su dimensión.\n\n✨ *+${exp} EXP*\n💎 *+${money} Diamantes*\n\n🏆 _¡Eres el primer cazador en derrotar a este ser en todo el multiverso!_`,
   (nombre, exp, money) => `*👾 ¡INVASIÓN RECHAZADA!*\n\n*${nombre}* llegó desde otra galaxia para conquistar este mundo.\nTú fuiste su primer... y último obstáculo.\n\n✨ *+${exp} EXP*\n💎 *+${money} Diamantes*\n\n🌟 _¡Los noticiarios de 3 galaxias hablarán de tu hazaña!_`,
   (nombre, exp, money) => `*⚔️ ¡EL ELEGIDO DEMOSTRÓ SU VALOR!*\n\n*${nombre}* existía desde antes de que este universo naciera.\nHoy, un cazador como tú lo mandó a dormir eternamente.\n\n✨ *+${exp} EXP*\n💎 *+${money} Diamantes*\n\n👑 _¡Los dioses de este mundo te deben la existencia!_`,
   (nombre, exp, money) => `*🌌 ¡PROTECTOR DEL MULTIVERSO!*\n\n*${nombre}* había destruido 12 dimensiones antes de llegar a la tuya.\nTú detuviste la cadena con tus propias manos.\n\n✨ *+${exp} EXP*\n💎 *+${money} Diamantes*\n\n🌟 _¡El Consejo Dimensional te concede el título de Guardián Supremo!_`,
-]
+];
 
 const textosMonstruoDerrota = [
   (nombre, perdExp, perdMoney, espera) => `*🌑 ¡ABSORBIDO POR LA OSCURIDAD!*\n\n*${nombre}* te tragó entero y te escupió medio muerto en tu dimensión de origen.\nLos médicos tardaron 3 días en descifrar qué tenías.\n\n❌ *-${perdExp} EXP*\n❌ *-${perdMoney} Diamantes*\n\n⏳ Recuperación dimensional: *${espera} minutos*\n_"Hay seres que no deberían ser cazados..."_`,
@@ -387,29 +387,29 @@ const textosMonstruoDerrota = [
   (nombre, perdExp, perdMoney, espera) => `*👁️ ¡CONSUMIDO POR EL VACÍO!*\n\n*${nombre}* ni siquiera se molestó en atacarte.\nSimplemente te miró y caíste del miedo.\nDespertaste en el hospital 4 horas después sin saber tu nombre.\n\n❌ *-${perdExp} EXP*\n❌ *-${perdMoney} Diamantes*\n\n⏳ Terapia dimensional: *${espera} minutos*\n_"Algunos monstruos no se cazan, se evitan a toda costa."_`,
   (nombre, perdExp, perdMoney, espera) => `*🕳️ ¡BORRADO DE LA EXISTENCIA MOMENTÁNEAMENTE!*\n\n*${nombre}* decidió que no merecías existir por unos minutos.\nTe restauró solo porque le dio lástima.\nTus recursos no tuvieron la misma suerte.\n\n❌ *-${perdExp} EXP*\n❌ *-${perdMoney} Diamantes*\n\n⏳ Re-existencia: *${espera} minutos*\n_"Agradece que te devolvió."_`,
   (nombre, perdExp, perdMoney, espera) => `*☠️ ¡DRENADO HASTA EL ÚLTIMO ÁTOMO!*\n\n*${nombre}* se alimentó de tu experiencia de vida y de cada moneda que ganaste con esfuerzo.\nEres literalmente una cáscara vacía ahora mismo.\n\n❌ *-${perdExp} EXP*\n❌ *-${perdMoney} Diamantes*\n\n⏳ Recuperación existencial: *${espera} minutos*\n_"Ni el 10% que sobró fue tuyo por elección."_`,
-]
+];
 
 function getCooldownMs(tipo) {
-  if (tipo === 'monstruo_win') return rand(12, 20) * 60 * 1000
-  if (tipo === 'raro_win') return rand(7, 12) * 60 * 1000
-  if (tipo === 'comun_win') return COOLDOWN_BASE
-  if (tipo === 'monstruo_lose') return rand(20, 35) * 60 * 1000
-  if (tipo === 'raro_lose') return rand(12, 20) * 60 * 1000
-  if (tipo === 'comun_lose') return rand(5, 9) * 60 * 1000
-  return COOLDOWN_BASE
+  if (tipo === 'monstruo_win') return rand(12, 20) * 60 * 1000;
+  if (tipo === 'raro_win') return rand(7, 12) * 60 * 1000;
+  if (tipo === 'comun_win') return COOLDOWN_BASE;
+  if (tipo === 'monstruo_lose') return rand(20, 35) * 60 * 1000;
+  if (tipo === 'raro_lose') return rand(12, 20) * 60 * 1000;
+  if (tipo === 'comun_lose') return rand(5, 9) * 60 * 1000;
+  return COOLDOWN_BASE;
 }
 
 const handler = async (m, { conn }) => {
-  const id = m.sender
-  const now = Date.now()
+  const id = m.sender;
+  const now = Date.now();
 
   if (cooldowns[id] && now - cooldowns[id].tiempo < cooldowns[id].duracion) {
-    const msRestante = cooldowns[id].duracion - (now - cooldowns[id].tiempo)
-    const minutosRestantes = Math.ceil(msRestante / 60000)
-    const segundosRestantes = Math.ceil(msRestante / 1000)
+    const msRestante = cooldowns[id].duracion - (now - cooldowns[id].tiempo);
+    const minutosRestantes = Math.ceil(msRestante / 60000);
+    const segundosRestantes = Math.ceil(msRestante / 1000);
 
     if (msRestante < 60000) {
-      return m.reply(`⏳ Casi listo... espera *${segundosRestantes} segundo(s)* más antes de cazar.`)
+      return m.reply(`⏳ Casi listo... espera *${segundosRestantes} segundo(s)* más antes de cazar.`);
     }
 
     const mensajesEspera = [
@@ -420,113 +420,113 @@ const handler = async (m, { conn }) => {
       `🌀 El portal dimensional sigue inestable. Espera *${minutosRestantes} minuto(s)*.`,
       `💀 Estás técnicamente vivo pero necesitas *${minutosRestantes} minuto(s)* para confirmarlo.`,
       `🛌 El curandero dice que si sales antes de *${minutosRestantes} minuto(s)* no responde por las consecuencias.`,
-    ]
+    ];
 
-    return m.reply(pick(mensajesEspera))
+    return m.reply(pick(mensajesEspera));
   }
 
-  let stats = { exp: 1000, money: 500 }
+  let stats = { exp: 1000, money: 500 };
   try {
-    stats = getUserStats(id) || stats
+    stats = getUserStats(id) || stats;
   } catch (_) {}
 
-  const mundoActual = pick(mundos)
-  const introTexto = pick(mundoActual.intro)
+  const mundoActual = pick(mundos);
+  const introTexto = pick(mundoActual.intro);
 
   for (const evento of eventosEspeciales) {
     if (Math.random() < evento.prob) {
-      const pct = rand(evento.perdidaPorcentaje[0] * 100, evento.perdidaPorcentaje[1] * 100) / 100
-      const perdida = calcularPerdida(stats, pct)
-      removeExp(id, perdida.exp)
-      removeMoney(id, perdida.money)
-      const espera = rand(evento.cooldown[0], evento.cooldown[1])
-      cooldowns[id] = { tiempo: now, duracion: espera * 60 * 1000 }
-      saveCooldowns()
-      return m.reply(`_${introTexto}_\n\n${pick(evento.textos)(perdida.exp, perdida.money, espera)}`)
+      const pct = rand(evento.perdidaPorcentaje[0] * 100, evento.perdidaPorcentaje[1] * 100) / 100;
+      const perdida = calcularPerdida(stats, pct);
+      removeExp(id, perdida.exp);
+      removeMoney(id, perdida.money);
+      const espera = rand(evento.cooldown[0], evento.cooldown[1]);
+      cooldowns[id] = { tiempo: now, duracion: espera * 60 * 1000 };
+      saveCooldowns();
+      return m.reply(`_${introTexto}_\n\n${pick(evento.textos)(perdida.exp, perdida.money, espera)}`);
     }
   }
 
-  const tiradaMonstruo = Math.random()
-  const tiradaRaro = Math.random()
+  const tiradaMonstruo = Math.random();
+  const tiradaRaro = Math.random();
 
-  let objetivo
-  let tipoObjetivo
+  let objetivo;
+  let tipoObjetivo;
 
   if (tiradaMonstruo < 0.04) {
-    objetivo = pick(monstruosDimensionales)
-    tipoObjetivo = 'monstruo_dimensional'
+    objetivo = pick(monstruosDimensionales);
+    tipoObjetivo = 'monstruo_dimensional';
   } else if (tiradaRaro < 0.1) {
-    objetivo = pick(mundoActual.animalesRaros)
-    tipoObjetivo = 'raro'
+    objetivo = pick(mundoActual.animalesRaros);
+    tipoObjetivo = 'raro';
   } else {
-    objetivo = pick(mundoActual.animalesComunes)
-    tipoObjetivo = 'comun'
+    objetivo = pick(mundoActual.animalesComunes);
+    tipoObjetivo = 'comun';
   }
 
-  let tasaExito = 0.80
-  if (tipoObjetivo === 'monstruo_dimensional') tasaExito = 0.30
-  if (tipoObjetivo === 'raro') tasaExito = 0.50
+  let tasaExito = 0.80;
+  if (tipoObjetivo === 'monstruo_dimensional') tasaExito = 0.30;
+  if (tipoObjetivo === 'raro') tasaExito = 0.50;
 
-  const exito = Math.random() < tasaExito
+  const exito = Math.random() < tasaExito;
 
   if (exito) {
-    addExp(id, objetivo.exp)
-    addMoney(id, objetivo.money)
+    addExp(id, objetivo.exp);
+    addMoney(id, objetivo.money);
 
-    let tipoCooldown = 'comun_win'
-    if (tipoObjetivo === 'monstruo_dimensional') tipoCooldown = 'monstruo_win'
-    else if (tipoObjetivo === 'raro') tipoCooldown = 'raro_win'
+    let tipoCooldown = 'comun_win';
+    if (tipoObjetivo === 'monstruo_dimensional') tipoCooldown = 'monstruo_win';
+    else if (tipoObjetivo === 'raro') tipoCooldown = 'raro_win';
 
-    cooldowns[id] = { tiempo: now, duracion: getCooldownMs(tipoCooldown) }
-    saveCooldowns()
+    cooldowns[id] = { tiempo: now, duracion: getCooldownMs(tipoCooldown) };
+    saveCooldowns();
 
-    let mensaje
+    let mensaje;
     if (tipoObjetivo === 'monstruo_dimensional') {
-      mensaje = pick(textosMonstruoExito)(objetivo.nombre, objetivo.exp, objetivo.money)
+      mensaje = pick(textosMonstruoExito)(objetivo.nombre, objetivo.exp, objetivo.money);
     } else {
-      mensaje = pick(textosExito)(mundoActual.nombre, objetivo)
+      mensaje = pick(textosExito)(mundoActual.nombre, objetivo);
     }
 
-    return m.reply(`_${introTexto}_\n\n${mensaje}`)
+    return m.reply(`_${introTexto}_\n\n${mensaje}`);
 
   } else {
-    let pctPerdida
-    let tipoCooldown
+    let pctPerdida;
+    let tipoCooldown;
 
     if (tipoObjetivo === 'monstruo_dimensional') {
-      pctPerdida = rand(55, 90) / 100
-      tipoCooldown = 'monstruo_lose'
+      pctPerdida = rand(55, 90) / 100;
+      tipoCooldown = 'monstruo_lose';
     } else if (tipoObjetivo === 'raro') {
-      pctPerdida = rand(25, 55) / 100
-      tipoCooldown = 'raro_lose'
+      pctPerdida = rand(25, 55) / 100;
+      tipoCooldown = 'raro_lose';
     } else {
-      pctPerdida = rand(10, 35) / 100
-      tipoCooldown = 'comun_lose'
+      pctPerdida = rand(10, 35) / 100;
+      tipoCooldown = 'comun_lose';
     }
 
-    const perdida = calcularPerdida(stats, pctPerdida)
-    removeExp(id, perdida.exp)
-    removeMoney(id, perdida.money)
+    const perdida = calcularPerdida(stats, pctPerdida);
+    removeExp(id, perdida.exp);
+    removeMoney(id, perdida.money);
 
-    const duracion = getCooldownMs(tipoCooldown)
-    cooldowns[id] = { tiempo: now, duracion }
-    saveCooldowns()
+    const duracion = getCooldownMs(tipoCooldown);
+    cooldowns[id] = { tiempo: now, duracion };
+    saveCooldowns();
 
-    const minutosEspera = Math.ceil(duracion / 60000)
+    const minutosEspera = Math.ceil(duracion / 60000);
 
-    let mensaje
+    let mensaje;
     if (tipoObjetivo === 'monstruo_dimensional') {
-      mensaje = pick(textosMonstruoDerrota)(objetivo.nombre, perdida.exp, perdida.money, minutosEspera)
+      mensaje = pick(textosMonstruoDerrota)(objetivo.nombre, perdida.exp, perdida.money, minutosEspera);
     } else {
-      mensaje = pick(textosDerrota)(mundoActual.nombre, objetivo, perdida.exp, perdida.money, minutosEspera)
+      mensaje = pick(textosDerrota)(mundoActual.nombre, objetivo, perdida.exp, perdida.money, minutosEspera);
     }
 
-    return m.reply(`_${introTexto}_\n\n${mensaje}`)
+    return m.reply(`_${introTexto}_\n\n${mensaje}`);
   }
-}
+};
 
-handler.help = ['cazar']
-handler.tags = ['aventura']
-handler.command = /^cazar$/i
+handler.help = ['cazar'];
+handler.tags = ['aventura'];
+handler.command = /^cazar$/i;
 
-export default handler
+export default handler;

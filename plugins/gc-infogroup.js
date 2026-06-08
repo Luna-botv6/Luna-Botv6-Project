@@ -35,8 +35,8 @@ const handler = async (m, { conn }) => {
 
   const createdAt = groupMetadata.creation
     ? new Date(groupMetadata.creation * 1000).toLocaleDateString('es-AR', {
-        day: '2-digit', month: 'long', year: 'numeric'
-      })
+      day: '2-digit', month: 'long', year: 'numeric'
+    })
     : '—';
 
   const text = `

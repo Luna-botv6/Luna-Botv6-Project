@@ -1,4 +1,4 @@
-import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from "@whiskeysockets/baileys";
+import { prepareWAMessageMedia, generateWAMessageFromContent, getDevice } from '@whiskeysockets/baileys';
 
 const handler = async (m, { conn, text, args, isAdmin, isOwner }) => {
   try {

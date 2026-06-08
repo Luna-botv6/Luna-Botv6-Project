@@ -62,7 +62,7 @@ ${tradutor.texto1[0]}
     );
   } catch (e) {
     await m.reply(
-      `❌ No pude cambiar el estado del grupo.\n\nEl bot necesita ser *administrador*.`
+      '❌ No pude cambiar el estado del grupo.\n\nEl bot necesita ser *administrador*.'
     );
   }
 };

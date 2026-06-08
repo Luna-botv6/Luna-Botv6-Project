@@ -1,5 +1,5 @@
-import path from 'path'
-import { addExp, addMoney } from '../lib/stats.js'
+import path from 'path';
+import { addExp, addMoney } from '../lib/stats.js';
 
 // Lista de imágenes con sus palabras correspondientes
 const juegos = [
@@ -55,22 +55,22 @@ const juegos = [
       { palabra: 'uva', fila: 3, columna: 4 },
     ]
   }
-]
+];
 
 async function handler(m, { conn, args, usedPrefix, command }) {
-  conn.sopadeletras = conn.sopadeletras || {}
-  const id = m.chat
+  conn.sopadeletras = conn.sopadeletras || {};
+  const id = m.chat;
 
   if (!args.length) {
-    const juegoSeleccionado = juegos[Math.floor(Math.random() * juegos.length)]
-    const partida = juegoSeleccionado.palabras[Math.floor(Math.random() * juegoSeleccionado.palabras.length)]
+    const juegoSeleccionado = juegos[Math.floor(Math.random() * juegos.length)];
+    const partida = juegoSeleccionado.palabras[Math.floor(Math.random() * juegoSeleccionado.palabras.length)];
 
     const timeout = setTimeout(() => {
       if (conn.sopadeletras[id]) {
-        conn.reply(id, `⏰ *Se acabó el tiempo.* La palabra era *${conn.sopadeletras[id].palabra}*.\n¡Intenta nuevamente con *${usedPrefix + command}*!`, m)
-        delete conn.sopadeletras[id]
+        conn.reply(id, `⏰ *Se acabó el tiempo.* La palabra era *${conn.sopadeletras[id].palabra}*.\n¡Intenta nuevamente con *${usedPrefix + command}*!`, m);
+        delete conn.sopadeletras[id];
       }
-    }, 90000)
+    }, 90000);
 
     conn.sopadeletras[id] = {
       rutaImagen: juegoSeleccionado.ruta,
@@ -78,55 +78,55 @@ async function handler(m, { conn, args, usedPrefix, command }) {
       fila: partida.fila,
       columna: partida.columna,
       timeout
-    }
+    };
 
     // Mensaje a los 30 segundos (quedan 15)
     setTimeout(() => {
       if (conn.sopadeletras[id]) {
-        conn.reply(id, `⏳ *¡Te quedan 15 segundos!* ¡Tu Puedes! 🫂`, m)
+        conn.reply(id, '⏳ *¡Te quedan 15 segundos!* ¡Tu Puedes! 🫂', m);
       }
-    }, 75000)
+    }, 75000);
 
     await conn.sendMessage(id, {
       image: { url: juegoSeleccionado.ruta },
       caption: `🧩 *Sopa de Letras: Encuentra la Palabra*\n\n🔤 Palabra a buscar: *${partida.palabra}*\n📌 Responde con: *${usedPrefix + command} fila columna*\n📝 Ejemplo: *${usedPrefix + command} 3 10*\n\n📖 *¿Cómo se juega?*\n1️⃣ Busca la palabra en la imagen.\n2️⃣ Cuando encuentres la primera letra (ej: la "N" de "naranja"), anota la fila donde empieza.\n3️⃣ Luego sigue la palabra horizontalmente y encuentra la letra donde termina (ej: la "A").\n4️⃣ Cuenta la columna donde termina.\n✅ Usa esos números para responder: fila donde comienza, columna donde termina.\n\n⏱️ *Tienes 45 segundos para responder.*\n🎯 ¡Mucha suerte!`
-    })
-    return
+    });
+    return;
   }
 
   if (args.length === 2) {
-    const fila = parseInt(args[0])
-    const columna = parseInt(args[1])
+    const fila = parseInt(args[0]);
+    const columna = parseInt(args[1]);
 
     if (isNaN(fila) || isNaN(columna)) {
-      return m.reply(`❌ Las coordenadas deben ser números válidos.\nUso correcto:\n${usedPrefix + command} fila columna`)
+      return m.reply(`❌ Las coordenadas deben ser números válidos.\nUso correcto:\n${usedPrefix + command} fila columna`);
     }
 
-    const partida = conn.sopadeletras[id]
-    if (!partida) return m.reply(`⚠️ No tienes una partida activa. Usa:\n${usedPrefix + command}`)
+    const partida = conn.sopadeletras[id];
+    if (!partida) return m.reply(`⚠️ No tienes una partida activa. Usa:\n${usedPrefix + command}`);
 
-    clearTimeout(partida.timeout) // Detener el conteo si responde
+    clearTimeout(partida.timeout); // Detener el conteo si responde
 
     if (fila === partida.fila && columna === partida.columna) {
-      const expGanada = 2500
-      const diamantesGanados = 250
+      const expGanada = 2500;
+      const diamantesGanados = 250;
 
-      await addExp(m.sender, expGanada)
-      await addMoney(m.sender, diamantesGanados)
+      await addExp(m.sender, expGanada);
+      await addMoney(m.sender, diamantesGanados);
 
-      delete conn.sopadeletras[id]
+      delete conn.sopadeletras[id];
 
       return m.reply(
         `🎉 ¡Correcto! La palabra *${partida.palabra}* estaba en fila ${fila}, columna ${columna}.\n` +
         `Has ganado +${expGanada} EXP y +${diamantesGanados} diamantes 💎.`
-      )
+      );
     } else {
-      return m.reply(`❌ Incorrecto. La palabra no está en esa posición. Intenta de nuevo.`)
+      return m.reply('❌ Incorrecto. La palabra no está en esa posición. Intenta de nuevo.');
     }
   }
 
-  return m.reply(`❗ Uso correcto:\n- Iniciar juego: *${usedPrefix + command}*\n- Responder: *${usedPrefix + command} fila columna*`)
+  return m.reply(`❗ Uso correcto:\n- Iniciar juego: *${usedPrefix + command}*\n- Responder: *${usedPrefix + command} fila columna*`);
 }
 
-handler.command = /^sopadeletras$/i
-export default handler
+handler.command = /^sopadeletras$/i;
+export default handler;

@@ -2,10 +2,10 @@
 
 
 const handler = async (m, {conn, isAdmin, isOwner, args, usedPrefix, command}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.gc_config_time
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.gc_config_time;
 
   if (!(isAdmin || isOwner)) {
 	  global.dfail('admin', m, conn);

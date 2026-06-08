@@ -1,20 +1,20 @@
-import { getUserStats, getRoleByLevel } from '../lib/stats.js'
+import { getUserStats, getRoleByLevel } from '../lib/stats.js';
 
 const handler = async (m, { conn, usedPrefix, isPrems }) => {
   try {
-    const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje || 'es'
-    const _tr = await global.loadTranslation(idioma)
-    const t = _tr?.plugins?.iamenu || {}
+    const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
+    const _tr = await global.loadTranslation(idioma);
+    const t = _tr?.plugins?.iamenu || {};
 
-    const stats = getUserStats(m.sender)
-    const role = getRoleByLevel(stats.level)
+    const stats = getUserStats(m.sender);
+    const role = getRoleByLevel(stats.level);
 
-    const { money, exp, level, limit, premiumTime } = stats
-    const taguser = `@${m.sender.split('@')[0]}`
-    const isPrem = premiumTime > 0 || isPrems
-    const botJid = conn.user?.jid || conn.user?.id || ''
-    const botTag = `@${botJid.split('@')[0]}`
-    const readMore = String.fromCharCode(8206).repeat(850)
+    const { money, exp, level, limit, premiumTime } = stats;
+    const taguser = `@${m.sender.split('@')[0]}`;
+    const isPrem = premiumTime > 0 || isPrems;
+    const botJid = conn.user?.jid || conn.user?.id || '';
+    const botTag = `@${botJid.split('@')[0]}`;
+    const readMore = String.fromCharCode(8206).repeat(850);
 
     const str = `
 ${t.titulo}
@@ -143,21 +143,21 @@ ${t.charla_desc}
 > ${botTag} ${t.charla5}
 
 ${t.footer}
-`.trim()
+`.trim();
 
     await conn.sendMessage(m.chat, {
       text: str,
       mentions: [m.sender, botJid]
-    }, { quoted: m })
+    }, { quoted: m });
 
   } catch (e) {
-    console.error('iamenu error:', e)
-    conn.reply(m.chat, '❌ Error al mostrar el menú de IA', m)
+    console.error('iamenu error:', e);
+    conn.reply(m.chat, '❌ Error al mostrar el menú de IA', m);
   }
-}
+};
 
-handler.command = /^(iamenu|menuia|menusia|aimenú|aimenu|lunamenu)$/i
-handler.exp = 10
-handler.fail = null
+handler.command = /^(iamenu|menuia|menusia|aimenú|aimenu|lunamenu)$/i;
+handler.exp = 10;
+handler.fail = null;
 
-export default handler
+export default handler;

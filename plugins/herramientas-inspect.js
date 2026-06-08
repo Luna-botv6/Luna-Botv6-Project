@@ -1,11 +1,11 @@
-import * as baileys from "@whiskeysockets/baileys";
+import * as baileys from '@whiskeysockets/baileys';
 
 
 const handler = async (m, {conn, text}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.herramientas_inspect
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.herramientas_inspect;
 
   const [, code] = text.match(/chat\.whatsapp\.com\/(?:invite\/)?([0-9A-Za-z]{20,24})/i) || [];
   if (!code) throw tradutor.texto1;

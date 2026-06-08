@@ -1,24 +1,24 @@
-import { connectionManager } from "../lib/funcion/connection-manager.js";
-import fs from "fs";
-import path from "path";
-import chalk from "chalk";
+import { connectionManager } from '../lib/funcion/connection-manager.js';
+import fs from 'fs';
+import path from 'path';
+import chalk from 'chalk';
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   if (!isOwner) {
-    return m.reply("❌ Este comando solo puede ser usado por el owner del bot.");
+    return m.reply('❌ Este comando solo puede ser usado por el owner del bot.');
   }
 
   if (!args[0]) {
     return m.reply(`❓ *Uso del comando:*\n\n*${usedPrefix + command}* <número>\n\n*Ejemplo:*\n${usedPrefix + command} 5493483447772`);
   }
 
-  let targetNumber = args[0].replace(/[^0-9]/g, "");
+  let targetNumber = args[0].replace(/[^0-9]/g, '');
 
   if (!targetNumber) {
-    return m.reply("❌ Número inválido. Usa solo números sin símbolos.");
+    return m.reply('❌ Número inválido. Usa solo números sin símbolos.');
   }
 
-  const subBotDir = "./sub-lunabot/";
+  const subBotDir = './sub-lunabot/';
   
   if (!fs.existsSync(subBotDir)) {
     return m.reply(`❌ No existe ningún SubBot con el número: +${targetNumber}`);
@@ -30,13 +30,13 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
   for (const dirName of userDirs) {
     const userPath = path.join(subBotDir, dirName);
-    const credsPath = path.join(userPath, "creds.json");
+    const credsPath = path.join(userPath, 'creds.json');
 
     if (!fs.statSync(userPath).isDirectory()) continue;
     if (!fs.existsSync(credsPath)) continue;
 
     try {
-      const creds = JSON.parse(fs.readFileSync(credsPath, "utf8"));
+      const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
       const number = creds.me?.jid ? creds.me.jid.split('@')[0] : null;
 
       if (number === targetNumber) {
@@ -100,12 +100,12 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     console.log(chalk.green(`✅ SubBot ${realNumber} eliminado completamente por el owner`));
 
     return m.reply(
-      `✅ *SubBot eliminado exitosamente*\n\n` +
+      '✅ *SubBot eliminado exitosamente*\n\n' +
       `👤 Usuario: ${displayName}\n` +
       `📱 Número: +${realNumber}\n` +
       `📁 Carpeta: ${foundDir}\n\n` +
-      `${isConnected ? "🔌 Conexión cerrada\n" : ""}` +
-      `🗑️ Sesión eliminada\n\n` +
+      `${isConnected ? '🔌 Conexión cerrada\n' : ''}` +
+      '🗑️ Sesión eliminada\n\n' +
       `El usuario deberá usar *${usedPrefix}serbot* para crear un nuevo SubBot.`
     );
 
@@ -115,9 +115,9 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   }
 };
 
-handler.command = ["kickbot", "eliminarbot"];
-handler.help = ["kickbot <número>"];
-handler.tags = ["socket"];
+handler.command = ['kickbot', 'eliminarbot'];
+handler.help = ['kickbot <número>'];
+handler.tags = ['socket'];
 handler.owner = true;
 
 export default handler;
