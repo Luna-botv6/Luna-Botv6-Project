@@ -46,17 +46,17 @@ const handler = async (m, { conn, text, isOwner }) => {
 
     fs.writeFileSync(joinFilePath, fileContent, 'utf8');
 
-    await m.reply(`✅ *Número actualizado exitosamente*\n\n` +
+    await m.reply('✅ *Número actualizado exitosamente*\n\n' +
       `📱 Número anterior: ${oldNumber}\n` +
       `📱 Número nuevo: ${numero}\n\n` +
-      `✨ Las nuevas solicitudes de grupo se enviarán a este número.`);
+      '✨ Las nuevas solicitudes de grupo se enviarán a este número.');
 
     await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
 
   } catch (error) {
     console.error('Error editando owner-join:', error);
     await m.reply(`❌ Error al actualizar el archivo:\n\n${error.message}\n\n` +
-      `Verifica los permisos del archivo.`);
+      'Verifica los permisos del archivo.');
   }
 };
 

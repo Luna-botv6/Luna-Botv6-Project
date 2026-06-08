@@ -11,18 +11,18 @@ function resolveJidLocal(senderId, participants) {
 const handler = async (m, { conn, text, usedPrefix, command }) => {
 
   if (!text) throw (
-    `╭─「 *📋 REPORTE AL OWNER* 」\n` +
-    `│\n` +
-    `│ Enviá tu reporte así:\n` +
+    '╭─「 *📋 REPORTE AL OWNER* 」\n' +
+    '│\n' +
+    '│ Enviá tu reporte así:\n' +
     `│ *${usedPrefix + command}* _descripción del problema_\n` +
-    `│\n` +
-    `│ 📌 Si es un bug de un comando incluí el prefijo:\n` +
+    '│\n' +
+    '│ 📌 Si es un bug de un comando incluí el prefijo:\n' +
     `│ *${usedPrefix + command}* El comando *${usedPrefix}play* no funciona\n` +
-    `╰─`
+    '╰─'
   );
 
-  if (text.length < 10) throw `⚠️ El reporte es muy corto. Describí el problema con más detalle.`;
-  if (text.length > 1000) throw `⚠️ El reporte supera los 1000 caracteres. Resumí un poco.`;
+  if (text.length < 10) throw '⚠️ El reporte es muy corto. Describí el problema con más detalle.';
+  if (text.length > 1000) throw '⚠️ El reporte supera los 1000 caracteres. Resumí un poco.';
 
   let realJid = m.sender;
 
@@ -59,8 +59,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   const comandoDetectado = cmdMatch ? cmdMatch[0] : null;
 
   let teks =
-    `╭─「 *🚨 NUEVO REPORTE* 」\n` +
-    `│\n` +
+    '╭─「 *🚨 NUEVO REPORTE* 」\n' +
+    '│\n' +
     `├ 👤 *Usuario:* @${numero}\n` +
     `├ 📱 *Número:* wa.me/${numero}\n` +
     `├ 📍 *Origen:* ${grupoNombre}\n` +
@@ -71,24 +71,24 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   }
 
   teks +=
-    `│\n` +
-    `├ 📝 *Descripción:*\n` +
+    '│\n' +
+    '├ 📝 *Descripción:*\n' +
     `│ ${text}\n`;
 
   if (m.quoted?.text) {
     teks +=
-      `│\n` +
-      `├ 💬 *Mensaje citado:*\n` +
+      '│\n' +
+      '├ 💬 *Mensaje citado:*\n' +
       `│ ${m.quoted.text}\n`;
   }
 
-  teks += `╰─`;
+  teks += '╰─';
 
   await conn.reply(OWNER_JID, teks, null, {
     contextInfo: { mentionedJid: [realJid] }
   });
 
-  m.reply(`✅ Tu reporte fue enviado correctamente.\n\nGracias por reportar, lo revisaremos a la brevedad 🙏`);
+  m.reply('✅ Tu reporte fue enviado correctamente.\n\nGracias por reportar, lo revisaremos a la brevedad 🙏');
 };
 
 handler.help = ['reporte <mensaje>', 'report <mensaje>'];

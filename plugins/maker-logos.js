@@ -1,13 +1,13 @@
-import axios from "axios";
-import cheerio from "cheerio";
-import FormData from "form-data";
+import axios from 'axios';
+import cheerio from 'cheerio';
+import FormData from 'form-data';
 
 const split = '|';
 const handler = async (m, {conn, args: [effect], text: txt, usedPrefix, command, name}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.maker_logos
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.maker_logos;
 
   if (!effect) throw tradutor.texto1 + effects.map((v) => v.title).join('\n° ඬ⃟📝 #logo ');
   if (!effects.find((v) => (new RegExp(v.title, 'gi')).test(effect))) throw `${tradutor.texto2[0]} ${effect} ${tradutor.texto2[1]}`;
@@ -20,7 +20,7 @@ const handler = async (m, {conn, args: [effect], text: txt, usedPrefix, command,
   }
 
   const effectoSelect = effects.find((effectz) => new RegExp(effectz?.title, 'i').test(effect));
-  const res = await maker(effectoSelect?.url, [...text]).catch(_ => { throw tradutor.texto3 });
+  const res = await maker(effectoSelect?.url, [...text]).catch(_ => { throw tradutor.texto3; });
 
   if (typeof res == 'number') throw res == -1
     ? `${tradutor.texto4[0]} ${effect} ${tradutor.texto4[1]}`
@@ -103,7 +103,7 @@ var effects = [
   { title: 'a-Stone', url: 'https://textpro.me/create-a-stone-text-effect-online-982.html' },
   { title: 'Neon-Light--With-Galaxy-Style', url: 'https://textpro.me/neon-light-text-effect-with-galaxy-style-981.html' },
   { title: '1917-Style', url: 'https://textpro.me/1917-style-text-effect-online-980.html' },
-  { title: "80's-Retro-Neon", url: 'https://textpro.me/80-s-retro-neon-text-effect-online-979.html' },
+  { title: '80\'s-Retro-Neon', url: 'https://textpro.me/80-s-retro-neon-text-effect-online-979.html' },
   { title: 'Minion--3D', url: 'https://textpro.me/minion-text-effect-3d-online-978.html' },
   { title: 'Pornhub-Style-Logo', url: 'https://textpro.me/pornhub-style-logo-online-generator-free-977.html' },
   { title: 'Double-Exposure--Black-&-White', url: 'https://textpro.me/double-exposure-text-effect-black-white-976.html' },
@@ -239,99 +239,99 @@ var effects = [
 ];
 
 async function maker(url, text) {
-  if (/https?:\/\/(ephoto360|photooxy|textpro)\.(com|me)/i.test(url) === false) throw new Error("URL Invalid")
+  if (/https?:\/\/(ephoto360|photooxy|textpro)\.(com|me)/i.test(url) === false) throw new Error('URL Invalid');
   try {
     
     let a = await axios.get(url, {
       headers: {
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "Origin": (new URL(url)).origin,
-        "Referer": url,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188"
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Origin': (new URL(url)).origin,
+        'Referer': url,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188'
       }
-    })
-    const cookies = a.headers['set-cookie'] || a.headers.get?.('set-cookie') || []
-    const cookieStr = Array.isArray(cookies) ? cookies.join('; ') : cookies
+    });
+    const cookies = a.headers['set-cookie'] || a.headers.get?.('set-cookie') || [];
+    const cookieStr = Array.isArray(cookies) ? cookies.join('; ') : cookies;
 
-    let $ = cheerio.load(a.data)
-    let server     = $('#build_server').val()
-    let serverId   = $('#build_server_id').val()
-    let token      = $('#token').val()
-    let submit     = $('#submit').val()
+    let $ = cheerio.load(a.data);
+    let server     = $('#build_server').val();
+    let serverId   = $('#build_server_id').val();
+    let token      = $('#token').val();
+    let submit     = $('#submit').val();
 
-    let types = []
+    let types = [];
     $('input[name="radio0[radio]"]').each((i, elem) => {
-      types.push($(elem).attr("value"))
-    })
+      types.push($(elem).attr('value'));
+    });
 
     let post = types.length
       ? { 'radio0[radio]': types[Math.floor(Math.random() * types.length)], submit, token, 'build_server': server, 'build_server_id': Number(serverId) }
-      : { submit, token, 'build_server': server, 'build_server_id': Number(serverId) }
+      : { submit, token, 'build_server': server, 'build_server_id': Number(serverId) };
 
-    let form = new FormData()
-    for (let i in post) form.append(i, post[i])
-    if (typeof text == "string") text = [text]
-    for (let i of text) form.append("text[]", i)
+    let form = new FormData();
+    for (let i in post) form.append(i, post[i]);
+    if (typeof text == 'string') text = [text];
+    for (let i of text) form.append('text[]', i);
 
     
     let b = await axios.post(url, form, {
       headers: {
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-        "Origin": (new URL(url)).origin,
-        "Referer": url,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188",
-        "Cookie": cookieStr,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Origin': (new URL(url)).origin,
+        'Referer': url,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188',
+        'Cookie': cookieStr,
         ...form.getHeaders()
       }
-    })
+    });
 
-    $ = cheerio.load(b.data)
+    $ = cheerio.load(b.data);
     let out = (
       $('#form_value').first().text()       ||
       $('#form_value_input').first().text() ||
       $('#form_value').first().val()        ||
       $('#form_value_input').first().val()
-    )
+    );
 
     
-    let c = await axios.post((new URL(url)).origin + "/effect/create-image", JSON.parse(out), {
+    let c = await axios.post((new URL(url)).origin + '/effect/create-image', JSON.parse(out), {
       headers: {
-        "Accept": "*/*",
-        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-        "Origin": (new URL(url)).origin,
-        "Referer": url,
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188",
-        "Cookie": cookieStr
+        'Accept': '*/*',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Origin': (new URL(url)).origin,
+        'Referer': url,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188',
+        'Cookie': cookieStr
       }
-    })
+    });
 
-    const imageUrl = server + (c.data?.fullsize_image || c.data?.image || "")
+    const imageUrl = server + (c.data?.fullsize_image || c.data?.image || '');
 
     
-    let imageBuffer = null
+    let imageBuffer = null;
     try {
       const imgResp = await axios.get(imageUrl, {
         responseType: 'arraybuffer',
         headers: {
-          "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
-          "Referer": url,
-          "Origin": (new URL(url)).origin,
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188",
-          "Cookie": cookieStr
+          'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+          'Referer': url,
+          'Origin': (new URL(url)).origin,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188',
+          'Cookie': cookieStr
         }
-      })
-      imageBuffer = Buffer.from(imgResp.data)
+      });
+      imageBuffer = Buffer.from(imgResp.data);
     } catch (e) {
       
-      imageBuffer = imageUrl
+      imageBuffer = imageUrl;
     }
 
     return {
       status: c.data?.success,
       image: imageBuffer,   
       session: c.data?.session_id
-    }
+    };
   } catch (e) {
-    throw e
+    throw e;
   }
 }

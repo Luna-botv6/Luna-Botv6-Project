@@ -61,7 +61,7 @@ const handler = async (m, { text }) => {
     await updateConfigFile(variable, value); 
     m.reply(`✅ ${variable.replace(/^global\./, '')} actualizada a ${value}`);
   } catch (error) {
-    console.error("❌ Error al actualizar config.js:", error);
+    console.error('❌ Error al actualizar config.js:', error);
     m.reply(`❌ ${error.message}`);
   }
 };

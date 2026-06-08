@@ -2,12 +2,12 @@ import fs from 'fs';
 
 
 const handler = async (m, { conn, text }) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.owner_broadcastchats
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.owner_broadcastchats;
 
-  s
+  s;
   const delay = (time) => new Promise((res) => setTimeout(res, time));
   const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0]);
   if (!text) throw tradutor.texto1;

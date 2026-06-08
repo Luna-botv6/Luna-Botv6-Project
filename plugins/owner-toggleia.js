@@ -22,7 +22,7 @@ let handler = async (m, { conn, command }) => {
   const emoji = settings.iaLunaActive ? '🟢' : '🔴';
   
   await m.reply(`${emoji} *IA de Luna-Bot*\n\nEstado: ${status}\n\n${settings.iaLunaActive ? '• El bot responderá a menciones y mensajes privados' : '• El bot NO responderá automáticamente\n• Los comandos normales siguen funcionando'}`);
-}
+};
 
 handler.help = ['toggleia', 'iaon', 'iaoff'];
 handler.tags = ['owner'];

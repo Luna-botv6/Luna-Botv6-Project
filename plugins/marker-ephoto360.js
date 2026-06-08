@@ -2,10 +2,10 @@ import {Maker} from 'imagemaker.js';
 
 
 const handler = async (m, {conn, args, command, usedPrefix}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.maker_ephoto360
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.maker_ephoto360;
 
   const response = args.join(' ').split('|');
   if (!args[0]) throw tradutor.texto1;

@@ -141,8 +141,8 @@ const handler = async (m, { conn }) => {
 ⏰ *Advertencias restantes:* ${remaining}
 
 ${warningCount === MAX_WARNINGS - 1 ? 
-  '🔥 **¡ÚLTIMA ADVERTENCIA!**\n⚡ *Próximo enlace = ELIMINACIÓN AUTOMÁTICA*' : 
-  '⚡ *Sigue enviando enlaces y serás eliminado*'
+    '🔥 **¡ÚLTIMA ADVERTENCIA!**\n⚡ *Próximo enlace = ELIMINACIÓN AUTOMÁTICA*' : 
+    '⚡ *Sigue enviando enlaces y serás eliminado*'
 }
 
 ❌ *NO SOY ADMINISTRADORA, NO PUDE BORRAR EL MENSAJE*
@@ -163,8 +163,8 @@ ${warningCount === MAX_WARNINGS - 1 ?
 ⏰ *Advertencias restantes:* ${remaining}
 
 ${warningCount === MAX_WARNINGS - 1 ? 
-  '🔥 **¡ÚLTIMA ADVERTENCIA!**\n⚡ *Próximo enlace = ELIMINACIÓN AUTOMÁTICA*' : 
-  '⚡ *Sigue enviando enlaces y serás eliminado*'
+    '🔥 **¡ÚLTIMA ADVERTENCIA!**\n⚡ *Próximo enlace = ELIMINACIÓN AUTOMÁTICA*' : 
+    '⚡ *Sigue enviando enlaces y serás eliminado*'
 }
 
 🗑️ *Tu mensaje fue eliminado automáticamente*

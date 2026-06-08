@@ -60,11 +60,11 @@ async function bloquearUsuario(conn, jidReal, lidOriginal) {
   for (const metodo of metodos) {
     try {
       if (await metodo()) {
-        console.log(`[BLOCK] ✅ ÉXITO con un método`);
+        console.log('[BLOCK] ✅ ÉXITO con un método');
         return true;
       }
     } catch (e) {
-      console.log(`[BLOCK] Falló:`, e?.message || e);
+      console.log('[BLOCK] Falló:', e?.message || e);
     }
   }
 
@@ -103,14 +103,14 @@ const handler = async (m, { text, conn, usedPrefix, command }) => {
       await conn.updateBlockStatus(user, 'unblock');
       exito = true;
     } catch (e) {
-      console.log(`[UNBLOCK] Falló:`, e?.message);
+      console.log('[UNBLOCK] Falló:', e?.message);
     }
   }
 
   if (exito) {
     await conn.reply(m.chat, `*[✅] ${command.includes('block') ? 'BLOQUEADO' : 'DESBLOQUEADO'} correctamente a @${user.split('@')[0]}*`, m, { mentions: [user] });
   } else {
-    await conn.reply(m.chat, `*[❌] No se pudo bloquear al usuario.\n\nWhatsApp está rechazando la acción (bad-request).\nPrueba bloquearlo manualmente desde tu celular principal.`, m);
+    await conn.reply(m.chat, '*[❌] No se pudo bloquear al usuario.\n\nWhatsApp está rechazando la acción (bad-request).\nPrueba bloquearlo manualmente desde tu celular principal.', m);
   }
 };
 

@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'fs';
 
 const handler = async (m, { conn }) => {
   const vn = './src/assets/audio/01J6748ZEBTQ21HT69937WGM4D.mp3';

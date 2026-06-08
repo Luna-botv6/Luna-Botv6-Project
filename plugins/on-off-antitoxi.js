@@ -154,13 +154,13 @@ const handler = async (m, { conn }) => {
 ⏰ *Advertencias restantes:* ${remaining}
 
 ${warningCount === MAX_TOXIC_WARNINGS - 1 ? 
-  '🔥 **¡ÚLTIMA ADVERTENCIA!**\n⚡ *Próximo mensaje tóxico = ELIMINACIÓN AUTOMÁTICA*' : 
-  '⚡ *Continúa con lenguaje ofensivo y serás eliminado*'
+    '🔥 **¡ÚLTIMA ADVERTENCIA!**\n⚡ *Próximo mensaje tóxico = ELIMINACIÓN AUTOMÁTICA*' : 
+    '⚡ *Continúa con lenguaje ofensivo y serás eliminado*'
 }
 
 ${messageDeleted ? 
-  '🗑️ *Tu mensaje fue eliminado automáticamente*' : 
-  '⚠️ *No pude eliminar tu mensaje - Bot necesita permisos de admin*'
+    '🗑️ *Tu mensaje fue eliminado automáticamente*' : 
+    '⚠️ *No pude eliminar tu mensaje - Bot necesita permisos de admin*'
 }
 
 🤝 *Por favor usa un lenguaje respetuoso.*

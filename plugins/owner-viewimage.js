@@ -2,11 +2,11 @@
 
 
 let handler = async (m, { text }) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.owner_viewimage
-  s
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.owner_viewimage;
+  s;
   if (!text) throw tradutor.texto1;
   let ext = text.split('.').pop();
   let path = `${text}`;

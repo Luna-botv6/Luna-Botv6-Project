@@ -123,7 +123,7 @@ const handler = async (m, { text }) => {
       m.reply(result);
     }
   } catch (error) {
-    console.error("Error al procesar el comando:", error);
+    console.error('Error al procesar el comando:', error);
     const errorMessage = error.message.includes('Error al eliminar el plugin') // complejo e ineccesario. Brr
       ? error.message.split('❌ ')[1]
       : `❌ ${error.message}`;

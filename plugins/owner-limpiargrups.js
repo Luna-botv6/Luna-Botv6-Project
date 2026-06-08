@@ -37,7 +37,7 @@ const handler = async (m, { conn }) => {
       await new Promise(resolve => setTimeout(resolve, 600));
     }
 
-    let resumen = `📋 Resultado:\n\n`;
+    let resumen = '📋 Resultado:\n\n';
     if (exitados.length) resumen += `*Salió de:*\n${exitados.join('\n')}\n\n`;
     if (fallidos.length) resumen += `*Errores:*\n${fallidos.join('\n')}`;
 

@@ -13,7 +13,7 @@ let handler = async (m, { conn, text }) => {
 
   if (!global.lidOwners.includes(number)) {
     console.log('ℹ️ El número no está en la lista.');
-    return m.reply(`Ese número no está en la lista de mod (lidOwner).`);
+    return m.reply('Ese número no está en la lista de mod (lidOwner).');
   }
 
   // Quita el número de la lista

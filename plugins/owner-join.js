@@ -76,9 +76,9 @@ const sendWelcomeMessage = async (conn, groupId, senderNumber, time, unit) => {
     const plural = time > 1 ? 's' : '';
     await conn.sendMessage(groupId, {
       text:
-        `👋 *Hola a todos!*\n\n` +
+        '👋 *Hola a todos!*\n\n' +
         `Soy *${conn.user.name}*, fui invitado por *@${senderNumber.split('@')[0]}*\n\n` +
-        `Para ver el menú escribe *#help*\n\n` +
+        'Para ver el menú escribe *#help*\n\n' +
         `⏳ Saldré automáticamente después de: *${time} ${unit}${plural}*`,
       mentions: [senderNumber],
     });
@@ -119,11 +119,11 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems, usedPrefix, co
 
       await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
       await m.reply(
-        `✅ *Bot unido al grupo*\n\n` +
+        '✅ *Bot unido al grupo*\n\n' +
         `👤 Solicitante: ${request.userNumber}\n` +
         `⏳ Tiempo: ${request.time} ${request.unit}${request.time > 1 ? 's' : ''}\n` +
         `🆔 ID solicitud: ${requestId}\n\n` +
-        `ℹ️ Recuerda no usar el bot para spam.`
+        'ℹ️ Recuerda no usar el bot para spam.'
       );
     } catch (error) {
       await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
@@ -151,7 +151,7 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems, usedPrefix, co
 
     await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
     await m.reply(
-      `❌ *Solicitud rechazada*\n\n` +
+      '❌ *Solicitud rechazada*\n\n' +
       `👤 Usuario: ${request.userNumber}\n` +
       `📝 Motivo: ${motivo}`
     );
@@ -179,9 +179,9 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems, usedPrefix, co
 
       await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
       await m.reply(
-        `✅ *Me uní al grupo exitosamente*\n\n` +
+        '✅ *Me uní al grupo exitosamente*\n\n' +
         `⏳ Tiempo: *${time} ${unit}${time > 1 ? 's' : ''}*\n\n` +
-        `Usa el bot con responsabilidad.`
+        'Usa el bot con responsabilidad.'
       );
     } catch (error) {
       await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
@@ -214,21 +214,21 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems, usedPrefix, co
 
   await conn.sendMessage(m.chat, { react: { text: '📋', key: m.key } });
   await m.reply(
-    `📋 *Solicitud enviada a revisión*\n\n` +
+    '📋 *Solicitud enviada a revisión*\n\n' +
     `🔗 ${link}\n` +
     `⏳ Tiempo solicitado: *${time} ${unit}${time > 1 ? 's' : ''}*\n` +
     `🆔 ID: *${requestId}*\n\n` +
-    `💌 El administrador revisará tu solicitud. Por favor ten paciencia.`
+    '💌 El administrador revisará tu solicitud. Por favor ten paciencia.'
   );
 
   const ownerMsg =
-    `🔔 *Nueva Solicitud de Grupo*\n\n` +
+    '🔔 *Nueva Solicitud de Grupo*\n\n' +
     `👤 @${senderNumber}\n` +
     `🔗 ${link}\n` +
     `⏳ Tiempo: ${time} ${unit}${time > 1 ? 's' : ''}\n` +
     `🆔 *${requestId}*\n` +
     `⏰ ${new Date().toLocaleString()}\n\n` +
-    `_Comandos:_\n` +
+    '_Comandos:_\n' +
     `✅ ${usedPrefix}aceptar ${requestId}\n` +
     `❌ ${usedPrefix}denegar ${requestId}`;
 

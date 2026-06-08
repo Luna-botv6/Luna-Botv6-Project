@@ -1,10 +1,10 @@
 
 
 const handler = async (m, {conn, isROwner, text}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.owner_bcgc
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.owner_bcgc;
 
   const delay = (time) => new Promise((res) => setTimeout(res, time));
   const getGroups = await conn.groupFetchAllParticipating();
@@ -16,16 +16,16 @@ const handler = async (m, {conn, isROwner, text}) => {
   for (const i of anu) {
     await delay(500);
     conn.relayMessage(i,
-        {liveLocationMessage: {
-          degreesLatitude: 35.685506276233525,
-          degreesLongitude: 139.75270667105852,
-          accuracyInMeters: 0,
-          degreesClockwiseFromMagneticNorth: 2,
-          caption: tradutor.texto2[1] + pesan + tradutor.texto2[0],
-          sequenceNumber: 2,
-          timeOffset: 3,
-          contextInfo: m,
-        }}, {}).catch((_) => _);
+      {liveLocationMessage: {
+        degreesLatitude: 35.685506276233525,
+        degreesLongitude: 139.75270667105852,
+        accuracyInMeters: 0,
+        degreesClockwiseFromMagneticNorth: 2,
+        caption: tradutor.texto2[1] + pesan + tradutor.texto2[0],
+        sequenceNumber: 2,
+        timeOffset: 3,
+        contextInfo: m,
+      }}, {}).catch((_) => _);
   }
   m.reply(`${tradutor.texto3[0]} ${anu.length} ${tradutor.texto3[1]}`);
 };

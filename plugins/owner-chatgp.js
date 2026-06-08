@@ -12,7 +12,7 @@ const link = /chat.whatsapp.com/;
 // Función que maneja los mensajes
 const handler = async (m, { conn, text, groupMetadata }) => {
   const datas = global;
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const idioma = datas.db.data.users?.[m.sender]?.language || global.defaultLenguaje;
   const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
   const tradutor = _translate.plugins.owner_chatgp;
 
@@ -30,8 +30,8 @@ const handler = async (m, { conn, text, groupMetadata }) => {
   if (m.text.includes(linkThisGroup)) return conn.reply(m.chat, tradutor.texto2, m);
 
   // Verificar el tiempo de espera entre mensajes
-  const time = global.db.data.users[m.sender].msgwait + 300000;
-  if (new Date() - db.data.users[m.sender].msgwait < 300000) {
+  const time = (global.db.data.users?.[m.sender]?.msgwait || 0) + 300000;
+  if (new Date() - (global.db.data.users?.[m.sender]?.msgwait || 0) < 300000) {
     throw `${tradutor.texto3[0]} ${msToTime(time - new Date())} ${tradutor.texto3[1]}`;
   }
 
@@ -46,8 +46,9 @@ const handler = async (m, { conn, text, groupMetadata }) => {
   const teks = `${tradutor.texto4[0]} ${groupMetadata.subject}\n${tradutor.texto4[1]}${name}\n*${tradutor.texto4[2]} wa.me/${who.split`@`[0]}\n*${tradutor.texto4[3]} ${text}`;
 
   // Enviar el mensaje a todos los grupos
-  for (const id of groups) {
+    for (const id of groups) {
     await conn.sendMessage(id, { text: teks }, { quoted: fakegif });
+    if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = {};
     global.db.data.users[m.sender].msgwait = new Date() * 1;
   }
 
@@ -57,7 +58,7 @@ const handler = async (m, { conn, text, groupMetadata }) => {
     conn.reply(m.chat, response, m); // Enviar respuesta a WhatsApp
   } catch (error) {
     // Si algo falla, enviamos un mensaje de error
-    console.error("Error al obtener respuesta de la API:", error); // Esto te dará más detalles del error en la consola
+    console.error('Error al obtener respuesta de la API:', error); // Esto te dará más detalles del error en la consola
     conn.reply(m.chat, 'Hubo un error al obtener la respuesta. Por favor intenta de nuevo.', m);
   }
 };
@@ -88,7 +89,7 @@ async function getChatGptResponse(prompt) {
     const data = await response.json(); // Parsear la respuesta JSON
     return data.choices[0].text.trim(); // Obtener la respuesta y quitar espacios
   } catch (error) {
-    console.error("Error en la conexión con la API:", error);
+    console.error('Error en la conexión con la API:', error);
     throw error; // Re-lanzar el error para que lo maneje el bloque catch principal
   }
 }

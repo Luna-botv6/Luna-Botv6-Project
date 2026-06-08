@@ -150,7 +150,7 @@ const handler = async (m, { conn }) => {
     }
     
     // Construir mensaje final
-    let responseText = `📢 Nueva actualización detectada\n\n`;
+    let responseText = '📢 Nueva actualización detectada\n\n';
     responseText += `👤 Autor: ${login}\n`;
     responseText += `📅 Fecha: ${commitDate}\n`;
     responseText += `💬 Mensaje: ${truncateText(message, 200)}\n\n`;
@@ -168,7 +168,7 @@ const handler = async (m, { conn }) => {
       responseText += `📋 Commits recientes:\n${recentCommits.join('\n')}\n\n`;
     }
     
-    responseText += `💡 Para aplicar cambios: reinicia el bot si tienes auto-actualización activa.`;
+    responseText += '💡 Para aplicar cambios: reinicia el bot si tienes auto-actualización activa.';
     
     // Truncar mensaje si es muy largo para WhatsApp
     responseText = truncateText(responseText, MAX_MESSAGE_LENGTH);

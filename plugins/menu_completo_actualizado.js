@@ -1,118 +1,118 @@
-import { writeFile, mkdir, unlink, access } from 'fs/promises'
-import { getUserStats, getRoleByLevel } from '../lib/stats.js'
+import { writeFile, mkdir, unlink, access } from 'fs/promises';
+import { getUserStats, getRoleByLevel } from '../lib/stats.js';
 
 
-const MENU_DIR = './database/WELCOME'
-const CUSTOM_IMG = `${MENU_DIR}/menu_image.jpg`
-const CUSTOM_VID = `${MENU_DIR}/menu_video.mp4`
+const MENU_DIR = './database/WELCOME';
+const CUSTOM_IMG = `${MENU_DIR}/menu_image.jpg`;
+const CUSTOM_VID = `${MENU_DIR}/menu_video.mp4`;
 
 
 
 async function fileExists(path) {
   try {
-    await access(path)
-    return true
+    await access(path);
+    return true;
   } catch {
-    return false
+    return false;
   }
 }
 
 async function ensureDir() {
   try {
-    await mkdir(MENU_DIR, { recursive: true })
+    await mkdir(MENU_DIR, { recursive: true });
   } catch {}
 }
 
 const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
-  const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje || 'es'
-  const _translate = await global.loadTranslation(idioma)
-  const t = _translate?.menu || {}
-  const tm = _translate?.plugins?.menu_media || {}
+  const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
+  const _translate = await global.loadTranslation(idioma);
+  const t = _translate?.menu || {};
+  const tm = _translate?.plugins?.menu_media || {};
 
-  const cmd = (m.text || '').trim().toLowerCase().replace(/^[^a-z0-9]*/i, '')
+  const cmd = (m.text || '').trim().toLowerCase().replace(/^[^a-z0-9]*/i, '');
 
-  if (usedPrefix == 'a' || usedPrefix == 'A') return
+  if (usedPrefix == 'a' || usedPrefix == 'A') return;
 
   if (/^(imgmenu|delimgmenu|vidmenu|delvidmenu)$/i.test(cmd)) {
    
 
-    await ensureDir()
+    await ensureDir();
 
     if (/^delimgmenu$/i.test(cmd)) {
-      if (!(await fileExists(CUSTOM_IMG))) return m.reply(tm.img_no_existe)
-      await unlink(CUSTOM_IMG)
-      return m.reply(tm.img_eliminada)
+      if (!(await fileExists(CUSTOM_IMG))) return m.reply(tm.img_no_existe);
+      await unlink(CUSTOM_IMG);
+      return m.reply(tm.img_eliminada);
     }
 
     if (/^delvidmenu$/i.test(cmd)) {
-      if (!(await fileExists(CUSTOM_VID))) return m.reply(tm.vid_no_existe)
-      await unlink(CUSTOM_VID)
-      return m.reply(tm.vid_eliminado)
+      if (!(await fileExists(CUSTOM_VID))) return m.reply(tm.vid_no_existe);
+      await unlink(CUSTOM_VID);
+      return m.reply(tm.vid_eliminado);
     }
 
     if (/^imgmenu$/i.test(cmd)) {
-      let imgBuffer = null
+      let imgBuffer = null;
       if (m.quoted?.mimetype?.startsWith('image/')) {
-        imgBuffer = await m.quoted.download().catch(() => null)
+        imgBuffer = await m.quoted.download().catch(() => null);
       } else if (m.mimetype?.startsWith('image/')) {
-        imgBuffer = await m.download().catch(() => null)
+        imgBuffer = await m.download().catch(() => null);
       }
-      if (!imgBuffer) return m.reply(tm.no_media_img)
+      if (!imgBuffer) return m.reply(tm.no_media_img);
       try {
-        await writeFile(CUSTOM_IMG, imgBuffer)
-        if (await fileExists(CUSTOM_VID)) await unlink(CUSTOM_VID)
-        return m.reply(tm.img_guardada)
+        await writeFile(CUSTOM_IMG, imgBuffer);
+        if (await fileExists(CUSTOM_VID)) await unlink(CUSTOM_VID);
+        return m.reply(tm.img_guardada);
       } catch {
-        return m.reply(tm.error)
+        return m.reply(tm.error);
       }
     }
 
     if (/^vidmenu$/i.test(cmd)) {
-      let vidBuffer = null
+      let vidBuffer = null;
       if (m.quoted?.mimetype?.startsWith('video/')) {
-        vidBuffer = await m.quoted.download().catch(() => null)
+        vidBuffer = await m.quoted.download().catch(() => null);
       } else if (m.mimetype?.startsWith('video/')) {
-        vidBuffer = await m.download().catch(() => null)
+        vidBuffer = await m.download().catch(() => null);
       }
-      if (!vidBuffer) return m.reply(tm.no_media_vid)
+      if (!vidBuffer) return m.reply(tm.no_media_vid);
       try {
-        await writeFile(CUSTOM_VID, vidBuffer)
-        if (await fileExists(CUSTOM_IMG)) await unlink(CUSTOM_IMG)
-        return m.reply(tm.vid_guardado)
+        await writeFile(CUSTOM_VID, vidBuffer);
+        if (await fileExists(CUSTOM_IMG)) await unlink(CUSTOM_IMG);
+        return m.reply(tm.vid_guardado);
       } catch {
-        return m.reply(tm.error)
+        return m.reply(tm.error);
       }
     }
 
-    return
+    return;
   }
 
   try {
-    let mediaPath = null
-    let mediaType = 'video'
+    let mediaPath = null;
+    let mediaType = 'video';
 
     if (await fileExists(CUSTOM_VID)) {
-      mediaPath = CUSTOM_VID
-      mediaType = 'video'
+      mediaPath = CUSTOM_VID;
+      mediaType = 'video';
     } else if (await fileExists(CUSTOM_IMG)) {
-      mediaPath = CUSTOM_IMG
-      mediaType = 'image'
+      mediaPath = CUSTOM_IMG;
+      mediaType = 'image';
     } else {
-      mediaPath = `./src/assets/images/menu/languages/${idioma}/VID-20250527-WA0006.mp4`
-      const fallbackExists = await fileExists(mediaPath)
+      mediaPath = `./src/assets/images/menu/languages/${idioma}/VID-20250527-WA0006.mp4`;
+      const fallbackExists = await fileExists(mediaPath);
       if (!fallbackExists) {
-        mediaPath = `./src/assets/images/menu/languages/es/VID-20250527-WA0006.mp4`
+        mediaPath = './src/assets/images/menu/languages/es/VID-20250527-WA0006.mp4';
       }
-      mediaType = 'video'
+      mediaType = 'video';
     }
 
-    const stats = getUserStats(m.sender)
-    const currentRole = getRoleByLevel(stats.level)
-    const { money, joincount, exp, level, premiumTime, limit } = stats
+    const stats = getUserStats(m.sender);
+    const currentRole = getRoleByLevel(stats.level);
+    const { money, joincount, exp, level, premiumTime, limit } = stats;
 
-    const more = String.fromCharCode(8206)
-    const readMore = more.repeat(850)
-    const taguser = `@${m.sender.split('@')[0]}`
+    const more = String.fromCharCode(8206);
+    const readMore = more.repeat(850);
+    const taguser = `@${m.sender.split('@')[0]}`;
 
     const str = `╭━━━━━━━━━━━━━━━━━━━╮
 ┃  🌙 *${global.BotName || 'Luna-Botv6'} MENU* 🌙
@@ -515,7 +515,7 @@ ${readMore}
 ╭━━━━━━━━━━━━━━━━━━━╮
 ┃  🌙 *${global.BotName || 'Luna-Botv6'}* 🌙
 ┃  ${t.creado}
-╰━━━━━━━━━━━━━━━━━━━╯`.trim()
+╰━━━━━━━━━━━━━━━━━━━╯`.trim();
 
     const fkontak = {
       key: { participants: '0@s.whatsapp.net', remoteJid: 'status@broadcast', fromMe: false, id: 'Halo' },
@@ -524,7 +524,7 @@ ${readMore}
           vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${global.BotName || 'Luna'};Bot;;;\nFN:${(global.BotName || 'LunaBot').replace(/[^a-zA-Z0-9]/g, '')}\nTEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nEND:VCARD`
         }
       }
-    }
+    };
 
     if (mediaType === 'video') {
       await conn.sendMessage(m.chat, {
@@ -532,13 +532,13 @@ ${readMore}
         gifPlayback: true,
         caption: str,
         mentions: [m.sender]
-      }, { quoted: fkontak })
+      }, { quoted: fkontak });
     } else {
       await conn.sendMessage(m.chat, {
         image: { url: mediaPath },
         caption: str,
         mentions: [m.sender]
-      }, { quoted: fkontak })
+      }, { quoted: fkontak });
     }
 
     await conn.sendButton(
@@ -552,15 +552,15 @@ ${readMore}
       null,
       null,
       m
-    )
+    );
 
   } catch {
-    conn.reply(m.chat, t.error_menu || '❌ Error al mostrar el menú', m)
+    conn.reply(m.chat, t.error_menu || '❌ Error al mostrar el menú', m);
   }
-}
+};
 
-handler.command = /^(menu|menú|memu|memú|help|info|comandos|allmenu|ayuda|cmd|imgmenu|delimgmenu|vidmenu|delvidmenu)$/i
-handler.exp = 50
-handler.fail = null
+handler.command = /^(menu|menú|memu|memú|help|info|comandos|allmenu|ayuda|cmd|imgmenu|delimgmenu|vidmenu|delvidmenu)$/i;
+handler.exp = 50;
+handler.fail = null;
 
-export default handler
+export default handler;
