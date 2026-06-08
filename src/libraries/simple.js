@@ -25,7 +25,7 @@ const {
   fetchLatestBaileysVersion
 } = (await import("@whiskeysockets/baileys")).default
 
-const WA_VERSION_OVERRIDE = [2, 2413, 51]
+const WA_VERSION_OVERRIDE = [2, 3000, 1037641644]
 
 export async function makeWASocket(connectionOptions, options = {}) {
   if (!connectionOptions.version) {
