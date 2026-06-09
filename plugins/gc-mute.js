@@ -7,9 +7,38 @@ const NUM_WORDS = {
   'quince':15,'veinte':20,'treinta':30,'cuarenta':40,'cincuenta':50,'sesenta':60,
 };
 
+const _tCache = new Map();
 function getT(idioma) {
-  return JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.gc_mute;
+  const lang = idioma || global.defaultLenguaje || 'es';
+  if (_tCache.has(lang)) return _tCache.get(lang);
+  try {
+    const parsed = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${lang}.json`, 'utf8'));
+    _tCache.set(lang, parsed.plugins.gc_mute);
+    return _tCache.get(lang);
+  } catch {
+    try {
+      if (!_tCache.has('es')) {
+        const fallback = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8'));
+        _tCache.set('es', fallback.plugins.gc_mute);
+      }
+      return _tCache.get('es') || {};
+    } catch { return {}; }
+  }
 }
+
+function getTAntiMute(chat) {
+  try {
+    const lang = global.db?.data?.chats?.[chat]?.language || global.defaultLenguaje || 'es';
+    if (_tCacheAntiMute.has(lang)) return _tCacheAntiMute.get(lang);
+    const parsed = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${lang}.json`, 'utf8'));
+    _tCacheAntiMute.set(lang, parsed?.plugins?.anti_mute || {});
+    return _tCacheAntiMute.get(lang);
+  } catch {
+    return {};
+  }
+}
+
+const _tCacheAntiMute = new Map();
 
 function normalizeText(text) {
   return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[¿¡?!]/g, '').trim();
@@ -90,7 +119,17 @@ export async function unmuteUser({ chat, user, participants }) {
 
 export function isUserMuted(chat, user) {
   const db = getMutesDB();
-  const userNum = user.replace(/[^0-9]/g, '');
+  let resolvedUser = user;
+  if (user.includes('@lid')) {
+    const lidNum = user.replace(/[^0-9]/g, '');
+    const realJid = Object.keys(db).find(k =>
+      k.startsWith(chat + '_') &&
+      !k.includes('@lid') &&
+      k.replace(/[^0-9]/g, '').slice(-10) === lidNum.slice(-10)
+    );
+    if (realJid) resolvedUser = realJid.replace(chat + '_', '');
+  }
+  const userNum = resolvedUser.replace(/[^0-9]/g, '');
   for (const key of Object.keys(db)) {
     if (!key.startsWith(chat + '_')) continue;
     if (!key.replace(/[^0-9]/g, '').includes(userNum)) continue;
@@ -105,6 +144,77 @@ export function isUserMuted(chat, user) {
 export function getMuteInfo(chat, user) {
   const db = getMutesDB();
   return db[`${chat}_${user}`] || null;
+}
+
+const WARN_RESET_MS = 60 * 1000;
+const SILENT_DELETES = 3;
+const MAX_WARNS = 3;
+
+if (!global._muteWarnings) global._muteWarnings = new Map();
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of global._muteWarnings.entries()) {
+    if (now - entry.lastMsg > WARN_RESET_MS) global._muteWarnings.delete(key);
+  }
+}, 2 * 60 * 1000);
+
+function findWarnEntry(chat, sender) {
+  const senderNum = sender.replace(/[^0-9]/g, '');
+  const prefix = chat + '_';
+  for (const [key, entry] of global._muteWarnings.entries()) {
+    if (!key.startsWith(prefix)) continue;
+    const keyNum = key.slice(prefix.length).replace(/[^0-9]/g, '');
+    if (keyNum === senderNum) return { key, entry };
+  }
+  return null;
+}
+
+function addWarnCount(chat, sender) {
+  const now = Date.now();
+  const found = findWarnEntry(chat, sender);
+  if (!found || now - found.entry.lastMsg > WARN_RESET_MS) {
+    global._muteWarnings.set(`${chat}_${sender}`, { count: 1, lastMsg: now });
+    return 1;
+  }
+  found.entry.count++;
+  found.entry.lastMsg = now;
+  return found.entry.count;
+}
+
+function clearWarnCount(chat, sender) {
+  const found = findWarnEntry(chat, sender);
+  if (found) global._muteWarnings.delete(found.key);
+}
+
+export async function handleMuteViolation({ conn, chat, sender, messageKey }) {
+  await conn.sendMessage(chat, { delete: messageKey }).catch(() => {});
+
+  const count = addWarnCount(chat, sender);
+  await conn.sendMessage(chat, { text: `[MUTE-WARN] sender=${sender} count=${count} mapSize=${global._muteWarnings?.size}` }).catch(() => {});
+  if (count <= SILENT_DELETES) return;
+
+  const warnNum = count - SILENT_DELETES;
+  const phoneNum = sender.split('@')[0];
+  const t = getTAntiMute(chat);
+
+  if (warnNum === 1) {
+    const msg = (t.warn1 || '🔇 *@{user} estás silenciado en este grupo.*\n\n⚠️ *Primera advertencia* — Tu mensaje fue eliminado.\n💡 Espera *1 minuto* sin escribir y la advertencia se cancela automáticamente.\nSi seguís escribiendo recibirás más advertencias y serás expulsado.')
+      .replace('{user}', phoneNum);
+    await conn.sendMessage(chat, { text: msg, mentions: [sender] });
+
+  } else if (warnNum === 2) {
+    const msg = (t.warn2 || '🔇 *@{user} segunda advertencia.*\n\n⚠️ Seguiste escribiendo estando silenciado. Tu mensaje fue eliminado.\n❗ *Una advertencia más y serás expulsado del grupo.*')
+      .replace('{user}', phoneNum);
+    await conn.sendMessage(chat, { text: msg, mentions: [sender] });
+
+  } else if (warnNum >= MAX_WARNS) {
+    clearWarnCount(chat, sender);
+    const kickMsg = (t.kick_msg || '🚫 *@{user} fue expulsado del grupo.*\n\n📋 *Motivo:* Acumuló 3 advertencias por enviar mensajes estando silenciado.')
+      .replace('{user}', phoneNum);
+    await conn.sendMessage(chat, { text: kickMsg, mentions: [sender] }).catch(() => {});
+    await conn.groupParticipantsUpdate(chat, [sender], 'remove').catch(() => {});
+  }
 }
 
 const handler = async (m, { conn, usedPrefix, isOwner, command }) => {
