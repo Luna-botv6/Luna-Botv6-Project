@@ -1962,6 +1962,11 @@
       "titulo": "🛡️ *PROTEÇÕES ATIVAS*",
       "total": "Total",
       "usuario": "Usuário"
+    },
+    "anti_mute": {
+      "warn1": "🔇 *@{user} você está silenciado neste grupo.*\n\n⚠️ *Primeiro aviso* — Sua mensagem foi apagada.\n💡 Aguarde *1 minuto* sem escrever e o aviso será cancelado automaticamente.\nSe continuar escrevendo receberá mais avisos e será removido.",
+      "warn2": "🔇 *@{user} segundo aviso.*\n\n⚠️ Você continuou escrevendo enquanto estava silenciado. Sua mensagem foi apagada.\n❗ *Mais um aviso e você será removido do grupo.*",
+      "kick_msg": "🚫 *@{user} foi removido do grupo.*\n\n📋 *Motivo:* Acumulou 3 avisos por enviar mensagens enquanto estava silenciado."
     }
   }
 }

@@ -1864,6 +1864,11 @@
       "puede_escribir": "_Can write in the group again._",
       "error_general": "*[⚠] Error processing the command.*",
       "no_silenciado": "is not muted."
+    },
+    "anti_mute": {
+      "warn1": "🔇 *@{user} you are muted in this group.*\n\n⚠️ *First warning* — Your message was deleted.\n💡 Wait *1 minute* without writing and the warning will be cancelled automatically.\nIf you keep writing you will receive more warnings and be removed.",
+      "warn2": "🔇 *@{user} second warning.*\n\n⚠️ You kept writing while muted. Your message was deleted.\n❗ *One more warning and you will be removed from the group.*",
+      "kick_msg": "🚫 *@{user} was removed from the group.*\n\n📋 *Reason:* Accumulated 3 warnings for sending messages while muted."
     }
   }
 }

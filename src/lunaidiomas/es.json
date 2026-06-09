@@ -1962,6 +1962,11 @@
       "puede_escribir": "_Ya puede escribir en el grupo._",
       "error_general": "*[⚠] Error al procesar el comando.*",
       "no_silenciado": "*[⚠] No está silenciado.*"
+    },
+    "anti_mute": {
+      "warn1": "🔇 *@{user} estás silenciado en este grupo.*\n\n⚠️ *Primera advertencia* — Tu mensaje fue eliminado.\n💡 Espera *1 minuto* sin escribir y la advertencia se cancela automáticamente.\nSi seguís escribiendo recibirás más advertencias y serás expulsado.",
+      "warn2": "🔇 *@{user} segunda advertencia.*\n\n⚠️ Seguiste escribiendo estando silenciado. Tu mensaje fue eliminado.\n❗ *Una advertencia más y serás expulsado del grupo.*",
+      "kick_msg": "🚫 *@{user} fue expulsado del grupo.*\n\n📋 *Motivo:* Acumuló 3 advertencias por escribir mensajes estando silenciado."
     }
   }
 }
