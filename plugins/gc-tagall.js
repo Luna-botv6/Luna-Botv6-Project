@@ -1,6 +1,5 @@
 import fs from 'fs';
-import { getGroupDataForPlugin, isAdminNoTTL, hasAdminCacheForGroup } from '../lib/funcion/pluginHelper.js';
-import { hasGroup, getJids, setGroupData } from '../lib/funcion/hidetag-cache.js';
+import { isAdminNoTTL, hasAdminCacheForGroup, getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const cooldowns = new Map();
 const _langCache = new Map();
@@ -20,19 +19,12 @@ const handler = async (m, { conn, args, isOwner }) => {
     if (!m.isGroup) return m.reply(t.solo_grupos);
 
     const chatId = m.chat;
-    let jids;
 
-    const cacheCompleto = hasGroup(chatId) && hasAdminCacheForGroup(chatId);
+    const isAdmin = hasAdminCacheForGroup(chatId)
+      ? isAdminNoTTL(chatId, m.sender)
+      : (await getGroupDataForPlugin(conn, chatId, m.sender)).isAdmin;
 
-    if (cacheCompleto) {
-      if (!isAdminNoTTL(chatId, m.sender) && !isOwner) return m.reply(t.solo_admins);
-      jids = getJids(chatId);
-    } else {
-      const data = await getGroupDataForPlugin(conn, chatId, m.sender);
-      if (!data.isAdmin && !isOwner) return m.reply(t.solo_admins);
-      setGroupData(chatId, data.participants);
-      jids = data.participants.map(p => p.id).filter(j => j && !j.includes('@lid'));
-    }
+    if (!isAdmin && !isOwner) return m.reply(t.solo_admins);
 
     const cooldownTime = 2 * 60 * 1000;
     const now = Date.now();
@@ -46,28 +38,32 @@ const handler = async (m, { conn, args, isOwner }) => {
     }
     cooldowns.set(chatId, now);
 
-    const mentionSet = new Set(jids);
-    const messageText = args.join(' ') || t.atencion;
-    const total = mentionSet.size;
+    const groupName = m.groupMetadata?.subject
+      || conn.chats?.[chatId]?.subject
+      || conn.chats?.[chatId]?.name
+      || (await conn.groupMetadata(chatId).catch(() => ({}))).subject
+      || chatId.split('@')[0];
 
-    const lines = [
-      t.titulo,
-      '┃',
-      `┃ ${t.mensaje_label}`,
-      `┃ ${messageText}`,
-      '┃',
-      `┃ ${t.usuarios_label} (${total})`
-    ];
-    for (const jid of mentionSet) lines.push(`┃ 👤 @${jid.split('@')[0]}`);
-    lines.push('┃', t.footer);
+    const senderNum = m.sender.split('@')[0];
+    const razon = args.join(' ') || t.sin_razon;
 
-    await conn.sendMessage(chatId, { text: lines.join('\n'), mentions: [...mentionSet] });
+    const text = t.mensaje
+      .replace('{group}', groupName)
+      .replace('{tag}', `@${senderNum}`)
+      .replace('{razon}', razon);
+
+    await conn.sendMessage(chatId, {
+      text,
+      mentionAll: true,
+      mentions: [m.sender]
+    });
+
   } catch {
     await m.reply(t.error);
   }
 };
 
-handler.help = ['tagall <mensaje>'];
+handler.help = ['invocar <razón>'];
 handler.tags = ['group'];
 handler.command = /^(tagall|invocar|invocacion|todos|invocación)$/i;
 handler.group = true;

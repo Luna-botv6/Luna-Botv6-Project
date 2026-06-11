@@ -1,6 +1,5 @@
 import fs from 'fs';
 import { getGroupDataForPlugin, isAdminNoTTL, hasAdminCacheForGroup } from '../lib/funcion/pluginHelper.js';
-import { hasGroup, getJids, resolveLidFromCache, setGroupData } from '../lib/funcion/hidetag-cache.js';
 import { getLidMapping } from '../lib/stats.js';
 
 const cooldowns = new Map();
@@ -11,6 +10,31 @@ function getLang(idioma) {
   const t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.gc_hidetag;
   _langCache.set(idioma, t);
   return t;
+}
+
+async function resolveParticipants(conn, chatId) {
+  try {
+    const meta = await conn.groupMetadata(chatId).catch(() => null);
+    return meta?.participants || [];
+  } catch {
+    return [];
+  }
+}
+
+function resolveNumFromParticipants(num, participants) {
+  const lidJid = `${num}@lid`;
+  const phoneJid = `${num}@s.whatsapp.net`;
+
+  const byLid = participants.find(p => p.lid === lidJid || p.id === lidJid);
+  if (byLid?.id && !byLid.id.includes('@lid')) return byLid.id;
+
+  const byPhone = participants.find(p => p.id === phoneJid);
+  if (byPhone?.id) return byPhone.id;
+
+  const fromMapping = getLidMapping(lidJid);
+  if (fromMapping) return fromMapping;
+
+  return null;
 }
 
 const handler = async (m, { conn, text, isOwner }) => {
@@ -26,20 +50,11 @@ const handler = async (m, { conn, text, isOwner }) => {
     const isLidOwner = global.lidOwners?.includes(senderNum);
     const isGlobalOwner = global.owner?.some(([num]) => num === senderNum);
 
-    let jids;
+    const isAdmin = hasAdminCacheForGroup(chatId)
+      ? isAdminNoTTL(chatId, m.sender)
+      : (await getGroupDataForPlugin(conn, chatId, m.sender)).isAdmin;
 
-    const cacheCompleto = hasGroup(chatId) && hasAdminCacheForGroup(chatId);
-
-    if (cacheCompleto) {
-      const isAdmin = isAdminNoTTL(chatId, m.sender);
-      if (!isAdmin && !isOwner && !isLidOwner && !isGlobalOwner) return m.reply(t.solo_admins);
-      jids = getJids(chatId);
-    } else {
-      const data = await getGroupDataForPlugin(conn, chatId, m.sender);
-      if (!data.isAdmin && !isOwner && !isLidOwner && !isGlobalOwner) return m.reply(t.solo_admins);
-      setGroupData(chatId, data.participants);
-      jids = data.participants.map(p => p.id).filter(j => j && !j.includes('@lid'));
-    }
+    if (!isAdmin && !isOwner && !isLidOwner && !isGlobalOwner) return m.reply(t.solo_admins);
 
     const cooldownTime = 2 * 60 * 1000;
     const now = Date.now();
@@ -56,8 +71,6 @@ const handler = async (m, { conn, text, isOwner }) => {
       cooldowns.set(key, now);
     }
 
-    const mentionSet = new Set(jids);
-
     const quoted = m.quoted || m;
     const mime = (quoted.msg || quoted).mimetype || '';
     const isMedia = /image|video|sticker|audio/.test(mime);
@@ -71,54 +84,71 @@ const handler = async (m, { conn, text, isOwner }) => {
     }
     if (!finalText) finalText = t.texto_default;
 
+    const allMentioned = [
+      ...(m.mentionedJid || []),
+      ...(quoted.msg?.contextInfo?.mentionedJid || []),
+      ...(quoted.mentionedJid || []),
+    ];
+
+    const extraMentions = [];
+    let participants = null;
+
+    for (const jid of [...new Set(allMentioned)]) {
+      if (!jid.includes('@lid')) {
+        extraMentions.push(conn.decodeJid(jid));
+      } else {
+        let real = getLidMapping(jid);
+        if (!real) {
+          if (!participants) participants = await resolveParticipants(conn, chatId);
+          const match = participants.find(p => p.lid === jid || p.id === jid);
+          real = match?.id || null;
+        }
+        if (real) {
+          extraMentions.push(real);
+          finalText = finalText.replace(new RegExp(`@${jid.split('@')[0]}`, 'g'), `@${real.split('@')[0]}`);
+        }
+      }
+    }
+
     const mentionPattern = /@(\d+)/g;
     let match;
-    while ((match = mentionPattern.exec(finalText)) !== null) {
-      const num = match[1];
-      const fromJid = jids.find(j => j.split('@')[0] === num);
-      if (fromJid) {
-        mentionSet.add(fromJid);
-      } else {
-        const fromStats = getLidMapping(num + '@lid');
-        if (fromStats) {
-          mentionSet.add(fromStats);
-          finalText = finalText.replace(`@${num}`, `@${fromStats.split('@')[0]}`);
+    const numsInText = [];
+    while ((match = mentionPattern.exec(finalText)) !== null) numsInText.push(match[1]);
+
+    if (numsInText.length) {
+      if (!participants) participants = await resolveParticipants(conn, chatId);
+      for (const num of numsInText) {
+        const alreadyResolved = extraMentions.some(j => j.split('@')[0] === num);
+        if (alreadyResolved) continue;
+
+        const real = resolveNumFromParticipants(num, participants);
+        if (real) {
+          extraMentions.push(real);
+          finalText = finalText.replace(new RegExp(`@${num}`, 'g'), `@${real.split('@')[0]}`);
         }
       }
     }
 
-    if (m.mentionedJid?.length) {
-      for (const lid of m.mentionedJid) {
-        if (!lid.includes('@lid')) {
-          mentionSet.add(conn.decodeJid(lid));
-        } else {
-          const real = resolveLidFromCache(chatId, lid) || getLidMapping(lid);
-          if (real) {
-            mentionSet.add(real);
-            finalText = finalText.replace(`@${lid.split('@')[0]}`, `@${real.split('@')[0]}`);
-          }
-        }
-      }
-    }
-
-    const mentions = [...mentionSet];
+    const msgOptions = { mentionAll: true };
+    if (extraMentions.length) msgOptions.mentions = [...new Set(extraMentions)];
 
     if (isMedia && quoted.mtype === 'imageMessage') {
       const media = await quoted.download();
-      await conn.sendMessage(chatId, { image: media, caption: finalText, mentions }, { quoted: m });
+      await conn.sendMessage(chatId, { image: media, caption: finalText, ...msgOptions }, { quoted: m });
     } else if (isMedia && quoted.mtype === 'videoMessage') {
       const media = await quoted.download();
-      await conn.sendMessage(chatId, { video: media, caption: finalText, mentions }, { quoted: m });
+      await conn.sendMessage(chatId, { video: media, caption: finalText, ...msgOptions }, { quoted: m });
     } else if (isMedia && quoted.mtype === 'audioMessage') {
       const media = await quoted.download();
-      await conn.sendMessage(chatId, { audio: media, mimetype: 'audio/mpeg', mentions }, { quoted: m });
+      await conn.sendMessage(chatId, { audio: media, mimetype: 'audio/mpeg', ...msgOptions }, { quoted: m });
     } else if (isMedia && quoted.mtype === 'stickerMessage') {
       const media = await quoted.download();
-      await conn.sendMessage(chatId, { sticker: media, mentions }, { quoted: m });
+      await conn.sendMessage(chatId, { sticker: media, ...msgOptions }, { quoted: m });
     } else {
-      await conn.sendMessage(chatId, { text: finalText, mentions }, { quoted: m });
+      await conn.sendMessage(chatId, { text: finalText, ...msgOptions }, { quoted: m });
     }
-  } catch {
+
+  } catch (e) {
     await m.reply(t.error);
   }
 };

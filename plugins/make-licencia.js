@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import Jimp from 'jimp';
+import * as Jimp from 'jimp';
 
 const handler = async (m, { conn, text }) => {
   const who = m.quoted?.sender || m.mentionedJid?.[0] || (m.fromMe ? conn.user.jid : m.sender);
@@ -28,29 +28,27 @@ const handler = async (m, { conn, text }) => {
     ])
 
     ;[base, avatar] = await Promise.all([
-      Jimp.read(baseBuffer),
-      Jimp.read(avatarBuffer)
-    ]);
-
-    avatar.resize(170, 165);
+  Jimp.Jimp.read(baseBuffer),
+  Jimp.Jimp.read(avatarBuffer)
+]);
+    avatar.resize({ w: 170, h: 165 });
     base.composite(avatar, 385, 180);
     avatar = null;
 
     const [fontWhite, fontBlack, fontSmall] = await Promise.all([
-      Jimp.loadFont(Jimp.FONT_SANS_32_WHITE),
-      Jimp.loadFont(Jimp.FONT_SANS_32_BLACK),
-      Jimp.loadFont(Jimp.FONT_SANS_16_BLACK)
-    ]);
+  Jimp.loadFont('/home/container/node_modules/@jimp/plugin-print/fonts/open-sans/open-sans-32-white/open-sans-32-white.fnt'),
+  Jimp.loadFont('/home/container/node_modules/@jimp/plugin-print/fonts/open-sans/open-sans-32-black/open-sans-32-black.fnt'),
+  Jimp.loadFont('/home/container/node_modules/@jimp/plugin-print/fonts/open-sans/open-sans-16-black/open-sans-16-black.fnt')
+]);
 
-    base.print(fontSmall, 260, 175, 'nombre:');
-    base.print(fontSmall, 260, 195, nombre);
-    base.print(fontSmall, 260, 225, 'fecha:');
-    base.print(fontSmall, 260, 255, fecha);
-    base.print(fontSmall, 260, 285, 'vencimiento:');
-    base.print(fontSmall, 260, 315, vencimiento);
-
-    const imgW = base.getWidth();
-    const imgH = base.getHeight();
+   base.print({ font: fontSmall, x: 260, y: 175, text: 'nombre:' });
+   base.print({ font: fontSmall, x: 260, y: 195, text: nombre });
+   base.print({ font: fontSmall, x: 260, y: 225, text: 'fecha:' });
+   base.print({ font: fontSmall, x: 260, y: 255, text: fecha });
+   base.print({ font: fontSmall, x: 260, y: 285, text: 'vencimiento:' });
+   base.print({ font: fontSmall, x: 260, y: 315, text: vencimiento });
+    const imgW = base.bitmap.width;
+    const imgH = base.bitmap.height;
     const x = 10;
     const y = imgH - 110;
     const maxW = imgW - 20;
@@ -58,11 +56,21 @@ const handler = async (m, { conn, text }) => {
     const opts = { text: userText, alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER };
 
     for (const [dx, dy] of [[-3,0],[3,0],[0,-3],[0,3],[-2,-2],[2,-2],[-2,2],[2,2]]) {
-      base.print(fontBlack, x + dx, y + dy, opts, maxW, maxH);
+      base.print({
+  font: fontBlack,
+  x: x + dx,
+  y: y + dy,
+  text: opts
+});
     }
-    base.print(fontWhite, x, y, opts, maxW, maxH);
+    base.print({
+  font: fontWhite,
+  x,
+  y,
+  text: opts
+});
 
-    const output = await base.getBufferAsync(Jimp.MIME_JPEG);
+    const output = await base.getBuffer('image/jpeg');
     base = null;
 
     await conn.sendMessage(m.chat, { image: output }, { quoted: m });

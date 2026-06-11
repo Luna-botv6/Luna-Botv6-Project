@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import Jimp from 'jimp';
+import * as Jimp from 'jimp';
 
 const delitos = [
   'Por no bañarse, la última vez que lo hizo fue hace un mes y el río se quejó formalmente',

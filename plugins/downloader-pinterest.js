@@ -1,7 +1,10 @@
 //Luna-Botv6-Project 
 import axios from 'axios'
-const { generateWAMessageContent, generateWAMessageFromContent, proto } = (await import('@whiskeysockets/baileys'))['default']
-
+const {
+  generateWAMessageContent,
+  generateWAMessageFromContent,
+  proto
+} = await import('@whiskeysockets/baileys')
 const sleep = (ms) => new Promise(r => setTimeout(r, ms))
 
 const isUrl = (text) => {

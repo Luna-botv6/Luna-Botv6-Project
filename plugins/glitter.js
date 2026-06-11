@@ -1,4 +1,4 @@
-import Jimp from 'jimp';
+import * as Jimp from 'jimp';
 import { Sticker } from 'wa-sticker-formatter';
 
 const handler = async (m, { conn, args }) => {
