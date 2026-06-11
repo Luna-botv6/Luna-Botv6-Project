@@ -6,9 +6,9 @@ import {advancedUtils} from './base/advanced.js';
 import {smsg, serialize, protoType, pushMessage, logic} from './base/serialization.js';
 import { invalidateGroupCount } from './print.js';
 
+const baileysMod = await import("@whiskeysockets/baileys");
+const _makeWaSocket = baileysMod.default || baileysMod.makeWASocket;
 const {
-  default: _makeWaSocket,
-  makeWALegacySocket,
   proto,
   downloadContentFromMessage,
   jidDecode,
@@ -19,11 +19,11 @@ const {
   WAMessageStubType,
   extractMessageContent,
   makeInMemoryStore,
-  getAggregateVotesInPollMessage, 
+  getAggregateVotesInPollMessage,
   prepareWAMessageMedia,
   WA_DEFAULT_EPHEMERAL,
   fetchLatestBaileysVersion
-} = (await import("@whiskeysockets/baileys")).default
+} = baileysMod;
 
 const WA_VERSION_OVERRIDE = [2, 3000, 1037641644]
 
@@ -36,9 +36,8 @@ export async function makeWASocket(connectionOptions, options = {}) {
       connectionOptions.version = WA_VERSION_OVERRIDE
     }
   }
-  const conn = (global.opts['legacy'] ? makeWALegacySocket : _makeWaSocket)(connectionOptions);
+  const conn = _makeWaSocket(connectionOptions);
 
-  // Wrap groupParticipantsUpdate to invalidate group count cache after changes
   try {
     const origGPUpdate = conn.groupParticipantsUpdate?.bind(conn);
     if (origGPUpdate) {
@@ -68,8 +67,7 @@ export async function makeWASocket(connectionOptions, options = {}) {
         return global.getCachedGroupData?.(chatId) || null;
       }
     },
-    
-    // Core utilities
+
     decodeJid: {
       value(jid) {
         return coreUtils.decodeJid.call(this, jid);
@@ -93,7 +91,6 @@ export async function makeWASocket(connectionOptions, options = {}) {
       },
     },
 
-    // Messaging utilities
     sendFile: {
       async value(jid, path, filename = '', caption = '', quoted, ptt = false, options = {}) {
         return await messagingUtils.sendFile(conn, jid, path, filename, caption, quoted, ptt, options);
@@ -129,7 +126,6 @@ export async function makeWASocket(connectionOptions, options = {}) {
       enumerable: true,
     },
 
-    // Interactive utilities
     sendButtonMessages: {
       async value(jid, messages, quoted, options) {
         return await interactiveUtils.sendButtonMessages(conn, jid, messages, quoted, options);
@@ -172,7 +168,6 @@ export async function makeWASocket(connectionOptions, options = {}) {
       },
     },
 
-    // Advanced utilities
     relayWAMessage: {
       async value(pesanfull) {
         return await advancedUtils.relayWAMessage(conn, pesanfull);
@@ -277,15 +272,15 @@ export async function makeWASocket(connectionOptions, options = {}) {
     } : {}),
   });
 
- if (sock.user?.id) sock.user.jid = sock.decodeJid(sock.user.id);
+  if (sock.user?.id) sock.user.jid = sock.decodeJid(sock.user.id);
   store.bind(sock);
-  
+
   if (global.getGroupDataOptimized && global.setCachedGroupData) {
     sock.getGroupDataOptimized = global.getGroupDataOptimized;
     sock.setCachedGroupData = global.setCachedGroupData;
   }
-  
+
   return sock;
 }
-// Export helper functions
+
 export {smsg, serialize, protoType, logic};

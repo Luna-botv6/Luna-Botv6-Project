@@ -1,4 +1,8 @@
-const { BufferJSON, proto, isJidBroadcast, WAMessageStubType, updateMessageWithReceipt, updateMessageWithReaction, jidNormalizedUser } = (await import('@whiskeysockets/baileys')).default;
+const baileysMod = await import('@whiskeysockets/baileys');
+const _baileysDefault = baileysMod.default || {};
+const { BufferJSON, WAMessageStubType, updateMessageWithReceipt, updateMessageWithReaction, jidNormalizedUser } = _baileysDefault;
+const proto = baileysMod.proto || _baileysDefault.proto;
+const isJidBroadcast = baileysMod.isJidBroadcast || _baileysDefault.isJidBroadcast;
 
 const TIME_TO_DATA_STALE = 5 * 60 * 1000;
 const MAX_MESSAGES_PER_JID = 20;
