@@ -23,7 +23,7 @@ const handler = async (m, { conn, usedPrefix, isOwner, args, command }) => {
   const resolveLidToId = (jidOrLid) => {
     if (!jidOrLid) return null;
     if (!jidOrLid.includes('@lid')) return jidOrLid;
-    const pdata = groupMetadata.participants.find(p => p.lid === jidOrLid);
+    const pdata = participants.find(p => p.lid && conn.decodeJid(p.lid) === conn.decodeJid(jidOrLid));
     return pdata ? pdata.id : null;
   };
 
@@ -56,7 +56,10 @@ const handler = async (m, { conn, usedPrefix, isOwner, args, command }) => {
   }
 
   const decodedUser = conn.decodeJid(user);
-  const isUserInGroup = participants.find(p => conn.decodeJid(p.id) === decodedUser);
+  const isUserInGroup = participants.find(p =>
+    conn.decodeJid(p.id) === decodedUser ||
+    (p.lid && conn.decodeJid(p.lid) === decodedUser)
+  );
 
   if (!isUserInGroup) {
     return m.reply(tradutor.texto4);
