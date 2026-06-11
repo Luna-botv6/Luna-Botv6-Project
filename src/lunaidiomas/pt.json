@@ -200,10 +200,10 @@
         "⚠️ Uso incorreto.",
         "número"
       ],
-      "texto2": "❌ Número não válido.",
-      "texto3": "❌ O usuário não está no grupo.",
-      "texto4": "✅ O usuário já é administrador.",
-      "texto5": "✨ Agora é administrador:",
+      "texto2": "❌ Não posso me promover.",
+      "texto3": "✨ Agora é administrador:",
+      "texto4": "❌ O usuário não está no grupo.",
+      "texto5": "❌ O usuário já é administrador.",
       "texto6": "❌ Erro ao promover."
     },
     "gc_demote": {

@@ -200,10 +200,10 @@
         "⚠️ Incorrect usage.",
         "number"
       ],
-      "texto2": "❌ Invalid number.",
-      "texto3": "❌ User is not in the group.",
-      "texto4": "✅ User is already an administrator.",
-      "texto5": "✨ Now an administrator:",
+      "texto2": "❌ I cannot promote myself.",
+      "texto3": "✨ Now an administrator:",
+      "texto4": "❌ User is not in the group.",
+      "texto5": "❌ User is already an administrator.",
       "texto6": "❌ Error promoting."
     },
     "gc_demote": {
