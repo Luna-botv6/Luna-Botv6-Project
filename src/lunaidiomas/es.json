@@ -1413,7 +1413,9 @@
       "mensaje_label": "📢 *Mensaje:*",
       "usuarios_label": "👥 *Miembros del grupo:*",
       "footer": "╰━━━━━━━━━━━━━━━━━━━━━━━╯\n✨ *Luna-botv6* ✨",
-      "error": "❌ Error al ejecutar el comando."
+      "error": "❌ Error al ejecutar el comando.",
+      "mensaje": "╭━━━〔 🌙 *Luna-Botv6* 〕━━━╮\n┃\n┃ 📣 *¡Atención, {group}!*\n┃\n┃ 👤 *Invocado por:* {tag}\n┃ 📋 *Razón:* {razon}\n┃\n┃ 🔔 *Se está convocando a todos*\n┃ *los miembros del grupo.*\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n✨ *Luna-botv6* ✨",
+      "sin_razon": "Sin razón especificada."
     },
     "owner_autoadmin": {
       "texto1": "✅ Ya eres administrador en este grupo.",
