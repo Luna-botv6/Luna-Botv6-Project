@@ -1,6 +1,7 @@
 import { setConfig, getConfig } from '../lib/funcConfig.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { setOwnerFunction } from '../lib/owner-funciones.js';
+import { proto, generateWAMessageFromContent, generateWAMessageContent } from '@whiskeysockets/baileys';
 import fs from 'fs';
 
 const configLocks = new Map();
@@ -96,17 +97,194 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 
   if (!CONFIG_MAP[type]) {
     if (!/[01]/.test(command)) {
-      const h = t.help;
+      const { access: fsAccess } = await import('fs/promises');
 
-      const helpText =
-        `${h[0]}\n\n` +
-        t.descripcion
-          .replace(/{prefix}/g, usedPrefix)
-          .replace(/{command}/g, command)
-          .replace(/{value}/g, h[1] || '') +
-        `\n\n${h[2] || ''}`;
+      const MENU_DIR = './database/WELCOME';
+      const CUSTOM_IMG = `${MENU_DIR}/menu_image.jpg`;
+      const CUSTOM_VID = `${MENU_DIR}/menu_video.mp4`;
+      const idioma2 = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
 
-      await conn.sendMessage(m.chat, { text: helpText }, { quoted: m });
+      async function fileExists(p) {
+        try { await fsAccess(p); return true; } catch { return false; }
+      }
+
+      async function getMenuImageMessage() {
+        let mediaPath = null;
+        let mediaType = 'image';
+
+        if (await fileExists(CUSTOM_IMG)) {
+          mediaPath = CUSTOM_IMG;
+          mediaType = 'image';
+        } else if (await fileExists(CUSTOM_VID)) {
+          mediaPath = CUSTOM_VID;
+          mediaType = 'video';
+        } else {
+          const lang_path = `./src/assets/images/menu/languages/${idioma2}/VID-20250527-WA0006.mp4`;
+          mediaPath = await fileExists(lang_path) ? lang_path : './src/assets/images/menu/languages/es/VID-20250527-WA0006.mp4';
+          mediaType = 'video';
+        }
+
+        if (mediaType === 'video') {
+          const { videoMessage } = await generateWAMessageContent(
+            { video: { url: mediaPath } },
+            { upload: conn.waUploadToServer }
+          );
+          return { videoMessage, type: 'video' };
+        } else {
+          const { imageMessage } = await generateWAMessageContent(
+            { image: { url: mediaPath } },
+            { upload: conn.waUploadToServer }
+          );
+          return { imageMessage, type: 'image' };
+        }
+      }
+
+      const BOT_NAME = global.BotName || '✨ Luna';
+
+      const CATEGORIES = [
+        {
+          emoji: '👋',
+          title: `Bienvenida • ${BOT_NAME}`,
+          desc: '_Activa el mensaje de bienvenida y despedida en el grupo_\n_Requiere ser admin_',
+          keys: ['welcome', 'bye'],
+          firstEnable: 'welcome',
+          firstDisable: 'welcome'
+        },
+        {
+          emoji: '🛡️',
+          title: `Modo Admin • ${BOT_NAME}`,
+          desc: '_Solo los admins pueden escribir en el grupo_\n_Requiere ser admin_',
+          keys: ['modoadmin'],
+          firstEnable: 'modoadmin',
+          firstDisable: 'modoadmin'
+        },
+        {
+          emoji: '🔇',
+          title: `Audios en Grupo • ${BOT_NAME}`,
+          desc: '_Controla si el bot puede enviar audios en este grupo_\n_Requiere ser admin_',
+          keys: ['audios'],
+          firstEnable: 'audios',
+          firstDisable: 'audios'
+        },
+        {
+          emoji: '🤖',
+          title: `Audios del Bot • ${BOT_NAME}`,
+          desc: '_Controla los audios del bot a nivel global_\n_Solo owner_',
+          keys: ['audios_bot'],
+          firstEnable: 'audios_bot',
+          firstDisable: 'audios_bot'
+        },
+        {
+          emoji: '🔒',
+          title: `Modo Restringido • ${BOT_NAME}`,
+          desc: '_Solo usuarios registrados pueden usar el bot_\n_Solo owner_',
+          keys: ['restrict'],
+          firstEnable: 'restrict',
+          firstDisable: 'restrict'
+        },
+        {
+          emoji: '🚫',
+          title: `Anti Spam & Llamadas • ${BOT_NAME}`,
+          desc: '_Bloquea spam y llamadas entrantes al bot_\n_Solo owner_',
+          keys: ['antispam', 'anticall'],
+          firstEnable: 'antispam',
+          firstDisable: 'antispam'
+        },
+        {
+          emoji: '🔗',
+          title: `Anti Link • ${BOT_NAME}`,
+          desc: '_Elimina links de WhatsApp y externos en el grupo_\n_Requiere ser admin_',
+          keys: ['antilink', 'antilink2'],
+          firstEnable: 'antilink',
+          firstDisable: 'antilink'
+        },
+        {
+          emoji: '🗑️',
+          title: `Anti Delete & Toxic • ${BOT_NAME}`,
+          desc: '_Reenvía mensajes eliminados y filtra mensajes tóxicos_\n_Requiere ser admin_',
+          keys: ['antidelete', 'antitoxic'],
+          firstEnable: 'antidelete',
+          firstDisable: 'antidelete'
+        },
+        {
+          emoji: '🔍',
+          title: `Detección • ${BOT_NAME}`,
+          desc: '_Detecta y modera contenido en el grupo_\n_Requiere ser admin_',
+          keys: ['detect', 'detect2', 'autosticker', 'afk'],
+          firstEnable: 'detect',
+          firstDisable: 'detect'
+        },
+        {
+          emoji: '🌐',
+          title: `Modo Privado & Grupos • ${BOT_NAME}`,
+          desc: '_Controla acceso privado y gestión de grupos_\n_Solo owner_',
+          keys: ['antiprivado', 'modopublico', 'modogrupos', 'vierwimage'],
+          firstEnable: 'antiprivado',
+          firstDisable: 'antiprivado'
+        }
+      ];
+
+      const mediaMsg = await getMenuImageMessage();
+
+      const cards = [];
+      for (const cat of CATEGORIES) {
+        const header = proto.Message.InteractiveMessage.Header.fromObject({
+          title: '',
+          hasMediaAttachment: true,
+          ...(mediaMsg.type === 'video'
+            ? { videoMessage: mediaMsg.videoMessage }
+            : { imageMessage: mediaMsg.imageMessage })
+        });
+
+        const bodyText =
+          `${cat.emoji} *${cat.title}*\n` +
+          `${cat.desc}\n\n` +
+          cat.keys.map(k => `› \`${usedPrefix}enable ${k}\``).join('\n');
+
+        cards.push({
+          body: proto.Message.InteractiveMessage.Body.fromObject({ text: bodyText }),
+          footer: proto.Message.InteractiveMessage.Footer.fromObject({ text: `⚙️ ${BOT_NAME} • Config` }),
+          header,
+          nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.fromObject({
+            buttons: [
+              {
+                name: 'quick_reply',
+                buttonParamsJson: JSON.stringify({
+                  display_text: `✅ Activar ${cat.firstEnable}`,
+                  id: `${usedPrefix}enable ${cat.firstEnable}`
+                })
+              },
+              {
+                name: 'quick_reply',
+                buttonParamsJson: JSON.stringify({
+                  display_text: `❌ Desactivar ${cat.firstDisable}`,
+                  id: `${usedPrefix}disable ${cat.firstDisable}`
+                })
+              }
+            ]
+          })
+        });
+      }
+
+      const interactiveMsg = generateWAMessageFromContent(m.chat, {
+        viewOnceMessage: {
+          message: {
+            messageContextInfo: { deviceListMetadata: {}, deviceListMetadataVersion: 2 },
+            interactiveMessage: proto.Message.InteractiveMessage.fromObject({
+              body: proto.Message.InteractiveMessage.Body.create({
+                text: `⚙️ *Config — ${BOT_NAME}*\n_Deslizá las cards para ver todas las categorías_ 👆`
+              }),
+              footer: proto.Message.InteractiveMessage.Footer.create({
+                text: `_${usedPrefix}enable <función> · ${usedPrefix}disable <función>_`
+              }),
+              header: proto.Message.InteractiveMessage.Header.create({ hasMediaAttachment: false }),
+              carouselMessage: proto.Message.InteractiveMessage.CarouselMessage.fromObject({ cards })
+            })
+          }
+        }
+      }, { quoted: m });
+
+      await conn.relayMessage(m.chat, interactiveMsg.message, { messageId: interactiveMsg.key.id });
     }
     return;
   }
