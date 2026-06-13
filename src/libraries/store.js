@@ -1,6 +1,17 @@
 const baileysMod = await import('@whiskeysockets/baileys');
 const _baileysDefault = baileysMod.default || {};
-const { BufferJSON, WAMessageStubType, updateMessageWithReceipt, updateMessageWithReaction, jidNormalizedUser } = _baileysDefault;
+const { BufferJSON, WAMessageStubType, jidNormalizedUser } = _baileysDefault;
+const updateMessageWithReceipt = baileysMod.updateMessageWithReceipt || _baileysDefault.updateMessageWithReceipt;
+const updateMessageWithReaction = baileysMod.updateMessageWithReaction || _baileysDefault.updateMessageWithReaction || function(msg, reaction) {
+    if (!msg.reactions) msg.reactions = [];
+    const idx = msg.reactions.findIndex(r => r.key?.participant === reaction.key?.participant);
+    if (reaction.text) {
+        if (idx >= 0) msg.reactions[idx] = reaction;
+        else msg.reactions.push(reaction);
+    } else {
+        if (idx >= 0) msg.reactions.splice(idx, 1);
+    }
+};
 const proto = baileysMod.proto || _baileysDefault.proto;
 const isJidBroadcast = baileysMod.isJidBroadcast || _baileysDefault.isJidBroadcast;
 
