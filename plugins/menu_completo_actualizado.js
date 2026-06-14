@@ -34,7 +34,7 @@ const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
   if (usedPrefix == 'a' || usedPrefix == 'A') return;
 
   if (/^(imgmenu|delimgmenu|vidmenu|delvidmenu)$/i.test(cmd)) {
-   
+    if (!isOwner && !isROwner) return m.reply(tm.solo_owner || '❌ Solo el owner puede usar este comando.');
 
     await ensureDir();
 
