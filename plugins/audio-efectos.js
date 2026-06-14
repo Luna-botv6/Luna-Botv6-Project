@@ -1,73 +1,85 @@
-import {unlinkSync, readFileSync} from 'fs';
-import {join} from 'path';
-import {exec} from 'child_process';
 import fs from 'fs';
+import path from 'path';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 
-const handler = async (m, {conn, args, __dirname, usedPrefix, command}) => {
-  const datas = global;
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+const execFileAsync = promisify(execFile);
+const TMP_DIR = './src/tmp';
+
+const getRandom = (ext) => `${Date.now()}_${Math.floor(Math.random() * 10000)}${ext}`;
+
+const EFFECTS = {
+  bass:      ['-af', 'equalizer=f=94:width_type=o:width=2:g=30'],
+  blown:     ['-af', 'acrusher=.1:1:64:0:log'],
+  deep:      ['-af', 'atempo=4/4,asetrate=44500*2/3'],
+  earrape:   ['-af', 'volume=12'],
+  fast:      ['-af', 'atempo=1.63,asetrate=44100'],
+  fat:       ['-af', 'atempo=1.6,asetrate=22100'],
+  nightcore: ['-af', 'atempo=1.06,asetrate=55125'],
+  reverse:   ['-filter_complex', 'areverse'],
+  robot:     ['-filter_complex', 'afftfilt=real=\'hypot(re,im)*sin(0)\':imag=\'hypot(re,im)*cos(0)\':win_size=512:overlap=0.75'],
+  slow:      ['-af', 'atempo=0.7,asetrate=44100'],
+  tupai:     ['-af', 'atempo=0.5,asetrate=65100'],
+  squirrel:  ['-af', 'atempo=0.5,asetrate=65100'],
+  chipmunk:  ['-af', 'atempo=0.5,asetrate=65100'],
+};
+
+const handler = async (m, { conn, usedPrefix, command }) => {
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
   const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
   const tradutor = _translate.plugins.audio_efectos;
-  
+
+  const q = m.quoted ? m.quoted : m;
+  const mime = (q.mimetype || q.msg?.mimetype || '');
+
+  if (!/audio|ogg|opus/i.test(mime)) {
+    return m.reply(`${tradutor.texto1} ${usedPrefix}${command}`);
+  }
+
+  const effect = EFFECTS[command.toLowerCase()];
+  if (!effect) return m.reply(tradutor.texto2);
+
+  if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR, { recursive: true });
+
+  const inputPath  = path.join(TMP_DIR, getRandom('.ogg'));
+  const outputPath = path.join(TMP_DIR, getRandom('.ogg'));
+
   try {
-    const q = m.quoted ? m.quoted : m;
-    const mime = ((m.quoted ? m.quoted : m.msg).mimetype || '');
-    let set;
-    
-    if (/bass/.test(command)) set = '-af equalizer=f=94:width_type=o:width=2:g=30';
-    if (/blown/.test(command)) set = '-af acrusher=.1:1:64:0:log';
-    if (/deep/.test(command)) set = '-af atempo=4/4,asetrate=44500*2/3';
-    if (/earrape/.test(command)) set = '-af volume=12';
-    if (/fast/.test(command)) set = '-filter:a "atempo=1.63,asetrate=44100"';
-    if (/fat/.test(command)) set = '-filter:a "atempo=1.6,asetrate=22100"';
-    if (/nightcore/.test(command)) set = '-filter:a atempo=1.06,asetrate=44100*1.25';
-    if (/reverse/.test(command)) set = '-filter_complex "areverse"';
-    if (/robot/.test(command)) set = '-filter_complex "afftfilt=real=\'hypot(re,im)*sin(0)\':imag=\'hypot(re,im)*cos(0)\':win_size=512:overlap=0.75"';
-    if (/slow/.test(command)) set = '-filter:a "atempo=0.7,asetrate=44100"';
-    if (/smooth/.test(command)) set = '-filter:v "minterpolate=\'mi_mode=mci:mc_mode=aobmc:vsbmc=1:fps=120\'"';
-    if (/tupai|squirrel|chipmunk/.test(command)) set = '-filter:a "atempo=0.5,asetrate=65100"';
-    
-    if (/audio/.test(mime) || /ogg/.test(mime) || /opus/.test(mime)) {
-      const ran = getRandom('.mp3');
-      const filename = join(__dirname, '../src/tmp/' + ran);
-      const media = await q.download(true);
-      
-      exec(`ffmpeg -i ${media} ${set} ${filename}`, async (err) => {
-        await unlinkSync(media);
-        
-        if (err) {
-          throw tradutor.texto2;
-        }
-        
-        const buff = await readFileSync(filename);
-        
-        await conn.sendMessage(m.chat, {
-          audio: buff,
-          mimetype: 'audio/mp4',
-          ptt: true,
-          fileName: `audio_${command}.mp3`
-        }, { quoted: m });
-        
-        try {
-          await unlinkSync(filename);
-        } catch {}
-      });
-      
-    } else {
-      throw `${tradutor.texto1} ${usedPrefix + command}`;
-    }
-    
+    const mediaBuffer = await conn.downloadM(q, 'audio', false);
+    fs.writeFileSync(inputPath, mediaBuffer);
+
+    await execFileAsync('ffmpeg', [
+      '-y',
+      '-i', inputPath,
+      ...effect,
+      '-vn',
+      '-c:a', 'libopus',
+      '-b:a', '128k',
+      '-f', 'ogg',
+      outputPath
+    ]);
+
+    const buff = fs.readFileSync(outputPath);
+
+    await conn.sendMessage(m.chat, {
+      audio: buff,
+      mimetype: 'audio/ogg; codecs=opus',
+      ptt: true,
+      fileName: `${command}.ogg`
+    }, { quoted: m });
+
   } catch (e) {
-    throw e;
+    console.error('[audio-efectos]', e.message);
+    await m.reply(tradutor.texto2);
+  } finally {
+    for (const f of [inputPath, outputPath]) {
+      try { fs.unlinkSync(f); } catch {}
+    }
   }
 };
 
-handler.help = ['bass', 'blown', 'deep', 'earrape', 'fast', 'fat', 'nightcore', 'reverse', 'robot', 'slow', 'smooth', 'tupai'].map(v => v + ' [vn]');
+handler.help = Object.keys(EFFECTS).filter((v, i, a) => a.indexOf(v) === i).map(v => `${v} [audio]`);
 handler.tags = ['audio'];
-handler.command = /^(bass|blown|deep|earrape|fas?t|nightcore|reverse|robot|slow|smooth|tupai|squirrel|chipmunk)$/i;
+handler.command = /^(bass|blown|deep|earrape|fast|fat|nightcore|reverse|robot|slow|tupai|squirrel|chipmunk)$/i;
 
 export default handler;
-
-const getRandom = (ext) => {
-  return `${Math.floor(Math.random() * 10000)}${ext}`;
-};
