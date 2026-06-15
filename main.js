@@ -746,6 +746,7 @@ async function connectionUpdate(update) {
 
     } else if (reason === DisconnectReason.connectionReplaced) {
       conn.logger.error(`[ ⚠ ] Conexión reemplazada, se ha abierto otra nueva sesión. Por favor, cierra la sesión actual primero.`);
+      setTimeout(() => process.exit(0), 1000);
 
     } else if (reason === DisconnectReason.loggedOut) {
       const rawMsg = (lastDisconnect?.error?.message || '').toLowerCase();

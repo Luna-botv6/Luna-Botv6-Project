@@ -283,13 +283,9 @@ async function start(file) {
     isRunning = false;
     console.error(chalk.hex('#FF1493').bold('[ ERROR ] Ocurrió un error inesperado:'), code);
     p.process.kill();
-    isRunning = false;
-    start.apply(this, arguments);
-    if (process.env.pm_id) {
-      process.exit(1);
-    } else {
-      process.exit();
-    }
+    setTimeout(() => {
+      start.apply(this, arguments);
+    }, 3000);
   });
 
   const opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());
