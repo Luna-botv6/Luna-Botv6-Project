@@ -163,7 +163,7 @@ export default async function printMessage(m, conn = { user: {} }) {
     const groupCount = await getGroupCount(conn);
 
     const cStars  = chalk.hex("#7c6af7");
-    const cBorder = chalk.hex("#4a4080");
+    const cBorder = conn.isSubBot ? chalk.green : chalk.hex("#4a4080");
     const cTitle  = chalk.bold.hex("#f7c97a");
     const cSys    = chalk.bold.hex("#5dd9a4");
     const cBadge  = chalk.bold.hex("#00bfff");
@@ -180,14 +180,14 @@ export default async function printMessage(m, conn = { user: {} }) {
     const cArrow  = chalk.bold.hex("#c490f5");
     const cMsg    = chalk.bold.hex("#f8f8f2");
 
-    const chatBadge = isGroup ? "▶ BOT" : "▶ PRIVADO";
+    const chatBadge = conn.isSubBot ? (isGroup ? "▶ SUB-BOT" : "▶ SUB PRIVADO") : (isGroup ? "▶ BOT" : "▶ PRIVADO");
     const row = (label, value) =>
       cBorder("│") + "  " + cLbl(label + " ⟩") + "  " + value;
 
     const lines = [
       cBorder(TOP),
       cBorder("│") + "  " +
-        cTitle("◈ LUNA-BOTV6") + "  " +
+        cTitle("◈ " + (global.BotName || "LUNA-BOTV6") + (conn.isSubBot ? " [SUB]" : "")) + "  " +
         chalk.hex("#5a5278")("·····") + "  " +
         cSys("GROUP: " + String(groupCount)) + "  " +
         chalk.hex("#5a5278")("·····") + "  " +

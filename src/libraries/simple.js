@@ -273,7 +273,7 @@ export async function makeWASocket(connectionOptions, options = {}) {
   });
 
   if (sock.user?.id) sock.user.jid = sock.decodeJid(sock.user.id);
-  store.bind(sock);
+  if (!options.noStore) store.bind(sock);
 
   if (global.getGroupDataOptimized && global.setCachedGroupData) {
     sock.getGroupDataOptimized = global.getGroupDataOptimized;
