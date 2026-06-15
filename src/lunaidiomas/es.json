@@ -1415,7 +1415,14 @@
       "footer": "╰━━━━━━━━━━━━━━━━━━━━━━━╯\n✨ *Luna-botv6* ✨",
       "error": "❌ Error al ejecutar el comando.",
       "mensaje": "╭━━━〔 🌙 *Luna-Botv6* 〕━━━╮\n┃\n┃ 📣 *¡Atención, {group}!*\n┃\n┃ 👤 *Invocado por:* {tag}\n┃ 📋 *Razón:* {razon}\n┃\n┃ 🔔 *Se está convocando a todos*\n┃ *los miembros del grupo.*\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n✨ *Luna-botv6* ✨",
-      "sin_razon": "Sin razón especificada."
+      "sin_razon": "Sin razón especificada.",
+      "mensaje_mention": "╭━━━〔 🌙 *{bot}* 〕━━━╮\n┃\n┃ 📣 *¡Atención, {group}!*\n┃\n┃ 👤 *Invocado por:* {tag}\n┃ 📋 *Razón:* {razon}\n┃\n┃ 🔔 *Se está convocando a todos*\n┃ *los miembros del grupo.*\n┃\n┃ 👥 *Usuarios:*\n┃\n{tags}\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n✨ *{bot}* ✨",
+      "reset_ok": "🔄 *Configuración reiniciada.*\n\n_La próxima vez que uses el comando volverán a aparecer los botones de selección._",
+      "seleccionar_modo": "⚙️ *¿Cómo querés que funcione el invocar en este grupo?*\n\n• *Mención individual* → menciona a cada miembro con su @tag visible en el mensaje\n• *Sistema por defecto* → menciona a todos sin mostrar @tags en el texto\n\n_Elegí una opción. Esta configuración se guarda para el grupo y no vuelve a aparecer._\n_Para volver a ver esto usá_ `.resetinvocar`",
+      "seleccionar_modo_footer": "Configuración guardada para este grupo",
+      "modo_mention": "✅ *Modo activado:* mención con @tags individuales.\n\n_Ahora al usar el comando se mencionará a cada miembro con su @tag._",
+      "modo_default": "✅ *Modo activado:* sistema por defecto (mentionAll).\n\n_Ahora al usar el comando se mencionará a todos de forma silenciosa._",
+      "ya_configurado": "ℹ️ *El modo de invocación ya está configurado para este grupo.*\n\nModo actual: *{modo}*\n_Solo un admin puede cambiarlo con_ `.invocar __mention` _o_ `.invocar __default`"
     },
     "owner_autoadmin": {
       "texto1": "✅ Ya eres administrador en este grupo.",

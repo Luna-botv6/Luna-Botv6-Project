@@ -1414,7 +1414,14 @@
       "footer": "╰━━━━━━━━━━━━━━━━━━━━━━━╯\n✨ *Luna-botv6* ✨",
       "error": "❌ Error executing the command.",
       "mensaje": "╭━━━〔 🌙 *Luna-Botv6* 〕━━━╮\n┃\n┃ 📣 *Attention, {group}!*\n┃\n┃ 👤 *Summoned by:* {tag}\n┃ 📋 *Reason:* {razon}\n┃\n┃ 🔔 *All group members*\n┃ *are being summoned.*\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n✨ *Luna-botv6* ✨",
-      "sin_razon": "No reason specified."
+      "sin_razon": "No reason specified.",
+      "mensaje_mention": "╭━━━〔 🌙 *{bot}* 〕━━━╮\n┃\n┃ 📣 *Attention, {group}!*\n┃\n┃ 👤 *Summoned by:* {tag}\n┃ 📋 *Reason:* {razon}\n┃\n┃ 🔔 *All group members*\n┃ *are being summoned.*\n┃\n┃ 👥 *Members:*\n┃\n{tags}\n╰━━━━━━━━━━━━━━━━━━━━━━━╯\n✨ *{bot}* ✨",
+      "reset_ok": "🔄 *Configuration reset.*\n\n_Next time you use the command, the selection buttons will appear again._",
+      "seleccionar_modo": "⚙️ *How do you want the summon command to work in this group?*\n\n• *Individual mention* → mentions each member with their visible @tag\n• *Default system* → mentions everyone without showing @tags in the text\n\n_Choose an option. This setting is saved for the group and won't appear again._\n_To reset it use_ `.resetinvocar`",
+      "seleccionar_modo_footer": "Setting saved for this group",
+      "modo_mention": "✅ *Mode activated:* individual @tag mentions.\n\n_The command will now mention each member with their @tag._",
+      "modo_default": "✅ *Mode activated:* default system (mentionAll).\n\n_The command will now mention everyone silently._",
+      "ya_configurado": "ℹ️ *The summon mode is already configured for this group.*\n\nCurrent mode: *{modo}*\n_An admin can change it with_ `.invocar __mention` _or_ `.invocar __default`"
     },
     "owner_autoadmin": {
       "texto1": "✅ You are already an administrator in this group.",
