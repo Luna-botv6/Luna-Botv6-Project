@@ -3,6 +3,7 @@ import { isAdminNoTTL, hasAdminCacheForGroup, getGroupDataForPlugin } from '../l
 
 const cooldowns = new Map();
 const _langCache = new Map();
+const BOT = () => global.BotName || 'Luna';
 
 function getLang(idioma) {
   if (_langCache.has(idioma)) return _langCache.get(idioma);
@@ -11,7 +12,7 @@ function getLang(idioma) {
   return t;
 }
 
-const handler = async (m, { conn, args, isOwner }) => {
+const handler = async (m, { conn, args, isOwner, usedPrefix, command }) => {
   const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje;
   const t = getLang(idioma);
 
@@ -19,12 +20,49 @@ const handler = async (m, { conn, args, isOwner }) => {
     if (!m.isGroup) return m.reply(t.solo_grupos);
 
     const chatId = m.chat;
+    const groupData = await getGroupDataForPlugin(conn, chatId, m.sender);
+    const participants = groupData?.participants || [];
 
     const isAdmin = hasAdminCacheForGroup(chatId)
       ? isAdminNoTTL(chatId, m.sender)
-      : (await getGroupDataForPlugin(conn, chatId, m.sender)).isAdmin;
+      : groupData.isAdmin;
 
     if (!isAdmin && !isOwner) return m.reply(t.solo_admins);
+
+    if (/^resetinvocar$/i.test(command)) {
+      if (!global.db.data.chats[chatId]) global.db.data.chats[chatId] = {};
+      delete global.db.data.chats[chatId].tagall_mode;
+      await global.db.write();
+      return m.reply(t.reset_ok);
+    }
+
+    const setArg = args[0];
+
+    if (setArg === '__mention' || setArg === '__default') {
+      const modo = setArg === '__mention' ? 'mention' : 'default';
+      if (!global.db.data.chats[chatId]) global.db.data.chats[chatId] = {};
+      global.db.data.chats[chatId].tagall_mode = modo;
+      await global.db.write();
+      return m.reply(modo === 'mention' ? t.modo_mention : t.modo_default);
+    }
+
+    const modoGuardado = global.db?.data?.chats?.[chatId]?.tagall_mode;
+
+    if (!modoGuardado) {
+      return await conn.sendButton(
+        chatId,
+        t.seleccionar_modo,
+        t.seleccionar_modo_footer,
+        null,
+        [
+          ['✔️ Mención individual (@tags)', `${usedPrefix}invocar __mention`],
+          ['✔️ Sistema por defecto (mentionAll)', `${usedPrefix}invocar __default`]
+        ],
+        null,
+        null,
+        m
+      );
+    }
 
     const cooldownTime = 2 * 60 * 1000;
     const now = Date.now();
@@ -38,25 +76,43 @@ const handler = async (m, { conn, args, isOwner }) => {
     }
     cooldowns.set(chatId, now);
 
-    const groupName = m.groupMetadata?.subject
+    const groupName = groupData?.groupMetadata?.subject
       || conn.chats?.[chatId]?.subject
       || conn.chats?.[chatId]?.name
-      || (await conn.groupMetadata(chatId).catch(() => ({}))).subject
       || chatId.split('@')[0];
 
-    const senderNum = m.sender.split('@')[0];
+    const realSender = participants.find(p =>
+      p.lid && (p.lid === m.sender || p.lid.split('@')[0] === m.sender.split('@')[0])
+    )?.id || m.sender;
+
+    const senderNum = realSender.split('@')[0];
     const razon = args.join(' ') || t.sin_razon;
 
-    const text = t.mensaje
-      .replace('{group}', groupName)
-      .replace('{tag}', `@${senderNum}`)
-      .replace('{razon}', razon);
-
-    await conn.sendMessage(chatId, {
-      text,
-      mentionAll: true,
-      mentions: [m.sender]
-    });
+    if (modoGuardado === 'mention') {
+      const jids = participants.map(p => p.id).filter(Boolean);
+      const tagLines = jids.map(j => `┃>@${j.split('@')[0]}`).join('\n');
+      const texto = t.mensaje_mention
+        .replace(/\{bot\}/g, BOT())
+        .replace('{group}', groupName)
+        .replace('{tag}', `@${senderNum}`)
+        .replace('{razon}', razon)
+        .replace('{tags}', tagLines);
+      await conn.sendMessage(chatId, {
+        text: texto,
+        mentions: [realSender, ...jids]
+      });
+    } else {
+      const texto = t.mensaje
+        .replace(/\{bot\}/g, BOT())
+        .replace('{group}', groupName)
+        .replace('{tag}', `@${senderNum}`)
+        .replace('{razon}', razon);
+      await conn.sendMessage(chatId, {
+        text: texto,
+        mentionAll: true,
+        mentions: [realSender]
+      });
+    }
 
   } catch {
     await m.reply(t.error);
@@ -65,7 +121,7 @@ const handler = async (m, { conn, args, isOwner }) => {
 
 handler.help = ['invocar <razón>'];
 handler.tags = ['group'];
-handler.command = /^(tagall|invocar|invocacion|todos|invocación)$/i;
+handler.command = /^(tagall|invocar|invocacion|todos|invocación|resetinvocar)$/i;
 handler.group = true;
 
 export default handler;
