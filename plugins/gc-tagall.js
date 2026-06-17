@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { isAdminNoTTL, hasAdminCacheForGroup, getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getTagallMode, setTagallMode, resetTagallMode } from '../lib/funcion/tagallStore.js';
 
 const cooldowns = new Map();
 const _langCache = new Map();
@@ -30,9 +31,7 @@ const handler = async (m, { conn, args, isOwner, usedPrefix, command }) => {
     if (!isAdmin && !isOwner) return m.reply(t.solo_admins);
 
     if (/^resetinvocar$/i.test(command)) {
-      if (!global.db.data.chats[chatId]) global.db.data.chats[chatId] = {};
-      delete global.db.data.chats[chatId].tagall_mode;
-      await global.db.write();
+      resetTagallMode(chatId);
       return m.reply(t.reset_ok);
     }
 
@@ -40,13 +39,11 @@ const handler = async (m, { conn, args, isOwner, usedPrefix, command }) => {
 
     if (setArg === '__mention' || setArg === '__default') {
       const modo = setArg === '__mention' ? 'mention' : 'default';
-      if (!global.db.data.chats[chatId]) global.db.data.chats[chatId] = {};
-      global.db.data.chats[chatId].tagall_mode = modo;
-      await global.db.write();
+      setTagallMode(chatId, modo);
       return m.reply(modo === 'mention' ? t.modo_mention : t.modo_default);
     }
 
-    const modoGuardado = global.db?.data?.chats?.[chatId]?.tagall_mode;
+    const modoGuardado = getTagallMode(chatId);
 
     if (!modoGuardado) {
       return await conn.sendButton(
