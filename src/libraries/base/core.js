@@ -16,10 +16,12 @@ export const coreUtils = {
 
   logger: {
     info(...args) {
+      const msg = format(...args);
+      if (msg.includes('Closing open session')) return;
       console.log(
         chalk.bold.bgRgb(51, 204, 51)('INFO '),
         `[${chalk.rgb(255, 255, 255)(new Date().toUTCString())}]:`,
-        chalk.cyan(format(...args)),
+        chalk.cyan(msg),
       );
     },
     error(...args) {
@@ -30,10 +32,12 @@ export const coreUtils = {
       );
     },
     warn(...args) {
+      const msg = format(...args);
+      if (msg.includes('Closing open session')) return;
       console.log(
         chalk.bold.bgRgb(255, 153, 0)('WARNING '),
         `[${chalk.rgb(255, 255, 255)(new Date().toUTCString())}]:`,
-        chalk.redBright(format(...args)),
+        chalk.redBright(msg),
       );
     },
     trace(...args) {
