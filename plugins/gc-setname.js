@@ -6,17 +6,26 @@ const handler = async (m, { conn, args }) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
   const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
-  const tradutor = _translate.plugins.gc_setname;
+  const tradutor = _translate.plugins.gc_setname || {};
 
   const { isAdmin, isBotAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
 
-  if (!isAdmin) throw tradutor.admin;
-  if (!isBotAdmin) throw tradutor.botadmin;
+  const adminError = tradutor.admin || '*[❗] Necesitas ser administrador para usar este comando.*';
+  const botAdminError = tradutor.botadmin || '*[❗] El bot necesita ser administrador del grupo para cambiar el nombre.*';
+  const missingTextError = tradutor.texto1 || '*[❗] Escribe el nuevo nombre del grupo.*';
+  const lengthError = tradutor.texto2 || '*[❗] El nombre no puede tener más de 25 caracteres.*';
+  const successMessage = tradutor.success || '*✅ Nombre de grupo actualizado correctamente.*';
 
-  if (!args[0]) throw tradutor.texto1;
+  if (!isAdmin) throw adminError;
+  if (!isBotAdmin) throw botAdminError;
+
+  if (!args[0]) throw missingTextError;
 
   const text = args.join(' ');
+  if (text.length > 25) throw lengthError;
+
   await conn.groupUpdateSubject(m.chat, text);
+  m.reply(successMessage);
 
 };
 
