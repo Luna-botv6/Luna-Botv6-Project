@@ -1,29 +1,25 @@
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
+const handler = async (m, { conn, _ }) => {
+  const { isAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender)
+  const isOwner = global.owner.includes(m.sender.replace(/[^0-9]/g, ''))
+  if (!isAdmin && !isOwner) throw _('toolsCmd.notAdmin')
 
+  const q = m.quoted ? m.quoted : null
+  if (!q) throw _('toolsCmd.voNoQuoted')
+  if (!q.viewOnce) throw _('toolsCmd.voNoEsVO')
 
-const {downloadContentFromMessage} = (await import("@whiskeysockets/baileys"));
+  const data = await q.download?.()
+  if (!data) throw _('toolsCmd.voNoEsVO')
 
-const handler = async (m, {conn}) => {
-  const datas = global
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
-  const tradutor = _translate.plugins.herramientas_readviewonce
-
-  if (!m.quoted) throw tradutor.texto1;
-  if (m.quoted.mtype !== 'viewOnceMessageV2') throw tradutor.texto2;
-  const msg = m.quoted.message;
-  const type = Object.keys(msg)[0];
-  const media = await downloadContentFromMessage(msg[type], type == 'imageMessage' ? 'image' : 'video');
-  let buffer = Buffer.from([]);
-  for await (const chunk of media) {
-    buffer = Buffer.concat([buffer, chunk]);
+  const mime = q.mimetype || q.mediaType || ''
+  if (/video/.test(mime)) {
+    return await conn.sendMessage(m.chat, { video: data, mimetype: 'video/mp4' }, { quoted: m })
   }
-  if (/video/.test(type)) {
-    return conn.sendFile(m.chat, buffer, 'error.mp4', msg[type].caption || '', m);
-  } else if (/image/.test(type)) {
-    return conn.sendFile(m.chat, buffer, 'error.jpg', msg[type].caption || '', m);
-  }
-};
-handler.help = ['readvo'];
-handler.tags = ['tools'];
-handler.command = /^(readviewonce|read|revelar|readvo)$/i;
-export default handler;
+  return await conn.sendMessage(m.chat, { image: data, mimetype: 'image/jpeg' }, { quoted: m })
+}
+
+handler.help = ['readvo']
+handler.tags = ['tools']
+handler.command = /^(readviewonce|read|revelar|readvo)$/i
+handler.group = true
+export default handler
