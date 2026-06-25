@@ -68,7 +68,8 @@ const isDuplicate = (m, chat, msgType) => {
 const getGroupName = async (conn, chat) => {
   if (_groupNames.has(chat)) return _groupNames.get(chat);
   try {
-    const meta = conn.chats?.[chat] || await conn.groupMetadata?.(chat);
+    const _gc = global.groupCache?.get(chat);
+    const meta = conn.chats?.[chat] || _gc?.data?.groupMetadata || await conn.groupMetadata?.(chat);
     const name = meta?.subject || meta?.name || null;
     if (name) _groupNames.set(chat, name);
     return name;

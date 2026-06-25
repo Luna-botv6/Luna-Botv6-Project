@@ -1,8 +1,7 @@
 const baileysMod = await import('@whiskeysockets/baileys');
-const _baileysDefault = baileysMod.default || {};
-const { BufferJSON, WAMessageStubType, jidNormalizedUser } = _baileysDefault;
-const updateMessageWithReceipt = baileysMod.updateMessageWithReceipt || _baileysDefault.updateMessageWithReceipt;
-const updateMessageWithReaction = baileysMod.updateMessageWithReaction || _baileysDefault.updateMessageWithReaction || function(msg, reaction) {
+const WAMessageStubType = baileysMod.WAMessageStubType || baileysMod.default?.WAMessageStubType;
+const updateMessageWithReceipt = baileysMod.updateMessageWithReceipt || baileysMod.default?.updateMessageWithReceipt;
+const updateMessageWithReaction = baileysMod.updateMessageWithReaction || baileysMod.default?.updateMessageWithReaction || function(msg, reaction) {
     if (!msg.reactions) msg.reactions = [];
     const idx = msg.reactions.findIndex(r => r.key?.participant === reaction.key?.participant);
     if (reaction.text) {
@@ -105,7 +104,7 @@ conn.ev.on('messages.upsert', ({ messages: newMessages, type }) => {
                     if (!jid || isJidBroadcast(jid)) continue;
                     
                     const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
-                    if (msgTimestamp < connectionTime - 60000) continue;
+                    if (msgTimestamp < connectionTime - 30000) continue;
                     
                     upsertMessage(jid, proto.WebMessageInfo.fromObject(msg), type);
                 }
@@ -174,15 +173,7 @@ conn.ev.on('messages.upsert', ({ messages: newMessages, type }) => {
             chats[jid].presences = updates;
         });
 
-        conn.ev.on('message-reaction.update', updates => {
-            for (const update of updates) {
-                const message = loadMessage(update.key.remoteJid, update.key.id);
-                if (message) {
-                    message.reactions = message.reactions || [];
-                    message.reactions.push(update.reaction);
-                }
-            }
-        });
+        
     }
 
     function toJSON() {
