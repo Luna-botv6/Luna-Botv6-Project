@@ -47,7 +47,8 @@
     "similarity": "^1.2.1",
     "simple-git": "^3.24.0",
     "syntax-error": "^1.4.0",
-    "url-regex-safe": "^3.0.0"
+    "url-regex-safe": "^3.0.0",
+    "pdf-lib": "^1.17.1"
   },
   "optionalDependencies": {
     "wa-sticker-formatter": "^4.3.2"
