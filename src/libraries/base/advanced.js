@@ -13,12 +13,14 @@ function nullish(args) {
 
 export const advancedUtils = {
   async relayWAMessage(conn, pesanfull) {
-    if (pesanfull.message.audioMessage) {
-      await conn.sendPresenceUpdate('recording', pesanfull.key.remoteJid);
-    } else {
-      await conn.sendPresenceUpdate('composing', pesanfull.key.remoteJid);
+    const _jid = pesanfull.key.remoteJid;
+    if (!global._presenceCooldown) global._presenceCooldown = new Map();
+    const _last = global._presenceCooldown.get(_jid) || 0;
+    if (Date.now() - _last > 8000) {
+      global._presenceCooldown.set(_jid, Date.now());
+      await conn.sendPresenceUpdate(pesanfull.message.audioMessage ? 'recording' : 'composing', _jid);
     }
-    const mekirim = await conn.relayMessage(pesanfull.key.remoteJid, pesanfull.message, {messageId: pesanfull.key.id});
+    const mekirim = await conn.relayMessage(_jid, pesanfull.message, {messageId: pesanfull.key.id});
     conn.ev.emit('messages.upsert', {messages: [pesanfull], type: 'append'});
     return mekirim;
   },
@@ -267,7 +269,8 @@ export const advancedUtils = {
     let chats = conn.chats[chat];
     if (!chats) chats = conn.chats[chat] = {id: chat};
     chats.isChats = true;
-    const metadata = await conn.groupMetadata(chat).catch((_) => null);
+    const _cached = global.groupCache?.get(chat);
+    const metadata = _cached?.data?.groupMetadata || await conn.groupMetadata(chat).catch((_) => null);
     if (!metadata) return;
     chats.subject = metadata.subject;
     chats.metadata = metadata;

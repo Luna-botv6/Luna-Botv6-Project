@@ -27,7 +27,7 @@ export function smsg(conn, m, hasParent) {
   if (!m.mediaMessage) delete m.download;
 
   try {
-    if (protocolMessageKey && m.mtype == 'protocolMessage') conn.ev.emit('message.delete', protocolMessageKey);
+    if (protocolMessageKey && m.mtype == 'protocolMessage') conn.ev.emit('messages.delete', { keys: [protocolMessageKey] });
   } catch (e) {
     console.error(e);
   }
@@ -111,6 +111,29 @@ export function serialize() {
         let message;
         if (!(message = this.mediaMessage)) return null;
         return Object.keys(message)[0];
+      },
+      enumerable: true,
+    },
+    viewOnce: {
+      get() {
+        return !!(
+          this.message?.viewOnceMessage ||
+          this.message?.viewOnceMessageV2 ||
+          this.message?.viewOnceMessageV2Extension ||
+          this.message?.imageMessage?.viewOnce ||
+          this.message?.videoMessage?.viewOnce
+        );
+      },
+      enumerable: true,
+    },
+    viewOnceMessage: {
+      get() {
+        return (
+          this.message?.viewOnceMessage?.message ||
+          this.message?.viewOnceMessageV2?.message ||
+          this.message?.viewOnceMessageV2Extension?.message ||
+          null
+        );
       },
       enumerable: true,
     },
@@ -415,7 +438,8 @@ export async function pushMessage(conn, m) {
       let metadata; let sender;
       if (isGroup) {
         if (!chats.subject || !chats.metadata) {
-          metadata = await conn.groupMetadata(chat).catch((_) => ({})) || {};
+          const _gCached = global.groupCache?.get(chat);
+          metadata = _gCached?.data?.groupMetadata || await conn.groupMetadata(chat).catch((_) => ({})) || {};
           if (!chats.subject) chats.subject = metadata.subject || '';
           if (!chats.metadata) chats.metadata = metadata;
         }

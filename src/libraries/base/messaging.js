@@ -1,6 +1,6 @@
 import { toAudio } from '../converter.js';
 import PhoneNumber from 'awesome-phonenumber';
-import {downloadContentFromMessage} from '@whiskeysockets/baileys';
+import { downloadContentFromMessage, generateMessageID } from '@whiskeysockets/baileys';
 import fs from 'fs';
 
 export const messagingUtils = {
@@ -28,7 +28,7 @@ export const messagingUtils = {
         file = convert.data,
         pathFile = convert.filename,
         mtype = 'audio',
-        mimetype = options.mimetype || 'audio/mpeg; codecs=opus'
+        mimetype = options.mimetype || 'audio/ogg; codecs=opus'
       );
     } else mtype = 'document';
     if (options.asDocument) mtype = 'document';
@@ -47,7 +47,7 @@ export const messagingUtils = {
       mimetype,
       fileName: filename || pathFile.split('/').pop(),
     };
-   
+
     let m;
     try {
       m = await conn.sendMessage(jid, message, {...opt, ...options});
@@ -60,20 +60,24 @@ export const messagingUtils = {
           m = await conn.sendMessage(jid, {...message, [mtype]: file}, {...opt, ...options});
         } catch (e2) {
           if (e2?.data === 403 || e2?.output?.statusCode === 403) { file = null; return null; }
+          m = null;
         }
       }
       file = null;
-      return m;
     }
+    return m;
   },
 
   async sendContact(conn, jid, data, quoted, options) {
     if (!Array.isArray(data[0]) && typeof data[0] === 'string') data = [data];
     const contacts = [];
+    if (!global._bizProfileCache) global._bizProfileCache = new Map();
     for (let [number, name] of data) {
       number = number.replace(/[^0-9]/g, '');
       const njid = number + '@s.whatsapp.net';
-      const biz = await conn.getBusinessProfile(njid).catch((_) => null) || {};
+      const _bizCached = global._bizProfileCache.get(njid);
+      const biz = _bizCached !== undefined ? _bizCached : await conn.getBusinessProfile(njid).catch((_) => null) || {};
+      if (_bizCached === undefined) global._bizProfileCache.set(njid, biz);
       const vcard = `
 BEGIN:VCARD
 VERSION:3.0
@@ -111,17 +115,19 @@ END:VCARD
       })),
       selectableOptionsCount: 1,
     };
-    return conn.relayMessage(jid, {pollCreationMessage: pollMessage}, {...options});
+    const _pollId = generateMessageID();
+    return conn.relayMessage(jid, {pollCreationMessage: pollMessage}, {messageId: _pollId, ...options});
   },
 
   async downloadM(conn, m, type, saveToFile) {
     let filename;
     if (!m || !(m.url || m.directPath)) return Buffer.alloc(0);
     const stream = await downloadContentFromMessage(m, type);
-    let buffer = Buffer.from([]);
+    const _chunks = [];
     for await (const chunk of stream) {
-      buffer = Buffer.concat([buffer, chunk]);
+      _chunks.push(chunk);
     }
+    const buffer = Buffer.concat(_chunks);
     if (saveToFile) ({filename} = await conn.getFile(buffer, true));
     return saveToFile && fs.existsSync(filename) ? filename : buffer;
   },
