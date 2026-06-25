@@ -15,7 +15,6 @@ import lodash from 'lodash';
 import chalk from 'chalk';
 import syntaxerror from 'syntax-error';
 import { format } from 'util';
-import pino from 'pino';
 import Pino from 'pino';
 import { Boom } from '@hapi/boom';
 import { isJidBroadcast } from '@whiskeysockets/baileys';
@@ -216,7 +215,7 @@ const connectionOptions = {
   logger: Pino({ level: 'silent' }),
   printQRInTerminal: opcion === '1',
   mobile: false,
-  browser: ['Ubuntu', 'Chrome', '124.0.6367.82'],
+  browser: ['Windows', 'Chrome', '149.0.7827.197'],
   auth: {
     creds: state.creds,
     keys: makeCacheableSignalKeyStore(
@@ -246,9 +245,7 @@ const connectionOptions = {
       return '';
     }
   },
-  patchMessageBeforeSending: async (message) => {
-    return message;
-  },
+  
   msgRetryCounterCache: new NodeCache({
     stdTTL: 300,
     checkperiod: 60,
@@ -609,11 +606,7 @@ async function connectionUpdate(update) {
     updateConnectionState(connection);
   }
 
-  const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
-  if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
-    await global.reloadHandler(true).catch(console.error);
-    global.timestamp.connect = new Date;
-  }
+  
   if (opcion === '1' && qr) {
     if (qr !== lastQR) {
       lastQR = qr;
@@ -879,7 +872,7 @@ global.reloadHandler = async function(restatConn) {
     try {
       global.conn.ws.close();
     } catch { }
-    conn.ev.removeAllListeners();
+    global.conn.ev.removeAllListeners();
     await new Promise(resolve => setTimeout(resolve, 1500 + Math.floor(Math.random() * 1000)));
     global.conn = await makeWASocket(connectionOptions, {chats: oldChats});
     global.timestamp.connect = new Date();
@@ -891,10 +884,11 @@ global.reloadHandler = async function(restatConn) {
   if (!isInit) {
     conn.ev.removeAllListeners('messages.upsert');
     conn.ev.removeAllListeners('group-participants.update');
-    conn.ev.removeAllListeners('message.delete');
+    conn.ev.removeAllListeners('messages.delete');
     conn.ev.removeAllListeners('call');
     conn.ev.removeAllListeners('connection.update');
     conn.ev.removeAllListeners('creds.update');
+    conn.ev.removeAllListeners('groups.update');
     global.mentionListenerInitialized = false;
   }
 
@@ -914,10 +908,35 @@ global.reloadHandler = async function(restatConn) {
   });
   manejarEventosGrupo(conn);
   conn.ev.on('group-participants.update', conn.participantsUpdate);
-  conn.ev.on('message.delete', conn.onDelete);
+  conn.ev.on('messages.delete', conn.onDelete);
   conn.ev.on('call', conn.onCall);
   conn.ev.on('connection.update', conn.connectionUpdate);
   conn.ev.on('creds.update', conn.credsUpdate);
+  conn.ev.on('groups.update', async ([event]) => {
+    try {
+      try { invalidateGroupCount(); } catch {}
+      if (!global.groupCache) return;
+      const existing = global.groupCache.get(event.id);
+      if (existing?.data) {
+        const updated = { ...existing.data.groupMetadata, ...event };
+        global.groupCache.set(event.id, {
+          data: { ...existing.data, groupMetadata: updated },
+          timestamp: Date.now()
+        });
+        return;
+      }
+      const metadata = await conn.groupMetadata(event.id);
+      if (metadata) {
+        const participants = (metadata.participants || []).map(p => ({
+          id: p.id || p.jid, lid: p.lid || null, admin: p.admin || null
+        }));
+        global.groupCache.set(event.id, {
+          data: { groupMetadata: metadata, participants },
+          timestamp: Date.now()
+        });
+      }
+    } catch {}
+  });
 
   if (restatConn || !global.mentionListenerInitialized) {
     try {
@@ -980,32 +999,6 @@ global.reload = async (_ev, filename) => {
 Object.freeze(global.reload);
 watch(pluginFolder, global.reload);
 await global.reloadHandler();
-
-conn.ev.on('groups.update', async ([event]) => {
-  try {
-    try { invalidateGroupCount(); } catch {}
-    if (!global.groupCache) return;
-    const existing = global.groupCache.get(event.id);
-    if (existing?.data) {
-      const updated = { ...existing.data.groupMetadata, ...event };
-      global.groupCache.set(event.id, {
-        data: { ...existing.data, groupMetadata: updated },
-        timestamp: Date.now()
-      });
-      return;
-    }
-    const metadata = await conn.groupMetadata(event.id);
-    if (metadata) {
-      const participants = (metadata.participants || []).map(p => ({
-        id: p.id || p.jid, lid: p.lid || null, admin: p.admin || null
-      }));
-      global.groupCache.set(event.id, {
-        data: { groupMetadata: metadata, participants },
-        timestamp: Date.now()
-      });
-    }
-  } catch {}
-});
 
 manejarEventosGrupo(conn);
 startGroupCleanService();

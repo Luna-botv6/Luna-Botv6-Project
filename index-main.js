@@ -78,13 +78,12 @@ async function limpiarArchivosTMP() {
         try {
           const fullPath = join(tmpPath, file);
           const fileStat = await fs.stat(fullPath);
-          
           if (now - fileStat.mtimeMs > MAX_AGE) {
             await fs.rm(fullPath, { recursive: true, force: true });
             stats.tmp++;
             return true;
           }
-        } catch (err) {
+        } catch {
           return false;
         }
         return false;
@@ -108,7 +107,7 @@ async function limpiarArchivosTMP() {
       if (stats.core) parts.push('core');
       console.log(chalk.hex('#00CED1')(`✨ Limpieza: ${parts.join(', ')}`));
     }
-  } catch (err) {}
+  } catch {}
 }
 
 function forceGC() {
@@ -122,7 +121,7 @@ function forceGC() {
         console.log(chalk.hex('#39FF14')(`🧹 GC: liberó ${freedMB}MB`));
       }
       return true;
-    } catch (err) {}
+    } catch {}
   }
   return false;
 }
@@ -134,13 +133,13 @@ function checkMemoryAndClean() {
     const heapUsedMB = Math.floor(heapStats.used_heap_size / (1024 * 1024));
     const heapLimitMB = Math.floor(heapStats.heap_size_limit / (1024 * 1024));
 
-    if (heapPercent > 85) {
-      console.log(chalk.hex('#FFA500')(`⚠️  Heap: ${heapPercent.toFixed(1)}% (${heapUsedMB}/${heapLimitMB}MB)`));
+    if (heapPercent > 90) {
+      console.log(chalk.red.bold(`🚨 CRÍTICO: Heap ${heapPercent.toFixed(1)}% (${heapUsedMB}/${heapLimitMB}MB)`));
       forceGC();
     } else if (heapPercent > 75) {
       forceGC();
     }
-  } catch (err) {}
+  } catch {}
 }
 
 let limpiezaActiva = false;
@@ -151,7 +150,7 @@ async function ejecutarLimpieza() {
   try {
     await limpiarArchivosTMP();
     checkMemoryAndClean();
-  } catch (err) {
+  } catch {
   } finally {
     setTimeout(() => { limpiezaActiva = false; }, 5000);
   }
@@ -161,33 +160,30 @@ setInterval(ejecutarLimpieza, 900000);
 setTimeout(ejecutarLimpieza, 3000);
 
 setInterval(() => {
-  checkMemoryAndClean();
-}, 120000);
-
-setInterval(() => {
   try {
     const heapStats = v8.getHeapStatistics();
     const heapPercent = (heapStats.used_heap_size / heapStats.heap_size_limit) * 100;
     const heapUsedMB = Math.floor(heapStats.used_heap_size / (1024 * 1024));
     const heapLimitMB = Math.floor(heapStats.heap_size_limit / (1024 * 1024));
-    
+
     if (heapPercent > 90) {
       console.log(chalk.red.bold(`🚨 CRÍTICO: Heap ${heapPercent.toFixed(1)}% (${heapUsedMB}/${heapLimitMB}MB)`));
-      console.log(chalk.yellow('💡 Considera reiniciar si persiste'));
       forceGC();
-    } else if (heapPercent > 80) {
-      console.log(chalk.yellow(`⚠️  Heap alto: ${heapPercent.toFixed(1)}% (${heapUsedMB}/${heapLimitMB}MB)`));
+    } else if (heapPercent > 75) {
+      forceGC();
     }
-  } catch (err) {}
-}, 60000);
+  } catch {}
+}, 90000);
 
-process.on('uncaughtException', (error) => {
-  console.error(chalk.red('❌ Error no capturado:'), error.message);
-});
-
-process.on('unhandledRejection', (reason) => {
-  console.error(chalk.red('❌ Promise rechazada:'), reason);
-});
+if (!global._indexErrorHandlers) {
+  global._indexErrorHandlers = true;
+  process.on('uncaughtException', (error) => {
+    console.error(chalk.red('❌ Error no capturado:'), error.message);
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.error(chalk.red('❌ Promise rechazada:'), reason);
+  });
+}
 
 async function verificarOCrearCarpetaAuth() {
   const authPath = join(__dirname, global.authFile);
@@ -230,13 +226,9 @@ async function start(file) {
     const args = [join(__dirname, file), ...process.argv.slice(2)];
     setupMaster({ exec: args[0], args: args.slice(1) });
     const p = fork();
-    p.on('exit', (_, code) => {
+    p.on('exit', () => {
       isRunning = false;
-      if (process.env.pm_id) {
-        process.exit(1);
-      } else {
-        process.exit();
-      }
+      setTimeout(() => start('main.js'), 3000);
     });
     return;
   }
@@ -271,7 +263,7 @@ async function start(file) {
       case 'reset':
         p.process.kill();
         isRunning = false;
-        start.apply(this, arguments);
+        start('main.js');
         break;
       case 'uptime':
         p.send(process.uptime());
@@ -282,10 +274,8 @@ async function start(file) {
   p.on('exit', (_, code) => {
     isRunning = false;
     console.error(chalk.hex('#FF1493').bold('[ ERROR ] Ocurrió un error inesperado:'), code);
-    p.process.kill();
-    setTimeout(() => {
-      start.apply(this, arguments);
-    }, 3000);
+    try { p.process.kill(); } catch {}
+    setTimeout(() => start('main.js'), 3000);
   });
 
   const opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());

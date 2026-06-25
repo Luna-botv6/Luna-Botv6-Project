@@ -278,6 +278,8 @@ function ensureLogDir_safe() {
   try { ensureLogDir(); } catch {}
 }
 
+if (!global._logBansListenersRegistered) {
+  global._logBansListenersRegistered = true;
 process.on('unhandledRejection', (reason) => {
   const msg = reason?.message || reason?.toString() || '';
 
@@ -296,7 +298,7 @@ process.on('unhandledRejection', (reason) => {
     saveBanLog(`Error no manejado: ${msg}`, 'error_handler');
   }
 });
-
+}
 process.on('uncaughtException', (err) => {
   const msg = err?.message || err?.toString() || '';
 

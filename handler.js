@@ -42,7 +42,11 @@ const MAX_VOICE_CACHE = 200;
 
 global.groupCache = groupCache;
 global.translationsCache = translationsCache;
-global.BotName = global.db?.data?.config?.botName || 'Luna-Botv6';
+Object.defineProperty(global, 'BotName', {
+  get: () => global.db?.data?.config?.botName || 'Luna-Botv6',
+  set: (v) => { if (global.db?.data?.config) global.db.data.config.botName = v; },
+  configurable: true
+});
 
 const isNumber = (x) => typeof x === 'number' && !isNaN(x);
 const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(() => resolve(), ms));
@@ -100,7 +104,6 @@ function logError(e, plugin = 'general') {
 
 let mconn;
 let currentConn;
-const { proto } = (await import("@whiskeysockets/baileys")).default;
 
 startCacheCleanupInterval(groupCache, recentMessages, recentParticipantEvents, translationsCache, customCommandsCache, processedVoiceMessages, CACHE_TTL, DUPLICATE_TIMEOUT);
 
@@ -178,7 +181,10 @@ export async function handler(chatUpdate) {
       const _lidOwners = (global.lidOwners || []).map(x => String(x));
       const _isOwner = _ownerNums.some(n => sender.includes(n)) || _lidOwners.some(n => sender.includes(n));
       if (!_isOwner) {
-        this.sendMessage(chat, { delete: m.key }).catch(() => {});
+        const _cachedForDel = global.groupCache?.get(chat);
+        const _botJid = this.user?.jid ? this.decodeJid(this.user.jid) : '';
+        const _botIsAdmin = _cachedForDel?.data?.participants?.some(p => p.id === _botJid && p.admin) ?? false;
+        if (_botIsAdmin) this.sendMessage(chat, { delete: m.key }).catch(() => {});
         if (!global._muteWarnings) global._muteWarnings = new Map();
         const _warnKey = chat + '_' + _senderNum;
         const _now = Date.now();
@@ -458,11 +464,14 @@ export async function handler(chatUpdate) {
           m.plugin = name;
           updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender, chat: m.chat });
           global._lastCmd = command;
-
           if (this.user?.jid) {
-            this.sendPresenceUpdate('composing', m.chat).catch(() => {});
+            if (!global._presenceCooldown) global._presenceCooldown = new Map();
+            const _lastPresence = global._presenceCooldown.get(m.chat) || 0;
+            if (Date.now() - _lastPresence > 8000) {
+              global._presenceCooldown.set(m.chat, Date.now());
+              this.sendPresenceUpdate('composing', m.chat).catch(() => {});
+            }
           }
-
           const chat = getConfig(m.chat);
           const user = global.db.data.users[m.sender] || {};
           const botSpam = global.db.data.settings[this.user.jid] || {};
