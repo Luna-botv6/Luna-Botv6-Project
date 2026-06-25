@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 
 const handler = async (m, { conn, args }) => {
 
@@ -25,6 +25,8 @@ const handler = async (m, { conn, args }) => {
   if (text.length > 25) throw lengthError;
 
   await conn.groupUpdateSubject(m.chat, text);
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  clearGroupCache(m.chat, conn);
   m.reply(successMessage);
 
 };
