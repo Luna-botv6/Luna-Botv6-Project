@@ -52,17 +52,27 @@ ${tradutor.texto1[0]}
   }
 
   try {
-    await conn.groupSettingUpdate(m.chat, state);
-    setConfig(m.chat, { groupMode: state === 'announcement' ? 'cerrado' : 'abierto' });
+    await conn.groupSettingUpdate(
+      m.chat,
+      state === 'announcement'
+        ? 'announcement'
+        : 'not_announcement'
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     clearGroupCache(m.chat, conn);
+
+    setConfig(m.chat, {
+      groupMode: state === 'announcement' ? 'cerrado' : 'abierto'
+    });
 
     await m.reply(
       `✅ Estado del grupo cambiado a: *${state === 'announcement' ? '🔒 CERRADO' : '🔓 ABIERTO'}*`
     );
-  } catch (e) {
+  } catch {
     await m.reply(
-      '❌ No pude cambiar el estado del grupo.\n\nEl bot necesita ser *administrador*.'
+      '❌ No pude cambiar el estado del grupo.'
     );
   }
 };
