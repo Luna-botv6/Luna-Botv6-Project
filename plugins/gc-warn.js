@@ -56,7 +56,7 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
   if (warns >= 3) {
     await resetWarnings(target);
     await conn.groupParticipantsUpdate(m.chat, [target], 'remove');
-    clearGroupCache(m.chat);
+    clearGroupCache(m.chat, conn);
     await m.reply(t.expulsado.replace('{tag}', tag), null, { mentions: [target] });
   }
 };

@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 
 function clockString(ms) {
   const h = Math.floor(ms / 3600000);
@@ -39,6 +39,7 @@ const handler = async (m, { conn, isOwner, args, usedPrefix, command }) => {
   const timeoutMs = args[1] ? 86400000 * Number(args[1]) / 24 : 0;
 
   await conn.groupSettingUpdate(m.chat, mode);
+  clearGroupCache(m.chat, conn);
 
   const estadoTexto = isClosing ? txt.cerrado : txt.abierto;
   const tiempoTexto = timeoutMs ? ` ${txt.durante} *${clockString(timeoutMs)}*` : '';
@@ -48,6 +49,7 @@ const handler = async (m, { conn, isOwner, args, usedPrefix, command }) => {
     setTimeout(async () => {
       const reverso = isClosing ? 'not_announcement' : 'announcement';
       await conn.groupSettingUpdate(m.chat, reverso);
+      clearGroupCache(m.chat, conn);
       await conn.sendMessage(m.chat, { text: isClosing ? txt.reabrir : txt.recruzar });
     }, timeoutMs);
   }

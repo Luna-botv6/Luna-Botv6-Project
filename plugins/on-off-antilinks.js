@@ -1,5 +1,5 @@
 import { getConfig } from '../lib/funcConfig.js';
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 
 const warnings = new Map();
 const MAX_WARNINGS = 3;
@@ -85,6 +85,7 @@ const handler = async (m, { conn }) => {
       if (isBotAdmin) {
         try {
           await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
+          clearGroupCache(m.chat, conn);
           userBanned = true;
         } catch (error) {
           // Error silencioso

@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 
 const NUM_WORDS = {
   'cero':0,'uno':1,'una':1,'dos':2,'tres':3,'cuatro':4,'cinco':5,
@@ -213,7 +213,10 @@ export async function handleMuteViolation({ conn, chat, sender, messageKey }) {
     const kickMsg = (t.kick_msg || '🚫 *@{user} fue expulsado del grupo.*\n\n📋 *Motivo:* Acumuló 3 advertencias por enviar mensajes estando silenciado.')
       .replace('{user}', phoneNum);
     await conn.sendMessage(chat, { text: kickMsg, mentions: [sender] }).catch(() => {});
-    await conn.groupParticipantsUpdate(chat, [sender], 'remove').catch(() => {});
+    try {
+      await conn.groupParticipantsUpdate(chat, [sender], 'remove');
+      clearGroupCache(chat, conn);
+    } catch {}
   }
 }
 

@@ -71,7 +71,7 @@ const handler = async (m, { conn, usedPrefix, isOwner, args, command }) => {
 
   try {
     await conn.groupParticipantsUpdate(m.chat, [user], 'demote');
-    clearGroupCache(m.chat);
+    clearGroupCache(m.chat, conn);
     await m.reply(`${tradutor.texto3} @${user.split('@')[0]}`, null, { mentions: [user] });
   } catch (e) {
     console.error(e);

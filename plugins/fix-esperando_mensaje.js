@@ -36,7 +36,7 @@ const handler = async (m, { conn, usedPrefix }) => {
       await m.reply('🔄 Resincronizando chat privado...');
       
       try {
-        clearGroupCache(chatId);
+        clearGroupCache(chatId, conn);
         
         await conn.sendPresenceUpdate('available', chatId);
         
@@ -89,7 +89,7 @@ const handler = async (m, { conn, usedPrefix }) => {
       }
     }
 
-    clearGroupCache(chatId);
+    clearGroupCache(chatId, conn);
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 

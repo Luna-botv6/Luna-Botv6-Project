@@ -95,6 +95,7 @@ const handler = async (m, { conn }) => {
       let userBanned = false;
       try {
         await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
+        clearGroupCache(m.chat, conn);
         userBanned = true;
       } catch (error) {
         userBanned = false;

@@ -101,7 +101,7 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
     }
 
     await conn.groupParticipantsUpdate(chatId, [jidToKick], 'remove');
-    clearGroupCache(chatId);
+    clearGroupCache(chatId, conn);
 
     if (chat.welcome && !chat.isBanned) {
       const groupMeta    = conn.chats?.[chatId]?.metadata || await conn.groupMetadata(chatId).catch(() => ({}));

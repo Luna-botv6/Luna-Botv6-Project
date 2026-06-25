@@ -55,7 +55,7 @@ ${tradutor.texto1[0]}
     await conn.groupSettingUpdate(m.chat, state);
     setConfig(m.chat, { groupMode: state === 'announcement' ? 'cerrado' : 'abierto' });
 
-    clearGroupCache(m.chat);
+    clearGroupCache(m.chat, conn);
 
     await m.reply(
       `✅ Estado del grupo cambiado a: *${state === 'announcement' ? '🔒 CERRADO' : '🔓 ABIERTO'}*`

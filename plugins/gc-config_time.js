@@ -1,5 +1,6 @@
 /* Creditos a https://github.com/ALBERTO9883/NyanCatBot-MD */
 
+import { clearGroupCache } from '../lib/funcion/pluginHelper.js';
 
 const handler = async (m, {conn, isAdmin, isOwner, args, usedPrefix, command}) => {
   const datas = global;
@@ -36,11 +37,13 @@ ${tradutor.texto1[2]}
   await conn.groupSettingUpdate(m.chat, isClose).then(async (_)=> {
 	  m.reply(`⚠️ *_Grupo ${isClose == 'announcement' ? 'cerrado' : 'abierto'} ${args[1] ? `durante *${clockString(timeoutset)}_*` : ''}`);
   });
+  clearGroupCache(m.chat, conn);
   if (args[1]) {
 	 setTimeout(async () => {
       await conn.groupSettingUpdate(m.chat, `${isClose == 'announcement' ? 'not_announcement' : 'announcement'}`).then(async (_)=>{
 		    conn.reply(m.chat, `${isClose == 'not_announcement' ? tradutor.texto2 : tradutor.texto3}!`);
 	    });
+      clearGroupCache(m.chat, conn);
     }, timeoutset);
   }
 };

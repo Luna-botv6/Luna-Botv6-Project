@@ -14,6 +14,7 @@ const handler = async (m, { conn }) => {
 
   try {
     await conn.groupParticipantsUpdate(m.chat, [m.sender], 'promote');
+    clearGroupCache(m.chat, conn);
   } catch {
     await m.reply(t.texto2);
   }
