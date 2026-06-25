@@ -2,6 +2,8 @@ import { readFileSync } from 'fs';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const normalizeJid = (jid = '') => jid.replace(/:\d+@/, '@').trim();
+const deleteCooldown = new Map();
+const COOLDOWN_TIME = 5000;
 
 const handler = async (m, { conn, isOwner }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
@@ -25,6 +27,14 @@ const handler = async (m, { conn, isOwner }) => {
 
   if (!isAdmin && !isOwner) return m.reply(txt.no_admin);
   if (!isBotAdminReal) return m.reply(txt.no_bot_admin);
+
+  const now = Date.now();
+  const lastDelete = deleteCooldown.get(m.sender) || 0;
+  if (now - lastDelete < COOLDOWN_TIME) {
+    return m.reply(`⏳ Espera ${Math.ceil((COOLDOWN_TIME - (now - lastDelete)) / 1000)}s antes de usar .delete nuevamente.`);
+  }
+  deleteCooldown.set(m.sender, now);
+
   if (!m.quoted) return m.reply(txt.no_quoted);
 
   const resolveLid = (jidOrLid) => {
