@@ -52,9 +52,10 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     return m.reply('❌ No hay espacio disponible para más SubBots.');
   }
 
-  if (!connectionManager.isRamAvailable()) {
-    const { used, total, pct } = connectionManager.getRamStatus();
-    return m.reply(`❌ RAM insuficiente para crear un SubBot.\n📊 Uso actual: ${pct}% (${used}MB/${total}MB)\n🔒 Se necesitan al menos ${SUBBOT_CONFIG.ramFreeMinMB}MB libres (disponibles: ${total - used}MB)`);
+  if (!await isRamAvailable()) {
+    const { heapUsedMB: used, heapTotalMB: total, heapFreeMB } = await getRamStatus();
+    const pct = total > 0 ? Math.round((used / total) * 100) : 0;
+    return m.reply(`❌ RAM insuficiente para crear un SubBot.\n📊 Uso actual: ${pct}% (${used}MB/${total}MB)\n🔒 Se necesitan al menos ${SUBBOT_CONFIG.ramFreeMinMB}MB libres (disponibles: ${heapFreeMB}MB)`);
   }
 
   const phoneArg = args.find(a => /^[0-9]{7,15}$/.test(a.trim()));
@@ -281,14 +282,15 @@ export async function initializeSubBot({ subbotPath, m, conn, args = [], userId 
           m?.sender ? { quoted: m } : {}
         ).catch(() => {});
 
-        ramMonitorId = setInterval(() => {
+        ramMonitorId = setInterval(async () => {
           if (!connectionManager.isConnected(userId)) {
             clearInterval(ramMonitorId);
             ramMonitorId = null;
             return;
           }
-          if (!isRamAvailable()) {
-            const { used, total, pct } = getRamStatus();
+          if (!await isRamAvailable()) {
+            const { heapUsedMB: used, heapTotalMB: total } = await getRamStatus();
+            const pct = total > 0 ? Math.round((used / total) * 100) : 0;
             console.log(chalk.red(`🚨 SubBot ${userId} detenido por RAM: ${pct}% (${used}MB/${total}MB)`));
             if (m?.chat) conn.sendMessage(m.chat,
               { text: `⚠️ Tu SubBot fue detenido por uso excesivo de RAM (${pct}%). Usa */serbot* para reconectar.`, mentions: m?.sender ? [m.sender] : [] },
@@ -337,7 +339,7 @@ export async function initializeSubBot({ subbotPath, m, conn, args = [], userId 
         ].includes(code);
 
         if (reconnectable && attempts < SUBBOT_CONFIG.maxReconnectAttempts) {
-          if (!isRamAvailable()) {
+          if (!await isRamAvailable()) {
             console.log(chalk.yellow(`⚠️ SubBot ${userId} no reconecta — RAM al límite`));
             cleanupSubBot('ram_limit_reconnect');
             return;
