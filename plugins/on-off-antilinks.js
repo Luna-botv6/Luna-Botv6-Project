@@ -1,53 +1,78 @@
-import { getConfig } from '../lib/funcConfig.js';
-import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
+import { getConfig, setConfig } from '../lib/funcConfig.js';
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const warnings = new Map();
 const MAX_WARNINGS = 3;
 
-function hasLink(text) {
+const PATTERNS = {
+  whatsapp:  /chat\.whatsapp\.com\/[^\s]+/gi,
+  whchannel: /whatsapp\.com\/channel\/[^\s]+/gi,
+  facebook:  /(?:facebook\.com|fb\.com)[^\s]*/gi,
+  instagram: /instagram\.com[^\s]*/gi,
+  tiktok:    /tiktok\.com[^\s]*/gi,
+  twitter:   /(?:twitter\.com|x\.com)[^\s]*/gi,
+  youtube:   /(?:youtube\.com|youtu\.be)[^\s]*/gi,
+  telegram:  /t\.me\/[^\s]+/gi,
+  discord:   /discord\.gg\/[^\s]+/gi,
+  general:   /(?:https?:\/\/|www\.)[^\s]+/gi,
+};
+
+const DEFAULT_ANTILINK_CONFIG = Object.fromEntries(
+  Object.keys(PATTERNS).map(k => [k, true])
+);
+
+function getAntiLinkConfig(config) {
+  return { ...DEFAULT_ANTILINK_CONFIG, ...(config.antiLinkConfig || {}) };
+}
+
+function hasBlockedLink(text, alConfig) {
   if (!text) return false;
-  
-  const patterns = [
-    /https?:\/\/[^\s]+/gi,
-    /www\.[^\s]+\.[a-z]{2,}/gi,
-    /facebook\.com/gi,
-    /fb\.com/gi,
-    /instagram\.com/gi,
-    /tiktok\.com/gi,
-    /twitter\.com/gi,
-    /x\.com/gi,
-    /youtube\.com/gi,
-    /youtu\.be/gi,
-    /t\.me\//gi,
-    /discord\.gg/gi
+
+  const specificKeys = [
+    'whatsapp', 'whchannel', 'facebook', 'instagram',
+    'tiktok', 'twitter', 'youtube', 'telegram', 'discord'
   ];
-  
-  return patterns.some(pattern => pattern.test(text));
+
+  for (const key of specificKeys) {
+    if (!alConfig[key]) continue;
+    const pattern = new RegExp(PATTERNS[key].source, 'gi');
+    if (pattern.test(text)) return true;
+  }
+
+  if (alConfig.general) {
+    const generalPattern = new RegExp(PATTERNS.general.source, 'gi');
+    const matches = text.match(generalPattern) || [];
+    for (const match of matches) {
+      const isSpecific = specificKeys.some(k => {
+        const p = new RegExp(PATTERNS[k].source, 'gi');
+        return p.test(match);
+      });
+      if (!isSpecific) return true;
+    }
+  }
+
+  return false;
 }
 
 function addWarning(chatId, userId) {
-  if (!warnings.has(chatId)) {
-    warnings.set(chatId, {});
-  }
-  const chatWarnings = warnings.get(chatId);
-  chatWarnings[userId] = (chatWarnings[userId] || 0) + 1;
-  return chatWarnings[userId];
+  if (!warnings.has(chatId)) warnings.set(chatId, {});
+  const cw = warnings.get(chatId);
+  cw[userId] = (cw[userId] || 0) + 1;
+  return cw[userId];
 }
 
 function resetWarnings(chatId, userId) {
-  const chatWarnings = warnings.get(chatId);
-  if (chatWarnings?.[userId]) {
-    delete chatWarnings[userId];
-  }
+  const cw = warnings.get(chatId);
+  if (cw?.[userId]) delete cw[userId];
 }
 
 async function getAdmins(conn, chatId) {
   try {
-    const groupMetadata = await conn.groupMetadata(chatId);
-    return groupMetadata.participants
+    const meta = await conn.groupMetadata(chatId);
+    return meta.participants
       .filter(p => p.admin === 'admin' || p.admin === 'superadmin')
       .map(p => p.id);
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -55,133 +80,71 @@ async function getAdmins(conn, chatId) {
 const handler = async (m, { conn }) => {
   try {
     if (!m.isGroup || !m.text) return;
-    
+
     const config = getConfig(m.chat);
     if (!config.antiLink && !config.antiLink2) return;
-    
+
     const groupData = await getGroupDataForPlugin(conn, m.chat, m.sender);
-    const { isAdmin } = groupData;
-    
-    if (isAdmin) return;
-    
-    if (!hasLink(m.text)) return;
-    
-    const isBotAdmin = groupData.isBotAdmin;
+    if (groupData.isAdmin) return;
+
+    const alConfig = getAntiLinkConfig(config);
+    if (!hasBlockedLink(m.text, alConfig)) return;
+
+    const { isBotAdmin } = groupData;
     const warningCount = addWarning(m.chat, m.sender);
-    
-    let messageDeleted = false;
+
     if (isBotAdmin) {
       try {
         await conn.sendMessage(m.chat, { delete: m.key });
-        messageDeleted = true;
-      } catch (error) {
-        // Error silencioso
-      }
+      } catch {}
     }
-    
+
     if (warningCount >= MAX_WARNINGS) {
       let userBanned = false;
-      
+
       if (isBotAdmin) {
         try {
           await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
-          clearGroupCache(m.chat, conn);
           userBanned = true;
-        } catch (error) {
-          // Error silencioso
-        }
+        } catch {}
       }
-      
+
       if (userBanned) {
-        const banMsg = `🚫 *USUARIO ELIMINADO POR SPAM DE ENLACES*
-
-👤 *Usuario:* @${m.sender.split('@')[0]}  
-📊 *Total advertencias:* ${warningCount}/${MAX_WARNINGS}
-📋 *Motivo:* Envío repetido de enlaces no permitidos
-⚡ *Acción:* Eliminación automática del grupo
-
-✅ *El usuario ha sido removido exitosamente.*`;
-
         await conn.sendMessage(m.chat, {
-          text: banMsg,
+          text: `🚫 *USUARIO ELIMINADO POR SPAM DE ENLACES*\n\n👤 *Usuario:* @${m.sender.split('@')[0]}\n📊 *Advertencias:* ${warningCount}/${MAX_WARNINGS}\n📋 *Motivo:* Envío repetido de enlaces no permitidos\n\n✅ *El usuario ha sido removido exitosamente.*`,
           mentions: [m.sender]
         });
-        
         resetWarnings(m.chat, m.sender);
-        
       } else {
         const admins = await getAdmins(conn, m.chat);
-        
-        const failMsg = `🚨 *ALERTA PARA ADMINISTRADORES*
-
-👤 *Usuario:* @${m.sender.split('@')[0]}
-📊 *Advertencias:* ${warningCount}/${MAX_WARNINGS}  
-📋 *Motivo:* Spam de enlaces
-
-❌ **NO SOY ADMINISTRADORA, NO PUEDO ELIMINAR AL USUARIO**
-
-⚠️ *El usuario alcanzó el máximo de advertencias.*
-📢 *Administradores, por favor eliminen manualmente al usuario.*`;
-
         await conn.sendMessage(m.chat, {
-          text: failMsg,
+          text: `🚨 *ALERTA PARA ADMINISTRADORES*\n\n👤 *Usuario:* @${m.sender.split('@')[0]}\n📊 *Advertencias:* ${warningCount}/${MAX_WARNINGS}\n📋 *Motivo:* Spam de enlaces\n\n❌ *No soy administrador/a, no puedo eliminar al usuario.*\n📢 *Por favor elimínenlo manualmente.*`,
           mentions: [m.sender, ...admins]
         });
       }
-      
+
     } else {
       const remaining = MAX_WARNINGS - warningCount;
-      
+      const isLast = warningCount === MAX_WARNINGS - 1;
+      const lastWarn = isLast
+        ? '🔥 *¡ÚLTIMA ADVERTENCIA!*\n⚡ *Próximo enlace = ELIMINACIÓN AUTOMÁTICA*'
+        : '⚡ *Sigue enviando enlaces y serás eliminado*';
+
       if (!isBotAdmin) {
         const admins = await getAdmins(conn, m.chat);
-        
-        const warningMsg = `⚠️ *ADVERTENCIA ${warningCount}/${MAX_WARNINGS} - ENLACES NO PERMITIDOS*
-
-👤 *Usuario:* @${m.sender.split('@')[0]}
-🔗 *Motivo:* Envío de enlaces/links
-⏰ *Advertencias restantes:* ${remaining}
-
-${warningCount === MAX_WARNINGS - 1 ? 
-    '🔥 **¡ÚLTIMA ADVERTENCIA!**\n⚡ *Próximo enlace = ELIMINACIÓN AUTOMÁTICA*' : 
-    '⚡ *Sigue enviando enlaces y serás eliminado*'
-}
-
-❌ *NO SOY ADMINISTRADORA, NO PUDE BORRAR EL MENSAJE*
-📢 *Pero el usuario fue advertido correctamente.*
-
-🤝 *Por favor respeta las reglas del grupo.*`;
-
         await conn.sendMessage(m.chat, {
-          text: warningMsg,
+          text: `⚠️ *ADVERTENCIA ${warningCount}/${MAX_WARNINGS} - ENLACES NO PERMITIDOS*\n\n👤 *Usuario:* @${m.sender.split('@')[0]}\n🔗 *Motivo:* Envío de enlaces/links\n⏰ *Advertencias restantes:* ${remaining}\n\n${lastWarn}\n\n❌ *No pude borrar el mensaje (no soy admin)*\n🤝 *Por favor respeta las reglas del grupo.*`,
           mentions: [m.sender, ...admins]
         });
-        
       } else {
-        const warningMsg = `⚠️ *ADVERTENCIA ${warningCount}/${MAX_WARNINGS} - ENLACES NO PERMITIDOS*
-
-👤 *Usuario:* @${m.sender.split('@')[0]}
-🔗 *Motivo:* Envío de enlaces/links
-⏰ *Advertencias restantes:* ${remaining}
-
-${warningCount === MAX_WARNINGS - 1 ? 
-    '🔥 **¡ÚLTIMA ADVERTENCIA!**\n⚡ *Próximo enlace = ELIMINACIÓN AUTOMÁTICA*' : 
-    '⚡ *Sigue enviando enlaces y serás eliminado*'
-}
-
-🗑️ *Tu mensaje fue eliminado automáticamente*
-
-🤝 *Por favor respeta las reglas del grupo.*`;
-
         await conn.sendMessage(m.chat, {
-          text: warningMsg,
+          text: `⚠️ *ADVERTENCIA ${warningCount}/${MAX_WARNINGS} - ENLACES NO PERMITIDOS*\n\n👤 *Usuario:* @${m.sender.split('@')[0]}\n🔗 *Motivo:* Envío de enlaces/links\n⏰ *Advertencias restantes:* ${remaining}\n\n${lastWarn}\n\n🗑️ *Tu mensaje fue eliminado automáticamente*\n🤝 *Por favor respeta las reglas del grupo.*`,
           mentions: [m.sender]
         });
       }
     }
-    
-  } catch (error) {
-    // Error silencioso
-  }
+
+  } catch {}
 };
 
 handler.before = async function (m, extra) {
