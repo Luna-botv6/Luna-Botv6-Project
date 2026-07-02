@@ -11,8 +11,8 @@ const updateMessageWithReaction = baileysMod.updateMessageWithReaction || bailey
         if (idx >= 0) msg.reactions.splice(idx, 1);
     }
 };
-const proto = baileysMod.proto || _baileysDefault.proto;
-const isJidBroadcast = baileysMod.isJidBroadcast || _baileysDefault.isJidBroadcast;
+const proto = baileysMod.proto || baileysMod.default?.proto;
+const isJidBroadcast = baileysMod.isJidBroadcast || baileysMod.default?.isJidBroadcast;
 
 const TIME_TO_DATA_STALE = 5 * 60 * 1000;
 const MAX_MESSAGES_PER_JID = 20;
@@ -61,7 +61,7 @@ function makeInMemoryStore() {
         const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
         const msgTimestamp = (message.messageTimestamp || 0) * 1000;
         
-        if (msgTimestamp < connectionTime - 60000) {
+        if (msgTimestamp < connectionTime - 30000) {
             return;
         }
         

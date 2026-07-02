@@ -25,7 +25,7 @@ const {
   fetchLatestBaileysVersion
 } = baileysMod;
 
-const WA_VERSION_OVERRIDE = [2, 3000, 1015901307]
+const WA_VERSION_OVERRIDE = [2, 3000, 1042432568]
 
 export async function makeWASocket(connectionOptions, options = {}) {
   try {
