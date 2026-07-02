@@ -688,15 +688,18 @@
     },
     "rpg_minar": {
       "texto1": [
-        "⏳ Você precisa esperar",
-        "para minerar novamente"
+        "╭━━━〔 ⛏️ *Mineração* 〕━━━⬣",
+        "┃ 😤 Você ainda está esgotado...",
+        "┃ ⏳ Você pode minerar em:",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ],
       "texto2": [
-        "╭━〔 *Mineração bem-sucedida* 〕━⬣",
-        "┃⛏️ Você minerou com sua picareta virtual...",
-        "┃✨ Você ganhou",
-        "┃⌛ Você poderá minerar novamente em *10 minutos*",
-        "╰━━━━━━━━━━━━━━━━━━⬣"
+        "╭━━━〔 ⛏️ *Mineração* 〕━━━⬣",
+        "┃ 🪨 Você golpeia a rocha com força...",
+        "┃ ✨ EXP obtida:",
+        "┃ 🔋 Cooldown: 2 minutos",
+        "┃ ⚠️ Atividade excessiva atrai o Caçador.",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ]
     },
     "rpg_mystic": {
@@ -716,19 +719,21 @@
     },
     "rpg_minardiamantes": {
       "texto1": [
-        "😴 Você ainda está cansado!",
-        "⏳ Poderá minerar diamantes novamente em",
-        "💤 Descanse um pouco e volte em breve"
+        "╭━━━〔 💎 *Mineração de Diamantes* 〕━━━⬣",
+        "┃ 😤 Você ainda está esgotado...",
+        "┃ ⏳ Você pode minerar em:",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ],
       "texto2": [
-        "MINERAÇÃO OK",
-        "Encontrou",
-        "Total acumulado:",
-        "Volte em 10 minutos",
-        "¡Continue minerando para conseguir mais diamantes!",
-        "diamantes"
+        "╭━━━〔 💎 *Mineração de Diamantes* 〕━━━⬣",
+        "┃ 💎 Você encontrou",
+        "┃ 💰 Total acumulado:",
+        "┃ 🔋 Cooldown: 2 minutos",
+        "┃ ⚠️ Atividade excessiva atrai o Caçador.",
+        "diamantes",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ],
-      "texto3": "Erro ao minerar."
+      "texto3": "❌ Erro ao minerar diamantes. Tente novamente."
     },
     "rpg_leaderboard": {
       "texto1": "Sem aventureiros.",
@@ -1150,6 +1155,13 @@
       "texto3": "❌ Não consegui processar o sticker.",
       "texto4": "❌ Não consegui baixar o sticker. Tente novamente.",
       "texto5": "❌ Erro ao enviar o sticker. Tente novamente."
+    },
+    "sticker_qc": {
+      "texto1": "❌ Você deve enviar ou responder com texto para gerar o sticker.",
+      "texto2": "❌ Texto inválido. Tente novamente.",
+      "texto3": "❌ O texto é muito longo. Use menos de 100 caracteres.",
+      "texto4": "❌ Não foi possível gerar o sticker. Tente novamente.",
+      "texto5": "❌ Tempo de espera esgotado ao criar o sticker. Tente novamente mais tarde."
     },
     "verbaneados": {
       "fecha": "Data",

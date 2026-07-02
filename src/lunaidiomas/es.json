@@ -355,15 +355,18 @@
     },
     "rpg_minar": {
       "texto1": [
-        "⏳ Debes esperar",
-        "para volver a minar"
+        "╭━━━〔 ⛏️ *Minería* 〕━━━⬣",
+        "┃ 😤 Todavía estás agotado...",
+        "┃ ⏳ Podrás minar en:",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ],
       "texto2": [
-        "╭━〔 *Minería exitosa* 〕━⬣",
-        "┃⛏️ Has minado con tu pico virtual...",
-        "┃✨ Ganaste",
-        "┃⌛ Podrás minar de nuevo en *10 minutos*",
-        "╰━━━━━━━━━━━━━━━━━━⬣"
+        "╭━━━〔 ⛏️ *Minería* 〕━━━⬣",
+        "┃ 🪨 Golpeas la roca con fuerza...",
+        "┃ ✨ EXP obtenida:",
+        "┃ 🔋 Cooldown: 2 minutos",
+        "┃ ⚠️ Demasiada actividad atrae al Cazador.",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ]
     },
     "fun_calculador": {
@@ -720,19 +723,21 @@
     },
     "rpg_minardiamantes": {
       "texto1": [
-        "¡Aún estás cansado!",
-        "Podrás minar diamantes nuevamente en",
-        "Descansa un poco y vuelve pronto"
+        "╭━━━〔 💎 *Minería de Diamantes* 〕━━━⬣",
+        "┃ 😤 Todavía estás agotado...",
+        "┃ ⏳ Podrás minar en:",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ],
       "texto2": [
-        "MINADO EXITOSO",
-        "Has encontrado",
-        "Total acumulado:",
-        "Podrás volver a minar en 10 minutos",
-        "¡Sigue minando para conseguir más diamantes!",
-        "diamantes"
+        "╭━━━〔 💎 *Minería de Diamantes* 〕━━━⬣",
+        "┃ 💎 Encontraste",
+        "┃ 💰 Total acumulado:",
+        "┃ 🔋 Cooldown: 2 minutos",
+        "┃ ⚠️ Demasiada actividad atrae al Cazador.",
+        "diamantes",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ],
-      "texto3": "Error: Hubo un problema al minar diamantes. Intenta nuevamente."
+      "texto3": "❌ Error al minar diamantes. Intenta nuevamente."
     },
     "rpg_leaderboard": {
       "texto1": "No hay aventureros registrados aún.",
@@ -938,6 +943,13 @@
       "texto3": "❌ No pude procesar el sticker.",
       "texto4": "❌ No pude descargar el sticker. Intenta de nuevo.",
       "texto5": "❌ Error al enviar el sticker. Intenta de nuevo."
+    },
+    "sticker_qc": {
+      "texto1": "❌ Debes enviar un texto o respuesta para generar el sticker.",
+      "texto2": "❌ Texto inválido. Intenta de nuevo.",
+      "texto3": "❌ El texto es demasiado largo. Usa menos de 100 caracteres.",
+      "texto4": "❌ No se pudo generar el sticker. Intenta de nuevo.",
+      "texto5": "❌ Tiempo de espera agotado al crear el sticker. Intenta nuevamente más tarde."
     },
     "sticker_sticker": {
       "texto1": "❌ Responde a una imagen/video o usa:",

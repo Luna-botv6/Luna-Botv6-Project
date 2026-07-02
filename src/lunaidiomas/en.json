@@ -361,15 +361,18 @@
     },
     "rpg_minar": {
       "texto1": [
-        "⏳ You must wait",
-        "to mine again"
+        "╭━━━〔 ⛏️ *Mining* 〕━━━⬣",
+        "┃ 😤 You are still exhausted...",
+        "┃ ⏳ You can mine again in:",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ],
       "texto2": [
-        "╭━〔 *Successful mining* 〕━⬣",
-        "┃⛏️ You mined with your virtual pickaxe...",
-        "┃✨ You earned",
-        "┃⌛ You can mine again in *10 minutes*",
-        "╰━━━━━━━━━━━━━━━━━━⬣"
+        "╭━━━〔 ⛏️ *Mining* 〕━━━⬣",
+        "┃ 🪨 You strike the rock with force...",
+        "┃ ✨ EXP earned:",
+        "┃ 🔋 Cooldown: 2 minutes",
+        "┃ ⚠️ Too much activity attracts the Hunter.",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ]
     },
     "stats": {
@@ -532,19 +535,21 @@
     },
     "rpg_minardiamantes": {
       "texto1": [
-        "You are still tired!",
-        "You can mine diamonds again in",
-        "Rest a bit and come back soon"
+        "╭━━━〔 💎 *Diamond Mining* 〕━━━⬣",
+        "┃ 😤 You are still exhausted...",
+        "┃ ⏳ You can mine again in:",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ],
       "texto2": [
-        "SUCCESSFUL MINING",
-        "You found",
-        "Total accumulated:",
-        "You can mine again in 10 minutes",
-        "Keep mining to get more diamonds!",
-        "diamonds"
+        "╭━━━〔 💎 *Diamond Mining* 〕━━━⬣",
+        "┃ 💎 You found",
+        "┃ 💰 Total accumulated:",
+        "┃ 🔋 Cooldown: 2 minutes",
+        "┃ ⚠️ Too much activity attracts the Hunter.",
+        "diamonds",
+        "╰━━━━━━━━━━━━━━━━━━━━⬣"
       ],
-      "texto3": "Error: There was a problem mining diamonds. Try again."
+      "texto3": "❌ Error mining diamonds. Try again."
     },
     "rpg_juegolimit": {
       "texto1": [
@@ -937,6 +942,13 @@
       "texto3": "❌ Could not process the sticker.",
       "texto4": "❌ Could not download the sticker. Try again.",
       "texto5": "❌ Error sending the sticker. Try again."
+    },
+    "sticker_qc": {
+      "texto1": "❌ You must send or reply with text to generate the sticker.",
+      "texto2": "❌ Invalid text. Try again.",
+      "texto3": "❌ Text is too long. Use less than 100 characters.",
+      "texto4": "❌ Could not generate the sticker. Try again.",
+      "texto5": "❌ Timeout while creating the sticker. Try again later."
     },
     "sticker_sticker": {
       "texto1": "❌ Reply to an image/video or use:",
