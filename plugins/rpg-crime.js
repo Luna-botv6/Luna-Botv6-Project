@@ -1,11 +1,25 @@
 import fs from 'fs';
-import { getUserStats, addExp, removeExp, addMoney, removeMoney, setUserStats } from '../lib/stats.js';
+import { getUserStats, addExp, removeExp, addMoney, removeMoney, setUserStats, increaseBounty, capturePlayer, getPlayerState, isCapturedByHunter } from '../lib/stats.js';
+import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js';
+import { checkMerchantTrigger, checkJudgeTrigger, checkGambler, checkUndeadTrigger, checkVagrantTrigger } from '../lib/npcSystem.js';
 
 const handler = async (m, { conn, usedPrefix, command }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
   const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.rpg_crime;
 
   const now = Date.now();
+
+  const _capture = checkHunterCapture(m.sender)
+  if (_capture) return m.reply(_capture.message)
+
+  const _u = getPlayerState(m.sender)
+  if (_u.isCaptured) {
+    const _reason = isCapturedByHunter(m.sender)
+      ? '⛓️ Estás capturado por el Cazador. Solo un rescate puede liberarte.\n📣 Usa: *rescate pedir*'
+      : '⛓️ Estás capturado. Paga tu multa o pide rescate.\n📣 Usa: *rescate pedir*'
+    return m.reply(_reason)
+  }
+
   const user = getUserStats(m.sender);
   const lastCrime = user.lastCrime || 0;
   const cooldown = 3600000; // 1 hora
@@ -30,9 +44,15 @@ const handler = async (m, { conn, usedPrefix, command }) => {
 
     removeExp(m.sender, expLost);
     removeMoney(m.sender, moneyLost);
+    // aumentar bounty y capturar al jugador
+    const fine = Math.max(100, Math.floor(moneyLost * 2))
+    increaseBounty(m.sender, 1, fine, 'Arrestado por crimen')
+    capturePlayer(m.sender, 'Arrestado por crimen')
     setUserStats(m.sender, { lastCrime: now });
 
-    return m.reply(`🚔 ${pickRandom(msgRobFail)}\n\n❌ ${tradutor.texto2}\n⭐ *${expLost}* EXP\n💎 *${moneyLost}* ${tradutor.texto6}`);
+    const updated = getUserStats(m.sender)
+    const _judgeMsg = checkJudgeTrigger(m.sender)?.message || ''
+    return m.reply(`🚔 ${pickRandom(msgRobFail)}\n\n❌ ${tradutor.texto2}\n⭐ *${expLost}* EXP\n💎 *${moneyLost}* ${tradutor.texto6}\n\n🚨 *Bounty:* ${'⭐'.repeat(updated.bountyStars || 0)} • *Multa:* ${updated.bountyFine} diamantes\n🔗 Estás ahora: ⛓️ Capturado${_judgeMsg}`);
   }
 
   // ÉXITO: Gana EXP y Diamantes
@@ -43,7 +63,20 @@ const handler = async (m, { conn, usedPrefix, command }) => {
   addMoney(m.sender, moneyGain);
   setUserStats(m.sender, { lastCrime: now });
 
-  return m.reply(`💰 ${pickRandom(msgRobSuccess)}\n\n✅ ${tradutor.texto3}\n⭐ *${expGain}* EXP\n💎 *${moneyGain}* ${tradutor.texto6}`);
+  // posibilidad baja de generar sospecha: aumentar bounty leve
+  if (Math.random() < 0.05) {
+    const extraFine = Math.floor(moneyGain * 0.5)
+    increaseBounty(m.sender, 1, extraFine, 'Crimen detectado')
+  }
+
+  const _hunt     = checkHunterTrigger(m.sender, expGain, moneyGain)
+  const _merchant = checkMerchantTrigger(m.sender)
+  const _judge    = checkJudgeTrigger(m.sender)
+  const _gambler  = checkGambler(m.sender)
+  const _extras   = [
+    _hunt?.message, _merchant?.message, _judge?.message, _gambler?.message
+  ].filter(Boolean).join('')
+  return m.reply(`💰 ${pickRandom(msgRobSuccess)}\n\n✅ ${tradutor.texto3}\n⭐ *${expGain}* EXP\n💎 *${moneyGain}* ${tradutor.texto6}${_extras}`);
 };
 
 handler.help = ['crime'];

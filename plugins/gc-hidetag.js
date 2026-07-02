@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { getGroupDataForPlugin, isAdminNoTTL, hasAdminCacheForGroup } from '../lib/funcion/pluginHelper.js';
 import { getLidMapping } from '../lib/stats.js';
+import { registerDynamicMessage } from '../lib/funcion/dynamicMessageTracker.js';
 
 const cooldowns = new Map();
 const _langCache = new Map();
@@ -132,21 +133,23 @@ const handler = async (m, { conn, text, isOwner }) => {
     const msgOptions = { mentionAll: true };
     if (extraMentions.length) msgOptions.mentions = [...new Set(extraMentions)];
 
+    let sentMsg;
     if (isMedia && quoted.mtype === 'imageMessage') {
       const media = await quoted.download();
-      await conn.sendMessage(chatId, { image: media, caption: finalText, ...msgOptions }, { quoted: m });
+      sentMsg = await conn.sendMessage(chatId, { image: media, caption: finalText, ...msgOptions }, { quoted: m });
     } else if (isMedia && quoted.mtype === 'videoMessage') {
       const media = await quoted.download();
-      await conn.sendMessage(chatId, { video: media, caption: finalText, ...msgOptions }, { quoted: m });
+      sentMsg = await conn.sendMessage(chatId, { video: media, caption: finalText, ...msgOptions }, { quoted: m });
     } else if (isMedia && quoted.mtype === 'audioMessage') {
       const media = await quoted.download();
-      await conn.sendMessage(chatId, { audio: media, mimetype: 'audio/mpeg', ...msgOptions }, { quoted: m });
+      sentMsg = await conn.sendMessage(chatId, { audio: media, mimetype: 'audio/mpeg', ...msgOptions }, { quoted: m });
     } else if (isMedia && quoted.mtype === 'stickerMessage') {
       const media = await quoted.download();
-      await conn.sendMessage(chatId, { sticker: media, ...msgOptions }, { quoted: m });
+      sentMsg = await conn.sendMessage(chatId, { sticker: media, ...msgOptions }, { quoted: m });
     } else {
-      await conn.sendMessage(chatId, { text: finalText, ...msgOptions }, { quoted: m });
+      sentMsg = await conn.sendMessage(chatId, { text: finalText, ...msgOptions }, { quoted: m });
     }
+    registerDynamicMessage(sentMsg?.key?.id);
 
   } catch (e) {
     await m.reply(t.error);

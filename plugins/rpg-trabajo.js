@@ -1,5 +1,7 @@
 import fs from 'fs';
-import { getUserStats, addExp, addMoney, setUserStats } from '../lib/stats.js';
+import { getUserStats, addExp, addMoney, setUserStats, getPlayerState, isCapturedByHunter } from '../lib/stats.js';
+import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js';
+import { checkMerchantTrigger, checkGambler, checkUndeadTrigger, checkVagrantTrigger } from '../lib/npcSystem.js';
 
 const handler = async (m, { conn }) => {
   if (handler.enviando) return;
@@ -16,6 +18,19 @@ const handler = async (m, { conn }) => {
   const tradutor = _t.plugins.rpg_work;
 
   const userId = m.sender;
+
+  const _capture = checkHunterCapture(userId)
+  if (_capture) return m.reply(_capture.message)
+
+  const _u = getPlayerState(userId)
+  if (_u.isCaptured) {
+    handler.enviando = false
+    const _reason = isCapturedByHunter(userId)
+      ? '⛓️ Estás capturado por el Cazador. Solo un rescate puede liberarte.\n📣 Usa: *rescate pedir*'
+      : '⛓️ Estás capturado. Paga tu multa o pide rescate.\n📣 Usa: *rescate pedir*'
+    return m.reply(_reason)
+  }
+
   const now = Date.now();
   const cooldown = 10 * 60 * 1000;
 
@@ -51,7 +66,24 @@ const handler = async (m, { conn }) => {
 ${pickRandom(mensajesTrabajo)}
 `.trim();
 
+  const _hunt     = checkHunterTrigger(userId, expGanada, moneyGanado)
+  const _merchant = checkMerchantTrigger(userId)
+  const _gambler  = checkGambler(userId)
+  const _undead   = checkUndeadTrigger(userId)
+
   await conn.sendMessage(m.chat, { text: msg }, { quoted: m });
+
+  const _npcMsgs = [
+    _hunt?.message, _merchant?.message, _gambler?.message, _undead?.message, checkVagrantTrigger(userId)?.message
+  ].filter(Boolean)
+
+  if (_npcMsgs.length > 0) {
+    setTimeout(() => {
+      for (const npcMsg of _npcMsgs) {
+        conn.sendMessage(m.chat, { text: npcMsg.trim() }, { quoted: m })
+      }
+    }, 3000)
+  }
 
   handler.enviando = false;
 };

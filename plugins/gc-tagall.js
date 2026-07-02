@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { isAdminNoTTL, hasAdminCacheForGroup, getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { getTagallMode, setTagallMode, resetTagallMode } from '../lib/funcion/tagallStore.js';
+import { registerDynamicMessage } from '../lib/funcion/dynamicMessageTracker.js';
 
 const cooldowns = new Map();
 const _langCache = new Map();
@@ -94,21 +95,23 @@ const handler = async (m, { conn, args, isOwner, usedPrefix, command }) => {
         .replace('{tag}', `@${senderNum}`)
         .replace('{razon}', razon)
         .replace('{tags}', tagLines);
-      await conn.sendMessage(chatId, {
+      const sentMsg = await conn.sendMessage(chatId, {
         text: texto,
         mentions: [realSender, ...jids]
       });
+      registerDynamicMessage(sentMsg?.key?.id);
     } else {
       const texto = t.mensaje
         .replace(/\{bot\}/g, BOT())
         .replace('{group}', groupName)
         .replace('{tag}', `@${senderNum}`)
         .replace('{razon}', razon);
-      await conn.sendMessage(chatId, {
+      const sentMsg = await conn.sendMessage(chatId, {
         text: texto,
         mentionAll: true,
         mentions: [realSender]
       });
+      registerDynamicMessage(sentMsg?.key?.id);
     }
 
   } catch {

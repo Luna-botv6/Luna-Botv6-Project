@@ -1,12 +1,23 @@
 import conversationPlugin from '../plugins/lunaia/conversation-plugin.js';
 import configPlugin from '../plugins/lunaia/config-plugin.js';
+import { getConfig, setConfig } from '../lib/funcConfig.js';
+import { isDynamicMessage } from '../lib/funcion/dynamicMessageTracker.js';
 
 const _cooldown = new Map();
 const COOLDOWN_MS = 1500;
 
 export const pendingSessions = new Map();
+const SESSION_TTL_MS = 120000;
 
 const handler = {};
+
+const NEGATIVE_TRIGGERS = /\b(no|para|basta|calla(te)?|cállate|callate|shh+|sht+|ya\s*(basta)?|dejalo|dejala|apaga(lo)?|saca(lo)?|quita(lo)?|silencio|molesta(n)?|odio|fastidia|no\s+mas|nuevamente\s+no)\b/i;
+const POSITIVE_REPLY = /\b(si|sí|dale|obvio|claro|ok|okay|porfa|porfavor|quiero|hacelo|desactiva(lo)?|sacalo)\b/i;
+const NEGATIVE_REPLY = /\b(no|nel|nah|dejalo|dejala|olvidalo|cancela(r)?|mejor no)\b/i;
+const LAUGH_OR_SHORT = /\b(jaja|jeje|jiji|lol|xd|jajaja)\b/i;
+
+const AUDIO_DISABLE_PHRASE = /\b(no\s+(mandes|envies|env[ií]es|manden)\s+(mas\s+)?audios?|para(r)?\s+(con\s+)?(los\s+)?audios?|desactiva(r)?\s+(los\s+)?audios?|sin\s+audios?|deja(r)?\s+de\s+mandar\s+audios?|no\s+quiero\s+(mas\s+)?audios?)\b/i;
+const AUDIO_ENABLE_PHRASE  = /\b(activa(r)?\s+(los\s+)?audios?|volve(r)?\s+(a\s+)?(mandar|enviar)\s+audios?|quiero\s+(los\s+)?audios?\s+de\s+nuevo|prende(r)?\s+(los\s+)?audios?)\b/i;
 
 function isBotLid(participant, botNum, participants) {
   if (!participant) return false;
@@ -22,6 +33,74 @@ function isBotLid(participant, botNum, participants) {
       return matchedNum === botNum;
     }
   }
+  return false;
+}
+
+function getQuotedAudio(m) {
+  return m.message?.extendedTextMessage?.contextInfo?.quotedMessage?.audioMessage || null;
+}
+
+function cleanExpiredSessions() {
+  const now = Date.now();
+  for (const [jid, session] of pendingSessions.entries()) {
+    if (session.expires && now > session.expires) pendingSessions.delete(jid);
+  }
+}
+
+async function askDisableAudios(conn, jid, m) {
+  try {
+    await conn.sendMessage(jid, {
+      text: '🎧 Veo que no te gustaron mucho los audios random jaja, ¿querés que los desactive en este grupo? Respondé *sí* o *no* 💜'
+    }, { quoted: m });
+    pendingSessions.set(jid, { type: 'disable_audios_confirm', expires: Date.now() + SESSION_TTL_MS });
+  } catch {}
+}
+
+async function toggleAudiosDirect(conn, jid, m, enable) {
+  try {
+    const current = getConfig(jid) || {};
+    setConfig(jid, { ...current, audios: enable });
+    pendingSessions.delete(jid);
+    const msg = enable
+      ? '✅ Listo, volví a activar los audios random en este grupo 🎧🔊'
+      : '✅ Listo, desactivé los audios random en este grupo 🎧🔇';
+    await conn.sendMessage(jid, { text: msg }, { quoted: m });
+  } catch {
+    await conn.sendMessage(jid, { text: '😅 Hubo un problema cambiando la config de audios, probá de nuevo más tarde.' }, { quoted: m });
+  }
+}
+
+async function resolvePendingSession(m, { conn, jid }) {
+  const session = pendingSessions.get(jid);
+  if (!session) return false;
+
+  if (Date.now() > session.expires) {
+    pendingSessions.delete(jid);
+    return false;
+  }
+
+  if (session.type === 'disable_audios_confirm') {
+    const text = (m.text || '').trim();
+    if (POSITIVE_REPLY.test(text)) {
+      pendingSessions.delete(jid);
+      try {
+        const current = getConfig(jid) || {};
+        setConfig(jid, { ...current, audios: false });
+        await conn.sendMessage(jid, { text: '✅ Listo, desactivé los audios random en este grupo 🎧🔇' }, { quoted: m });
+      } catch {
+        await conn.sendMessage(jid, { text: '😅 Hubo un problema desactivando los audios, probá de nuevo más tarde.' }, { quoted: m });
+      }
+      return true;
+    }
+    if (NEGATIVE_REPLY.test(text)) {
+      pendingSessions.delete(jid);
+      await conn.sendMessage(jid, { text: 'Dale, los dejo activados entonces 😄' }, { quoted: m });
+      return true;
+    }
+    pendingSessions.delete(jid);
+    return false;
+  }
+
   return false;
 }
 
@@ -41,7 +120,8 @@ handler.before = async function (m, { conn }) {
 
     if (!isBotLid(participant, botNum, participants)) return;
 
-    if (pendingSessions.has(jid)) return;
+    const stanzaId = m.message?.extendedTextMessage?.contextInfo?.stanzaId;
+    if (isDynamicMessage(stanzaId)) return;
 
     const settings = global.db?.data?.settings?.[conn.user?.jid];
     if (settings?.iaLunaActive === false) return;
@@ -61,6 +141,13 @@ handler.before = async function (m, { conn }) {
     const userDB = global.db?.data?.users?.[sender];
     if (userDB?.banned) return;
 
+    cleanExpiredSessions();
+
+    if (pendingSessions.has(jid)) {
+      const resolved = await resolvePendingSession(m, { conn, jid });
+      if (resolved) return;
+    }
+
     const cooldownKey = jid + '_' + sender;
     const now = Date.now();
     if (_cooldown.has(cooldownKey) && now - _cooldown.get(cooldownKey) < COOLDOWN_MS) return;
@@ -69,6 +156,26 @@ handler.before = async function (m, { conn }) {
     if (_cooldown.size > 500) {
       for (const [k, v] of _cooldown.entries()) {
         if (now - v > COOLDOWN_MS * 10) _cooldown.delete(k);
+      }
+    }
+
+    const text = typeof m.text === 'string' ? m.text.trim() : '';
+    if (!text) return;
+
+    if (AUDIO_DISABLE_PHRASE.test(text)) {
+      await toggleAudiosDirect(conn, jid, m, false);
+      return;
+    }
+    if (AUDIO_ENABLE_PHRASE.test(text)) {
+      await toggleAudiosDirect(conn, jid, m, true);
+      return;
+    }
+
+    const quotedAudio = getQuotedAudio(m);
+    if (quotedAudio) {
+      if (NEGATIVE_TRIGGERS.test(text) || LAUGH_OR_SHORT.test(text)) {
+        await askDisableAudios(conn, jid, m);
+        return;
       }
     }
 
@@ -81,16 +188,18 @@ handler.before = async function (m, { conn }) {
       botNumber: botNum || null
     };
 
-    if (configPlugin.canHandle?.(m.text)) {
-      await configPlugin.handle(m.text, extra);
+    if (configPlugin.canHandle?.(text)) {
+      try {
+        await configPlugin.handle(text, extra);
+      } catch {}
       return;
     }
 
-    await conversationPlugin.handle(m.text, extra);
+    try {
+      await conversationPlugin.handle(text, extra);
+    } catch {}
 
-  } catch (e) {
-    console.log('[REPLY-TRIGGER] error:', e.message);
-  }
+  } catch {}
 };
 
 export default handler;

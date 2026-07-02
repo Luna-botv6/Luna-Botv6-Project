@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getUserStats, getArmorStats, hasArmor } from '../lib/stats.js';
 
 const dir = './database';
 const file = path.join(dir, 'proteccion.json');
@@ -61,11 +62,16 @@ let handler = async (m, { conn }) => {
       const mention = '@' + userId.split('@')[0];
       mentions.push(userId);
 
+      const _stats = getUserStats(userId)
+      const _armor = getArmorStats(userId)
+      const _tieneArmadura = hasArmor(userId)
+      const _bountyStars = _stats?.bountyStars || 0
+
       mensaje += `*${index + 1}.* 👤 *${t.usuario || 'Usuario'}:* ${mention}\n`;
-      mensaje += `📅 *${t.activada || 'Activada'}:* ${fechaActivacion.toLocaleString()}\n`;
-      mensaje += `⏰ *${t.restante || 'Tiempo restante'}:* ${tiempoRestante}\n`;
-      mensaje += `🕐 *${t.duracion || 'Duración total'}:* ${proteccion.duracion}h\n`;
-      mensaje += `🆔 *ID:* ${userId.split('@')[0]}\n`;
+      mensaje += `⏰ *${t.restante || 'Tiempo restante'}:* ${tiempoRestante} • 🕐 ${proteccion.duracion}h\n`;
+      mensaje += `❤️ HP: *${_stats?.hp || 0}/${_stats?.maxHp || 100}*\n`;
+      mensaje += `🛡️ Armadura: *${_tieneArmadura ? `${_armor.type} (${_armor.durability}/${_armor.maxDurability})` : 'Sin armadura'}*\n`;
+      mensaje += `🚨 Bounty: *${_bountyStars ? '⭐'.repeat(_bountyStars) : '—'}*\n`;
       mensaje += '─────────────────\n';
     });
 

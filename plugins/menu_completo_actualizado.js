@@ -1,5 +1,6 @@
 import { writeFile, mkdir, unlink, access } from 'fs/promises';
-import { getUserStats, getRoleByLevel } from '../lib/stats.js';
+import { getUserStats, getRoleByLevel, getArmorStats, hasArmor, isCapturedByHunter } from '../lib/stats.js';
+import { getHunterStatus } from '../lib/hunterSystem.js';
 
 
 const MENU_DIR = './database/WELCOME';
@@ -108,7 +109,12 @@ const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
 
     const stats = getUserStats(m.sender);
     const currentRole = getRoleByLevel(stats.level);
-    const { money, joincount, exp, level, premiumTime, limit } = stats;
+    const { money, joincount, exp, level, premiumTime, limit, hp, maxHp, mysticcoins, lunaCoins, bountyStars, bountyFine, isCaptured } = stats;
+    const armor = getArmorStats(m.sender)
+    const _tieneArmadura = hasArmor(m.sender)
+    const hunterStatus = getHunterStatus(m.sender)
+    const inv = stats.inventory || {}
+    const buffs = (stats.activeBuffs || []).filter(b => b.expiresAt > Date.now())
 
     const more = String.fromCharCode(8206);
     const readMore = more.repeat(850);
@@ -121,14 +127,23 @@ const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
 ╭━━━『 👤 ${t.perfil_titulo} 』━━━╮
 ┃ 👋 ${t.hola} ${taguser}
 ┃
-┃ 📊 ${t.nivel}: ${level}
+┃ 📊 ${t.nivel}: ${level} • 🎯 ${currentRole}
 ┃ ⭐ ${t.exp}: ${exp}
-┃ 🎯 ${t.rango}: ${currentRole}
-┃ 💰 ${t.dinero}: ${money}
-┃ 🎫 ${t.limite}: ${limit}
-┃ 📝 ${t.registro}: ${joincount}
+┃ 💰 ${t.dinero}: ${money} • 🌙 ${lunaCoins} • 🔮 ${mysticcoins}
+┃ 🎫 ${t.limite}: ${limit} • 📝 ${joincount}
 ┃ 💎 ${t.premium}: ${premiumTime > 0 || isPrems ? '✅' : '❌'}
-╰━━━━━━━━━━━━━━━━━━╯
+┃
+┃ ❤️ Vida: ${hp || 0}/${maxHp || 100}
+┃ 🛡️ Armadura: ${_tieneArmadura ? `${armor.type} (${armor.durability}/${armor.maxDurability})` : 'Sin armadura'}
+┃ 🚨 Bounty: ${bountyStars ? '⭐'.repeat(bountyStars) + ` (${bountyFine}💎)` : '—'}
+┃ ⛓️ Estado: ${isCaptured ? (isCapturedByHunter(m.sender) ? '🎯 Capturado por Cazador' : '⛓️ Capturado') : '✅ Libre'}
+┃ 🎯 Cazador: ${hunterStatus.threat > 0 ? `${hunterStatus.threat}% amenaza` : '—'}
+┃
+┃ 🎒 Inventario:
+┃   🧿 Tótem: ${inv.totem || 0} • 🧪 Poc.Menor: ${inv.pocion_menor || 0}
+┃   ⚗️ Poc.Media: ${inv.pocion_media || 0} • 🍶 Poc.Mayor: ${inv.pocion_mayor || 0}
+┃   🍖 Carne: ${inv.carne_asada || 0} • 🌿 Elixir: ${inv.elixir_bosque || 0} • 🍱 Festín: ${inv.festin_real || 0}
+${buffs.length > 0 ? `┃ ✨ Buffs: ${buffs.map(b => b.type.replace('_', ' ')).join(', ')}` : ''}╰━━━━━━━━━━━━━━━━━━╯
 
 ╭━『 ${t.personalizar_titulo} 』━╮
 ┃ ${t.personalizar_desc}
@@ -354,40 +369,61 @@ ${readMore}
 ╰━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━『 🎮 ${t.rpg_titulo} 』━━━╮
-┃ 🗺️ ${usedPrefix}adventure
-┃ 🏹 ${usedPrefix}cazar
-┃ 🧰 ${usedPrefix}cofre
-┃ 🥸 ${usedPrefix}robard
-┃ 💰 ${usedPrefix}balance
-┃ 🎁 ${usedPrefix}claim
-┃ ❤️ ${usedPrefix}heal
-┃ 🏆 ${usedPrefix}lb
-┃ ⬆️ ${usedPrefix}levelup
-┃ 🧙 ${usedPrefix}mysticmine
-┃ 👤 ${usedPrefix}perfil
-┃ 💼 ${usedPrefix}work
-┃ ⛏️ ${usedPrefix}minar
-┃ 💎 ${usedPrefix}minard
-┃ 🌙 ${usedPrefix}minarluna
-┃ 💰 ${usedPrefix}juegolimit
-┃ 🏎️ ${usedPrefix}carreraautos
-┃ 🛒 ${usedPrefix}buy
-┃ 💣 ${usedPrefix}buscaminas
-┃ ✨ ${usedPrefix}verexp <@tag>
-┃ 🛍️ ${usedPrefix}buyall
-┃ ✅ ${usedPrefix}verificar
-┃ 🕵️ ${usedPrefix}robar <${t.cantidad}> <@tag>
-┃ 🚓 ${usedPrefix}crime
-┃ 🛒 ${usedPrefix}cambiar
-┃ 💸 ${usedPrefix}transfer <${t.tipo}> <${t.cantidad}> <@tag>
-┃ ❌ ${usedPrefix}unreg <sn>
-┃ 🛡️ ${usedPrefix}verprotes
-┃ 🎲 ${usedPrefix}rw
-┃ 💖 ${usedPrefix}claimw
-┃ 💞 ${usedPrefix}harem
-┃ 🏆 ${usedPrefix}rewardwaifu
-┃ 🗳️ ${usedPrefix}vote <nombreWaifu> <${t.valor}>
-┃ ⚡ ${usedPrefix}updatewaifus
+┃ ── Economía ──
+┃ 💼 ${usedPrefix}work · 🏹 ${usedPrefix}cazar
+┃ ⛏️ ${usedPrefix}minar · 💎 ${usedPrefix}minard
+┃ 🚓 ${usedPrefix}crime · 🕵️ ${usedPrefix}robar <@tag>
+┃ 🥸 ${usedPrefix}robard <@tag>
+┃ 💸 ${usedPrefix}transfer <tipo> <cant> <@tag>
+┃
+┃ ── Perfil & Stats ──
+┃ 👤 ${usedPrefix}perfil · ✨ ${usedPrefix}verexp <@tag>
+┃ 🚨 ${usedPrefix}bounty · 💰 ${usedPrefix}multa pagar
+┃
+┃ ── Armadura ──
+┃ 🛡️ ${usedPrefix}armadura tienda
+┃ 🛡️ ${usedPrefix}armadura comprar <tipo>
+┃ 🔧 ${usedPrefix}armadura reparar
+┃
+┃ ── Items & Consumibles ──
+┃ 🛒 ${usedPrefix}comprar tienda
+┃ 🛒 ${usedPrefix}comprar <item>
+┃ 💊 ${usedPrefix}usar <item>
+┃ 🎒 ${usedPrefix}comprar inventario
+┃
+┃ ── Cazador ──
+┃ 🎯 ${usedPrefix}cazador ver
+┃ 🏃 ${usedPrefix}cazador correr
+┃ ⚔️ ${usedPrefix}cazador pelear
+┃
+┃ ── Rescate & Captura ──
+┃ 📣 ${usedPrefix}rescate pedir
+┃ 🆘 ${usedPrefix}rescate rescatar <@tag>
+┃ 👁️ ${usedPrefix}rescate ver <@tag>
+┃
+┃ ── NPCs ──
+┃ 🧙 ${usedPrefix}mercader ver
+┃ 🧙 ${usedPrefix}mercader comprar <1|2|3>
+┃ ⚖️ ${usedPrefix}juez ver
+┃ ⚖️ ${usedPrefix}juez pagar · mision · huir
+┃ 🎰 ${usedPrefix}apostar <cantidad>
+┃ 🎰 ${usedPrefix}apostar exp <cantidad>
+┃ 🧟 ${usedPrefix}muerto aceptar · rechazar
+┃ 🕵️ ${usedPrefix}espia <@tag>
+┃ 🧓 ${usedPrefix}vagabundo dar · ignorar
+┃
+┃ ── Protecciones ──
+┃ 🛡️ ${usedPrefix}usarprote · ${usedPrefix}verprotes
+┃ 🛒 ${usedPrefix}comprarprote <horas>
+┃
+┃ ── Otros ──
+┃ 🗺️ ${usedPrefix}adventure · 🧰 ${usedPrefix}cofre
+┃ 💰 ${usedPrefix}balance · 🎁 ${usedPrefix}claim
+┃ 🏆 ${usedPrefix}lb · ⬆️ ${usedPrefix}levelup
+┃ 🧙 ${usedPrefix}mysticmine · 🌙 ${usedPrefix}minarluna
+┃ 💣 ${usedPrefix}buscaminas · 🏎️ ${usedPrefix}carreraautos
+┃ 🎲 ${usedPrefix}rw · 💖 ${usedPrefix}claimw
+┃ 💞 ${usedPrefix}harem · 🏆 ${usedPrefix}rewardwaifu
 ╰━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━『 🎨 ${t.stickers_titulo} 』━━━╮

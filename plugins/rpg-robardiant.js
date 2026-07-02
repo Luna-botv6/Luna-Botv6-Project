@@ -1,128 +1,113 @@
-import fs from 'fs';
-import path from 'path';
-import { addMoney, removeMoney, getMoney } from '../lib/stats.js';
-import { tieneProteccion } from '../lib/usarprote.js';  // <-- importamos
+import fs from 'fs'
+import path from 'path'
+import { addMoney, removeMoney, getMoney, getArmorStats, hasArmor, damageArmor, getPlayerState, isCapturedByHunter } from '../lib/stats.js'
+import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js'
+import { tieneProteccion } from '../lib/usarprote.js'
+import { resolveMention } from '../lib/mentionHelper.js'
 
-const cooldownPath = './database/robCooldownMoney.json';
-const cooldownTime = 2 * 60 * 60 * 1000; // 2 horas
-const maxRob = 3000;
+const cooldownPath = './database/robCooldownMoney.json'
+const cooldownTime = 0
+const maxRob = 3000
 
 function ensureCooldownDB() {
-  if (!fs.existsSync('./database')) fs.mkdirSync('./database');
-  if (!fs.existsSync(cooldownPath)) fs.writeFileSync(cooldownPath, '{}');
+  if (!fs.existsSync('./database')) fs.mkdirSync('./database')
+  if (!fs.existsSync(cooldownPath)) fs.writeFileSync(cooldownPath, '{}')
 }
 
 function getCooldowns() {
-  ensureCooldownDB();
-  return JSON.parse(fs.readFileSync(cooldownPath));
+  ensureCooldownDB()
+  return JSON.parse(fs.readFileSync(cooldownPath))
 }
 
 function setCooldowns(data) {
-  fs.writeFileSync(cooldownPath, JSON.stringify(data, null, 2));
+  fs.writeFileSync(cooldownPath, JSON.stringify(data, null, 2))
 }
 
 function msToTime(duration) {
-  const seconds = Math.floor((duration / 1000) % 60);
-  const minutes = Math.floor((duration / (1000 * 60)) % 60);
-  const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-  return `${hours} Hora(s) ${minutes} Minuto(s)`;
+  const seconds = Math.floor((duration / 1000) % 60)
+  const minutes = Math.floor((duration / (1000 * 60)) % 60)
+  const hours = Math.floor((duration / (1000 * 60 * 60)) % 24)
+  return `${hours} Hora(s) ${minutes} Minuto(s)`
 }
 
-const handler = async (m, { conn, command }) => {
-  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
-  let _t = {};
+const handler = async (m, { conn, command, args }) => {
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es'
+  let _t = {}
   try {
-    const _lang = idioma || global.defaultLenguaje || 'es';
-    _t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${_lang}.json`, 'utf8'));
+    const _lang = idioma || global.defaultLenguaje || 'es'
+    _t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${_lang}.json`, 'utf8'))
   } catch {
-    try { _t = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')); } catch {}
+    try { _t = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')) } catch {}
   }
-  const tradutor = _t.plugins.rpg_robardiamantes;
+  const tradutor = _t.plugins.rpg_robardiamantes
 
-  const userId = m.sender;
-  const cooldowns = getCooldowns();
-  const lastTime = cooldowns[userId] || 0;
-  const now = Date.now();
+  const userId = m.sender
+
+  const _capture = checkHunterCapture(userId)
+  if (_capture) return m.reply(_capture.message)
+
+  const _u = getPlayerState(userId)
+  if (_u.isCaptured) {
+    const _reason = isCapturedByHunter(userId)
+      ? '⛓️ Estás capturado por el Cazador. Solo un rescate puede liberarte.\n📣 Usa: *rescate pedir*'
+      : '⛓️ Estás capturado. Paga tu multa o pide rescate.\n📣 Usa: *rescate pedir*'
+    return m.reply(_reason)
+  }
+
+  const cooldowns = getCooldowns()
+  const lastTime = cooldowns[userId] || 0
+  const now = Date.now()
 
   if (now < lastTime + cooldownTime) {
-    const timeLeft = msToTime(lastTime + cooldownTime - now);
-    return m.reply(`⏳ ${tradutor.texto1} ${timeLeft} ${tradutor.texto2}`);
+    const timeLeft = msToTime(lastTime + cooldownTime - now)
+    return m.reply(`⏳ ${tradutor.texto1} ${timeLeft} ${tradutor.texto2}`)
   }
 
-  let who;
-  if (m.isGroup) who = m.mentionedJid?.[0] || m.quoted?.sender || false;
-  else who = m.chat;
+  const who = m.isGroup ? resolveMention(m, args) : m.chat
+  if (!who) return m.reply(`💎 ${tradutor.texto3}`)
 
-  if (!who) return m.reply(`💎 ${tradutor.texto3}`);
-
-  // Verificar protección activa (arreglado)
-  const proteccion = tieneProteccion(who);
+  const proteccion = tieneProteccion(who)
   if (proteccion.activa) {
-    return m.reply(`🛡️ @${who.split`@`[0]} ${tradutor.texto4}`, null, { mentions: [who] });
+    return m.reply(`🛡️ @${who.split('@')[0]} ${tradutor.texto4}`, null, { mentions: [who] })
   }
 
-  const targetDiamonds = getMoney(who);
-  const toRob = Math.floor(Math.random() * maxRob);
+  const targetDiamonds = getMoney(who)
+  let toRob = Math.floor(Math.random() * maxRob)
+
+  const armor = getArmorStats(who)
+  if (hasArmor(who) && armor && (armor.durability || 0) > 0) {
+    const reduction = Math.floor(toRob * ((armor.defense || 0) / 100))
+    toRob = Math.max(0, toRob - reduction)
+    const dmg = Math.floor(1 + Math.random() * 3)
+    const remaining = damageArmor(who, dmg)
+    if (remaining === 0) {
+      m.reply(`🪓 La armadura de @${who.split('@')[0]} se ha roto durante el intento.`, null, { mentions: [who] })
+    }
+  }
 
   if (targetDiamonds < toRob) {
-    if (targetDiamonds === 0) return m.reply(`❌ ${tradutor.texto5}`);
-    await addMoney(userId, targetDiamonds);
-    await removeMoney(who, targetDiamonds);
-    cooldowns[userId] = now;
-    setCooldowns(cooldowns);
-
-    m.reply(`💸 ${tradutor.texto6} ${targetDiamonds} ${tradutor.texto7}`);
-
-    // Verificar y mostrar mensaje AFK después del robo (evitar duplicados)
-    if (m.afkUsers && m.afkUsers.length > 0) {
-      const tradutorAFK = _translate.plugins.afk__afk;
-      const processedAfkUsers = new Set();
-
-      for (const afkUser of m.afkUsers) {
-        if (!processedAfkUsers.has(afkUser.jid)) {
-          processedAfkUsers.add(afkUser.jid);
-          const reason = afkUser.reason || '';
-          setTimeout(() => {
-            m.reply(`${tradutorAFK.texto1[0]}
-
-*—◉ ${tradutorAFK.texto1[1]}* *—◉ ${reason ? `${tradutorAFK.texto1[2]}` + reason : `${tradutorAFK.texto1[3]}`}*
-*—◉ ${tradutorAFK.texto1[4]} ${(new Date - afkUser.lastseen).toTimeString()}*`);
-          }, 1000);
-        }
-      }
-    }
-    return;
+    if (targetDiamonds === 0) return m.reply(`❌ ${tradutor.texto5}`)
+    await addMoney(userId, targetDiamonds)
+    await removeMoney(who, targetDiamonds)
+    cooldowns[userId] = now
+    setCooldowns(cooldowns)
+    const _huntP = checkHunterTrigger(userId, 0, targetDiamonds + 5000)
+    const _huntMsgP = _huntP ? _huntP.message : ''
+    return m.reply(`💸 ${tradutor.texto6} ${targetDiamonds} ${tradutor.texto7}${_huntMsgP}`)
   }
 
-  await addMoney(userId, toRob);
-  await removeMoney(who, toRob);
-  cooldowns[userId] = now;
-  setCooldowns(cooldowns);
+  await addMoney(userId, toRob)
+  await removeMoney(who, toRob)
+  cooldowns[userId] = now
+  setCooldowns(cooldowns)
 
-  m.reply(`💰 ${tradutor.texto8} ${toRob} ${tradutor.texto9} @${who.split`@`[0]}`, null, { mentions: [who] });
+  const _hunt = checkHunterTrigger(userId, 0, toRob + 5000)
+  const _huntMsg = _hunt ? _hunt.message : ''
+  m.reply(`💰 ${tradutor.texto8} ${toRob} ${tradutor.texto9} @${who.split('@')[0]}${_huntMsg}`, null, { mentions: [who] })
+}
 
-  // Verificar y mostrar mensaje AFK después del robo (evitar duplicados)
-  if (m.afkUsers && m.afkUsers.length > 0) {
-    const tradutorAFK = _translate.plugins.afk__afk;
-    const processedAfkUsers = new Set();
+handler.help = ['robardiamantes']
+handler.tags = ['econ']
+handler.command = ['robardiamantes', 'robard']
 
-    for (const afkUser of m.afkUsers) {
-      if (!processedAfkUsers.has(afkUser.jid)) {
-        processedAfkUsers.add(afkUser.jid);
-        const reason = afkUser.reason || '';
-        setTimeout(() => {
-          m.reply(`${tradutorAFK.texto1[0]}
-
-*—◉ ${tradutorAFK.texto1[1]}* *—◉ ${reason ? `${tradutorAFK.texto1[2]}` + reason : `${tradutorAFK.texto1[3]}`}*
-*—◉ ${tradutorAFK.texto1[4]} ${(new Date - afkUser.lastseen).toTimeString()}*`);
-        }, 1000);
-      }
-    }
-  }
-};
-
-handler.help = ['robardiamantes'];
-handler.tags = ['econ'];
-handler.command = ['robardiamantes', 'robard'];
-
-export default handler;
+export default handler

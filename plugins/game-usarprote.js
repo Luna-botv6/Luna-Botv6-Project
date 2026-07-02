@@ -1,11 +1,27 @@
-import { getUserStats, setUserStats } from '../lib/stats.js';
+import { getUserStats, setUserStats, getArmorStats, hasArmor } from '../lib/stats.js';
 import { activarProteccion, tieneProteccion } from '../lib/usarprote.js';
 
 const handler = async (m, { conn, args }) => {
   const userId = m.sender;
 
   if (tieneProteccion(userId).activa) {
-    return conn.sendMessage(m.chat, { text: '⚠️ Ya tienes la protección activa. Espera a que termine para volver a activarla.' }, { quoted: m });
+    const _stats = getUserStats(userId)
+    const _armor = getArmorStats(userId)
+    const _tieneArmadura = hasArmor(userId)
+    const _prote = tieneProteccion(userId)
+    const _restante = _prote.expira ? Math.max(0, _prote.expira - Date.now()) : 0
+    const _min = Math.ceil(_restante / 60000)
+    return conn.sendMessage(m.chat, {
+      text:
+        `⚠️ Ya tienes protección activa (${_min} min restantes).
+
+` +
+        `❤️ HP: *${_stats.hp || 0}/${_stats.maxHp || 100}*
+` +
+        `🛡️ Armadura: *${_tieneArmadura ? `${_armor.type} (${_armor.durability}/${_armor.maxDurability})` : 'Sin armadura'}*
+` +
+        `🚨 Bounty: *${_stats.bountyStars ? '⭐'.repeat(_stats.bountyStars) : '—'}*`
+    }, { quoted: m })
   }
 
   const userStats = getUserStats(userId);
