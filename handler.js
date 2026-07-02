@@ -35,7 +35,7 @@ const translationsCache = new Map();
 const customCommandsCache = new Map();
 const processedVoiceMessages = new Set();
 
-const CACHE_TTL = 2 * 60 * 1000;
+const CACHE_TTL = 5 * 60 * 1000;
 const DUPLICATE_TIMEOUT = 8000;
 const MAX_CACHE_SIZE = 200;
 const MAX_VOICE_CACHE = 200;
@@ -109,7 +109,7 @@ startCacheCleanupInterval(groupCache, recentMessages, recentParticipantEvents, t
 
 setInterval(() => {
   try {
-    limitCache(groupCache, 30);
+    limitCache(groupCache, 100);
     limitCache(recentMessages, 200);
     limitCache(recentParticipantEvents, 30);
     limitCache(translationsCache, 5);

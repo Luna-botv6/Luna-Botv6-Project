@@ -149,7 +149,6 @@ async function ejecutarLimpieza() {
   limpiezaActiva = true;
   try {
     await limpiarArchivosTMP();
-    checkMemoryAndClean();
   } catch {
   } finally {
     setTimeout(() => { limpiezaActiva = false; }, 5000);
@@ -159,21 +158,7 @@ async function ejecutarLimpieza() {
 setInterval(ejecutarLimpieza, 900000);
 setTimeout(ejecutarLimpieza, 3000);
 
-setInterval(() => {
-  try {
-    const heapStats = v8.getHeapStatistics();
-    const heapPercent = (heapStats.used_heap_size / heapStats.heap_size_limit) * 100;
-    const heapUsedMB = Math.floor(heapStats.used_heap_size / (1024 * 1024));
-    const heapLimitMB = Math.floor(heapStats.heap_size_limit / (1024 * 1024));
-
-    if (heapPercent > 90) {
-      console.log(chalk.red.bold(`🚨 CRÍTICO: Heap ${heapPercent.toFixed(1)}% (${heapUsedMB}/${heapLimitMB}MB)`));
-      forceGC();
-    } else if (heapPercent > 75) {
-      forceGC();
-    }
-  } catch {}
-}, 90000);
+setInterval(checkMemoryAndClean, 90000);
 
 if (!global._indexErrorHandlers) {
   global._indexErrorHandlers = true;

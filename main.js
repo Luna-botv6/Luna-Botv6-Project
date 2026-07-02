@@ -95,7 +95,7 @@ global.videoListXXX = [];
 const __dirname = global.__dirname(import.meta.url);
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());
 global.prefix = new RegExp('^[' + (opts['prefix'] || '*/i!#$%+£¢€¥^°=¶†×÷π√✓©®:;?&.\\-.@').replace(/[|\\{}()[\]^$+*?.\-\^]/g, '\\$&') + ']');
-global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile(`${opts._[0] ? opts._[0] + '_' : ''}database.json`));
+global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile('database.json'));
 
 global.loadDatabase = async function loadDatabase() {
   if (global.db.READ) {
@@ -621,6 +621,7 @@ async function connectionUpdate(update) {
     global._reconnectClosed = 0;
     global._reconnectLost = 0;
     global._reconnect405Count = 0;
+    global._reconnect403Count = 0;
     global._restartRequiredCount = 0;
     global._manualWsClose = false;
     global._loggedOutHandled = false;
@@ -740,6 +741,25 @@ async function connectionUpdate(update) {
     } else if (reason === DisconnectReason.connectionReplaced) {
       conn.logger.error(`[ ⚠ ] Conexión reemplazada, se ha abierto otra nueva sesión. Por favor, cierra la sesión actual primero.`);
       setTimeout(() => process.exit(0), 1000);
+
+    } else if (reason === DisconnectReason.forbidden) {
+      global._reconnect403Count = (global._reconnect403Count || 0) + 1;
+      console.log(chalk.red('┌─────────────────────────────────────────────┐'));
+      console.log(chalk.red.bold(`🚫 403 FORBIDDEN — posible baneo real (intento ${global._reconnect403Count}/3)`));
+      console.log(chalk.red('└─────────────────────────────────────────────┘'));
+
+      if (global._reconnect403Count >= 3) {
+        reportBan(`403 forbidden persistente — ${global._reconnect403Count} intentos seguidos`, {
+          disconnectCode: reason,
+          rawMessage: lastDisconnect?.error?.message || 'sin mensaje',
+        });
+        console.log(chalk.yellow('[ ⚠ ] No se borra la sesión automáticamente. Revisa logs_bans/ y decide manualmente si vincular de nuevo.'));
+        setTimeout(() => process.exit(0), 2000);
+      } else {
+        const delay = 5000 * global._reconnect403Count;
+        console.log(`[ ⏳ ] Reintento ${global._reconnect403Count}/3 en ${Math.round(delay / 1000)}s...`);
+        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
+      }
 
     } else if (reason === DisconnectReason.loggedOut) {
       const rawMsg = (lastDisconnect?.error?.message || '').toLowerCase();
