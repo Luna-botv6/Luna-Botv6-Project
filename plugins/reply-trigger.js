@@ -2,6 +2,7 @@ import conversationPlugin from '../plugins/lunaia/conversation-plugin.js';
 import configPlugin from '../plugins/lunaia/config-plugin.js';
 import { getConfig, setConfig } from '../lib/funcConfig.js';
 import { isDynamicMessage } from '../lib/funcion/dynamicMessageTracker.js';
+import { checkUserPermissions } from '../lib/funcion/userPermissions.js';
 
 const _cooldown = new Map();
 const COOLDOWN_MS = 1500;
@@ -111,9 +112,15 @@ handler.before = async function (m, { conn }) {
     const participant = m.message?.extendedTextMessage?.contextInfo?.participant;
     if (!participant) return;
 
+    
+
     const botJid = conn.user?.jid;
     const botNum = botJid?.split('@')[0]?.split(':')[0];
     const jid = m.key.remoteJid;
+
+    const { isROwner, isOwner } = checkUserPermissions(m, conn);
+    const chat = getConfig(jid);
+    if (m.isGroup && chat?.modoadmin && !isOwner && !isROwner) return;
 
     const cached = global.groupCache?.get(jid);
     const participants = cached?.data?.participants || [];
