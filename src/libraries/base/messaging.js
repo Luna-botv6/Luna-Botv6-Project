@@ -48,14 +48,14 @@ export const messagingUtils = {
       fileName: filename || pathFile.split('/').pop(),
     };
 
-    let m;
+    let m; let aborted = false;
     try {
       m = await conn.sendMessage(jid, message, {...opt, ...options});
     } catch (e) {
-      if (e?.data === 403 || e?.output?.statusCode === 403) { file = null; return null; }
+      if (e?.data === 403 || e?.output?.statusCode === 403) { file = null; aborted = true; return null; }
       m = null;
     } finally {
-      if (!m) {
+      if (!m && !aborted) {
         try {
           m = await conn.sendMessage(jid, {...message, [mtype]: file}, {...opt, ...options});
         } catch (e2) {

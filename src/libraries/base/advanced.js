@@ -289,7 +289,10 @@ export const advancedUtils = {
     if (jid.endsWith('@g.us')) {
       return new Promise(async (resolve) => {
         v = conn.chats[jid] || {};
-        if (!(v.name || v.subject)) v = await conn.groupMetadata(jid) || {};
+        if (!(v.name || v.subject)) {
+          const _cached = global.groupCache?.get(jid);
+          v = _cached?.data?.groupMetadata || await conn.groupMetadata(jid) || {};
+        }
         resolve(v.name || v.subject || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international'));
       });
     } else {
