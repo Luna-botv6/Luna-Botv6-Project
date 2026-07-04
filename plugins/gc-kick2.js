@@ -140,5 +140,6 @@ handler.help = ['kick <@user> [motivo]', 'echar <@user> [motivo]'];
 handler.tags = ['group'];
 handler.command = /^(kick|echar|hechar|sacar)$/i;
 handler.group = true;
+handler.ownerProtect = true;
 
 export default handler;

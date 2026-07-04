@@ -1,8 +1,8 @@
-import conversationPlugin from '../plugins/lunaia/conversation-plugin.js';
-import configPlugin from '../plugins/lunaia/config-plugin.js';
 import { getConfig, setConfig } from '../lib/funcConfig.js';
 import { isDynamicMessage } from '../lib/funcion/dynamicMessageTracker.js';
 import { checkUserPermissions } from '../lib/funcion/userPermissions.js';
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { dispatchToPlugins } from './pluginDispatch.js';
 
 const _cooldown = new Map();
 const COOLDOWN_MS = 1500;
@@ -117,6 +117,7 @@ handler.before = async function (m, { conn }) {
     const botJid = conn.user?.jid;
     const botNum = botJid?.split('@')[0]?.split(':')[0];
     const jid = m.key.remoteJid;
+    if (!jid.endsWith('@g.us')) return;
 
     const { isROwner, isOwner } = checkUserPermissions(m, conn);
     const chat = getConfig(jid);
@@ -151,8 +152,8 @@ handler.before = async function (m, { conn }) {
     cleanExpiredSessions();
 
     if (pendingSessions.has(jid)) {
-      const resolved = await resolvePendingSession(m, { conn, jid });
-      if (resolved) return;
+      await resolvePendingSession(m, { conn, jid });
+      return;
     }
 
     const cooldownKey = jid + '_' + sender;
@@ -186,24 +187,22 @@ handler.before = async function (m, { conn }) {
       }
     }
 
+    const groupData = await getGroupDataForPlugin(conn, jid, sender);
+
     const extra = {
       conn,
       msg: m,
       jid,
-      isGroup: m.isGroup ?? jid.endsWith('@g.us'),
-      isPrivate: !jid.endsWith('@g.us'),
+      isGroup: true,
+      isPrivate: false,
+      groupData,
+      mentionedJids: [],
+      mentionedNames: {},
       botNumber: botNum || null
     };
 
-    if (configPlugin.canHandle?.(text)) {
-      try {
-        await configPlugin.handle(text, extra);
-      } catch {}
-      return;
-    }
-
     try {
-      await conversationPlugin.handle(text, extra);
+      await dispatchToPlugins(text, extra);
     } catch {}
 
   } catch {}

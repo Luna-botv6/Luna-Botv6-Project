@@ -63,4 +63,5 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
 
 handler.command = /^(warn|advertir|advertencia|warning|sancion|sanción)$/i;
 handler.group = true;
+handler.ownerProtect = true;
 export default handler;
