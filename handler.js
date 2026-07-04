@@ -25,6 +25,7 @@ import { invalidateGroupCount } from './src/libraries/print.js';
 import { getGroupDataForPlugin } from './lib/funcion/pluginHelper.js';
 import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
+import { isProtectedOwner, resolveTargetForOwnerCheck } from './lib/funcion/ownerGuard.js';
 
 EventEmitter.defaultMaxListeners = 30;
 
@@ -542,6 +543,32 @@ export async function handler(chatUpdate) {
           }
           if (plugin.botAdmin && m.isGroup && !_isBotAdmin) { fail('botAdmin', m, this); continue; }
           if (plugin.admin && m.isGroup && !_isAdmin) { fail('admin', m, this); continue; }
+
+          if (plugin.ownerProtect) {
+            const _shouldProtect = typeof plugin.ownerProtect === 'function'
+              ? plugin.ownerProtect(command)
+              : true;
+            if (_shouldProtect) {
+              const _guardTarget = m.mentionedJid?.[0] || m.quoted?.sender || null;
+              if (_guardTarget) {
+                let _guardParticipants = [];
+                if (m.isGroup) {
+                  _guardParticipants = global.groupCache?.get(m.chat)?.data?.participants || [];
+                  if (!_guardParticipants.length) {
+                    try {
+                      const _gd = await getGroupDataForPlugin(this, m.chat, m.sender);
+                      _guardParticipants = _gd?.participants || [];
+                    } catch (e) {}
+                  }
+                }
+                const { jid: _gJid, phoneNumber: _gPhone } = resolveTargetForOwnerCheck(_guardTarget, _guardParticipants);
+                if (isProtectedOwner(_gJid, _gPhone)) {
+                  m.reply('🛡️ Ese es el owner, no puedo hacer eso 😅');
+                  continue;
+                }
+              }
+            }
+          }
 
           m.isCommand = true;
           const xp = 'exp' in plugin ? parseInt(plugin.exp) : 17;
