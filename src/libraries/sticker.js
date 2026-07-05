@@ -28,7 +28,7 @@ function sticker2(img, url) {
       const ff = spawn('ffmpeg', [
         '-y',
         '-i', inp,
-        '-vf', 'scale=512:512:flags=lanczos:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000,setsar=1',
+        '-vf', 'scale=512:512:flags=lanczos:force_original_aspect_ratio=increase,crop=512:512,format=rgba,setsar=1',
         '-f', 'png',
         '-'
       ])
@@ -68,7 +68,7 @@ async function sticker4(img, url) {
     img = await res.buffer()
   }
   return await ffmpeg(img, [
-    '-vf', 'scale=512:512:flags=lanczos:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=#00000000,setsar=1'
+    '-vf', 'scale=512:512:flags=lanczos:force_original_aspect_ratio=increase,crop=512:512,format=rgba,setsar=1'
   ], 'jpeg', 'webp')
 }
 
@@ -112,7 +112,7 @@ function sticker6(img, url) {
       })
       .addOutputOptions([
         `-vcodec`, `libwebp`, `-vf`,
-        `scale='min(320,iw)':min'(320,ih)':force_original_aspect_ratio=decrease,fps=15, pad=320:320:-1:-1:color=white@0.0, split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`
+        `scale=512:512:force_original_aspect_ratio=increase,crop=512:512,fps=15,split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`
       ])
       .toFormat('webp')
       .save(out)
