@@ -41,6 +41,12 @@ export async function handleVoiceMessage(conn, msg, chatId, recentMsgs) {
     const audioMsg = getAudioMessage(msg)
     if (!audioMsg) return
 
+    // Por default el bot NO escucha audios en un grupo: hace falta que un
+    // admin lo prenda con el comando /audioia on. Si está apagado, se
+    // ignora el audio en silencio (no se descarga ni se transcribe nada).
+    const audioIAEnabled = !!global.db?.data?.chats?.[chatId]?.audioIAEnabled
+    if (!audioIAEnabled) return
+
     // ⚠️ Línea a confirmar/ajustar si tu fork descarga medios distinto.
     const buffer = await downloadMediaMessage(msg, 'buffer', {})
     if (!buffer || !buffer.length) {
