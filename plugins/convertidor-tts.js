@@ -1,12 +1,14 @@
+import { readFileSync } from 'fs';
 import * as googleTTS from '@sefinek/google-tts-api';
-import {readFileSync, unlinkSync} from 'fs';
-import {join} from 'path';
+import axios from 'axios';
+import { mp3BufferToOggOpus } from '../lib/funcion/ttsHelper.js';
+
 const defaultLang = 'es';
 
-const handler = async (m, {conn, args, usedPrefix, command}) => {
+const handler = async (m, { conn, args, usedPrefix, command }) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(readFileSync(`./src/languages/${idioma}.json`));
   const tradutor = _translate.plugins.convertidor_tts;
 
   let lang = args[0];
@@ -16,37 +18,43 @@ const handler = async (m, {conn, args, usedPrefix, command}) => {
     text = args.join(' ');
   }
   if (!text && m.quoted?.text) text = m.quoted.text;
-  let res;
+
+  let oggBuffer;
   try {
-    res = googleTTS.getAudioUrl(text, { lang: lang || 'es', slow: false, host: 'https://translate.google.com' });
+    const url = googleTTS.getAudioUrl(text, { lang: lang || 'es', slow: false, host: 'https://translate.google.com' });
+    const { data } = await axios.get(url, {
+      responseType: 'arraybuffer',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
+      }
+    });
+    oggBuffer = await mp3BufferToOggOpus(Buffer.from(data));
   } catch (e) {
     m.reply(e + '');
     text = args.join(' ');
     if (!text) throw `*${tradutor.texto1[0]} ${usedPrefix + command} ${tradutor.texto1[1]}*`;
-    res = await tts(text, defaultLang);
+    try {
+      const url = googleTTS.getAudioUrl(text, { lang: defaultLang, slow: false, host: 'https://translate.google.com' });
+      const { data } = await axios.get(url, {
+        responseType: 'arraybuffer',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
+        }
+      });
+      oggBuffer = await mp3BufferToOggOpus(Buffer.from(data));
+    } catch (e2) {
+      // Se mantiene sin audio; el finally de abajo simplemente no manda nada.
+    }
   } finally {
-    if (res) {
+    if (oggBuffer) {
       conn.sendPresenceUpdate('recording', m.chat);
-      conn.sendMessage(m.chat, {audio: {url: res}, fileName: 'tts.mp3', mimetype: 'audio/mpeg', ptt: true}, {quoted: m});
+      conn.sendMessage(m.chat, { audio: oggBuffer, fileName: 'tts.ogg', mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: m });
     }
   }
 };
+
 handler.help = ['tts <lang> <teks>'];
 handler.tags = ['tools'];
 handler.command = /^g?tts$/i;
-export default handler;
 
-function tts(text, lang = 'es') {
-  return new Promise((resolve, reject) => {
-    try {
-      const tts = gtts(lang);
-      const filePath = join(global.__dirname(import.meta.url), '../src/tmp', (1 * new Date) + '.wav');
-      tts.save(filePath, text, () => {
-        resolve(readFileSync(filePath));
-        unlinkSync(filePath);
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
+export default handler;
