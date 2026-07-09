@@ -69,7 +69,7 @@ const handler = async (m, { conn }) => {
     pendingSessions.delete(m.chat);
   }, SESSION_TIMEOUT);
 
-  pendingSessions.set(m.chat, { adminId: m.sender, timer });
+  pendingSessions.set(m.chat, { adminId: m.sender, timer, type: 'antilink' });
 
   await conn.sendMessage(m.chat, {
     text: buildMenu(alConfig)
@@ -80,6 +80,7 @@ handler.before = async function (m, { conn }) {
   if (!m.isGroup || !m.text || !pendingSessions.has(m.chat)) return;
 
   const session = pendingSessions.get(m.chat);
+  if (session.type !== 'antilink') return;
   if (m.sender !== session.adminId) return;
 
   const input = m.text.trim();
