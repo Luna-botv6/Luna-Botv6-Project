@@ -133,17 +133,17 @@ const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
 ┃ 🎫 ${t.limite}: ${limit} • 📝 ${joincount}
 ┃ 💎 ${t.premium}: ${premiumTime > 0 || isPrems ? '✅' : '❌'}
 ┃
-┃ ❤️ Vida: ${hp || 0}/${maxHp || 100}
-┃ 🛡️ Armadura: ${_tieneArmadura ? `${armor.type} (${armor.durability}/${armor.maxDurability})` : 'Sin armadura'}
+┃ ❤️ ${t.vida}: ${hp || 0}/${maxHp || 100}
+┃ 🛡️ ${t.armadura_label}: ${_tieneArmadura ? `${armor.type} (${armor.durability}/${armor.maxDurability})` : (t.sin_armadura || 'Sin armadura')}
 ┃ 🚨 Bounty: ${bountyStars ? '⭐'.repeat(bountyStars) + ` (${bountyFine}💎)` : '—'}
-┃ ⛓️ Estado: ${isCaptured ? (isCapturedByHunter(m.sender) ? '🎯 Capturado por Cazador' : '⛓️ Capturado') : '✅ Libre'}
-┃ 🎯 Cazador: ${hunterStatus.threat > 0 ? `${hunterStatus.threat}% amenaza` : '—'}
+┃ ⛓️ ${t.estado_label}: ${isCaptured ? (isCapturedByHunter(m.sender) ? `🎯 ${t.capturado_cazador || 'Capturado por Cazador'}` : `⛓️ ${t.capturado || 'Capturado'}`) : `✅ ${t.libre || 'Libre'}`}
+┃ 🎯 ${t.cazador_label}: ${hunterStatus.threat > 0 ? `${hunterStatus.threat}% ${t.amenaza || 'amenaza'}` : '—'}
 ┃
-┃ 🎒 Inventario:
-┃   🧿 Tótem: ${inv.totem || 0} • 🧪 Poc.Menor: ${inv.pocion_menor || 0}
-┃   ⚗️ Poc.Media: ${inv.pocion_media || 0} • 🍶 Poc.Mayor: ${inv.pocion_mayor || 0}
-┃   🍖 Carne: ${inv.carne_asada || 0} • 🌿 Elixir: ${inv.elixir_bosque || 0} • 🍱 Festín: ${inv.festin_real || 0}
-${buffs.length > 0 ? `┃ ✨ Buffs: ${buffs.map(b => b.type.replace('_', ' ')).join(', ')}` : ''}╰━━━━━━━━━━━━━━━━━━╯
+┃ 🎒 ${t.inventario_label}:
+┃   🧿 ${t.totem_label}: ${inv.totem || 0} • 🧪 ${t.pocion_menor_label}: ${inv.pocion_menor || 0}
+┃   ⚗️ ${t.pocion_media_label}: ${inv.pocion_media || 0} • 🍶 ${t.pocion_mayor_label}: ${inv.pocion_mayor || 0}
+┃   🍖 ${t.carne_label}: ${inv.carne_asada || 0} • 🌿 ${t.elixir_label}: ${inv.elixir_bosque || 0} • 🍱 ${t.festin_label}: ${inv.festin_real || 0}
+${buffs.length > 0 ? `┃ ✨ ${t.buffs_label}: ${buffs.map(b => b.type.replace('_', ' ')).join(', ')}` : ''}╰━━━━━━━━━━━━━━━━━━╯
 
 ╭━『 ${t.personalizar_titulo} 』━╮
 ┃ ${t.personalizar_desc}
@@ -221,6 +221,15 @@ ${readMore}
 ┃ 🛡️ ${usedPrefix}disable modoadmin
 ┃ 🗑️ ${usedPrefix}enable antidelete
 ┃ 🗑️ ${usedPrefix}disable antidelete
+╰━━━━━━━━━━━━━━━━━━━━━━╯
+
+╭━『 🔊 ${t.audios_titulo} 』━╮
+┃ 🎙️ ${usedPrefix}agaudios <${t.frase}>
+┃    ${t.agaudios_desc}
+┃ 🗑️ ${usedPrefix}elaudios <${t.frase}/${t.numero}>
+┃    ${t.elaudios_desc}
+┃ ⚙️ ${usedPrefix}audioset
+┃    ${t.audioset_desc}
 ╰━━━━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━『 🎵 ${t.descargas_titulo} 』━━━╮
@@ -369,39 +378,39 @@ ${readMore}
 ╰━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━『 🎮 ${t.rpg_titulo} 』━━━╮
-┃ ── Economía ──
+┃ ── ${t.rpg_economia || 'Economía'} ──
 ┃ 💼 ${usedPrefix}work · 🏹 ${usedPrefix}cazar
 ┃ ⛏️ ${usedPrefix}minar · 💎 ${usedPrefix}minard
 ┃ 🚓 ${usedPrefix}crime · 🕵️ ${usedPrefix}robar <@tag>
 ┃ 🥸 ${usedPrefix}robard <@tag>
 ┃ 💸 ${usedPrefix}transfer <tipo> <cant> <@tag>
 ┃
-┃ ── Perfil & Stats ──
+┃ ── ${t.rpg_perfil_stats || 'Perfil & Stats'} ──
 ┃ 👤 ${usedPrefix}perfil · ✨ ${usedPrefix}verexp <@tag>
 ┃ 🚨 ${usedPrefix}bounty · 💰 ${usedPrefix}multa pagar
 ┃
-┃ ── Armadura ──
+┃ ── ${t.rpg_armadura || 'Armadura'} ──
 ┃ 🛡️ ${usedPrefix}armadura tienda
 ┃ 🛡️ ${usedPrefix}armadura comprar <tipo>
 ┃ 🔧 ${usedPrefix}armadura reparar
 ┃
-┃ ── Items & Consumibles ──
+┃ ── ${t.rpg_items || 'Items & Consumibles'} ──
 ┃ 🛒 ${usedPrefix}comprar tienda
 ┃ 🛒 ${usedPrefix}comprar <item>
 ┃ 💊 ${usedPrefix}usar <item>
 ┃ 🎒 ${usedPrefix}comprar inventario
 ┃
-┃ ── Cazador ──
+┃ ── ${t.rpg_cazador || 'Cazador'} ──
 ┃ 🎯 ${usedPrefix}cazador ver
 ┃ 🏃 ${usedPrefix}cazador correr
 ┃ ⚔️ ${usedPrefix}cazador pelear
 ┃
-┃ ── Rescate & Captura ──
+┃ ── ${t.rpg_rescate || 'Rescate & Captura'} ──
 ┃ 📣 ${usedPrefix}rescate pedir
 ┃ 🆘 ${usedPrefix}rescate rescatar <@tag>
 ┃ 👁️ ${usedPrefix}rescate ver <@tag>
 ┃
-┃ ── NPCs ──
+┃ ── ${t.rpg_npcs || 'NPCs'} ──
 ┃ 🧙 ${usedPrefix}mercader ver
 ┃ 🧙 ${usedPrefix}mercader comprar <1|2|3>
 ┃ ⚖️ ${usedPrefix}juez ver
@@ -412,11 +421,11 @@ ${readMore}
 ┃ 🕵️ ${usedPrefix}espia <@tag>
 ┃ 🧓 ${usedPrefix}vagabundo dar · ignorar
 ┃
-┃ ── Protecciones ──
+┃ ── ${t.rpg_protecciones || 'Protecciones'} ──
 ┃ 🛡️ ${usedPrefix}usarprote · ${usedPrefix}verprotes
 ┃ 🛒 ${usedPrefix}comprarprote <horas>
 ┃
-┃ ── Otros ──
+┃ ── ${t.rpg_otros || 'Otros'} ──
 ┃ 🗺️ ${usedPrefix}adventure · 🧰 ${usedPrefix}cofre
 ┃ 💰 ${usedPrefix}balance · 🎁 ${usedPrefix}claim
 ┃ 🏆 ${usedPrefix}lb · ⬆️ ${usedPrefix}levelup
