@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0d0d,50:00fff7,100:8B5CF6&height=200&section=header&text=Luna%20Bot%20V6&fontSize=70&fontColor=00fff7&fontAlignY=38&desc=El%20Bot%20de%20WhatsApp%20más%20completo%20y%20poderoso&descAlignY=58&descColor=ffffff&animation=twinkling"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0d0d0d,50:00fff7,100:8B5CF6&height=220&section=header&text=Luna%20Bot%20V6&fontSize=75&fontColor=00fff7&fontAlignY=35&desc=El%20Bot%20de%20WhatsApp%20más%20completo%20y%20poderoso&descAlignY=58&descColor=ffffff&animation=twinkling"/>
 
 <br>
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&weight=900&size=22&pause=800&color=00FFF7&center=true&vCenter=true&width=700&lines=🌙+Bot+Avanzado+de+WhatsApp+con+IA;⚡+290%2B+Plugins+•+Multi-idioma+•+RPG;🤖+Inteligencia+Artificial+Conversacional;🛡️+Moderación+•+Juegos+•+Herramientas;✨+Creado+por+Germán+Miño+—+Argentina" alt="Typing SVG" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&weight=900&size=22&pause=800&color=00FFF7&center=true&vCenter=true&width=750&lines=🌙+Bot+Avanzado+de+WhatsApp+con+IA;⚡+290%2B+Plugins+•+Multi-idioma+•+RPG;🤖+Inteligencia+Artificial+Conversacional;🛡️+Moderación+•+Juegos+•+Herramientas;✨+Creado+por+Germán+Miño+—+Argentina" alt="Typing SVG" />
 
 <br>
 
@@ -46,17 +46,22 @@
 
 ---
 
-## 🗺️ Tabla de Contenidos
-
 <div align="center">
+
+<details open>
+<summary><b>🗺️ Tabla de Contenidos — hacé clic para expandir/colapsar</b></summary>
+
+<br>
 
 | 🔗 Sección | 🔗 Sección | 🔗 Sección |
 |:---:|:---:|:---:|
-| [✨ ¿Qué es Luna Bot?](#-qué-es-luna-bot) | [🆕 Últimas Actualizaciones](#-últimas-actualizaciones) | [🟢 Estado del Servicio](#-estado-del-servicio) |
-| [🤖 Luna IA](#-luna-ia--inteligencia-artificial) | [🌟 Características](#-características) | [🎮 Juegos](#-juegos-disponibles) |
-| [☁️ Instalar en BoxMine](#️-instalación-en-boxmine-recomendado) | [🪟 Instalar en Windows](#-instalación-en-windows) | [📱 Instalar en Android](#-instalación-en-android-termux) |
-| [🐧 Linux / macOS](#-linux-y-macos) | [⚙️ Configuración](#️-configuración) | [⚡ Actualizaciones del Bot](#-sistema-de-actualización-inteligente) |
+| [✨ ¿Qué es Luna Bot?](#-qué-es-luna-bot) | [🎬 Miralo en Acción](#-miralo-en-acción) | [⚖️ Luna vs Otros Bots](#️-luna-vs-otros-bots) |
+| [🆕 Últimas Actualizaciones](#-últimas-actualizaciones) | [🟢 Estado del Servicio](#-estado-del-servicio) | [🎮 Juegos](#-juegos-disponibles) |
+| [🤖 Luna IA](#-luna-ia--inteligencia-artificial) | [🌟 Características](#-características) | [🛣️ Roadmap](#️-roadmap) |
+| [🚀 Instalación Rápida](#-instalación-rápida) | [⚙️ Configuración](#️-configuración) | [⚡ Actualizaciones del Bot](#-sistema-de-actualización-inteligente) |
 | [🤝 Contribuir](#-contribuir) | [👨‍💻 Creador](#-creador) | [❤️ Apoyar el Proyecto](#️-apoyar-el-proyecto) |
+
+</details>
 
 </div>
 
@@ -121,13 +126,67 @@ const LunaBot = {
 
 <div align="center">
 
+## 🎬 Miralo en Acción
+
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=18&pause=1000&color=00FFF7&center=true&vCenter=true&width=650&lines=Así+se+ve+una+conversación+real+con+Luna;Sin+comandos+raros+—+hablale+como+a+una+persona" alt="Demo" />
+
+<br><br>
+
+<table>
+<tr>
+<td align="center" width="33%">
+<img src="src/assets/images/demo/demo-ia.svg" width="100%"/>
+<br><sub><b>💬 Conversación natural</b></sub>
+</td>
+<td align="center" width="33%">
+<img src="src/assets/images/demo/demo-comando.svg" width="100%"/>
+<br><sub><b>🎯 Comando por lenguaje natural</b></sub>
+</td>
+<td align="center" width="33%">
+<img src="src/assets/images/demo/demo-juego.svg" width="100%"/>
+<br><sub><b>👁️ Juego Veo Veo</b></sub>
+</td>
+</tr>
+</table>
+
+> [!NOTE]
+> Estas son recreaciones ilustrativas de una conversación con Luna, armadas para mostrar el estilo de interacción. Si tenés capturas o gifs reales del bot funcionando, reemplazá estos archivos en `src/assets/images/demo/` por tu propio contenido — el README los va a mostrar igual.
+
+</div>
+
+---
+
+<div align="center">
+
+## ⚖️ Luna vs Otros Bots
+
+</div>
+
+| Característica | 🌙 Luna Bot V6 | Bot genérico |
+|:---|:---:|:---:|
+| IA conversacional sin prefijos | ✅ | ❌ |
+| Fallback automático entre motores de IA | ✅ | ❌ |
+| Multi-idioma por usuario (ES/EN/PT) | ✅ | ⚠️ Rara vez |
+| Caché en disco persistente | ✅ | ❌ |
+| Comandos detectados por lenguaje natural | ✅ | ❌ |
+| RPG con economía, minería y tienda | ✅ | ⚠️ Básico |
+| Compatibilidad LID + números normales | ✅ | ⚠️ Parcial |
+| Instalación sin terminal (BoxMine) | ✅ | ❌ |
+
+---
+
+<div align="center">
+
 ## 🆕 Últimas Actualizaciones
 
 <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=20&pause=1000&color=00FFF7&center=true&vCenter=true&width=700&lines=🆕+Actualizaciones+Recientes;✨+Sistema+Multi-Idioma+Integrado;🖼️+Personalizá+el+Menú+del+Bot;✏️+Cambiá+el+Nombre+del+Bot" alt="Updates" />
 
 </div>
 
-### 🌍 28/05/2026 — Sistema Multi-Idioma Global 🌐
+<details open>
+<summary><b>🌍 28/05/2026 — Sistema Multi-Idioma Global 🌐</b></summary>
+
+<br>
 
 <p>
   <img src="https://img.shields.io/badge/✅%20es.json-Español-10B981?style=flat-square&labelColor=065F46"/>
@@ -154,9 +213,12 @@ El bot ahora habla en el idioma de cada usuario de forma automática. Sin config
 
 El idioma se guarda automáticamente por usuario y todos los mensajes del bot se adaptan de inmediato.
 
----
+</details>
 
-### ✏️ Cambiar el nombre del bot
+<details>
+<summary><b>✏️ Cambiar el nombre del bot</b></summary>
+
+<br>
 
 <p>
   <img src="https://img.shields.io/badge/🔐%20Solo-Owner-8B5CF6?style=for-the-badge&labelColor=5B21B6"/>
@@ -170,9 +232,12 @@ El idioma se guarda automáticamente por usuario y todos los mensajes del bot se
 El nombre se guarda en la base de datos y se aplica de inmediato en todo el bot.
 Ejemplo: `.setnamebot Luna IA 🤖`
 
----
+</details>
 
-### 🖼️ Cambiar la imagen / GIF / video del menú
+<details>
+<summary><b>🖼️ Cambiar la imagen / GIF / video del menú</b></summary>
+
+<br>
 
 <p>
   <img src="https://img.shields.io/badge/🔐%20Solo-Owner-8B5CF6?style=for-the-badge&labelColor=5B21B6"/>
@@ -187,6 +252,8 @@ Ejemplo: `.setnamebot Luna IA 🤖`
 
 > [!TIP]
 > Respondé directamente el mensaje de la imagen o video con el comando. ¡No hace falta reenviarlo!
+
+</details>
 
 ---
 
@@ -310,6 +377,8 @@ Luna responde en **español rioplatense**, usa "vos", es empática y auténtica.
 <details>
 <summary><b>🌤️ Clima en Tiempo Real</b></summary>
 
+<br>
+
 | Frase | Acción |
 |:------|:-------|
 | `@Luna clima de Buenos Aires` | Clima actual + próximos 3 días |
@@ -322,6 +391,8 @@ Incluye: temperatura, sensación térmica, humedad, viento, UV y pronóstico 3 d
 
 <details>
 <summary><b>🍽️ Recetas Detalladas</b></summary>
+
+<br>
 
 Sistema en tres capas: Base de datos → Wikipedia → IA Generativa
 
@@ -337,6 +408,8 @@ Incluye: ingredientes con medidas exactas, pasos de preparación e imagen del pl
 <details>
 <summary><b>🎵 Letras de Canciones</b></summary>
 
+<br>
+
 | Frase | Acción |
 |:------|:-------|
 | `@Luna letra de La Noche de Anita` | Letra completa |
@@ -349,6 +422,8 @@ Sistema en cascada: bases de datos → web → generación IA.
 
 <details>
 <summary><b>🌍 Información de Países</b></summary>
+
+<br>
 
 | Frase | Acción |
 |:------|:-------|
@@ -363,6 +438,8 @@ Incluye: nombre oficial, región, capital, población, área, idiomas, moneda y 
 <details>
 <summary><b>🧮 Matemáticas y Cálculos</b></summary>
 
+<br>
+
 | Frase | Resultado |
 |:------|:---------|
 | `@Luna cuanto es 250 * 48` | `🧮 El resultado es: 12000` |
@@ -373,6 +450,8 @@ Incluye: nombre oficial, región, capital, población, área, idiomas, moneda y 
 
 <details>
 <summary><b>💱 Conversión de Divisas en Tiempo Real</b></summary>
+
+<br>
 
 | Frase | Acción |
 |:------|:-------|
@@ -386,6 +465,8 @@ Monedas: `USD · EUR · BRL · PEN · COP · MXN · CLP · UYU · PYG · BOB · 
 
 <details>
 <summary><b>🌐 Traducción Multiidioma</b></summary>
+
+<br>
 
 | Frase | Acción |
 |:------|:-------|
@@ -403,6 +484,8 @@ Luna detecta cuando querés ejecutar un comando del bot sin necesidad de escribi
 <details>
 <summary><b>👥 Administración de Grupos</b></summary>
 
+<br>
+
 | Frase natural | Comando equivalente |
 |:--------------|:-------------------|
 | `@Luna dale admin a @usuario` | `.promote` |
@@ -416,6 +499,8 @@ Luna detecta cuando querés ejecutar un comando del bot sin necesidad de escribi
 <details>
 <summary><b>🛠️ Herramientas</b></summary>
 
+<br>
+
 | Frase natural | Comando equivalente |
 |:--------------|:-------------------|
 | `@Luna hacer sticker` | `.sticker` |
@@ -428,6 +513,8 @@ Luna detecta cuando querés ejecutar un comando del bot sin necesidad de escribi
 <details>
 <summary><b>🔇 Moderación desde la IA</b></summary>
 
+<br>
+
 | Frase | Efecto |
 |:------|:-------|
 | `@Luna mutea a @usuario 30 min` | Silencio por 30 minutos |
@@ -438,6 +525,8 @@ Luna detecta cuando querés ejecutar un comando del bot sin necesidad de escribi
 
 <details>
 <summary><b>🧙 RPG y Economía</b></summary>
+
+<br>
 
 | Frase natural | Comando equivalente |
 |:--------------|:-------------------|
@@ -567,7 +656,18 @@ Luna tiene **dos capas de caché persistente** que sobreviven a reinicios del se
 
 <div align="center">
 
-## ☁️ Instalación en BoxMine (Recomendado)
+## 🚀 Instalación Rápida
+
+Elegí tu plataforma y desplegá el acordeón — cada una tiene su guía completa sin que tengas que scrollear todo el README.
+
+</div>
+
+<details>
+<summary><b>☁️ BoxMine (Recomendado — sin terminal)</b></summary>
+
+<br>
+
+<div align="center">
 
 <a href="https://boxmineworld.com">
   <img src="https://dash.boxmineworld.com/storage/icon.png" width="70" style="border-radius:12px;" alt="BoxMine"/>
@@ -583,9 +683,7 @@ Luna tiene **dos capas de caché persistente** que sobreviven a reinicios del se
 > [!NOTE]
 > En BoxMine **no se usa `npm start` ni comandos de terminal**. Todo se maneja desde la consola del panel web. Es la forma más fácil y rápida de poner el bot en línea.
 
----
-
-### 🔗 Enlaces de BoxMine
+**Enlaces:**
 
 | Recurso | URL |
 |:--------|:----|
@@ -595,15 +693,9 @@ Luna tiene **dos capas de caché persistente** que sobreviven a reinicios del se
 | 📚 Documentación | [docs.boxmineworld.com](https://docs.boxmineworld.com) |
 | 💬 Comunidad Discord | [¡Únete aquí!](https://discord.gg/84qsr4v) |
 
----
-
-### 📋 Guía Paso a Paso — BoxMine
-
 **Paso 1 — Crear cuenta**
 
 Ingresá a [dash.boxmineworld.com/register](https://dash.boxmineworld.com/register), completá usuario, correo y contraseña. Confirmá tu correo.
-
----
 
 **Paso 2 — Crear el servidor**
 
@@ -616,8 +708,6 @@ Ingresá a [dash.boxmineworld.com/register](https://dash.boxmineworld.com/regist
 
 > [!TIP]
 > Si Free-N6 no tiene lugar disponible, probá con **Free-N4** o **Free**. El nodo N6 suele ser el más estable.
-
----
 
 **Paso 3 — Entrar al servidor y vincular WhatsApp**
 
@@ -643,75 +733,42 @@ Elegí un método para vincular:
 > [!IMPORTANT]
 > En la consola de BoxMine **solo escribís números** para elegir opciones al vincular. No uses `npm start` — el panel lo gestiona todo automáticamente.
 
-<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+</details>
 
----
+<details>
+<summary><b>🪟 Windows</b></summary>
 
-<div align="center">
-
-## 🪟 Instalación en Windows
+<br>
 
 [![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Windows](https://img.shields.io/badge/Windows-10%2F11-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://www.microsoft.com/windows)
 
-</div>
+**Requisitos:** Windows 10/11, internet activa, permisos de administrador.
 
-### 🟢 Requisitos
+**Paso 1 — Instalar Git**
 
-| Requisito | Detalle |
-|:----------|:--------|
-| 💻 Sistema | Windows 10 / Windows 11 |
-| 🌐 Conexión | Internet activa |
-| 🔑 Permisos | Administrador en el equipo |
+Descargar desde **https://git-scm.com/download/win**, instalar con opciones por defecto y marcar **"Add Git to PATH"**.
 
----
-
-### 🟡 Paso 1 — Instalar Git
-
-Descargar Git desde el sitio oficial: **https://git-scm.com/download/win**
-
-Instalá con todas las opciones por defecto. Asegurate de marcar **"Add Git to PATH"**.
-
-Verificar instalación:
 ```bash
 git --version
 ```
-✅ Si muestra una versión, está correcto.
 
----
+**Paso 2 — Instalar Node.js**
 
-### 🔵 Paso 2 — Instalar Node.js
+Descargar LTS desde **https://nodejs.org/**, marcar **"Add to PATH"** durante la instalación.
 
-Descargar Node.js LTS desde: **https://nodejs.org/**
-
-- Abrí el `.msi` descargado → Siguiente → Siguiente → Aceptar
-- ⚠️ Marcá: **"Add to PATH"** (IMPORTANTE)
-- Finalizá la instalación
-
-Verificar:
 ```bash
 node -v
 npm -v
 ```
-✅ Si muestra versiones, está correcto.
 
----
-
-### 🟠 Paso 3 — Arreglar PowerShell
-
-Abrí **PowerShell como Administrador** y ejecutá:
+**Paso 3 — Arreglar PowerShell** (como Administrador)
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
-Cuando pregunte, escribí `Y` y presioná Enter.
-
----
-
-### 🟣 Paso 4 — Instalar Chocolatey
-
-En **PowerShell como Administrador** ejecutá:
+**Paso 4 — Instalar Chocolatey** (como Administrador)
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; `
@@ -720,42 +777,30 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; `
 iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 ```
 
-> Reiniciá PowerShell después de instalar.
-
-Verificar:
 ```bash
 choco -v
 ```
-✅ Si muestra la versión, está correcto.
 
----
-
-### 🔴 Paso 5 — Instalar Dependencias
+**Paso 5 — Instalar dependencias**
 
 ```bash
 choco install python3 ffmpeg imagemagick -y
 ```
 
----
-
-### 📁 Paso 6 — Clonar el Proyecto
+**Paso 6 — Clonar el proyecto**
 
 ```bash
 git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
 cd Luna-Botv6-Project
 ```
 
----
-
-### ⚙️ Paso 7 — Instalar el Bot
+**Paso 7 — Instalar el bot**
 
 ```bash
 npm install
 ```
 
----
-
-### 🛠️ Errores Comunes en Windows
+**Errores comunes:**
 
 <details>
 <summary>❌ Error con <code>sharp</code></summary>
@@ -786,9 +831,7 @@ Set-ExecutionPolicy -Scope Process Bypass
 
 </details>
 
----
-
-### 🚀 Paso 8 — Iniciar el Bot
+**Paso 8 — Iniciar el bot**
 
 ```bash
 npm start
@@ -796,9 +839,7 @@ npm start
 
 > Los `npm warnings` y `vulnerabilities` son normales y no bloquean el bot.
 
----
-
-### 📱 Paso 9 — Vincular WhatsApp
+**Paso 9 — Vincular WhatsApp**
 
 ```
 WhatsApp → ⋮ Menú → Dispositivos vinculados → Vincular dispositivo
@@ -806,18 +847,15 @@ WhatsApp → ⋮ Menú → Dispositivos vinculados → Vincular dispositivo
 
 Escaneá el código QR que aparece en la terminal.
 
-<img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+</details>
 
----
+<details>
+<summary><b>📱 Android (Termux)</b></summary>
 
-<div align="center">
-
-## 📱 Instalación en Android (Termux)
+<br>
 
 > [!TIP]
 > Instalá Termux desde **F-Droid** (no Play Store): https://f-droid.org/packages/com.termux/
-
-</div>
 
 **Paso 1 — Actualizar paquetes:**
 ```bash
@@ -862,9 +900,12 @@ Para guardar en nano: `Volumen Abajo + O` → Enter → `Volumen Abajo + X`
 npm start
 ```
 
----
+</details>
 
-## 🐧 Linux y macOS
+<details>
+<summary><b>🐧 Linux / macOS</b></summary>
+
+<br>
 
 **Linux:**
 ```bash
@@ -887,6 +928,8 @@ cp config.example.js config.js
 nano config.js
 npm start
 ```
+
+</details>
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
@@ -989,6 +1032,24 @@ Luna-Botv6-Project/
 | `/eliminarbackup` | Elimina backups | 🟢 Ninguno |
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
+
+---
+
+<div align="center">
+
+## 🛣️ Roadmap
+
+</div>
+
+- [x] Sistema multi-idioma (ES/EN/PT)
+- [x] Personalización de menú (imagen/GIF/video)
+- [x] Fallback automático entre motores de IA
+- [ ] Panel web de administración para grupos
+- [ ] Nuevos juegos multijugador
+- [ ] Más idiomas soportados
+
+> [!NOTE]
+> Este roadmap se actualiza a medida que se van cerrando features — no representa fechas comprometidas.
 
 ---
 
