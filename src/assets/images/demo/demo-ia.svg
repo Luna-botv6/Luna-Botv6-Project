@@ -1,0 +1,38 @@
+<svg viewBox="0 0 360 560" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgIA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d0d0d"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="560" rx="28" fill="url(#bgIA)" stroke="#00fff7" stroke-width="2"/>
+
+  <rect x="0" y="0" width="360" height="64" rx="28" fill="#128C7E"/>
+  <rect x="0" y="36" width="360" height="28" fill="#128C7E"/>
+  <circle cx="46" cy="32" r="16" fill="#00fff7"/>
+  <text x="46" y="38" font-family="Arial" font-size="16" text-anchor="middle" fill="#0d0d0d" font-weight="bold">L</text>
+  <text x="72" y="28" font-family="Arial" font-size="15" fill="#ffffff" font-weight="bold">Luna Bot V6</text>
+  <text x="72" y="46" font-family="Arial" font-size="11" fill="#d1fff9">en línea</text>
+
+  <rect x="20" y="90" width="230" height="60" rx="16" fill="#1f2937"/>
+  <text x="34" y="114" font-family="Arial" font-size="13" fill="#ffffff">@Luna hola, como andas?</text>
+  <text x="34" y="132" font-family="Arial" font-size="13" fill="#ffffff">todo bien por ahi?</text>
+
+  <rect x="110" y="170" width="230" height="90" rx="16" fill="#005c4b"/>
+  <text x="124" y="194" font-family="Arial" font-size="13" fill="#ffffff">Todo tranqui por acá 🌙</text>
+  <text x="124" y="212" font-family="Arial" font-size="13" fill="#ffffff">contame, en qué te doy</text>
+  <text x="124" y="230" font-family="Arial" font-size="13" fill="#ffffff">una mano hoy?</text>
+
+  <rect x="20" y="290" width="250" height="60" rx="16" fill="#1f2937"/>
+  <text x="34" y="314" font-family="Arial" font-size="13" fill="#ffffff">@Luna clima de Buenos Aires</text>
+  <text x="34" y="332" font-family="Arial" font-size="13" fill="#ffffff">hoy</text>
+
+  <rect x="80" y="370" width="260" height="110" rx="16" fill="#005c4b"/>
+  <text x="94" y="394" font-family="Arial" font-size="13" fill="#ffffff">🌤️ Buenos Aires: 22°C</text>
+  <text x="94" y="412" font-family="Arial" font-size="13" fill="#ffffff">Sensación: 21°C · Humedad: 58%</text>
+  <text x="94" y="430" font-family="Arial" font-size="13" fill="#ffffff">Viento: 12km/h</text>
+  <text x="94" y="450" font-family="Arial" font-size="13" fill="#ffffff">Próximos 3 días: soleado ☀️</text>
+
+  <rect x="20" y="500" width="320" height="42" rx="21" fill="#1f2937"/>
+  <text x="40" y="526" font-family="Arial" font-size="13" fill="#8b98a5">Escribí un mensaje...</text>
+</svg>

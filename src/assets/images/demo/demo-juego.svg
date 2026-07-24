@@ -1,0 +1,37 @@
+<svg viewBox="0 0 360 560" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgJ" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d0d0d"/>
+      <stop offset="100%" stop-color="#3d0a20"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="560" rx="28" fill="url(#bgJ)" stroke="#FF6B9D" stroke-width="2"/>
+
+  <rect x="0" y="0" width="360" height="64" rx="28" fill="#9F1239"/>
+  <rect x="0" y="36" width="360" height="28" fill="#9F1239"/>
+  <circle cx="46" cy="32" r="16" fill="#00fff7"/>
+  <text x="46" y="38" font-family="Arial" font-size="16" text-anchor="middle" fill="#0d0d0d" font-weight="bold">L</text>
+  <text x="72" y="28" font-family="Arial" font-size="15" fill="#ffffff" font-weight="bold">Luna Bot V6</text>
+  <text x="72" y="46" font-family="Arial" font-size="11" fill="#ffd9e6">en línea</text>
+
+  <rect x="20" y="90" width="180" height="50" rx="16" fill="#1f2937"/>
+  <text x="34" y="120" font-family="Arial" font-size="13" fill="#ffffff">@Luna veo veo</text>
+
+  <rect x="90" y="160" width="250" height="90" rx="16" fill="#7a0e35"/>
+  <text x="104" y="184" font-family="Arial" font-size="13" fill="#ffffff">👁️ ¡Veo Veo! Elegí una</text>
+  <text x="104" y="202" font-family="Arial" font-size="13" fill="#ffffff">categoría: cocina, animales,</text>
+  <text x="104" y="220" font-family="Arial" font-size="13" fill="#ffffff">objetos... Tenés 3 min ⏱️</text>
+
+  <rect x="20" y="270" width="200" height="50" rx="16" fill="#1f2937"/>
+  <text x="34" y="300" font-family="Arial" font-size="13" fill="#ffffff">@Luna dame una pista</text>
+
+  <rect x="90" y="340" width="250" height="60" rx="16" fill="#7a0e35"/>
+  <text x="104" y="364" font-family="Arial" font-size="13" fill="#ffffff">💡 Está en la cocina y</text>
+  <text x="104" y="382" font-family="Arial" font-size="13" fill="#ffffff">sirve caliente ☕</text>
+
+  <rect x="20" y="420" width="180" height="50" rx="16" fill="#1f2937"/>
+  <text x="34" y="450" font-family="Arial" font-size="13" fill="#ffffff">@Luna es una taza</text>
+
+  <rect x="90" y="490" width="250" height="50" rx="16" fill="#7a0e35"/>
+  <text x="104" y="520" font-family="Arial" font-size="13" fill="#ffffff">🎉 ¡Correcto! +600 XP · 75💎</text>
+</svg>
