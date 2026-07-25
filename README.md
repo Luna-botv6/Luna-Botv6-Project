@@ -150,7 +150,7 @@ const LunaBot = {
 </table>
 
 > [!NOTE]
-> Estas son recreaciones ilustrativas de una conversación con Luna, armadas para mostrar el estilo de interacción. Pronto se subiran capturas realesn
+> Estas son recreaciones ilustrativas de una conversación con Luna, armadas para mostrar el estilo de interacción. Pronto se subiran capturas reales.
 
 </div>
 
