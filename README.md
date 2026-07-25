@@ -150,7 +150,7 @@ const LunaBot = {
 </table>
 
 > [!NOTE]
-> Estas son recreaciones ilustrativas de una conversación con Luna, armadas para mostrar el estilo de interacción. Si tenés capturas o gifs reales del bot funcionando, reemplazá estos archivos en `src/assets/images/demo/` por tu propio contenido — el README los va a mostrar igual.
+> Estas son recreaciones ilustrativas de una conversación con Luna, armadas para mostrar el estilo de interacción. Pronto se subiran capturas realesn
 
 </div>
 
