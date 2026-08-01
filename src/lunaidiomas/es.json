@@ -1468,6 +1468,18 @@
       "modo_default": "✅ *Modo activado:* sistema por defecto (mentionAll).\n\n_Ahora al usar el comando se mencionará a todos de forma silenciosa._",
       "ya_configurado": "ℹ️ *El modo de invocación ya está configurado para este grupo.*\n\nModo actual: *{modo}*\n_Solo un admin puede cambiarlo con_ `.invocar __mention` _o_ `.invocar __default`"
     },
+    "gc_settag": {
+      "solo_grupos": "❌ Este comando solo funciona en grupos.",
+      "solo_admins": "⚠️ Solo los administradores pueden configurar el tagall.",
+      "ayuda": "✍️ *Cómo personalizar el mensaje de invocación*\n\nEnviá:\n*{usedPrefix}settag <tu texto>*\n\nPodés usar estas palabras en cualquier parte de tu texto (no hace falta ponerlas entre llaves ni nada raro):\n• bot → nombre del bot\n• grupo → nombre del grupo\n• tag → menciona a quien invoca\n• razon → la razón que escriban al invocar\n• tags → lista de todos los miembros etiquetados\n\nPodés escribir el texto con emojis y con enters de verdad (como lo verías en WhatsApp), y así se va a mandar el mensaje final, respetando los saltos de línea que uses.\n\n📷 Si querés que el mensaje lleve imagen, respondé a una imagen (o mandala con el texto como descripción) usando *{usedPrefix}settag*.\n\n*📌 Ejemplo de uso:*\n```\n{usedPrefix}settag 🎉 Atención grupo 🎉\n\ntag te está invocando.\n📋 Razón: razon\n\n👥 Usuarios:\ntags\n```\n\n*👀 Así se vería el resultado final:*\n```\n🎉 Atención Los Piolas 🎉\n\n@5491122334455 te está invocando.\n📋 Razón: reunión importante\n\n👥 Usuarios:\n┃>@5491111111111\n┃>@5492222222222\n┃>@5493333333333\n```\n\nCuando termines vas a ver una vista previa con los datos reales de tu grupo. Si te gusta, confirmá con *{usedPrefix}setconfir*. Si no, volvé a mandar *{usedPrefix}settag <texto>* con los cambios.",
+      "falta_texto": "Todavía no tenés un texto guardado para esta plantilla. Mandá *{usedPrefix}settag <texto>* primero.",
+      "preview_footer": "👆 Así quedaría tu mensaje de invocación.\n\n✅ Confirmar: {usedPrefix}setconfir\n✏️ Seguir editando: volvé a usar {usedPrefix}settag",
+      "sin_pendiente": "No hay ninguna plantilla pendiente de confirmar. Primero usá *settag* para crear una.",
+      "confirmado_ok": "✅ Listo, esa es ahora tu plantilla de invocación para este grupo.",
+      "reset_ok": "🗑️ Se eliminó la plantilla personalizada. El grupo vuelve al mensaje por defecto.",
+      "error_imagen": "No pude leer esa imagen, probá de nuevo.",
+      "error": "Ocurrió un error al procesar el comando."
+    },
     "owner_autoadmin": {
       "texto1": "✅ Ya eres administrador en este grupo.",
       "texto2": "❌ No se pudo promoverte. Asegurate de que el bot sea admin."

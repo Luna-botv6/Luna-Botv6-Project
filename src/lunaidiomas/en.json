@@ -1467,6 +1467,18 @@
       "modo_default": "✅ *Mode activated:* default system (mentionAll).\n\n_The command will now mention everyone silently._",
       "ya_configurado": "ℹ️ *The summon mode is already configured for this group.*\n\nCurrent mode: *{modo}*\n_An admin can change it with_ `.invocar __mention` _or_ `.invocar __default`"
     },
+    "gc_settag": {
+      "solo_grupos": "❌ This command only works in groups.",
+      "solo_admins": "⚠️ This command can only be used by group administrators.",
+      "ayuda": "✍️ *How to customize the summon message*\n\nSend:\n*{usedPrefix}settag <your text>*\n\nYou can use these words anywhere in your text (no braces or special symbols needed):\n• bot → bot name\n• grupo → group name\n• tag → mentions whoever summoned\n• razon → the reason typed when summoning\n• tags → list of all tagged members\n\nYou can write your text with emojis and real line breaks (just like you'd see it in WhatsApp), and the final message will respect exactly those line breaks.\n\n📷 If you want the message to include an image, reply to an image (or send it with the text as the caption) using *{usedPrefix}settag*.\n\n*📌 Usage example:*\n```\n{usedPrefix}settag 🎉 Attention grupo 🎉\n\ntag is summoning you.\n📋 Reason: razon\n\n👥 Members:\ntags\n```\n\n*👀 This is how the final result would look:*\n```\n🎉 Attention The Regulars 🎉\n\n@5491122334455 is summoning you.\n📋 Reason: important meeting\n\n👥 Members:\n┃>@5491111111111\n┃>@5492222222222\n┃>@5493333333333\n```\n\nOnce you're done you'll see a preview with your group's real data. If you like it, confirm with *{usedPrefix}setconfir*. If not, send *{usedPrefix}settag <text>* again with your changes.",
+      "falta_texto": "You don't have a saved text for this template yet. Send *{usedPrefix}settag <text>* first.",
+      "preview_footer": "👆 This is how your summon message would look.\n\n✅ Confirm: {usedPrefix}setconfir\n✏️ Keep editing: use {usedPrefix}settag again",
+      "sin_pendiente": "There's no pending template to confirm. Use *settag* first to create one.",
+      "confirmado_ok": "✅ Done, that's now your summon template for this group.",
+      "reset_ok": "🗑️ The custom template was removed. The group goes back to the default message.",
+      "error_imagen": "I couldn't read that image, try again.",
+      "error": "An error occurred while processing the command."
+    },
     "owner_autoadmin": {
       "texto1": "✅ You are already an administrator in this group.",
       "texto2": "❌ Could not promote you. Make sure the bot is admin."

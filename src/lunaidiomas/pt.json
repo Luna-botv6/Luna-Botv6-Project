@@ -1468,6 +1468,18 @@
       "modo_default": "✅ *Modo ativado:* sistema padrão (mentionAll).\n\n_O comando agora mencionará todos de forma silenciosa._",
       "ya_configurado": "ℹ️ *O modo de convocação já está configurado para este grupo.*\n\nModo atual: *{modo}*\n_Um admin pode alterá-lo com_ `.invocar __mention` _ou_ `.invocar __default`"
     },
+    "gc_settag": {
+      "solo_grupos": "❌ Este comando só funciona em grupos.",
+      "solo_admins": "⚠️ Este comando só pode ser usado por administradores do grupo.",
+      "ayuda": "✍️ *Como personalizar a mensagem de convocação*\n\nEnvie:\n*{usedPrefix}settag <seu texto>*\n\nVocê pode usar estas palavras em qualquer parte do seu texto (não precisa colocar entre chaves nem nada especial):\n• bot → nome do bot\n• grupo → nome do grupo\n• tag → menciona quem convocou\n• razon → o motivo escrito ao convocar\n• tags → lista de todos os membros marcados\n\nVocê pode escrever o texto com emojis e com quebras de linha de verdade (como você veria no WhatsApp), e a mensagem final vai respeitar exatamente essas quebras de linha.\n\n📷 Se quiser que a mensagem tenha imagem, responda a uma imagem (ou envie com o texto como legenda) usando *{usedPrefix}settag*.\n\n*📌 Exemplo de uso:*\n```\n{usedPrefix}settag 🎉 Atenção grupo 🎉\n\ntag está te convocando.\n📋 Motivo: razon\n\n👥 Membros:\ntags\n```\n\n*👀 Assim ficaria o resultado final:*\n```\n🎉 Atenção Os Animados 🎉\n\n@5491122334455 está te convocando.\n📋 Motivo: reunião importante\n\n👥 Membros:\n┃>@5491111111111\n┃>@5492222222222\n┃>@5493333333333\n```\n\nQuando terminar, você verá uma prévia com os dados reais do seu grupo. Se gostar, confirme com *{usedPrefix}setconfir*. Se não, use novamente *{usedPrefix}settag <texto>* com as mudanças.",
+      "falta_texto": "Você ainda não tem um texto salvo para esta modelo. Envie *{usedPrefix}settag <texto>* primeiro.",
+      "preview_footer": "👆 Assim ficaria sua mensagem de convocação.\n\n✅ Confirmar: {usedPrefix}setconfir\n✏️ Continuar editando: use novamente {usedPrefix}settag",
+      "sin_pendiente": "Não há nenhuma modelo pendente para confirmar. Primeiro use *settag* para criar uma.",
+      "confirmado_ok": "✅ Pronto, essa é agora sua modelo de convocação para este grupo.",
+      "reset_ok": "🗑️ A modelo personalizada foi removida. O grupo volta à mensagem padrão.",
+      "error_imagen": "Não consegui ler essa imagem, tente novamente.",
+      "error": "Ocorreu um erro ao processar o comando."
+    },
     "owner_autoadmin": {
       "texto1": "✅ Você já é administrador neste grupo.",
       "texto2": "❌ Não foi possível te promover. Certifique-se de que o bot seja admin."
