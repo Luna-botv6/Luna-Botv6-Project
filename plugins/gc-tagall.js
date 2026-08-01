@@ -1,6 +1,8 @@
 import fs from 'fs';
 import { isAdminNoTTL, hasAdminCacheForGroup, getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { getTagallMode, setTagallMode, resetTagallMode } from '../lib/funcion/tagallStore.js';
+import { getCustomTemplate } from '../lib/funcion/tagallTemplateStore.js';
+import { renderTagallTemplate } from '../lib/funcion/tagallPlaceholders.js';
 import { registerDynamicMessage } from '../lib/funcion/dynamicMessageTracker.js';
 
 const cooldowns = new Map();
@@ -86,33 +88,55 @@ const handler = async (m, { conn, args, isOwner, usedPrefix, command }) => {
     const senderNum = realSender.split('@')[0];
     const razon = args.join(' ') || t.sin_razon;
 
-    if (modoGuardado === 'mention') {
-      const jids = participants.map(p => p.id).filter(Boolean);
-      const tagLines = jids.map(j => `┃>@${j.split('@')[0]}`).join('\n');
-      const texto = t.mensaje_mention
+    const customTemplate = getCustomTemplate(chatId);
+    const jids = participants.map(p => p.id).filter(Boolean);
+    const tagLines = jids.map(j => `┃>@${j.split('@')[0]}`).join('\n');
+
+    let texto;
+    let mentions;
+
+    if (customTemplate?.text) {
+      texto = renderTagallTemplate(customTemplate.text, {
+        bot: BOT(),
+        grupo: groupName,
+        tag: `@${senderNum}`,
+        razon,
+        tags: tagLines
+      });
+      mentions = modoGuardado === 'mention' ? [realSender, ...jids] : [realSender];
+    } else if (modoGuardado === 'mention') {
+      texto = t.mensaje_mention
         .replace(/\{bot\}/g, BOT())
         .replace('{group}', groupName)
         .replace('{tag}', `@${senderNum}`)
         .replace('{razon}', razon)
         .replace('{tags}', tagLines);
-      const sentMsg = await conn.sendMessage(chatId, {
-        text: texto,
-        mentions: [realSender, ...jids]
-      });
-      registerDynamicMessage(sentMsg?.key?.id);
+      mentions = [realSender, ...jids];
     } else {
-      const texto = t.mensaje
+      texto = t.mensaje
         .replace(/\{bot\}/g, BOT())
         .replace('{group}', groupName)
         .replace('{tag}', `@${senderNum}`)
         .replace('{razon}', razon);
-      const sentMsg = await conn.sendMessage(chatId, {
-        text: texto,
-        mentionAll: true,
-        mentions: [realSender]
-      });
-      registerDynamicMessage(sentMsg?.key?.id);
+      mentions = [realSender];
     }
+
+    let sentMsg;
+    if (customTemplate?.image) {
+      sentMsg = await conn.sendMessage(chatId, {
+        image: fs.readFileSync(customTemplate.image),
+        caption: texto,
+        mentions,
+        ...(modoGuardado !== 'mention' ? { mentionAll: true } : {})
+      });
+    } else {
+      sentMsg = await conn.sendMessage(chatId, {
+        text: texto,
+        mentions,
+        ...(modoGuardado !== 'mention' ? { mentionAll: true } : {})
+      });
+    }
+    registerDynamicMessage(sentMsg?.key?.id);
 
   } catch {
     await m.reply(t.error);
