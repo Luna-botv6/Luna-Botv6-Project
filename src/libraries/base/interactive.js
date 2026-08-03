@@ -130,6 +130,7 @@ export const interactiveUtils = {
       ephemeralExpiration: WA_DEFAULT_EPHEMERAL
     });
     await conn.relayMessage(jid, msgs.message, { messageId: msgs.key.id });
+    return msgs;
   },
 
   async sendCarousel(conn, jid, text = '', footer = '', text2 = '', messages, quoted, options) {
