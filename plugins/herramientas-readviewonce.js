@@ -36,3 +36,5 @@ handler.tags = ['tools']
 handler.command = /^(readviewonce|read|revelar|readvo)$/i
 handler.group = true
 export default handler
+
+//sinbug
