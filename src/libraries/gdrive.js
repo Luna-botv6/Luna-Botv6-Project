@@ -1,6 +1,7 @@
 import {join} from 'path';
 import {promises as fs} from 'fs';
 import {promisify} from 'util';
+import {randomBytes} from 'crypto';
 import {google} from 'googleapis';
 
 
@@ -23,9 +24,11 @@ class GoogleAuth extends EventEmitter {
     try {
       token = JSON.parse(await fs.readFile(TOKEN_PATH));
     } catch (e) {
+      const state = randomBytes(32).toString('hex');
       const authUrl = oAuth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES,
+        state,
       });
       this.emit('auth', authUrl);
       const code = await promisify(this.once).bind(this)('token');
