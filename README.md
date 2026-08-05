@@ -1121,6 +1121,22 @@ Licenciado bajo la [Licencia MIT](LICENSE).
 
 ---
 
+## 🗑️ Registro de Limpieza de Archivos Obsoletos (9 Archivos)
+
+En la última auditoría y refactorización se removieron 9 archivos obsoletos, duplicados o en desuso que no contaban con referencias ni importaciones activas en el código:
+
+1. **`pipdeps.js`** *(Raíz)*: Script para instalar `yt-dlp` vía pip en el arranque. Quedó obsoleto tras la eliminación de los descargadores de YouTube antiguos.
+2. **`lib/downloader-playlist.js`**: Archivo de comando duplicado ubicado por error en `lib/` (el plugin activo está en `plugins/downloader-playlist.js`).
+3. **`lib/chatsDB.js`**: Módulo standalone de base de datos de chats sin importaciones en ningún archivo del proyecto.
+4. **`lib/logError.js`**: Módulo de registro de errores no importado (`handler.js` utiliza su propia función local `logError`).
+5. **`lib/lunaDB.js`**: Adaptador asíncrono sin codificación de JID ni caché, en desuso frente a `lib/funcion/userManager.js`.
+6. **`lib/romperprote.js`**: Lógica auxiliar de juego sin importación en los plugins activos.
+7. **`lib/tictactoe-db.js`**: Módulo de base de datos de tres en raya no referenciado por ningún plugin.
+8. **`lib/funcion/earlyFilter.js`**: Filtro preliminar de mensajes desusado y sin importaciones.
+9. **`lib/funcion/usersDB.js`**: Gestor de usuarios antiguo que guardaba en un JSON monolítico (`./database/users.json`), en lugar del sistema actual con Proxy por JID de `userManager.js` (`./database/users/{jid}.json`).
+
+---
+
 <div align="center">
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:8B5CF6,50:00fff7,100:0d0d0d&height=120&section=footer"/>
