@@ -5,7 +5,7 @@ import { join, dirname } from 'path';
 const BACKUP_DIR = join(process.cwd(), 'backup');
 
 const handler = async (m, { conn, text, usedPrefix }) => {
-  let omitFiles = ['config.js', 'subbot-commands/'];
+  let omitFiles = ['config.js'];
   if (text && text.toLowerCase().startsWith('omite ')) {
     const extras = text.replace(/^omite\s+/i, '').trim().split(/\s+/).filter(Boolean);
     for (const extra of extras) {

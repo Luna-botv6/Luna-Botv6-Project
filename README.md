@@ -1121,9 +1121,9 @@ Licenciado bajo la [Licencia MIT](LICENSE).
 
 ---
 
-## 🗑️ Registro de Limpieza de Archivos Obsoletos (9 Archivos)
+## 🗑️ Registro de Limpieza de Archivos Obsoletos (10 Elementos)
 
-En la última auditoría y refactorización se removieron 9 archivos obsoletos, duplicados o en desuso que no contaban con referencias ni importaciones activas en el código:
+En la última auditoría y refactorización se removieron archivos y directorios obsoletos, duplicados o en desuso que no contaban con referencias ni importaciones activas en el código:
 
 1. **`pipdeps.js`** *(Raíz)*: Script para instalar `yt-dlp` vía pip en el arranque. Quedó obsoleto tras la eliminación de los descargadores de YouTube antiguos.
 2. **`lib/downloader-playlist.js`**: Archivo de comando duplicado ubicado por error en `lib/` (el plugin activo está en `plugins/downloader-playlist.js`).
@@ -1134,6 +1134,7 @@ En la última auditoría y refactorización se removieron 9 archivos obsoletos, 
 7. **`lib/tictactoe-db.js`**: Módulo de base de datos de tres en raya no referenciado por ningún plugin.
 8. **`lib/funcion/earlyFilter.js`**: Filtro preliminar de mensajes desusado y sin importaciones.
 9. **`lib/funcion/usersDB.js`**: Gestor de usuarios antiguo que guardaba en un JSON monolítico (`./database/users.json`), en lugar del sistema actual con Proxy por JID de `userManager.js` (`./database/users/{jid}.json`).
+10. **`subbot-commands/`** *(Carpeta y 6 comandos de ejemplo)*: Directorio heredado con comandos estáticos (`s.js`, `play.js`, `menu.js`, `love.js`, `invocar.js`, `facebook.js`). Los SubBots ejecutan de forma nativa todo el catálogo de comandos desde `./plugins/`.
 
 ---
 
