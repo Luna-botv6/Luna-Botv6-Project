@@ -467,7 +467,7 @@ if (!opts['test']) {
   }
 }
 
-if (opts['server']) (await import('./server.js')).default(global.conn, PORT);
+(await import('./server.js')).default(global.conn, PORT);
 
 async function clearTmp() {
   const tmp = [join('./src/tmp'), join('./temp')];

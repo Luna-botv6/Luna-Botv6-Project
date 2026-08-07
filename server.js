@@ -1,18 +1,281 @@
 import express from 'express';
 import {createServer} from 'http';
-import path from 'path';
-import {Socket} from 'socket.io';
 import {toBuffer} from 'qrcode';
 import fetch from 'node-fetch';
+import fs from 'fs';
+import path from 'path';
+import {connectionManager} from './lib/funcion/connection-manager.js';
+import {getAllPermissions, setGroupDownloadEnabled} from './lib/funcion/group-permissions.js';
+import {getRecentDownloads} from './lib/funcion/download-log.js';
+import {isRegistered, verifyCredentials} from './lib/funcion/panel-auth.js';
+import {getConfig, setConfig} from './lib/funcConfig.js';
+
+const GROUP_FUNCTIONS = {
+  welcome: 'Bienvenida',
+  bye: 'Despedida',
+  modoadmin: 'Modo admin',
+  antiLink: 'Anti link',
+  antiLink2: 'Anti link (extra)',
+  antidelete: 'Anti borrado',
+  antiToxic: 'Anti tóxico',
+  antiviewonce: 'Anti view-once',
+  detect: 'Detección',
+  detect2: 'Detección (extra)',
+  autosticker: 'Auto sticker',
+  audios: 'Audios en grupo',
+  afkAllowed: 'AFK'
+};
+
+const loginAttempts = new Map();
+const LOGIN_WINDOW_MS = 60 * 1000;
+const LOGIN_MAX_ATTEMPTS = 5;
+
+function isLoginRateLimited(ip) {
+  const now = Date.now();
+  const attempts = (loginAttempts.get(ip) || []).filter((t) => now - t < LOGIN_WINDOW_MS);
+  if (attempts.length === 0) {
+    loginAttempts.delete(ip);
+  } else {
+    loginAttempts.set(ip, attempts);
+  }
+  return attempts.length >= LOGIN_MAX_ATTEMPTS;
+}
+
+function registerFailedLogin(ip) {
+  const attempts = loginAttempts.get(ip) || [];
+  attempts.push(Date.now());
+  loginAttempts.set(ip, attempts);
+}
+
+function requirePanelAuth(req, res, next) {
+  const user = req.headers['x-panel-user'];
+  const pass = req.headers['x-panel-pass'];
+  if (!verifyCredentials(user, pass)) return res.status(401).json({ok: false});
+  next();
+}
+
+function listSubbotsData() {
+  const subBotDir = './sub-lunabot/';
+  if (!fs.existsSync(subBotDir)) return [];
+  const userDirs = fs.readdirSync(subBotDir);
+  const subbots = [];
+  for (const dirName of userDirs) {
+    const userPath = path.join(subBotDir, dirName);
+    const credsPath = path.join(userPath, 'creds.json');
+    if (!fs.statSync(userPath).isDirectory()) continue;
+    if (!fs.existsSync(credsPath)) continue;
+    let creds;
+    try {
+      creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
+    } catch {
+      continue;
+    }
+    if (!creds.me) continue;
+    let realNumber;
+    if (creds.me.jid && !creds.me.jid.endsWith('@lid')) {
+      realNumber = creds.me.jid.split('@')[0];
+    } else {
+      realNumber = dirName;
+    }
+    subbots.push({
+      dirName,
+      number: realNumber,
+      connected: !!connectionManager.isConnected(dirName)
+    });
+  }
+  return subbots;
+}
+
+async function disconnectSubbot(dirName) {
+  const sock = connectionManager.getSocket(dirName);
+  if (sock) {
+    try {
+      await sock.logout();
+    } catch {}
+    try {
+      sock.end(new Error('Panel: desconexión manual'));
+    } catch {}
+  }
+  connectionManager.removeConnection(dirName);
+}
 
 function connect(conn, PORT) {
   const app = global.app = express();
-  console.log(app);
   const server = global.server = createServer(app);
+  app.use(express.json({limit: '20mb'}));
   let _qr = 'El código QR es invalido, posiblemente ya se escaneo el código QR.';
 
   conn.ev.on('connection.update', function appQR({qr}) {
     if (qr) _qr = qr;
+  });
+
+  app.get('/panel/ping', requirePanelAuth, (req, res) => {
+    res.json({ok: true, port: PORT});
+  });
+
+  app.get('/panel', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'src/libraries/base/dashboard.html'));
+  });
+
+  app.get('/panel/registered', (req, res) => {
+    res.json({ok: true, registered: isRegistered()});
+  });
+
+  app.post('/panel/login', (req, res) => {
+    const ip = req.ip;
+    if (isLoginRateLimited(ip)) {
+      return res.status(429).json({ok: false, error: 'Demasiados intentos. Esperá un minuto y volvé a intentar.'});
+    }
+    const {username, password} = req.body || {};
+    if (!verifyCredentials(username, password)) {
+      registerFailedLogin(ip);
+      return res.status(401).json({ok: false});
+    }
+    res.json({ok: true});
+  });
+
+  app.get('/panel/subbots', requirePanelAuth, (req, res) => {
+    res.json({ok: true, subbots: listSubbotsData()});
+  });
+
+  app.post('/panel/subbots/:dirName/disconnect', requirePanelAuth, async (req, res) => {
+    await disconnectSubbot(req.params.dirName);
+    res.json({ok: true});
+  });
+
+  app.post('/panel/subbots/:dirName/delete', requirePanelAuth, async (req, res) => {
+    await disconnectSubbot(req.params.dirName);
+    const userPath = path.join('./sub-lunabot/', req.params.dirName);
+    try {
+      fs.rmSync(userPath, {recursive: true, force: true});
+    } catch {}
+    res.json({ok: true});
+  });
+
+  app.get('/panel/groups', requirePanelAuth, async (req, res) => {
+    try {
+      const groupsObj = await conn.groupFetchAllParticipating();
+      const permissions = getAllPermissions();
+      const groups = Object.entries(groupsObj).map(([jid, meta]) => ({
+        jid,
+        name: meta.subject || jid,
+        participants: meta.participants?.length || 0,
+        enabled: jid in permissions ? !!permissions[jid] : true,
+        banned: !!(getConfig(jid) || {}).isBanned
+      }));
+      res.json({ok: true, groups});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.post('/panel/groups/:jid/toggle', requirePanelAuth, (req, res) => {
+    const {jid} = req.params;
+    const {enabled} = req.body || {};
+    setGroupDownloadEnabled(jid, enabled);
+    res.json({ok: true});
+  });
+
+  app.get('/panel/downloads', requirePanelAuth, (req, res) => {
+    res.json({ok: true, downloads: getRecentDownloads()});
+  });
+
+  app.get('/panel/groups/:jid/functions', requirePanelAuth, (req, res) => {
+    const {jid} = req.params;
+    const chatConfig = getConfig(jid) || {};
+    const functions = Object.entries(GROUP_FUNCTIONS).map(([key, label]) => ({
+      key,
+      label,
+      enabled: !!chatConfig[key]
+    }));
+    res.json({ok: true, functions});
+  });
+
+  app.post('/panel/groups/:jid/functions', requirePanelAuth, async (req, res) => {
+    const {jid} = req.params;
+    const {key, enabled} = req.body || {};
+    if (!GROUP_FUNCTIONS[key]) return res.status(400).json({ok: false, error: 'Función inválida'});
+    const chatConfig = getConfig(jid) || {};
+    chatConfig[key] = !!enabled;
+    setConfig(jid, chatConfig);
+    try {
+      await conn.sendMessage(jid, {
+        text: `⚙️ *${GROUP_FUNCTIONS[key]}* fue ${enabled ? 'activada ✅' : 'desactivada ❌'} desde el panel del owner.`
+      });
+    } catch {}
+    res.json({ok: true});
+  });
+
+  app.post('/panel/groups/:jid/ban', requirePanelAuth, async (req, res) => {
+    const {jid} = req.params;
+    try {
+      const chatConfig = getConfig(jid) || {};
+      chatConfig.isBanned = true;
+      setConfig(jid, chatConfig);
+      try {
+        await conn.sendMessage(jid, {
+          text: '🚫 Este grupo fue baneado por el owner desde el panel. El bot no va a responder acá hasta que lo desbaneen.'
+        });
+      } catch {}
+      res.json({ok: true});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.post('/panel/groups/:jid/unban', requirePanelAuth, async (req, res) => {
+    const {jid} = req.params;
+    try {
+      const chatConfig = getConfig(jid) || {};
+      chatConfig.isBanned = false;
+      setConfig(jid, chatConfig);
+      try {
+        await conn.sendMessage(jid, {
+          text: '✅ Este grupo fue desbaneado por el owner desde el panel. El bot vuelve a responder normalmente acá.'
+        });
+      } catch {}
+      res.json({ok: true});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.post('/panel/groups/:jid/leave', requirePanelAuth, async (req, res) => {
+    const {jid} = req.params;
+    try {
+      await conn.groupLeave(jid);
+      res.json({ok: true});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  let lastChatSendAt = 0;
+  const CHAT_SEND_COOLDOWN_MS = 5000;
+
+  app.post('/panel/chat/send', requirePanelAuth, async (req, res) => {
+    const now = Date.now();
+    if (now - lastChatSendAt < CHAT_SEND_COOLDOWN_MS) {
+      return res.status(429).json({ok: false, error: 'Esperá unos segundos antes de mandar otro mensaje.'});
+    }
+    const {jid, message, media} = req.body || {};
+    if (!jid || (!message && !media)) return res.status(400).json({ok: false, error: 'Falta jid o contenido'});
+    try {
+      if (media && media.data && media.mimetype) {
+        const buffer = Buffer.from(media.data, 'base64');
+        const isVideo = media.mimetype.startsWith('video/');
+        const payload = isVideo
+          ? {video: buffer, mimetype: media.mimetype, caption: message || undefined}
+          : {image: buffer, mimetype: media.mimetype, caption: message || undefined};
+        await conn.sendMessage(jid, payload);
+      } else {
+        await conn.sendMessage(jid, {text: message});
+      }
+      lastChatSendAt = now;
+      res.json({ok: true});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
   });
 
   app.use(async (req, res) => {
@@ -21,28 +284,16 @@ function connect(conn, PORT) {
   });
 
   server.listen(PORT, () => {
-    console.log('[ ℹ️ ] La aplicación está escuchando el puerto', PORT, '(ignorar si ya escaneo el código QR)');
+    console.log('[ ℹ️ ] Panel y QR listos (ignorar si ya escaneo el código QR)');
     if (opts['keepalive']) keepAlive();
   });
-}
-
-function pipeEmit(event, event2, prefix = '') {
-  const old = event.emit;
-  event.emit = function(event, ...args) {
-    old.emit(event, ...args);
-    event2.emit(prefix + event, ...args);
-  };
-  return {
-    unpipeEmit() {
-      event.emit = old;
-    }};
 }
 
 function keepAlive() {
   const url = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
   if (/(\/\/|\.)undefined\./.test(url)) return;
   setInterval(() => {
-    fetch(url).catch(console.error);
+    fetch(url).catch(() => {});
   }, 5 * 1000 * 60);
 }
 
