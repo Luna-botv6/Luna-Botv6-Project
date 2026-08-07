@@ -30,7 +30,22 @@ const loginAttempts = new Map();
 const LOGIN_WINDOW_MS = 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 5;
 
+const loginStrikes = new Map();
+const STRIKE_LOCKOUT_TIERS = [
+  {strikes: 60, lockMs: 24 * 60 * 60 * 1000},
+  {strikes: 30, lockMs: 60 * 60 * 1000},
+  {strikes: 15, lockMs: 15 * 60 * 1000}
+];
+
+function getStrikeLockout(ip) {
+  const record = loginStrikes.get(ip);
+  if (!record) return 0;
+  if (record.lockUntil && record.lockUntil > Date.now()) return record.lockUntil;
+  return 0;
+}
+
 function isLoginRateLimited(ip) {
+  if (getStrikeLockout(ip) > Date.now()) return true;
   const now = Date.now();
   const attempts = (loginAttempts.get(ip) || []).filter((t) => now - t < LOGIN_WINDOW_MS);
   if (attempts.length === 0) {
@@ -45,6 +60,21 @@ function registerFailedLogin(ip) {
   const attempts = loginAttempts.get(ip) || [];
   attempts.push(Date.now());
   loginAttempts.set(ip, attempts);
+
+  const record = loginStrikes.get(ip) || {count: 0, lockUntil: 0};
+  record.count += 1;
+  for (const tier of STRIKE_LOCKOUT_TIERS) {
+    if (record.count >= tier.strikes) {
+      record.lockUntil = Date.now() + tier.lockMs;
+      break;
+    }
+  }
+  loginStrikes.set(ip, record);
+}
+
+function clearLoginStrikes(ip) {
+  loginStrikes.delete(ip);
+  loginAttempts.delete(ip);
 }
 
 function requirePanelAuth(req, res, next) {
@@ -99,6 +129,18 @@ async function disconnectSubbot(dirName) {
   connectionManager.removeConnection(dirName);
 }
 
+const GROUPS_CACHE_TTL_MS = 30 * 1000;
+let groupsCache = {data: null, fetchedAt: 0};
+
+async function getGroupsCached(conn) {
+  const now = Date.now();
+  if (!groupsCache.data || now - groupsCache.fetchedAt > GROUPS_CACHE_TTL_MS) {
+    groupsCache.data = await conn.groupFetchAllParticipating();
+    groupsCache.fetchedAt = now;
+  }
+  return groupsCache.data;
+}
+
 function connect(conn, PORT) {
   const app = global.app = express();
   const server = global.server = createServer(app);
@@ -124,13 +166,18 @@ function connect(conn, PORT) {
   app.post('/panel/login', (req, res) => {
     const ip = req.ip;
     if (isLoginRateLimited(ip)) {
-      return res.status(429).json({ok: false, error: 'Demasiados intentos. Esperá un minuto y volvé a intentar.'});
+      const lockUntil = getStrikeLockout(ip);
+      const error = lockUntil > Date.now()
+        ? `Demasiados intentos fallidos. Esperá ${Math.ceil((lockUntil - Date.now()) / 60000)} minuto(s) y volvé a intentar.`
+        : 'Demasiados intentos. Esperá un minuto y volvé a intentar.';
+      return res.status(429).json({ok: false, error});
     }
     const {username, password} = req.body || {};
     if (!verifyCredentials(username, password)) {
       registerFailedLogin(ip);
       return res.status(401).json({ok: false});
     }
+    clearLoginStrikes(ip);
     res.json({ok: true});
   });
 
@@ -154,15 +201,57 @@ function connect(conn, PORT) {
 
   app.get('/panel/groups', requirePanelAuth, async (req, res) => {
     try {
-      const groupsObj = await conn.groupFetchAllParticipating();
+      const groupsObj = await getGroupsCached(conn);
       const permissions = getAllPermissions();
-      const groups = Object.entries(groupsObj).map(([jid, meta]) => ({
+      const allGroups = Object.entries(groupsObj).map(([jid, meta]) => ({
         jid,
         name: meta.subject || jid,
         participants: meta.participants?.length || 0,
         enabled: jid in permissions ? !!permissions[jid] : true,
         banned: !!(getConfig(jid) || {}).isBanned
       }));
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize) || 50));
+      const start = (page - 1) * pageSize;
+      const paged = allGroups.slice(start, start + pageSize);
+      res.json({
+        ok: true,
+        groups: paged,
+        total: allGroups.length,
+        enabledCount: allGroups.filter((g) => g.enabled).length,
+        page,
+        pageSize,
+        hasMore: start + pageSize < allGroups.length
+      });
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.get('/panel/groups/:jid/status', requirePanelAuth, async (req, res) => {
+    try {
+      const {jid} = req.params;
+      const groupsObj = await getGroupsCached(conn);
+      const meta = groupsObj[jid];
+      if (!meta) return res.status(404).json({ok: false, error: 'Grupo no encontrado'});
+      const permissions = getAllPermissions();
+      res.json({
+        ok: true,
+        jid,
+        name: meta.subject || jid,
+        participants: meta.participants?.length || 0,
+        enabled: jid in permissions ? !!permissions[jid] : true,
+        banned: !!(getConfig(jid) || {}).isBanned
+      });
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.get('/panel/groups/names', requirePanelAuth, async (req, res) => {
+    try {
+      const groupsObj = await getGroupsCached(conn);
+      const groups = Object.entries(groupsObj).map(([jid, meta]) => ({jid, name: meta.subject || jid}));
       res.json({ok: true, groups});
     } catch (e) {
       res.status(500).json({ok: false, error: e.message});
@@ -244,6 +333,7 @@ function connect(conn, PORT) {
     const {jid} = req.params;
     try {
       await conn.groupLeave(jid);
+      groupsCache.data = null;
       res.json({ok: true});
     } catch (e) {
       res.status(500).json({ok: false, error: e.message});
