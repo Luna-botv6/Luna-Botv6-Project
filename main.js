@@ -95,7 +95,7 @@ global.videoListXXX = [];
 const __dirname = global.__dirname(import.meta.url);
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse());
 global.prefix = new RegExp('^[' + (opts['prefix'] || '*/i!#$%+£¢€¥^°=¶†×÷π√✓©®:;?&.\\-.@').replace(/[|\\{}()[\]^$+*?.\-\^]/g, '\\$&') + ']');
-global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile('database.json'));
+global.db = new Low(new JSONFile('database.json'));
 
 global.loadDatabase = async function loadDatabase() {
   if (global.db.READ) {
@@ -130,7 +130,6 @@ global.loadDatabase = async function loadDatabase() {
 };
 await loadDatabase();
 installUsersProxy();
-global.BotName = global.db.data.config.botName || 'Luna-Botv6';
 await restaurarConfiguraciones();
 
 global.chatgpt = new Low(new JSONFile(path.join(__dirname, '/db/chatgpt.json')));
@@ -208,8 +207,6 @@ try {
     console.log(chalk.yellow('[ ⚠ ] Usando versión hardcodeada de fallback: [' + version.join(', ') + ']'));
   }
 }
-
-console.info = () => {};
 
 const connectionOptions = {
   logger: Pino({ level: 'silent' }),
@@ -466,7 +463,6 @@ if (!opts['test']) {
   if (global.db) {
     setInterval(async () => {
       if (global.db.data) await global.db.write();
-      if (opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 'tmp', 'jadibts'], tmp.forEach((filename) => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])));
     }, 30 * 1000);
   }
 }
@@ -661,8 +657,6 @@ async function connectionUpdate(update) {
       clearTimeout(pairingTimeout);
       pairingTimeout = null;
     }
-
-  } else if (connection === 'connecting') {
 
   } else if (connection === 'close') {
     global._connectedLogged = false;
@@ -897,7 +891,6 @@ global.reloadHandler = async function(restatConn) {
     global.conn = await makeWASocket(connectionOptions, {chats: oldChats});
     global.timestamp.connect = new Date();
     applyPrintWrapper(global.conn);
-    manejarEventosGrupo(global.conn);
     isInit = true;
   }
 
@@ -1020,7 +1013,6 @@ Object.freeze(global.reload);
 watch(pluginFolder, global.reload);
 await global.reloadHandler();
 
-manejarEventosGrupo(conn);
 startGroupCleanService();
 
 async function _quickTest() {
