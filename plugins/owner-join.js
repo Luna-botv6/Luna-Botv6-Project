@@ -1,44 +1,51 @@
+import fs from 'fs';
+import path from 'path';
 const linkRegex = /chat\.whatsapp\.com\/([0-9A-Za-z]{20,24})/i;
-
-let joinQueue = Promise.resolve();
-
-const pendingRequests = new Map();
-const REQUEST_EXPIRY = 24 * 60 * 60 * 1000;
-
-const USER_LIMIT_WINDOW = 12 * 60 * 60 * 1000;
-const MAX_REQUESTS_PER_USER = 3;
-const userRequestStats = new Map();
-
-const JOIN_COOLDOWN = 3_000;
-
+const dbFile = path.join(process.cwd(), 'database', 'join_requests.json');
+const activeNotifying = new Set();
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-const generateRequestId = () => {
-  let id;
-  do { id = Math.floor(1000 + Math.random() * 9000).toString(); }
-  while (pendingRequests.has(id));
-  return id;
-};
-
-const cleanupRequests = () => {
-  const now = Date.now();
-  for (const [id, data] of pendingRequests.entries())
-    if (now - data.timestamp > REQUEST_EXPIRY) pendingRequests.delete(id);
-};
-
-const canUserRequest = (sender) => {
-  const now = Date.now();
-  const current = userRequestStats.get(sender) || { count: 0, first: now };
-  if (now - current.first > USER_LIMIT_WINDOW) {
-    userRequestStats.set(sender, { count: 1, first: now });
-    return true;
+function loadRequests() {
+  try {
+    if (!fs.existsSync(dbFile)) return {};
+    const data = JSON.parse(fs.readFileSync(dbFile, 'utf8'));
+    const now = Date.now();
+    const expiryWindow = 10 * 60 * 1000;
+    let modified = false;
+    for (const id in data) {
+      if (now - data[id].timestamp > expiryWindow) {
+        delete data[id];
+        modified = true;
+      }
+    }
+    if (modified) saveRequests(data);
+    return data;
+  } catch (e) {
+    return {};
   }
-  if (current.count >= MAX_REQUESTS_PER_USER) return false;
-  current.count += 1;
-  userRequestStats.set(sender, current);
-  return true;
-};
-
+}
+function saveRequests(data) {
+  try {
+    const dir = path.dirname(dbFile);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const tmpFile = dbFile + '.tmp';
+    fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf8');
+    fs.renameSync(tmpFile, dbFile);
+  } catch (e) {}
+}
+function removeRequest(id) {
+  const requests = loadRequests();
+  if (requests[id]) {
+    delete requests[id];
+    saveRequests(requests);
+  }
+}
+function generateRequestId(requests) {
+  let id;
+  do {
+    id = Math.floor(1000 + Math.random() * 9000).toString();
+  } while (requests[id]);
+  return id;
+}
 const parseTime = (text) => {
   const match = text?.match(/(\d+)\s*(minuto|hora|día|dias)/i);
   if (!match) return { time: 60, unit: 'minuto', timeInMs: 60 * 60 * 1000 };
@@ -50,209 +57,104 @@ const parseTime = (text) => {
   else timeInMs = time * 24 * 60 * 60 * 1000;
   return { time, unit, timeInMs };
 };
-
-const getJoinError = (error) => {
-  if (!error) return '⚠️ Error desconocido.';
-  const msg = (error.message || '').toLowerCase();
-  const code = error.data ?? error.output?.statusCode ?? error.status;
-  if (code === 401 || msg.includes('not-authorized') || msg.includes('forbidden'))
-    return '⚠️ Enlace inválido o expirado.';
-  if (msg.includes('connection closed') || msg.includes('connection lost'))
-    return '⚠️ Conexión perdida. Intenta después.';
-  if (msg.includes('already a participant') || msg.includes('already-participant'))
-    return '⚠️ El bot ya es miembro de ese grupo.';
-  return `⚠️ ${error.message || 'Error desconocido'}`;
-};
-
-const doJoin = (conn, code) =>
-  (joinQueue = joinQueue
-    .then(() => delay(JOIN_COOLDOWN))
-    .then(() => conn.groupAcceptInvite(code)));
-
-const sendWelcomeMessage = async (conn, groupId, senderNumber, time, unit) => {
-  try {
-    const meta = await conn.groupMetadata(groupId);
-    const name = meta.subject || 'este grupo';
-    const plural = time > 1 ? 's' : '';
-    await conn.sendMessage(groupId, {
-      text:
-        '👋 *Hola a todos!*\n\n' +
-        `Soy *${conn.user.name}*, fui invitado por *@${senderNumber.split('@')[0]}*\n\n` +
-        'Para ver el menú escribe *#help*\n\n' +
-        `⏳ Saldré automáticamente después de: *${time} ${unit}${plural}*`,
-      mentions: [senderNumber],
-    });
-  } catch (e) {
-    console.error('[owner-join] sendWelcomeMessage error:', e?.message);
-  }
-};
-
+function buildNoticeText(id, req) {
+  return (
+    `👋 *Hola Creador/a!*\n\n` +
+    `He notado que alguien solicitó unirme a su grupo:\n` +
+    `🆔 ID: *${id}*\n` +
+    `👤 Solicitante: @${req.userNumber}\n` +
+    `🔗 Link: ${req.link}\n` +
+    `⏳ Tiempo: ${req.time} ${req.unit}${req.time > 1 ? 's' : ''}\n\n` +
+    `ℹ️ Si deseas que el bot esté en ese grupo, ingresa al enlace y añádelo manualmente.`
+  );
+}
 const handler = async (m, { conn, text, isMods, isOwner, isPrems, usedPrefix, command }) => {
   if (m.type === 'protocolMessage' || m.type === 'protocol') return;
   if (m.messageStubType === 20 || m.messageStubType === 21) return;
-
-  if (command === 'aceptar' || command === 'aprobar') {
-    if (!isOwner) return m.reply('❌ Solo propietarios pueden aprobar solicitudes.');
-
-    const requestId = text?.trim();
-    if (!requestId || !/^\d{4}$/.test(requestId))
-      return m.reply('❌ Uso: /aceptar 1234');
-
-    cleanupRequests();
-    if (!pendingRequests.has(requestId))
-      return m.reply('❌ Solicitud no encontrada o expirada.');
-
-    const request = pendingRequests.get(requestId);
-    pendingRequests.delete(requestId);
-
-    await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
-
-    try {
-      const groupId = await doJoin(conn, request.code);
-
-      if (global.db?.data?.chats) {
-        global.db.data.chats[groupId] = global.db.data.chats[groupId] || {};
-        global.db.data.chats[groupId].expired = Date.now() + request.timeInMs;
-      }
-
-      await sendWelcomeMessage(conn, groupId, request.userId, request.time, request.unit);
-
-      await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
-      await m.reply(
-        '✅ *Bot unido al grupo*\n\n' +
-        `👤 Solicitante: ${request.userNumber}\n` +
-        `⏳ Tiempo: ${request.time} ${request.unit}${request.time > 1 ? 's' : ''}\n` +
-        `🆔 ID solicitud: ${requestId}\n\n` +
-        'ℹ️ Recuerda no usar el bot para spam.'
-      );
-    } catch (error) {
-      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
-      await m.reply(`❌ No pude unirme al grupo.\n\n${getJoinError(error)}`);
+  const cmd = command.toLowerCase();
+  if (cmd === 'listajoin' || cmd === 'solicitudesjoin' || cmd === 'requestsjoin') {
+    if (!isOwner) return;
+    const requests = loadRequests();
+    const keys = Object.keys(requests);
+    if (keys.length === 0) {
+      return m.reply('📋 *No hay solicitudes de grupo pendientes.*');
     }
-    return;
+    const pendingId = keys[0];
+    const req = requests[pendingId];
+    return m.reply(buildNoticeText(pendingId, req), null, { mentions: [req.userId] });
   }
-
-  if (command === 'denegar' || command === 'rechazar') {
-    if (!isOwner) return m.reply('❌ Solo propietarios pueden rechazar solicitudes.');
-
-    const args = text?.trim().split(' ');
-    const requestId = args?.[0];
-    const motivo = args?.slice(1).join(' ') || 'No cumple con las políticas de uso.';
-
-    if (!requestId || !/^\d{4}$/.test(requestId))
-      return m.reply('❌ Uso: /denegar 1234 [motivo]');
-
-    cleanupRequests();
-    if (!pendingRequests.has(requestId))
-      return m.reply('❌ Solicitud no encontrada o expirada.');
-
-    const request = pendingRequests.get(requestId);
-    pendingRequests.delete(requestId);
-
-    await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
-    await m.reply(
-      '❌ *Solicitud rechazada*\n\n' +
-      `👤 Usuario: ${request.userNumber}\n` +
-      `📝 Motivo: ${motivo}`
-    );
-    return;
-  }
-
   const link = (m.quoted?.text || text)?.trim();
   const match = link?.match(linkRegex);
-  if (!link || !match) return m.reply('❌ Envía un enlace válido de grupo de WhatsApp.');
-
-  const [, code] = match;
-  const { time, unit, timeInMs } = parseTime(text);
-
-  if (isPrems || isMods || isOwner || m.fromMe) {
-    await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
-    try {
-      const groupId = await doJoin(conn, code);
-
-      if (global.db?.data?.chats) {
-        global.db.data.chats[groupId] = global.db.data.chats[groupId] || {};
-        global.db.data.chats[groupId].expired = Date.now() + timeInMs;
-      }
-
-      await sendWelcomeMessage(conn, groupId, m.sender, time, unit);
-
-      await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
-      await m.reply(
-        '✅ *Me uní al grupo exitosamente*\n\n' +
-        `⏳ Tiempo: *${time} ${unit}${time > 1 ? 's' : ''}*\n\n` +
-        'Usa el bot con responsabilidad.'
-      );
-    } catch (error) {
-      await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
-      await m.reply(`❌ No pude unirme.\n\n${getJoinError(error)}`);
-    }
+  if (!link || !match) {
+    if (isOwner) return m.reply('❌ Envía un enlace válido de grupo de WhatsApp.');
     return;
   }
-
-  if (!canUserRequest(m.sender)) {
-    return m.reply(
-      '⚠️ Has enviado demasiadas solicitudes en poco tiempo.\n\n' +
-      'Intenta de nuevo más tarde.'
+  const [, code] = match;
+  const { time, unit } = parseTime(text);
+  if (isPrems || isMods || isOwner || m.fromMe) {
+    await m.reply(
+      '📋 *Información de Grupo*\n\n' +
+      `🔗 Link: ${link}\n` +
+      `⏳ Tiempo: *${time} ${unit}${time > 1 ? 's' : ''}*\n\n` +
+      'ℹ️ Para unir al bot, ingresa al enlace del grupo y añádelo manualmente.'
     );
+    return;
   }
-
-  cleanupRequests();
-  const requestId = generateRequestId();
+  const requests = loadRequests();
+  const requestId = generateRequestId(requests);
   const senderNumber = m.sender.split('@')[0];
-
-  pendingRequests.set(requestId, {
+  requests[requestId] = {
+    id: requestId,
     userId: m.sender,
     userNumber: senderNumber,
     link,
     code,
     time,
     unit,
-    timeInMs,
-    timestamp: Date.now(),
-  });
-
-  await conn.sendMessage(m.chat, { react: { text: '📋', key: m.key } });
-  await m.reply(
-    '📋 *Solicitud enviada a revisión*\n\n' +
-    `🔗 ${link}\n` +
-    `⏳ Tiempo solicitado: *${time} ${unit}${time > 1 ? 's' : ''}*\n` +
-    `🆔 ID: *${requestId}*\n\n` +
-    '💌 El administrador revisará tu solicitud. Por favor ten paciencia.'
-  );
-
-  const ownerMsg =
-    '🔔 *Nueva Solicitud de Grupo*\n\n' +
-    `👤 @${senderNumber}\n` +
-    `🔗 ${link}\n` +
-    `⏳ Tiempo: ${time} ${unit}${time > 1 ? 's' : ''}\n` +
-    `🆔 *${requestId}*\n` +
-    `⏰ ${new Date().toLocaleString()}\n\n` +
-    '_Comandos:_\n' +
-    `✅ ${usedPrefix}aceptar ${requestId}\n` +
-    `❌ ${usedPrefix}denegar ${requestId}`;
-
-  const owners = (global.owner || [])
-    .map(([num]) => String(num).replace(/[^0-9]/g, ''))
-    .filter(num => num.length >= 10);
-
-  for (const ownerNum of owners) {
-    try {
-      const jid = `${ownerNum}@s.whatsapp.net`;
-      await Promise.race([
-        conn.sendMessage(jid, { text: ownerMsg, mentions: [m.sender] }),
-        delay(5000).then(() => { throw new Error('Timeout'); }),
-      ]);
-    } catch (err) {
-      console.error(`Error notificando owner ${ownerNum}:`, err.message);
-    }
-    await delay(3000);
-  }
+    timestamp: Date.now()
+  };
+  saveRequests(requests);
+  await delay(10000);
+  try {
+    await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
+  } catch (e) {}
 };
-
-handler.help = ['join [link] [tiempo]', 'aceptar [id]', 'denegar [id]'];
+handler.before = async function (m, { conn, isOwner, usedPrefix }) {
+  if (m.isGroup || !isOwner || !m.text) return false;
+  const requests = loadRequests();
+  const keys = Object.keys(requests);
+  if (keys.length === 0) return false;
+  const pendingId = keys[0];
+  if (activeNotifying.has(pendingId)) return false;
+  activeNotifying.add(pendingId);
+  const req = requests[pendingId];
+  const isCommand = usedPrefix ? m.text.startsWith(usedPrefix) : false;
+  const noticeDelay = isCommand ? 15000 : 10000;
+  setTimeout(async () => {
+    try {
+      const sentMsg = await conn.sendMessage(m.chat, {
+        text: buildNoticeText(pendingId, req)
+      });
+      if (sentMsg?.key) {
+        setTimeout(async () => {
+          try {
+            await conn.sendMessage(m.chat, { delete: sentMsg.key });
+          } catch (err) {}
+          removeRequest(pendingId);
+          activeNotifying.delete(pendingId);
+        }, 30000);
+      } else {
+        removeRequest(pendingId);
+        activeNotifying.delete(pendingId);
+      }
+    } catch (err) {
+      removeRequest(pendingId);
+      activeNotifying.delete(pendingId);
+    }
+  }, noticeDelay);
+  return false;
+};
+handler.help = ['join [link] [tiempo]', 'listajoin'];
 handler.tags = ['owner'];
-handler.command = /^(join|unete|nuevogrupo|unir|unite|unirse|entra|entrar|aceptar|aprobar|denegar|rechazar)$/i;
-handler.private = true;
-
+handler.command = /^(join|unete|nuevogrupo|unir|unite|unirse|entra|entrar|listajoin|solicitudesjoin|requestsjoin)$/i;
 export default handler;
