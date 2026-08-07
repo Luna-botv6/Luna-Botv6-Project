@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luna-BotV6 · Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05060f;
+    --surface: #0b0e1d;
+    --surface-2: #10142c;
+    --border: rgba(150,110,255,0.18);
+    --border-strong: rgba(150,110,255,0.4);
+    --text: #eef0fb;
+    --text-dim: #7c82a6;
+    --violet: #c078ff;
+    --violet-soft: #8f6bff;
+    --cyan: #3ffce8;
+    --pink: #ff56e0;
+    --warn: #ffc85c;
+    --danger: #ff5470;
+    --wa: #25d366;
+    --wa-deep: #128c7e;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background:
+      linear-gradient(rgba(150,110,255,0.05) 1px, transparent 1px) 0 0 / 100% 42px,
+      linear-gradient(90deg, rgba(150,110,255,0.05) 1px, transparent 1px) 0 0 / 42px 100%,
+      var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .glow {
+    position: fixed;
+    top: -260px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1100px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(192,120,255,0.2) 0%, rgba(63,252,232,0.07) 45%, rgba(0,0,0,0) 72%);
+    pointer-events: none;
+    animation: pulse 7s ease-in-out infinite;
+  }
+
+  .glow-2 {
+    position: fixed;
+    bottom: -320px;
+    right: -220px;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(255,86,224,0.1) 0%, rgba(0,0,0,0) 70%);
+    pointer-events: none;
+    animation: pulse 9s ease-in-out infinite reverse;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glow, .glow-2, .beacon { animation: none; }
+  }
+
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 6px;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 10px rgba(37,211,102,0.55));
+  }
+
+  .brand-mark svg { width: 100%; height: 100%; display: block; }
+
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 14px rgba(176,107,255,0.4);
+  }
+
+  .brand-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--cyan);
+    display: block;
+    margin-top: 1px;
+    letter-spacing: 0.04em;
+  }
+
+  nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .nav-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    padding: 0 10px;
+    margin-bottom: 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 12px;
+    border-radius: 9px;
+    font-size: 13.5px;
+    color: var(--text-dim);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+  }
+
+  .nav-item:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .nav-item.active {
+    background: rgba(192,120,255,0.1);
+    color: var(--text);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 0 16px rgba(192,120,255,0.12) inset;
+  }
+
+  .nav-item .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .dot {
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+  }
+
+  .sidebar-foot {
+    margin-top: auto;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    padding: 12px 10px;
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+  }
+
+  .sidebar-foot .host {
+    color: var(--cyan);
+  }
+
+  main {
+    flex: 1;
+    padding: 40px 52px 64px;
+    position: relative;
+    z-index: 1;
+    max-width: 1180px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 38px;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 36px;
+  }
+
+  .quick-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .quick-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+  }
+
+  .quick-card-icon { font-size: 18px; }
+
+  .quick-card-num {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--cyan);
+    text-shadow: 0 0 10px rgba(63,252,232,0.4);
+  }
+
+  .quick-card-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+  }
+
+  .welcome-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 26px 28px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .welcome-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(192,120,255,0.06), transparent 60%);
+    pointer-events: none;
+  }
+
+  .welcome-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .welcome-text {
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 60ch;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 29px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    background: linear-gradient(90deg, var(--text) 30%, var(--violet) 75%, var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 13.5px;
+    margin-top: 7px;
+    max-width: 52ch;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    box-shadow: 0 0 16px rgba(53,242,224,0.08);
+  }
+
+  .status-pill .beacon {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  .preview-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 200, 92, 0.06);
+    border: 1px solid rgba(255, 200, 92, 0.25);
+    color: var(--warn);
+    font-size: 12.5px;
+    padding: 11px 16px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    font-family: var(--font-mono);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+  }
+
+  .card::before, .card::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+  }
+
+  .card::before {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid var(--violet);
+    border-left: 2px solid var(--violet);
+    border-radius: 8px 0 0 0;
+  }
+
+  .card::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 2px solid var(--cyan);
+    border-right: 2px solid var(--cyan);
+    border-radius: 0 0 8px 0;
+  }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  .card-desc {
+    color: var(--text-dim);
+    font-size: 12.5px;
+    line-height: 1.6;
+    max-width: 42ch;
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--violet);
+    background: rgba(176,107,255,0.1);
+    border: 1px solid rgba(176,107,255,0.3);
+    padding: 4px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .tag-live {
+    color: var(--cyan);
+    background: rgba(53,242,224,0.1);
+    border: 1px solid rgba(53,242,224,0.35);
+    text-shadow: 0 0 8px rgba(53,242,224,0.5);
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .stat {
+    flex: 1;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .stat .stat-num {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--cyan);
+    text-shadow: 0 0 8px rgba(53,242,224,0.35);
+  }
+
+  .stat .stat-label {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+
+  .row .sub.err { color: var(--danger); }
+
+  .mock {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 60px;
+  }
+
+  .bars .bar {
+    flex: 1;
+    background: linear-gradient(180deg, var(--cyan), var(--violet-soft));
+    border-radius: 3px 3px 0 0;
+    opacity: 0.6;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12.5px;
+  }
+
+  .row:last-child { border-bottom: none; }
+
+  .row .name { color: var(--text); }
+  .row .sub { color: var(--text-dim); font-family: var(--font-mono); font-size: 10.5px; }
+
+  .switch {
+    width: 32px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--border);
+    position: relative;
+    flex-shrink: 0;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .switch::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    top: 1px;
+    left: 1px;
+    transition: left 0.15s ease;
+  }
+
+  .switch.on {
+    background: rgba(53, 242, 224, 0.2);
+    border: 1px solid rgba(53,242,224,0.4);
+  }
+
+  .switch.on::after {
+    background: var(--cyan);
+    left: 15px;
+    box-shadow: 0 0 8px var(--cyan);
+  }
+
+  .subbot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+
+  .subbot-row:last-child { border-bottom: none; }
+
+  .subbot-info { display: flex; align-items: center; gap: 9px; min-width: 0; }
+
+  .subbot-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+    flex-shrink: 0;
+  }
+
+  .subbot-dot.off { background: var(--text-dim); box-shadow: none; }
+
+  .subbot-name { font-size: 12.5px; }
+  .subbot-meta { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
+
+  .btn-ghost {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .btn-ghost[data-action="delete"]:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
+  .chat-mock {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .field-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  select, textarea, input[type="file"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: var(--font-mono);
+  }
+
+  input[type="file"]::file-selector-button {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    margin-right: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  select:focus, textarea:focus, input[type="file"]:focus {
+    outline: none;
+    border-color: var(--border-strong);
+  }
+
+  textarea { resize: vertical; min-height: 60px; }
+
+  .compose {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .compose-btn {
+    background: linear-gradient(120deg, var(--violet), var(--violet-soft));
+    color: #05060f;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 12px;
+    border: none;
+    border-radius: 8px;
+    padding: 0 18px;
+    cursor: pointer;
+    box-shadow: 0 0 14px rgba(176,107,255,0.35);
+  }
+
+  .compose-btn:hover { filter: brightness(1.1); }
+
+  .status-line {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    min-height: 14px;
+  }
+
+  .status-line.ok { color: var(--cyan); }
+  .status-line.err { color: var(--danger); }
+
+  .group-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 2px;
+    flex-wrap: wrap;
+  }
+
+  .group-tab {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .group-tab:hover { border-color: var(--border-strong); color: var(--text); }
+
+  .group-tab.active {
+    color: var(--cyan);
+    border-color: rgba(53,242,224,0.4);
+    background: rgba(53,242,224,0.08);
+  }
+
+  .group-tab-panel {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .group-tab-panel.active { display: flex; }
+
+  .action-btn {
+    background: linear-gradient(120deg, var(--violet), var(--violet-soft));
+    color: #05060f;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 12px;
+    border: none;
+    border-radius: 8px;
+    padding: 0 18px;
+    height: 34px;
+    cursor: pointer;
+    box-shadow: 0 0 14px rgba(176,107,255,0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .action-btn:hover { filter: brightness(1.1); }
+  .action-btn:disabled { cursor: not-allowed; opacity: 0.75; filter: none; }
+
+  .action-btn.danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(255,84,112,0.4);
+    box-shadow: none;
+  }
+
+  .action-btn.danger:hover { border-color: var(--danger); filter: none; background: rgba(255,84,112,0.08); }
+
+  .btn-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  .action-btn.loading .btn-spinner { display: inline-block; }
+  .action-btn.loading .btn-label { opacity: 0.65; }
+
+  .function-row .name { font-size: 12px; }
+
+  .danger-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .danger-note {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+  }
+
+  .ban-state {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .ban-state.is-active {
+    color: var(--cyan);
+    border-color: rgba(63,252,232,0.35);
+    background: rgba(63,252,232,0.06);
+  }
+
+  .ban-state.is-banned {
+    color: var(--danger);
+    border-color: rgba(255,84,112,0.35);
+    background: rgba(255,84,112,0.06);
+  }
+
+  @media (max-width: 860px) {
+    body { flex-direction: column; }
+    .sidebar {
+      width: 100%;
+      flex-direction: column;
+      gap: 14px;
+      padding: 16px;
+    }
+    .sidebar-foot { display: none; }
+    nav {
+      flex-direction: row;
+      overflow-x: auto;
+      gap: 8px;
+      padding-bottom: 2px;
+    }
+    .nav-label { display: none; }
+    .nav-item {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    main { padding: 24px; max-width: 100%; }
+    .grid { grid-template-columns: 1fr; }
+    .quick-grid { grid-template-columns: repeat(2, 1fr); }
+    header { flex-direction: column; gap: 14px; }
+  }
+  .app-shell {
+    display: none;
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  .gate {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .gate-card {
+    width: 100%;
+    max-width: 340px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 28px;
+    text-align: center;
+    position: relative;
+  }
+
+  .gate-card::before, .gate-card::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+  }
+
+  .gate-card::before {
+    top: -1px; left: -1px;
+    border-top: 2px solid var(--violet);
+    border-left: 2px solid var(--violet);
+    border-radius: 8px 0 0 0;
+  }
+
+  .gate-card::after {
+    bottom: -1px; right: -1px;
+    border-bottom: 2px solid var(--cyan);
+    border-right: 2px solid var(--cyan);
+    border-radius: 0 0 8px 0;
+  }
+
+  .gate-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .gate-text {
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .gate-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+    margin-top: 18px;
+  }
+
+  .gate-error {
+    color: var(--danger);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    min-height: 14px;
+  }
+
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: var(--font-mono);
+  }
+
+  input[type="text"]:focus, input[type="password"]:focus {
+    outline: none;
+    border-color: var(--border-strong);
+  }
+
+  .gate-btn {
+    background: linear-gradient(120deg, var(--violet), var(--violet-soft));
+    color: #05060f;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 0;
+    cursor: pointer;
+    box-shadow: 0 0 14px rgba(176,107,255,0.35);
+    margin-top: 4px;
+  }
+
+  .gate-btn:hover { filter: brightness(1.1); }
+
+  .gate-code {
+    display: block;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-family: var(--font-mono);
+    color: var(--cyan);
+    font-size: 12px;
+    margin: 12px 0;
+  }
+
+  @media (max-width: 860px) {
+    .app-shell { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="glow"></div>
+<div class="glow-2"></div>
+
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <div class="brand-mark" style="margin: 0 auto 18px; width: 44px; height: 44px;">WA_ICON_PLACEHOLDER</div>
+    <p id="gate-content" class="gate-text">Conectando con el bot...</p>
+  </div>
+</div>
+
+<div id="app" class="app-shell">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">WA_ICON_PLACEHOLDER</div>
+    <div>
+      <div class="brand-name">Luna-BotV6</div>
+      <span class="brand-tag">panel del owner</span>
+    </div>
+  </div>
+
+  <nav>
+    <span class="nav-label">Principal</span>
+    <div class="nav-item active" data-section="inicio" data-title="Torre de control" data-subtitle="Subbots, permisos por grupo, acciones por grupo y descargas conectados en vivo"><span class="dot"></span>Inicio</div>
+    <div class="nav-item" data-section="descargas" data-title="Descargas" data-subtitle="Monitoreo en vivo de lo que se está bajando en cada grupo"><span class="dot"></span>Descargas</div>
+    <div class="nav-item" data-section="permisos" data-title="Permisos por grupo" data-subtitle="Habilitá o bloqueá la descarga grupo por grupo"><span class="dot"></span>Permisos por grupo</div>
+    <div class="nav-item" data-section="subbots" data-title="Subbots" data-subtitle="Quién está conectado, y desconectar o eliminar en un toque"><span class="dot"></span>Subbots</div>
+    <div class="nav-item" data-section="grupo" data-title="Grupo" data-subtitle="Elegí un grupo y después qué querés hacer con él"><span class="dot"></span>Grupo</div>
+  </nav>
+
+  <div class="sidebar-foot">
+    <span class="host" id="server-host">conectando...</span><br>
+    v0.2 — panel en vivo
+  </div>
+</aside>
+
+<main>
+  <header>
+    <div>
+      <h1 id="page-title">Torre de control</h1>
+      <p class="subtitle" id="page-subtitle">Subbots, permisos por grupo, acciones por grupo y descargas conectados en vivo</p>
+    </div>
+    <div class="status-pill"><span class="beacon"></span>bot en línea</div>
+  </header>
+
+  <section class="page active" id="page-inicio">
+    <div class="welcome-card">
+      <div class="welcome-title">Bienvenido de vuelta 🌙💬</div>
+      <div class="welcome-text">Elegí una sección desde el menú de la izquierda, o tocá una de estas tarjetas para ir directo.</div>
+    </div>
+    <div class="quick-grid">
+      <div class="quick-card" data-goto="descargas">
+        <span class="quick-card-icon">⬇️</span>
+        <span class="quick-card-num" id="quick-downloads">—</span>
+        <span class="quick-card-label">descargas hoy</span>
+      </div>
+      <div class="quick-card" data-goto="permisos">
+        <span class="quick-card-icon">🛡️</span>
+        <span class="quick-card-num" id="quick-groups">—</span>
+        <span class="quick-card-label">grupos con permisos</span>
+      </div>
+      <div class="quick-card" data-goto="subbots">
+        <span class="quick-card-icon">🤖</span>
+        <span class="quick-card-num" id="quick-subbots">—</span>
+        <span class="quick-card-label">subbots conectados</span>
+      </div>
+      <div class="quick-card" data-goto="grupo">
+        <span class="quick-card-icon">💬</span>
+        <span class="quick-card-num">→</span>
+        <span class="quick-card-label">acciones sobre un grupo</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-descargas">
+  <div class="grid">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Descargas</div>
+          <div class="card-desc">Monitoreo en vivo de lo que se está bajando en cada grupo</div>
+        </div>
+        <span class="tag tag-live">en vivo</span>
+      </div>
+      <div class="stats-row" id="downloads-stats"></div>
+      <div class="mock" id="downloads-list">
+        <div class="row"><span class="name">Cargando...</span></div>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <section class="page" id="page-permisos">
+  <div class="grid">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Permisos por grupo</div>
+          <div class="card-desc">Habilitá o bloqueá la descarga grupo por grupo</div>
+        </div>
+        <span class="tag tag-live">en vivo</span>
+      </div>
+      <div class="mock" id="groups-list">
+        <div class="row"><span class="name">Cargando...</span></div>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <section class="page" id="page-subbots">
+  <div class="grid">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Subbots</div>
+          <div class="card-desc">Quién está conectado, y desconectar o eliminar en un toque</div>
+        </div>
+        <span class="tag tag-live">en vivo</span>
+      </div>
+      <div class="mock" id="subbots-list">
+        <div class="row"><span class="name">Cargando...</span></div>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <section class="page" id="page-grupo">
+  <div class="grid">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Grupo</div>
+          <div class="card-desc">Elegí un grupo y después qué querés hacer con él</div>
+        </div>
+        <span class="tag tag-live">en vivo</span>
+      </div>
+      <div class="mock chat-mock">
+        <span class="field-label">grupo</span>
+        <select id="chat-group-select"><option>Cargando grupos...</option></select>
+
+        <div class="group-tabs">
+          <button class="group-tab active" data-tab="mensaje">💬 Mensaje</button>
+          <button class="group-tab" data-tab="funciones">⚙️ Funciones</button>
+          <button class="group-tab" data-tab="riesgo">⚠️ Zona de riesgo</button>
+        </div>
+
+        <div class="group-tab-panel active" data-panel="mensaje">
+          <span class="field-label">mensaje (opcional si adjuntás imagen/video)</span>
+          <textarea id="chat-message" placeholder="Che, en un rato arranca el evento 🌙"></textarea>
+          <span class="field-label">adjunto (opcional)</span>
+          <input type="file" id="chat-media" accept="image/*,video/*">
+          <div class="status-line" id="chat-media-info"></div>
+          <div class="compose">
+            <button class="action-btn" id="chat-send-btn">
+              <span class="btn-spinner"></span><span class="btn-label">Enviar</span>
+            </button>
+          </div>
+          <div class="status-line" id="chat-status"></div>
+        </div>
+
+        <div class="group-tab-panel" data-panel="funciones">
+          <div class="mock" id="group-functions-list" style="max-height:180px;">
+            <div class="row"><span class="name">Elegí un grupo</span></div>
+          </div>
+          <div class="status-line" id="functions-status"></div>
+        </div>
+
+        <div class="group-tab-panel" data-panel="riesgo">
+          <div class="danger-zone">
+            <div class="danger-note">Estas acciones se aplican de inmediato sobre el grupo elegido.</div>
+            <div class="ban-state" id="ban-state"></div>
+            <button class="action-btn danger" id="ban-group-btn">
+              <span class="btn-spinner"></span><span class="btn-label">🚫 Banear grupo</span>
+            </button>
+            <button class="action-btn" id="unban-group-btn" style="display:none;">
+              <span class="btn-spinner"></span><span class="btn-label">✅ Desbanear grupo</span>
+            </button>
+            <button class="action-btn danger" id="leave-group-btn">
+              <span class="btn-spinner"></span><span class="btn-label">🚪 Salir del grupo</span>
+            </button>
+          </div>
+          <div class="status-line" id="risk-status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </section>
+</main>
+</div>
+
+<script>
+  const WA_ICON = '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="waGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#25d366"/><stop offset="100%" stop-color="#128c7e"/></linearGradient></defs><path fill="url(#waGrad)" d="M16 2C8.27 2 2 8.27 2 16c0 2.6.7 5.04 1.92 7.14L2 30l7.1-1.86A13.9 13.9 0 0 0 16 30c7.73 0 14-6.27 14-14S23.73 2 16 2z"/><path fill="#fff" d="M16 6.4A9.6 9.6 0 0 0 6.4 16c0 1.83.5 3.55 1.37 5.02L6.5 25.5l4.6-1.2a9.55 9.55 0 0 0 4.9 1.34A9.6 9.6 0 1 0 16 6.4zm5.2 13.36c-.22.62-1.28 1.19-1.77 1.24-.45.05-.98.24-3.3-.69-2.78-1.13-4.58-3.9-4.72-4.08-.14-.18-1.13-1.5-1.13-2.87 0-1.36.72-2.03.97-2.31.25-.28.55-.35.73-.35.18 0 .37 0 .53.01.17.01.4-.06.63.48.23.55.79 1.9.86 2.04.07.14.12.3.02.48-.1.18-.15.29-.29.45-.14.16-.3.36-.43.48-.14.13-.29.28-.13.55.17.28.75 1.24 1.62 2.01 1.12.99 2.06 1.3 2.34 1.44.28.14.44.12.6-.07.17-.19.7-.82.89-1.1.19-.28.38-.23.63-.14.26.1 1.63.77 1.9.91.28.14.46.21.53.33.07.12.07.68-.15 1.3z"/></svg>';
+
+  document.querySelectorAll('.brand-mark').forEach((el) => {
+    if (el.textContent.includes('WA_ICON_PLACEHOLDER')) el.innerHTML = WA_ICON;
+  });
+
+  const PANEL_USER_KEY = 'lunaPanelUser';
+  const PANEL_PASS_KEY = 'lunaPanelPass';
+
+  async function panelFetch(url, options = {}) {
+    const user = localStorage.getItem(PANEL_USER_KEY);
+    const pass = localStorage.getItem(PANEL_PASS_KEY);
+    const headers = Object.assign({}, options.headers, {'x-panel-user': user || '', 'x-panel-pass': pass || ''});
+    const res = await fetch(url, Object.assign({}, options, {headers}));
+    if (res.status === 401) {
+      localStorage.removeItem(PANEL_USER_KEY);
+      localStorage.removeItem(PANEL_PASS_KEY);
+      showGate();
+      throw new Error('Sesión inválida');
+    }
+    return res.json();
+  }
+
+  function showApp() {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+  }
+
+  function showGate() {
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('gate').style.display = 'flex';
+  }
+
+  function renderLoginForm(errorMsg) {
+    const gate = document.getElementById('gate');
+    gate.innerHTML =
+      '<div class="gate-card">' +
+      '<div class="brand-mark" style="margin: 0 auto 18px; width: 44px; height: 44px;">' + WA_ICON + '</div>' +
+      '<div class="gate-title">Torre de control</div>' +
+      '<p class="gate-text">Ingresá con tu usuario y contraseña del panel.</p>' +
+      '<div class="gate-form">' +
+      '<input type="text" id="gate-user" placeholder="usuario" autocomplete="username">' +
+      '<input type="password" id="gate-pass" placeholder="contraseña" autocomplete="current-password">' +
+      '<button class="gate-btn" id="gate-login-btn">Entrar</button>' +
+      '<div class="gate-error" id="gate-error">' + (errorMsg || '') + '</div>' +
+      '</div></div>';
+
+    document.getElementById('gate-login-btn').addEventListener('click', doLogin);
+    document.getElementById('gate-pass').addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') doLogin();
+    });
+  }
+
+  function renderNotRegistered() {
+    const gate = document.getElementById('gate');
+    gate.innerHTML =
+      '<div class="gate-card">' +
+      '<div class="brand-mark" style="margin: 0 auto 18px; width: 44px; height: 44px;">' + WA_ICON + '</div>' +
+      '<div class="gate-title">Todavía no configuraste tu acceso</div>' +
+      '<p class="gate-text">Escribile esto al bot por chat privado:</p>' +
+      '<span class="gate-code">.miserver</span>' +
+      '<p class="gate-text">Te va a guiar para elegir tu usuario y contraseña. Después volvé acá y entrá con esos datos.</p>' +
+      '</div>';
+  }
+
+  async function doLogin() {
+    const user = document.getElementById('gate-user').value.trim();
+    const pass = document.getElementById('gate-pass').value;
+    const errorEl = document.getElementById('gate-error');
+    if (!user || !pass) {
+      errorEl.textContent = 'Completá usuario y contraseña.';
+      return;
+    }
+    try {
+      const res = await fetch('/panel/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: user, password: pass})
+      });
+      if (!res.ok) {
+        if (res.status === 429) {
+          const data = await res.json().catch(() => null);
+          errorEl.textContent = (data && data.error) || 'Demasiados intentos. Esperá un minuto.';
+        } else {
+          errorEl.textContent = 'Usuario o contraseña incorrectos.';
+        }
+        return;
+      }
+      localStorage.setItem(PANEL_USER_KEY, user);
+      localStorage.setItem(PANEL_PASS_KEY, pass);
+      showApp();
+      loadSubbots();
+      loadGroups();
+      loadDownloads();
+    } catch {
+      errorEl.textContent = 'No se pudo conectar con el bot.';
+    }
+  }
+
+  async function initGate() {
+    let reg;
+    try {
+      reg = await fetch('/panel/registered').then((r) => r.json());
+    } catch {
+      document.getElementById('gate-content').textContent = 'No se pudo conectar con el bot.';
+      return;
+    }
+
+    if (!reg.ok || !reg.registered) {
+      renderNotRegistered();
+      return;
+    }
+
+    const savedUser = localStorage.getItem(PANEL_USER_KEY);
+    const savedPass = localStorage.getItem(PANEL_PASS_KEY);
+    if (savedUser && savedPass) {
+      try {
+        const res = await fetch('/panel/login', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({username: savedUser, password: savedPass})
+        });
+        if (res.ok) {
+          showApp();
+          loadSubbots();
+          loadGroups();
+          loadDownloads();
+          setInterval(loadDownloads, 15000);
+          return;
+        }
+      } catch {}
+    }
+    renderLoginForm();
+  }
+
+  function renderSubbots(subbots) {
+    const container = document.getElementById('subbots-list');
+    container.innerHTML = '';
+    const quickSubbots = document.getElementById('quick-subbots');
+    if (quickSubbots) quickSubbots.textContent = subbots.filter((b) => b.connected).length + '/' + subbots.length;
+    if (!subbots.length) {
+      container.innerHTML = '<div class="row"><span class="name">Sin subbots activos</span></div>';
+      return;
+    }
+    subbots.forEach((bot) => {
+      const row = document.createElement('div');
+      row.className = 'subbot-row';
+      const dotClass = bot.connected ? 'subbot-dot' : 'subbot-dot off';
+      const estado = bot.connected ? 'conectado' : 'desconectado';
+      row.innerHTML =
+        '<div class="subbot-info"><span class="' + dotClass + '"></span>' +
+        '<div><div class="subbot-name">+' + bot.number + '</div>' +
+        '<div class="subbot-meta">' + estado + '</div></div></div>' +
+        '<span class="btn-ghost" data-action="disconnect" data-dir="' + bot.dirName + '">desconectar</span>' +
+        '<span class="btn-ghost" data-action="delete" data-dir="' + bot.dirName + '">eliminar</span>';
+      container.appendChild(row);
+    });
+  }
+
+  async function loadSubbots() {
+    try {
+      const data = await panelFetch('/panel/subbots');
+      if (data.ok) renderSubbots(data.subbots);
+    } catch (e) {
+      document.getElementById('subbots-list').innerHTML = '<div class="row"><span class="name">' + e.message + '</span></div>';
+    }
+  }
+
+  let lastGroups = [];
+
+  function renderGroups(groups) {
+    const container = document.getElementById('groups-list');
+    container.innerHTML = '';
+    if (!groups.length) {
+      container.innerHTML = '<div class="row"><span class="name">Sin grupos</span></div>';
+    } else {
+      groups.forEach((g) => {
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.innerHTML =
+          '<span class="name">' + g.name + '</span>' +
+          '<div class="switch ' + (g.enabled ? 'on' : '') + '" data-jid="' + g.jid + '" data-enabled="' + g.enabled + '"></div>';
+        container.appendChild(row);
+      });
+    }
+
+    const quickGroups = document.getElementById('quick-groups');
+    if (quickGroups) quickGroups.textContent = groups.filter((g) => g.enabled).length + '/' + groups.length;
+
+    const select = document.getElementById('chat-group-select');
+    select.innerHTML = '';
+    if (!groups.length) {
+      select.innerHTML = '<option value="">Sin grupos</option>';
+    } else {
+      groups.forEach((g) => {
+        const opt = document.createElement('option');
+        opt.value = g.jid;
+        opt.textContent = g.name;
+        select.appendChild(opt);
+      });
+    }
+  }
+
+  async function loadGroups() {
+    try {
+      const data = await panelFetch('/panel/groups');
+      if (data.ok) {
+        lastGroups = data.groups;
+        renderGroups(data.groups);
+      }
+    } catch (e) {
+      document.getElementById('groups-list').innerHTML = '<div class="row"><span class="name">' + e.message + '</span></div>';
+    }
+  }
+
+  document.getElementById('groups-list').addEventListener('click', async (ev) => {
+    const sw = ev.target.closest('.switch');
+    if (!sw) return;
+    const jid = sw.dataset.jid;
+    const currentlyOn = sw.dataset.enabled === 'true';
+    const next = !currentlyOn;
+    sw.classList.toggle('on', next);
+    sw.dataset.enabled = String(next);
+    try {
+      await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/toggle', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({enabled: next})
+      });
+    } catch (e) {
+      sw.classList.toggle('on', currentlyOn);
+      sw.dataset.enabled = String(currentlyOn);
+      alert(e.message);
+    }
+  });
+
+  function setBtnLoading(btn, loading) {
+    btn.classList.toggle('loading', loading);
+    btn.disabled = loading;
+  }
+
+  let chatCooldownUntil = 0;
+
+  const MAX_MEDIA_MB = 15;
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.getElementById('chat-media').addEventListener('change', () => {
+    const input = document.getElementById('chat-media');
+    const info = document.getElementById('chat-media-info');
+    const file = input.files[0];
+    if (!file) {
+      info.textContent = '';
+      info.className = 'status-line';
+      return;
+    }
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    if (file.size > MAX_MEDIA_MB * 1024 * 1024) {
+      info.textContent = `${file.name} (${sizeMb}MB) supera el límite de ${MAX_MEDIA_MB}MB.`;
+      info.className = 'status-line err';
+      input.value = '';
+      return;
+    }
+    info.textContent = `${file.name} (${sizeMb}MB) listo para enviar.`;
+    info.className = 'status-line ok';
+  });
+
+  document.getElementById('chat-send-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('chat-send-btn');
+    const jid = document.getElementById('chat-group-select').value;
+    const message = document.getElementById('chat-message').value.trim();
+    const mediaInput = document.getElementById('chat-media');
+    const mediaFile = mediaInput.files[0];
+    const status = document.getElementById('chat-status');
+    status.className = 'status-line';
+
+    if (Date.now() < chatCooldownUntil) {
+      status.textContent = 'Esperá unos segundos antes de mandar otro mensaje.';
+      status.classList.add('err');
+      return;
+    }
+    if (!jid || (!message && !mediaFile)) {
+      status.textContent = 'Elegí un grupo y escribí un mensaje o adjuntá un archivo.';
+      status.classList.add('err');
+      return;
+    }
+
+    setBtnLoading(btn, true);
+    try {
+      const body = {jid, message};
+      if (mediaFile) {
+        const base64 = await fileToBase64(mediaFile);
+        body.media = {data: base64, mimetype: mediaFile.type};
+      }
+      const data = await panelFetch('/panel/chat/send', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+      });
+      if (!data.ok) throw new Error(data.error || 'No se pudo enviar');
+      status.textContent = 'Mensaje enviado.';
+      status.classList.add('ok');
+      document.getElementById('chat-message').value = '';
+      mediaInput.value = '';
+      document.getElementById('chat-media-info').textContent = '';
+      chatCooldownUntil = Date.now() + 5000;
+    } catch (e) {
+      status.textContent = e.message;
+      status.classList.add('err');
+    } finally {
+      setBtnLoading(btn, false);
+    }
+  });
+
+  const groupTabs = document.querySelectorAll('.group-tab');
+  const groupPanels = document.querySelectorAll('.group-tab-panel');
+
+  groupTabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      groupTabs.forEach((t) => t.classList.toggle('active', t === tab));
+      const name = tab.dataset.tab;
+      groupPanels.forEach((p) => p.classList.toggle('active', p.dataset.panel === name));
+      if (name === 'funciones') loadGroupFunctions();
+      if (name === 'riesgo') refreshRiskPanel();
+    });
+  });
+
+  document.getElementById('chat-group-select').addEventListener('change', () => {
+    const activeTab = document.querySelector('.group-tab.active');
+    if (activeTab && activeTab.dataset.tab === 'funciones') loadGroupFunctions();
+    if (activeTab && activeTab.dataset.tab === 'riesgo') refreshRiskPanel();
+  });
+
+  function refreshRiskPanel() {
+    const jid = document.getElementById('chat-group-select').value;
+    const state = document.getElementById('ban-state');
+    const banBtn = document.getElementById('ban-group-btn');
+    const unbanBtn = document.getElementById('unban-group-btn');
+    const group = lastGroups.find((g) => g.jid === jid);
+
+    if (!group) {
+      state.textContent = 'Elegí un grupo';
+      state.className = 'ban-state';
+      banBtn.style.display = 'none';
+      unbanBtn.style.display = 'none';
+      return;
+    }
+
+    if (group.banned) {
+      state.textContent = '🚫 Este grupo está baneado';
+      state.className = 'ban-state is-banned';
+      banBtn.style.display = 'none';
+      unbanBtn.style.display = 'inline-flex';
+    } else {
+      state.textContent = '✅ Este grupo está activo';
+      state.className = 'ban-state is-active';
+      banBtn.style.display = 'inline-flex';
+      unbanBtn.style.display = 'none';
+    }
+  }
+
+  async function loadGroupFunctions() {
+    const jid = document.getElementById('chat-group-select').value;
+    const container = document.getElementById('group-functions-list');
+    const status = document.getElementById('functions-status');
+    status.className = 'status-line';
+    status.textContent = '';
+    if (!jid) {
+      container.innerHTML = '<div class="row"><span class="name">Elegí un grupo</span></div>';
+      return;
+    }
+    container.innerHTML = '<div class="row"><span class="name">Cargando...</span></div>';
+    try {
+      const data = await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/functions');
+      if (!data.ok) throw new Error(data.error || 'No se pudo cargar');
+      container.innerHTML = '';
+      data.functions.forEach((f) => {
+        const row = document.createElement('div');
+        row.className = 'row function-row';
+        row.innerHTML =
+          '<span class="name">' + f.label + '</span>' +
+          '<div class="switch ' + (f.enabled ? 'on' : '') + '" data-key="' + f.key + '" data-enabled="' + f.enabled + '"></div>';
+        container.appendChild(row);
+      });
+    } catch (e) {
+      container.innerHTML = '<div class="row"><span class="name">' + e.message + '</span></div>';
+    }
+  }
+
+  document.getElementById('group-functions-list').addEventListener('click', async (ev) => {
+    const sw = ev.target.closest('.switch');
+    if (!sw) return;
+    const jid = document.getElementById('chat-group-select').value;
+    const key = sw.dataset.key;
+    const currentlyOn = sw.dataset.enabled === 'true';
+    const next = !currentlyOn;
+    sw.classList.toggle('on', next);
+    sw.dataset.enabled = String(next);
+    try {
+      const data = await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/functions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({key, enabled: next})
+      });
+      if (!data.ok) throw new Error(data.error || 'No se pudo guardar');
+    } catch (e) {
+      sw.classList.toggle('on', currentlyOn);
+      sw.dataset.enabled = String(currentlyOn);
+      alert(e.message);
+    }
+  });
+
+  document.getElementById('ban-group-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('ban-group-btn');
+    const jid = document.getElementById('chat-group-select').value;
+    const status = document.getElementById('risk-status');
+    status.className = 'status-line';
+    if (!jid) {
+      status.textContent = 'Elegí un grupo primero.';
+      status.classList.add('err');
+      return;
+    }
+    const group = lastGroups.find((g) => g.jid === jid);
+    const groupName = group?.name || jid;
+    if (!confirm('¿Banear "' + groupName + '"? El bot va a ignorar este grupo hasta que lo desbanees.')) return;
+    setBtnLoading(btn, true);
+    try {
+      const data = await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/ban', {method: 'POST'});
+      if (!data.ok) throw new Error(data.error || 'No se pudo banear');
+      if (group) group.banned = true;
+      status.textContent = 'Grupo baneado.';
+      status.classList.add('ok');
+      refreshRiskPanel();
+    } catch (e) {
+      status.textContent = e.message;
+      status.classList.add('err');
+    } finally {
+      setBtnLoading(btn, false);
+    }
+  });
+
+  document.getElementById('unban-group-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('unban-group-btn');
+    const jid = document.getElementById('chat-group-select').value;
+    const status = document.getElementById('risk-status');
+    status.className = 'status-line';
+    if (!jid) {
+      status.textContent = 'Elegí un grupo primero.';
+      status.classList.add('err');
+      return;
+    }
+    const group = lastGroups.find((g) => g.jid === jid);
+    const groupName = group?.name || jid;
+    if (!confirm('¿Desbanear "' + groupName + '"? El bot vuelve a responder ahí normalmente.')) return;
+    setBtnLoading(btn, true);
+    try {
+      const data = await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/unban', {method: 'POST'});
+      if (!data.ok) throw new Error(data.error || 'No se pudo desbanear');
+      if (group) group.banned = false;
+      status.textContent = 'Grupo desbaneado.';
+      status.classList.add('ok');
+      refreshRiskPanel();
+    } catch (e) {
+      status.textContent = e.message;
+      status.classList.add('err');
+    } finally {
+      setBtnLoading(btn, false);
+    }
+  });
+
+  document.getElementById('leave-group-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('leave-group-btn');
+    const jid = document.getElementById('chat-group-select').value;
+    const status = document.getElementById('risk-status');
+    status.className = 'status-line';
+    if (!jid) {
+      status.textContent = 'Elegí un grupo primero.';
+      status.classList.add('err');
+      return;
+    }
+    const groupName = (lastGroups.find((g) => g.jid === jid) || {}).name || jid;
+    if (!confirm('¿Salir de "' + groupName + '"? El bot deja de estar en ese grupo, es inmediato.')) return;
+    setBtnLoading(btn, true);
+    try {
+      const data = await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/leave', {method: 'POST'});
+      if (!data.ok) throw new Error(data.error || 'No se pudo salir del grupo');
+      status.textContent = 'El bot salió del grupo.';
+      status.classList.add('ok');
+      await loadGroups();
+    } catch (e) {
+      status.textContent = e.message;
+      status.classList.add('err');
+    } finally {
+      setBtnLoading(btn, false);
+    }
+  });
+
+  function haceTiempo(ts) {
+    const diffMin = Math.floor((Date.now() - ts) / 60000);
+    if (diffMin < 1) return 'ahora';
+    if (diffMin < 60) return 'hace ' + diffMin + 'm';
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return 'hace ' + diffH + 'h';
+    return 'hace ' + Math.floor(diffH / 24) + 'd';
+  }
+
+  function renderDownloads(downloads) {
+    const listEl = document.getElementById('downloads-list');
+    const statsEl = document.getElementById('downloads-stats');
+
+    const hoy = new Date().toDateString();
+    const deHoy = downloads.filter((d) => new Date(d.timestamp).toDateString() === hoy);
+    const mp3 = deHoy.filter((d) => d.tipo === 'ytmp3').length;
+    const mp4 = deHoy.filter((d) => d.tipo === 'ytmp4').length;
+    const errores = deHoy.filter((d) => d.estado === 'error').length;
+
+    statsEl.innerHTML =
+      '<div class="stat"><div class="stat-num">' + deHoy.length + '</div><div class="stat-label">hoy</div></div>' +
+      '<div class="stat"><div class="stat-num">' + mp3 + '</div><div class="stat-label">mp3</div></div>' +
+      '<div class="stat"><div class="stat-num">' + mp4 + '</div><div class="stat-label">mp4</div></div>' +
+      '<div class="stat"><div class="stat-num">' + errores + '</div><div class="stat-label">errores</div></div>';
+
+    const quickDownloads = document.getElementById('quick-downloads');
+    if (quickDownloads) quickDownloads.textContent = deHoy.length;
+
+    listEl.innerHTML = '';
+    if (!downloads.length) {
+      listEl.innerHTML = '<div class="row"><span class="name">Sin descargas registradas todavía</span></div>';
+      return;
+    }
+    downloads.forEach((d) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const tipoTxt = d.tipo === 'ytmp3' ? 'mp3' : 'mp4';
+      const nombre = d.estado === 'error'
+        ? tipoTxt + ' — ' + d.chatName + ' (falló)'
+        : tipoTxt + ' — ' + d.chatName;
+      row.innerHTML =
+        '<span class="name">' + nombre + '</span>' +
+        '<span class="sub' + (d.estado === 'error' ? ' err' : '') + '">' + haceTiempo(d.timestamp) + '</span>';
+      listEl.appendChild(row);
+    });
+  }
+
+  async function loadDownloads() {
+    try {
+      const data = await panelFetch('/panel/downloads');
+      if (data.ok) renderDownloads(data.downloads);
+    } catch (e) {
+      document.getElementById('downloads-list').innerHTML = '<div class="row"><span class="name">' + e.message + '</span></div>';
+    }
+  }
+
+  document.addEventListener('click', async (ev) => {
+    const target = ev.target.closest('[data-action]');
+    if (!target) return;
+    const action = target.dataset.action;
+    const dir = target.dataset.dir;
+    const confirmText = action === 'delete' ? '¿Eliminar este subbot?' : '¿Desconectar este subbot?';
+    if (!confirm(confirmText)) return;
+    try {
+      await panelFetch('/panel/subbots/' + dir + '/' + action, {method: 'POST'});
+      loadSubbots();
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
+  document.getElementById('server-host').textContent = window.location.host || 'servidor desconocido';
+
+  function goToSection(name) {
+    const navItem = document.querySelector('.nav-item[data-section="' + name + '"]');
+    if (navItem) navItem.click();
+  }
+
+  document.querySelectorAll('.nav-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach((n) => n.classList.remove('active'));
+      item.classList.add('active');
+      const section = item.dataset.section;
+      document.querySelectorAll('.page').forEach((p) => p.classList.toggle('active', p.id === 'page-' + section));
+      document.getElementById('page-title').textContent = item.dataset.title;
+      document.getElementById('page-subtitle').textContent = item.dataset.subtitle;
+    });
+  });
+
+  document.querySelectorAll('.quick-card[data-goto]').forEach((card) => {
+    card.addEventListener('click', () => goToSection(card.dataset.goto));
+  });
+
+  initGate();
+</script>
+
+</body>
+</html>
