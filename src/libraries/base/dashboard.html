@@ -1025,6 +1025,9 @@
       <div class="mock" id="groups-list">
         <div class="row"><span class="name">Cargando...</span></div>
       </div>
+      <div id="groups-load-more-wrap" style="display:none; text-align:center; margin-top:12px;">
+        <span class="btn-ghost" id="groups-load-more">Cargar más grupos</span>
+      </div>
     </div>
   </div>
   </section>
@@ -1204,6 +1207,7 @@
       showApp();
       loadSubbots();
       loadGroups();
+      loadGroupNames();
       loadDownloads();
     } catch {
       errorEl.textContent = 'No se pudo conectar con el bot.';
@@ -1237,6 +1241,7 @@
           showApp();
           loadSubbots();
           loadGroups();
+          loadGroupNames();
           loadDownloads();
           setInterval(loadDownloads, 15000);
           return;
@@ -1280,49 +1285,74 @@
   }
 
   let lastGroups = [];
+  let groupsPage = 1;
+  const GROUPS_PAGE_SIZE = 50;
 
-  function renderGroups(groups) {
+  function appendGroupRows(groups) {
     const container = document.getElementById('groups-list');
-    container.innerHTML = '';
-    if (!groups.length) {
+    if (groupsPage === 1) container.innerHTML = '';
+    if (!lastGroups.length && !groups.length) {
       container.innerHTML = '<div class="row"><span class="name">Sin grupos</span></div>';
-    } else {
-      groups.forEach((g) => {
-        const row = document.createElement('div');
-        row.className = 'row';
-        row.innerHTML =
-          '<span class="name">' + g.name + '</span>' +
-          '<div class="switch ' + (g.enabled ? 'on' : '') + '" data-jid="' + g.jid + '" data-enabled="' + g.enabled + '"></div>';
-        container.appendChild(row);
-      });
+      return;
     }
+    groups.forEach((g) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML =
+        '<span class="name">' + g.name + '</span>' +
+        '<div class="switch ' + (g.enabled ? 'on' : '') + '" data-jid="' + g.jid + '" data-enabled="' + g.enabled + '"></div>';
+      container.appendChild(row);
+    });
+  }
 
-    const quickGroups = document.getElementById('quick-groups');
-    if (quickGroups) quickGroups.textContent = groups.filter((g) => g.enabled).length + '/' + groups.length;
+  async function loadGroups(page = 1) {
+    if (page === 1) {
+      document.getElementById('groups-list').innerHTML = '<div class="row"><span class="name">Cargando grupos...</span></div>';
+      lastGroups = [];
+    }
+    try {
+      const data = await panelFetch('/panel/groups?page=' + page + '&pageSize=' + GROUPS_PAGE_SIZE);
+      if (!data.ok) return;
+      groupsPage = page;
+      lastGroups = lastGroups.concat(data.groups);
+      appendGroupRows(data.groups);
 
-    const select = document.getElementById('chat-group-select');
-    select.innerHTML = '';
-    if (!groups.length) {
-      select.innerHTML = '<option value="">Sin grupos</option>';
-    } else {
-      groups.forEach((g) => {
-        const opt = document.createElement('option');
-        opt.value = g.jid;
-        opt.textContent = g.name;
-        select.appendChild(opt);
-      });
+      const quickGroups = document.getElementById('quick-groups');
+      if (quickGroups) quickGroups.textContent = data.enabledCount + '/' + data.total;
+
+      const wrap = document.getElementById('groups-load-more-wrap');
+      wrap.style.display = data.hasMore ? 'block' : 'none';
+    } catch (e) {
+      document.getElementById('groups-list').innerHTML = '<div class="row"><span class="name">' + e.message + '</span></div>';
     }
   }
 
-  async function loadGroups() {
+  document.getElementById('groups-load-more').addEventListener('click', () => {
+    loadGroups(groupsPage + 1);
+  });
+
+  let groupNamesMap = {};
+
+  async function loadGroupNames() {
+    const select = document.getElementById('chat-group-select');
     try {
-      const data = await panelFetch('/panel/groups');
-      if (data.ok) {
-        lastGroups = data.groups;
-        renderGroups(data.groups);
+      const data = await panelFetch('/panel/groups/names');
+      if (!data.ok) return;
+      select.innerHTML = '';
+      groupNamesMap = {};
+      if (!data.groups.length) {
+        select.innerHTML = '<option value="">Sin grupos</option>';
+      } else {
+        data.groups.forEach((g) => {
+          groupNamesMap[g.jid] = g.name;
+          const opt = document.createElement('option');
+          opt.value = g.jid;
+          opt.textContent = g.name;
+          select.appendChild(opt);
+        });
       }
     } catch (e) {
-      document.getElementById('groups-list').innerHTML = '<div class="row"><span class="name">' + e.message + '</span></div>';
+      select.innerHTML = '<option value="">' + e.message + '</option>';
     }
   }
 
@@ -1451,20 +1481,41 @@
     if (activeTab && activeTab.dataset.tab === 'riesgo') refreshRiskPanel();
   });
 
-  function refreshRiskPanel() {
+  const groupStatusCache = {};
+
+  async function refreshRiskPanel() {
     const jid = document.getElementById('chat-group-select').value;
     const state = document.getElementById('ban-state');
     const banBtn = document.getElementById('ban-group-btn');
     const unbanBtn = document.getElementById('unban-group-btn');
-    const group = lastGroups.find((g) => g.jid === jid);
 
-    if (!group) {
+    if (!jid) {
       state.textContent = 'Elegí un grupo';
       state.className = 'ban-state';
       banBtn.style.display = 'none';
       unbanBtn.style.display = 'none';
       return;
     }
+
+    let group = groupStatusCache[jid];
+    if (!group) {
+      state.textContent = 'Cargando estado...';
+      state.className = 'ban-state';
+      try {
+        const data = await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/status');
+        if (!data.ok) throw new Error(data.error || 'No se pudo cargar el estado');
+        group = data;
+        groupStatusCache[jid] = group;
+      } catch (e) {
+        state.textContent = e.message;
+        state.className = 'ban-state';
+        banBtn.style.display = 'none';
+        unbanBtn.style.display = 'none';
+        return;
+      }
+    }
+
+    if (document.getElementById('chat-group-select').value !== jid) return;
 
     if (group.banned) {
       state.textContent = '🚫 Este grupo está baneado';
@@ -1540,14 +1591,13 @@
       status.classList.add('err');
       return;
     }
-    const group = lastGroups.find((g) => g.jid === jid);
-    const groupName = group?.name || jid;
+    const groupName = groupNamesMap[jid] || jid;
     if (!confirm('¿Banear "' + groupName + '"? El bot va a ignorar este grupo hasta que lo desbanees.')) return;
     setBtnLoading(btn, true);
     try {
       const data = await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/ban', {method: 'POST'});
       if (!data.ok) throw new Error(data.error || 'No se pudo banear');
-      if (group) group.banned = true;
+      if (groupStatusCache[jid]) groupStatusCache[jid].banned = true;
       status.textContent = 'Grupo baneado.';
       status.classList.add('ok');
       refreshRiskPanel();
@@ -1569,14 +1619,13 @@
       status.classList.add('err');
       return;
     }
-    const group = lastGroups.find((g) => g.jid === jid);
-    const groupName = group?.name || jid;
+    const groupName = groupNamesMap[jid] || jid;
     if (!confirm('¿Desbanear "' + groupName + '"? El bot vuelve a responder ahí normalmente.')) return;
     setBtnLoading(btn, true);
     try {
       const data = await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/unban', {method: 'POST'});
       if (!data.ok) throw new Error(data.error || 'No se pudo desbanear');
-      if (group) group.banned = false;
+      if (groupStatusCache[jid]) groupStatusCache[jid].banned = false;
       status.textContent = 'Grupo desbaneado.';
       status.classList.add('ok');
       refreshRiskPanel();
@@ -1598,15 +1647,17 @@
       status.classList.add('err');
       return;
     }
-    const groupName = (lastGroups.find((g) => g.jid === jid) || {}).name || jid;
+    const groupName = groupNamesMap[jid] || jid;
     if (!confirm('¿Salir de "' + groupName + '"? El bot deja de estar en ese grupo, es inmediato.')) return;
     setBtnLoading(btn, true);
     try {
       const data = await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/leave', {method: 'POST'});
       if (!data.ok) throw new Error(data.error || 'No se pudo salir del grupo');
+      delete groupStatusCache[jid];
       status.textContent = 'El bot salió del grupo.';
       status.classList.add('ok');
       await loadGroups();
+      await loadGroupNames();
     } catch (e) {
       status.textContent = e.message;
       status.classList.add('err');
