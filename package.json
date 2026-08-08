@@ -21,6 +21,7 @@
     "cfonts": "^2.10.0",
     "chalk": "^5.3.0",
     "cheerio": "1.0.0-rc.12",
+    "cloudflared": "^0.7.1",
     "express": "^4.17.3",
     "file-type": "^17.1.1",
     "fluent-ffmpeg": "^2.1.2",
