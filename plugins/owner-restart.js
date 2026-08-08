@@ -92,7 +92,7 @@ const handler = async (m, { conn }) => {
   }, 3000);
 };
 
-handler.all = async function (m, { conn, usedPrefix }) {
+handler.all = async function (m, { conn }) {
   if (!existsSync(RESTART_FILE)) return;
   try {
     const data = JSON.parse(readFileSync(RESTART_FILE, 'utf8'));
@@ -101,6 +101,13 @@ handler.all = async function (m, { conn, usedPrefix }) {
     await conn.sendMessage(data.chat, {
       text: '✅ Sistema actualizado y reiniciado exitosamente, estoy de vuelta 🌙'
     });
+
+    const globalPrefix = conn.prefix || global.prefix;
+    const usedPrefix = typeof globalPrefix === 'string'
+      ? globalPrefix
+      : Array.isArray(globalPrefix)
+        ? (typeof globalPrefix[0] === 'string' ? globalPrefix[0] : '.')
+        : '.';
 
     if (!hasAutoUpdateDecision()) {
       await conn.sendButton(
