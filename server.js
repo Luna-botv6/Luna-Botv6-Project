@@ -132,24 +132,34 @@ async function disconnectSubbot(dirName) {
 const GROUPS_CACHE_TTL_MS = 30 * 1000;
 let groupsCache = {data: null, fetchedAt: 0};
 
-async function getGroupsCached(conn) {
+async function getGroupsCached() {
   const now = Date.now();
   if (!groupsCache.data || now - groupsCache.fetchedAt > GROUPS_CACHE_TTL_MS) {
-    groupsCache.data = await conn.groupFetchAllParticipating();
+    groupsCache.data = await global.conn.groupFetchAllParticipating();
     groupsCache.fetchedAt = now;
   }
   return groupsCache.data;
+}
+
+let _qr = 'El código QR es invalido, posiblemente ya se escaneo el código QR.';
+let qrListenerBoundTo = null;
+
+function ensureQrListenerAttached() {
+  if (global.conn && global.conn !== qrListenerBoundTo) {
+    global.conn.ev.on('connection.update', function appQR({qr}) {
+      if (qr) _qr = qr;
+    });
+    qrListenerBoundTo = global.conn;
+  }
 }
 
 function connect(conn, PORT) {
   const app = global.app = express();
   const server = global.server = createServer(app);
   app.use(express.json({limit: '20mb'}));
-  let _qr = 'El código QR es invalido, posiblemente ya se escaneo el código QR.';
 
-  conn.ev.on('connection.update', function appQR({qr}) {
-    if (qr) _qr = qr;
-  });
+  ensureQrListenerAttached();
+  setInterval(ensureQrListenerAttached, 5000);
 
   app.get('/panel/ping', requirePanelAuth, (req, res) => {
     res.json({ok: true, port: PORT});
@@ -201,7 +211,7 @@ function connect(conn, PORT) {
 
   app.get('/panel/groups', requirePanelAuth, async (req, res) => {
     try {
-      const groupsObj = await getGroupsCached(conn);
+      const groupsObj = await getGroupsCached();
       const permissions = getAllPermissions();
       const allGroups = Object.entries(groupsObj).map(([jid, meta]) => ({
         jid,
@@ -231,7 +241,7 @@ function connect(conn, PORT) {
   app.get('/panel/groups/:jid/status', requirePanelAuth, async (req, res) => {
     try {
       const {jid} = req.params;
-      const groupsObj = await getGroupsCached(conn);
+      const groupsObj = await getGroupsCached();
       const meta = groupsObj[jid];
       if (!meta) return res.status(404).json({ok: false, error: 'Grupo no encontrado'});
       const permissions = getAllPermissions();
@@ -250,7 +260,7 @@ function connect(conn, PORT) {
 
   app.get('/panel/groups/names', requirePanelAuth, async (req, res) => {
     try {
-      const groupsObj = await getGroupsCached(conn);
+      const groupsObj = await getGroupsCached();
       const groups = Object.entries(groupsObj).map(([jid, meta]) => ({jid, name: meta.subject || jid}));
       res.json({ok: true, groups});
     } catch (e) {
@@ -288,7 +298,7 @@ function connect(conn, PORT) {
     chatConfig[key] = !!enabled;
     setConfig(jid, chatConfig);
     try {
-      await conn.sendMessage(jid, {
+      await global.conn.sendMessage(jid, {
         text: `⚙️ *${GROUP_FUNCTIONS[key]}* fue ${enabled ? 'activada ✅' : 'desactivada ❌'} desde el panel del owner.`
       });
     } catch {}
@@ -302,7 +312,7 @@ function connect(conn, PORT) {
       chatConfig.isBanned = true;
       setConfig(jid, chatConfig);
       try {
-        await conn.sendMessage(jid, {
+        await global.conn.sendMessage(jid, {
           text: '🚫 Este grupo fue baneado por el owner desde el panel. El bot no va a responder acá hasta que lo desbaneen.'
         });
       } catch {}
@@ -319,7 +329,7 @@ function connect(conn, PORT) {
       chatConfig.isBanned = false;
       setConfig(jid, chatConfig);
       try {
-        await conn.sendMessage(jid, {
+        await global.conn.sendMessage(jid, {
           text: '✅ Este grupo fue desbaneado por el owner desde el panel. El bot vuelve a responder normalmente acá.'
         });
       } catch {}
@@ -332,7 +342,7 @@ function connect(conn, PORT) {
   app.post('/panel/groups/:jid/leave', requirePanelAuth, async (req, res) => {
     const {jid} = req.params;
     try {
-      await conn.groupLeave(jid);
+      await global.conn.groupLeave(jid);
       groupsCache.data = null;
       res.json({ok: true});
     } catch (e) {
@@ -357,9 +367,9 @@ function connect(conn, PORT) {
         const payload = isVideo
           ? {video: buffer, mimetype: media.mimetype, caption: message || undefined}
           : {image: buffer, mimetype: media.mimetype, caption: message || undefined};
-        await conn.sendMessage(jid, payload);
+        await global.conn.sendMessage(jid, payload);
       } else {
-        await conn.sendMessage(jid, {text: message});
+        await global.conn.sendMessage(jid, {text: message});
       }
       lastChatSendAt = now;
       res.json({ok: true});
