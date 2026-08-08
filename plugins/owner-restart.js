@@ -109,8 +109,8 @@ handler.all = async function (m, { conn, usedPrefix }) {
         '',
         null,
         [
-          ['✅ Sí, actualizate sola', `${usedPrefix}autoupdate on`],
-          ['❌ No, prefiero hacerlo yo', `${usedPrefix}autoupdate off`]
+          ['✅ Sí, actualizate sola', `${usedPrefix}autoupdateon`],
+          ['❌ No, prefiero hacerlo yo', `${usedPrefix}autoupdateoff`]
         ],
         null,
         null,

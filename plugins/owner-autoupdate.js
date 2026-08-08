@@ -3,7 +3,11 @@ import { checkCanAutoUpdate, setAutoUpdateEnabled } from '../lib/funcion/self-up
 const handler = async (m, { conn, text, isROwner }) => {
   if (!isROwner) throw 'Este comando es solo para el Owner.';
 
-  const opcion = (text || '').trim().toLowerCase();
+  const body = (m.text || '').toLowerCase();
+  let opcion = (text || '').trim().toLowerCase();
+  if (body.includes('autoupdateon')) opcion = 'on';
+  else if (body.includes('autoupdateoff')) opcion = 'off';
+
   if (opcion !== 'on' && opcion !== 'off') {
     return m.reply('Usá *.autoupdate on* o *.autoupdate off*.');
   }
@@ -37,8 +41,7 @@ const handler = async (m, { conn, text, isROwner }) => {
 
 handler.help = ['autoupdate <on/off>'];
 handler.tags = ['owner'];
-handler.command = ['autoupdate'];
+handler.command = ['autoupdate', 'autoupdateon', 'autoupdateoff'];
 handler.rowner = true;
-
 
 export default handler;
