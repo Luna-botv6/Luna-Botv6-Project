@@ -39,6 +39,6 @@ handler.help = ['autoupdate <on/off>'];
 handler.tags = ['owner'];
 handler.command = ['autoupdate'];
 handler.rowner = true;
-handler.private = true;
+
 
 export default handler;
