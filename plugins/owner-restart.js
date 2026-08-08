@@ -1,6 +1,9 @@
 import { writeFileSync, existsSync, unlinkSync, readFileSync } from 'fs';
 import { execSync } from 'child_process';
 import { join } from 'path';
+import { hasAutoUpdateDecision, startAutoUpdateScheduler } from '../lib/funcion/self-update.js';
+
+startAutoUpdateScheduler();
 
 const RESTART_FILE = '/tmp/luna-restart-notify.json';
 const PROTECTED_FILES = ['config.js'];
@@ -89,7 +92,7 @@ const handler = async (m, { conn }) => {
   }, 3000);
 };
 
-handler.all = async function (m, { conn }) {
+handler.all = async function (m, { conn, usedPrefix }) {
   if (!existsSync(RESTART_FILE)) return;
   try {
     const data = JSON.parse(readFileSync(RESTART_FILE, 'utf8'));
@@ -98,6 +101,22 @@ handler.all = async function (m, { conn }) {
     await conn.sendMessage(data.chat, {
       text: '✅ Sistema actualizado y reiniciado exitosamente, estoy de vuelta 🌙'
     });
+
+    if (!hasAutoUpdateDecision()) {
+      await conn.sendButton(
+        data.chat,
+        '¿Querés que a partir de ahora me actualice automáticamente por mi cuenta cuando haya una versión nueva?',
+        '',
+        null,
+        [
+          ['✅ Sí, actualizate sola', `${usedPrefix}autoupdate on`],
+          ['❌ No, prefiero hacerlo yo', `${usedPrefix}autoupdate off`]
+        ],
+        null,
+        null,
+        null
+      );
+    }
   } catch {}
 };
 
