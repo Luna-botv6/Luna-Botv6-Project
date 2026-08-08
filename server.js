@@ -9,6 +9,8 @@ import {getAllPermissions, setGroupDownloadEnabled} from './lib/funcion/group-pe
 import {getRecentDownloads} from './lib/funcion/download-log.js';
 import {isRegistered, verifyCredentials} from './lib/funcion/panel-auth.js';
 import {getConfig, setConfig} from './lib/funcConfig.js';
+import {addWarning, removeWarning, resetWarnings, listWarnings} from './lib/advertencias.js';
+import {startCloudflareTunnel} from './lib/funcion/cloudflare-tunnel.js';
 
 const GROUP_FUNCTIONS = {
   welcome: 'Bienvenida',
@@ -139,6 +141,42 @@ async function getGroupsCached() {
     groupsCache.fetchedAt = now;
   }
   return groupsCache.data;
+}
+
+function normalizeUserJid(jid) {
+  if (!jid) return jid;
+  if (jid.includes('@')) return jid;
+  return jid.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+}
+
+async function blockUserCascade(jid) {
+  const metodos = [
+    async () => {
+      await global.conn.updateBlockStatus(jid, 'block');
+      return true;
+    },
+    async () => {
+      await global.conn.query({
+        tag: 'iq',
+        attrs: {type: 'set', xmlns: 'blocklist', to: '@s.whatsapp.net'},
+        content: [{tag: 'item', attrs: {action: 'block', jid}}]
+      });
+      return true;
+    },
+    async () => {
+      if (typeof global.conn.blockUser === 'function') {
+        await global.conn.blockUser(jid);
+        return true;
+      }
+      return false;
+    }
+  ];
+  for (const metodo of metodos) {
+    try {
+      if (await metodo()) return true;
+    } catch {}
+  }
+  return false;
 }
 
 let _qr = 'El código QR es invalido, posiblemente ya se escaneo el código QR.';
@@ -358,20 +396,174 @@ function connect(conn, PORT) {
     if (now - lastChatSendAt < CHAT_SEND_COOLDOWN_MS) {
       return res.status(429).json({ok: false, error: 'Esperá unos segundos antes de mandar otro mensaje.'});
     }
-    const {jid, message, media} = req.body || {};
+    const {jid, message, media, mentionAll} = req.body || {};
     if (!jid || (!message && !media)) return res.status(400).json({ok: false, error: 'Falta jid o contenido'});
     try {
+      let extraOptions = {};
+      if (mentionAll) {
+        const groupsObj = await getGroupsCached();
+        const meta = groupsObj[jid];
+        const jids = (meta?.participants || []).map((p) => p.id).filter(Boolean);
+        extraOptions = {mentions: jids, mentionAll: true};
+      }
       if (media && media.data && media.mimetype) {
         const buffer = Buffer.from(media.data, 'base64');
         const isVideo = media.mimetype.startsWith('video/');
         const payload = isVideo
-          ? {video: buffer, mimetype: media.mimetype, caption: message || undefined}
-          : {image: buffer, mimetype: media.mimetype, caption: message || undefined};
+          ? {video: buffer, mimetype: media.mimetype, caption: message || undefined, ...extraOptions}
+          : {image: buffer, mimetype: media.mimetype, caption: message || undefined, ...extraOptions};
         await global.conn.sendMessage(jid, payload);
       } else {
-        await global.conn.sendMessage(jid, {text: message});
+        await global.conn.sendMessage(jid, {text: message, ...extraOptions});
       }
       lastChatSendAt = now;
+      res.json({ok: true});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.post('/panel/groups/:jid/poll', requirePanelAuth, async (req, res) => {
+    const {jid} = req.params;
+    const {question, options} = req.body || {};
+    const cleanOptions = Array.isArray(options) ? options.map((o) => String(o || '').trim()).filter(Boolean) : [];
+    if (!question || !question.trim()) return res.status(400).json({ok: false, error: 'Falta la pregunta'});
+    if (cleanOptions.length < 2 || cleanOptions.length > 12) {
+      return res.status(400).json({ok: false, error: 'Necesitás entre 2 y 12 opciones'});
+    }
+    try {
+      await global.conn.sendMessage(jid, {
+        poll: {
+          name: question.trim(),
+          values: cleanOptions,
+          selectableCount: 1
+        }
+      });
+      res.json({ok: true});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.get('/panel/users', requirePanelAuth, async (req, res) => {
+    const users = global.db?.data?.users || {};
+    const search = (req.query.search || '').replace(/[^0-9]/g, '');
+    let allJids = Object.keys(users);
+    if (search) allJids = allJids.filter((jid) => jid.includes(search));
+
+    const warned = await listWarnings();
+    const warnMap = new Map(warned.map((w) => [w.id, w.warns]));
+
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize) || 50));
+    const start = (page - 1) * pageSize;
+    const pagedJids = allJids.slice(start, start + pageSize);
+
+    const list = pagedJids.map((jid) => ({
+      jid,
+      banned: !!users[jid]?.banned,
+      warns: warnMap.get(jid) || 0
+    }));
+
+    res.json({
+      ok: true,
+      users: list,
+      total: allJids.length,
+      page,
+      pageSize,
+      hasMore: start + pageSize < allJids.length
+    });
+  });
+
+  app.get('/panel/users/:jid', requirePanelAuth, async (req, res) => {
+    const jid = normalizeUserJid(req.params.jid);
+    const users = global.db?.data?.users || {};
+    const warned = await listWarnings();
+    const warnEntry = warned.find((w) => w.id === jid);
+    let blocked = false;
+    try {
+      const blocklist = await global.conn.fetchBlocklist();
+      blocked = Array.isArray(blocklist) && blocklist.includes(jid);
+    } catch {}
+    res.json({
+      ok: true,
+      jid,
+      banned: !!users[jid]?.banned,
+      warns: warnEntry?.warns || 0,
+      reasons: warnEntry?.reasons || [],
+      blocked
+    });
+  });
+
+  app.get('/panel/blocklist', requirePanelAuth, async (req, res) => {
+    try {
+      const blocklist = await global.conn.fetchBlocklist();
+      res.json({ok: true, blocked: Array.isArray(blocklist) ? blocklist : []});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.post('/panel/users/:jid/ban', requirePanelAuth, (req, res) => {
+    const jid = normalizeUserJid(req.params.jid);
+    if (!global.db.data.users[jid]) global.db.data.users[jid] = {};
+    global.db.data.users[jid].banned = true;
+    res.json({ok: true});
+  });
+
+  app.post('/panel/users/:jid/unban', requirePanelAuth, (req, res) => {
+    const jid = normalizeUserJid(req.params.jid);
+    if (!global.db.data.users[jid]) global.db.data.users[jid] = {};
+    global.db.data.users[jid].banned = false;
+    res.json({ok: true});
+  });
+
+  app.post('/panel/users/:jid/block', requirePanelAuth, async (req, res) => {
+    const jid = normalizeUserJid(req.params.jid);
+    try {
+      const success = await blockUserCascade(jid);
+      if (!success) return res.status(500).json({ok: false, error: 'WhatsApp rechazó el bloqueo. Probá bloquearlo manualmente desde el celular principal.'});
+      res.json({ok: true});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.post('/panel/users/:jid/unblock', requirePanelAuth, async (req, res) => {
+    const jid = normalizeUserJid(req.params.jid);
+    try {
+      await global.conn.updateBlockStatus(jid, 'unblock');
+      res.json({ok: true});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.post('/panel/users/:jid/warn', requirePanelAuth, async (req, res) => {
+    const jid = normalizeUserJid(req.params.jid);
+    const reason = (req.body?.reason || 'Sin motivo').trim();
+    try {
+      const warns = await addWarning(jid, reason, 'Panel', 'panel');
+      res.json({ok: true, warns});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.post('/panel/users/:jid/unwarn', requirePanelAuth, async (req, res) => {
+    const jid = normalizeUserJid(req.params.jid);
+    try {
+      const warns = await removeWarning(jid);
+      res.json({ok: true, warns});
+    } catch (e) {
+      res.status(500).json({ok: false, error: e.message});
+    }
+  });
+
+  app.post('/panel/users/:jid/reset-warnings', requirePanelAuth, async (req, res) => {
+    const jid = normalizeUserJid(req.params.jid);
+    try {
+      await resetWarnings(jid);
       res.json({ok: true});
     } catch (e) {
       res.status(500).json({ok: false, error: e.message});
@@ -385,6 +577,7 @@ function connect(conn, PORT) {
 
   server.listen(PORT, () => {
     console.log('[ ℹ️ ] Panel y QR listos (ignorar si ya escaneo el código QR)');
+    startCloudflareTunnel(PORT);
     if (opts['keepalive']) keepAlive();
   });
 }

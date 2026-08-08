@@ -579,6 +579,51 @@
     color: var(--danger);
   }
 
+  .mention-all-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .mention-all-check input { width: auto; }
+
+  .user-detail-status {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .user-detail-status .pill {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+  }
+
+  .user-detail-status .pill.on { border-color: rgba(255,84,112,0.4); color: var(--danger); }
+  .user-detail-status .pill.off { border-color: rgba(53,242,224,0.4); color: var(--cyan); }
+
+  .user-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+
+  .user-row:last-child { border-bottom: none; }
+  .user-row:hover .name { color: var(--cyan); }
+  .user-row .badges { display: flex; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
+  .user-row .badge.banned { color: var(--danger); }
+  .user-row .badge.warn { color: #f5c451; }
+
   .chat-mock {
     display: flex;
     flex-direction: column;
@@ -948,6 +993,7 @@
     <div class="nav-item" data-section="permisos" data-title="Permisos por grupo" data-subtitle="Habilitá o bloqueá la descarga grupo por grupo"><span class="dot"></span>Permisos por grupo</div>
     <div class="nav-item" data-section="subbots" data-title="Subbots" data-subtitle="Quién está conectado, y desconectar o eliminar en un toque"><span class="dot"></span>Subbots</div>
     <div class="nav-item" data-section="grupo" data-title="Grupo" data-subtitle="Elegí un grupo y después qué querés hacer con él"><span class="dot"></span>Grupo</div>
+    <div class="nav-item" data-section="usuarios" data-title="Usuarios" data-subtitle="Baneos, bloqueos y advertencias por usuario"><span class="dot"></span>Usuarios</div>
   </nav>
 
   <div class="sidebar-foot">
@@ -1066,6 +1112,7 @@
         <div class="group-tabs">
           <button class="group-tab active" data-tab="mensaje">💬 Mensaje</button>
           <button class="group-tab" data-tab="funciones">⚙️ Funciones</button>
+          <button class="group-tab" data-tab="encuesta">📊 Encuesta</button>
           <button class="group-tab" data-tab="riesgo">⚠️ Zona de riesgo</button>
         </div>
 
@@ -1075,6 +1122,10 @@
           <span class="field-label">adjunto (opcional)</span>
           <input type="file" id="chat-media" accept="image/*,video/*">
           <div class="status-line" id="chat-media-info"></div>
+          <label class="mention-all-check">
+            <input type="checkbox" id="chat-mention-all">
+            <span>Mencionar a todo el grupo (etiqueta oculta, tipo hidetag)</span>
+          </label>
           <div class="compose">
             <button class="action-btn" id="chat-send-btn">
               <span class="btn-spinner"></span><span class="btn-label">Enviar</span>
@@ -1088,6 +1139,19 @@
             <div class="row"><span class="name">Elegí un grupo</span></div>
           </div>
           <div class="status-line" id="functions-status"></div>
+        </div>
+
+        <div class="group-tab-panel" data-panel="encuesta">
+          <span class="field-label">pregunta</span>
+          <input type="text" id="poll-question" placeholder="¿Qué día armamos el evento?">
+          <span class="field-label">opciones (una por línea, 2 a 12)</span>
+          <textarea id="poll-options" placeholder="Sábado&#10;Domingo&#10;Cualquiera"></textarea>
+          <div class="compose">
+            <button class="action-btn" id="poll-send-btn">
+              <span class="btn-spinner"></span><span class="btn-label">📊 Crear encuesta</span>
+            </button>
+          </div>
+          <div class="status-line" id="poll-status"></div>
         </div>
 
         <div class="group-tab-panel" data-panel="riesgo">
@@ -1106,6 +1170,78 @@
           </div>
           <div class="status-line" id="risk-status"></div>
         </div>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <section class="page" id="page-usuarios">
+  <div class="grid">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Usuarios</div>
+          <div class="card-desc">Baneos, bloqueos y advertencias — elegí un usuario para operarlo</div>
+        </div>
+        <span class="tag tag-live">en vivo</span>
+      </div>
+      <div class="mock">
+        <span class="field-label">buscar por número</span>
+        <input type="text" id="users-search" placeholder="Ej: 549381...">
+        <div class="mock" id="users-list" style="max-height:260px; margin-top:8px;">
+          <div class="row"><span class="name">Cargando usuarios...</span></div>
+        </div>
+        <span class="btn-ghost" id="users-load-more" style="display:none;">Cargar más usuarios</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Usuario</div>
+          <div class="card-desc" id="user-detail-jid">Elegí un usuario de la lista</div>
+        </div>
+        <span class="tag tag-live">en vivo</span>
+      </div>
+      <div class="mock chat-mock" id="user-detail-panel" style="display:none;">
+        <div class="user-detail-status" id="user-detail-status"></div>
+
+        <div class="danger-zone">
+          <div class="danger-note">Baneo del bot (ignora al usuario, no es un bloqueo real de WhatsApp).</div>
+          <button class="action-btn danger" id="user-ban-btn">
+            <span class="btn-spinner"></span><span class="btn-label">🚫 Banear usuario</span>
+          </button>
+          <button class="action-btn" id="user-unban-btn" style="display:none;">
+            <span class="btn-spinner"></span><span class="btn-label">✅ Desbanear usuario</span>
+          </button>
+        </div>
+
+        <div class="danger-zone">
+          <div class="danger-note">Bloqueo real de WhatsApp — el usuario deja de poder escribirle al bot.</div>
+          <button class="action-btn danger" id="user-block-btn">
+            <span class="btn-spinner"></span><span class="btn-label">🔒 Bloquear en WhatsApp</span>
+          </button>
+          <button class="action-btn" id="user-unblock-btn" style="display:none;">
+            <span class="btn-spinner"></span><span class="btn-label">🔓 Desbloquear</span>
+          </button>
+        </div>
+
+        <div class="danger-zone">
+          <div class="danger-note">Advertencias — a las 3, el bot expulsa automáticamente al usuario del grupo donde reciba la próxima.</div>
+          <div class="function-row"><span class="name">Advertencias actuales</span><span class="name" id="user-warn-count">0</span></div>
+          <input type="text" id="user-warn-reason" placeholder="Motivo de la advertencia (opcional)">
+          <button class="action-btn" id="user-warn-btn">
+            <span class="btn-spinner"></span><span class="btn-label">⚠️ Dar advertencia</span>
+          </button>
+          <button class="action-btn" id="user-unwarn-btn">
+            <span class="btn-spinner"></span><span class="btn-label">➖ Quitar última advertencia</span>
+          </button>
+          <button class="action-btn danger" id="user-reset-warn-btn">
+            <span class="btn-spinner"></span><span class="btn-label">🧹 Limpiar todas</span>
+          </button>
+        </div>
+
+        <div class="status-line" id="user-detail-action-status"></div>
       </div>
     </div>
   </div>
@@ -1437,7 +1573,7 @@
 
     setBtnLoading(btn, true);
     try {
-      const body = {jid, message};
+      const body = {jid, message, mentionAll: document.getElementById('chat-mention-all').checked};
       if (mediaFile) {
         const base64 = await fileToBase64(mediaFile);
         body.media = {data: base64, mimetype: mediaFile.type};
@@ -1453,7 +1589,55 @@
       document.getElementById('chat-message').value = '';
       mediaInput.value = '';
       document.getElementById('chat-media-info').textContent = '';
+      document.getElementById('chat-mention-all').checked = false;
       chatCooldownUntil = Date.now() + 5000;
+    } catch (e) {
+      status.textContent = e.message;
+      status.classList.add('err');
+    } finally {
+      setBtnLoading(btn, false);
+    }
+  });
+
+  document.getElementById('poll-send-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('poll-send-btn');
+    const jid = document.getElementById('chat-group-select').value;
+    const question = document.getElementById('poll-question').value.trim();
+    const options = document.getElementById('poll-options').value
+      .split('\n')
+      .map((o) => o.trim())
+      .filter(Boolean);
+    const status = document.getElementById('poll-status');
+    status.className = 'status-line';
+
+    if (!jid) {
+      status.textContent = 'Elegí un grupo primero.';
+      status.classList.add('err');
+      return;
+    }
+    if (!question) {
+      status.textContent = 'Escribí la pregunta.';
+      status.classList.add('err');
+      return;
+    }
+    if (options.length < 2 || options.length > 12) {
+      status.textContent = 'Necesitás entre 2 y 12 opciones (una por línea).';
+      status.classList.add('err');
+      return;
+    }
+
+    setBtnLoading(btn, true);
+    try {
+      const data = await panelFetch('/panel/groups/' + encodeURIComponent(jid) + '/poll', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({question, options})
+      });
+      if (!data.ok) throw new Error(data.error || 'No se pudo crear la encuesta');
+      status.textContent = 'Encuesta enviada.';
+      status.classList.add('ok');
+      document.getElementById('poll-question').value = '';
+      document.getElementById('poll-options').value = '';
     } catch (e) {
       status.textContent = e.message;
       status.classList.add('err');
@@ -1757,6 +1941,148 @@
 
   document.querySelectorAll('.quick-card[data-goto]').forEach((card) => {
     card.addEventListener('click', () => goToSection(card.dataset.goto));
+  });
+
+  let usersPage = 1;
+  let usersSearchTerm = '';
+  const USERS_PAGE_SIZE = 50;
+  let selectedUserJid = null;
+
+  function renderUserRow(u) {
+    const row = document.createElement('div');
+    row.className = 'user-row';
+    row.dataset.jid = u.jid;
+    row.innerHTML =
+      '<span class="name">' + u.jid.split('@')[0] + '</span>' +
+      '<div class="badges">' +
+        (u.banned ? '<span class="badge banned">baneado</span>' : '') +
+        (u.warns > 0 ? '<span class="badge warn">' + u.warns + ' warn</span>' : '') +
+      '</div>';
+    row.addEventListener('click', () => selectUser(u.jid));
+    return row;
+  }
+
+  async function loadUsers(page = 1, append = false) {
+    const container = document.getElementById('users-list');
+    const moreBtn = document.getElementById('users-load-more');
+    if (!append) container.innerHTML = '<div class="row"><span class="name">Cargando usuarios...</span></div>';
+    try {
+      const data = await panelFetch(
+        '/panel/users?page=' + page + '&pageSize=' + USERS_PAGE_SIZE +
+        '&search=' + encodeURIComponent(usersSearchTerm)
+      );
+      if (!data.ok) throw new Error(data.error || 'No se pudo cargar');
+      if (!append) container.innerHTML = '';
+      if (!data.users.length && !append) {
+        container.innerHTML = '<div class="row"><span class="name">No hay usuarios que coincidan</span></div>';
+      }
+      data.users.forEach((u) => container.appendChild(renderUserRow(u)));
+      usersPage = data.page;
+      moreBtn.style.display = data.hasMore ? 'block' : 'none';
+    } catch (e) {
+      if (!append) container.innerHTML = '<div class="row"><span class="name">' + e.message + '</span></div>';
+    }
+  }
+
+  document.getElementById('users-load-more').addEventListener('click', () => {
+    loadUsers(usersPage + 1, true);
+  });
+
+  let usersSearchDebounce = null;
+  document.getElementById('users-search').addEventListener('input', (ev) => {
+    clearTimeout(usersSearchDebounce);
+    usersSearchDebounce = setTimeout(() => {
+      usersSearchTerm = ev.target.value;
+      loadUsers(1, false);
+    }, 300);
+  });
+
+  function pill(text, on) {
+    return '<span class="pill ' + (on ? 'on' : 'off') + '">' + text + '</span>';
+  }
+
+  async function selectUser(jid) {
+    selectedUserJid = jid;
+    document.getElementById('user-detail-jid').textContent = jid.split('@')[0];
+    document.getElementById('user-detail-panel').style.display = 'flex';
+    const statusEl = document.getElementById('user-detail-status');
+    const actionStatus = document.getElementById('user-detail-action-status');
+    actionStatus.className = 'status-line';
+    actionStatus.textContent = '';
+    statusEl.innerHTML = 'Cargando...';
+    try {
+      const data = await panelFetch('/panel/users/' + encodeURIComponent(jid));
+      if (!data.ok) throw new Error(data.error || 'No se pudo cargar');
+      statusEl.innerHTML =
+        pill(data.banned ? 'Baneado' : 'Sin banear', data.banned) +
+        pill(data.blocked ? 'Bloqueado' : 'Sin bloquear', data.blocked) +
+        pill(data.warns + ' advertencia' + (data.warns === 1 ? '' : 's'), data.warns > 0);
+      document.getElementById('user-ban-btn').style.display = data.banned ? 'none' : 'inline-flex';
+      document.getElementById('user-unban-btn').style.display = data.banned ? 'inline-flex' : 'none';
+      document.getElementById('user-block-btn').style.display = data.blocked ? 'none' : 'inline-flex';
+      document.getElementById('user-unblock-btn').style.display = data.blocked ? 'inline-flex' : 'none';
+      document.getElementById('user-warn-count').textContent = data.warns;
+    } catch (e) {
+      statusEl.textContent = e.message;
+    }
+  }
+
+  async function runUserAction(btn, path, method, body) {
+    const actionStatus = document.getElementById('user-detail-action-status');
+    actionStatus.className = 'status-line';
+    if (!selectedUserJid) return;
+    setBtnLoading(btn, true);
+    try {
+      const data = await panelFetch('/panel/users/' + encodeURIComponent(selectedUserJid) + path, {
+        method,
+        headers: body ? {'Content-Type': 'application/json'} : undefined,
+        body: body ? JSON.stringify(body) : undefined
+      });
+      if (!data.ok) throw new Error(data.error || 'No se pudo completar');
+      actionStatus.textContent = 'Listo.';
+      actionStatus.classList.add('ok');
+      await selectUser(selectedUserJid);
+      loadUsers(1, false);
+    } catch (e) {
+      actionStatus.textContent = e.message;
+      actionStatus.classList.add('err');
+    } finally {
+      setBtnLoading(btn, false);
+    }
+  }
+
+  document.getElementById('user-ban-btn').addEventListener('click', (ev) => {
+    if (!confirm('¿Banear a este usuario? El bot va a ignorarlo hasta que lo desbaneen.')) return;
+    runUserAction(ev.currentTarget, '/ban', 'POST');
+  });
+  document.getElementById('user-unban-btn').addEventListener('click', (ev) => {
+    runUserAction(ev.currentTarget, '/unban', 'POST');
+  });
+  document.getElementById('user-block-btn').addEventListener('click', (ev) => {
+    if (!confirm('¿Bloquear a este usuario en WhatsApp? Deja de poder escribirle al bot.')) return;
+    runUserAction(ev.currentTarget, '/block', 'POST');
+  });
+  document.getElementById('user-unblock-btn').addEventListener('click', (ev) => {
+    runUserAction(ev.currentTarget, '/unblock', 'POST');
+  });
+  document.getElementById('user-warn-btn').addEventListener('click', (ev) => {
+    const reason = document.getElementById('user-warn-reason').value.trim();
+    runUserAction(ev.currentTarget, '/warn', 'POST', {reason});
+    document.getElementById('user-warn-reason').value = '';
+  });
+  document.getElementById('user-unwarn-btn').addEventListener('click', (ev) => {
+    runUserAction(ev.currentTarget, '/unwarn', 'POST');
+  });
+  document.getElementById('user-reset-warn-btn').addEventListener('click', (ev) => {
+    if (!confirm('¿Limpiar todas las advertencias de este usuario?')) return;
+    runUserAction(ev.currentTarget, '/reset-warnings', 'POST');
+  });
+
+  document.querySelector('.nav-item[data-section="usuarios"]').addEventListener('click', () => {
+    if (!document.getElementById('users-list').dataset.loaded) {
+      document.getElementById('users-list').dataset.loaded = '1';
+      loadUsers(1, false);
+    }
   });
 
   initGate();
