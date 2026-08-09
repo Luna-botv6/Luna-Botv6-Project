@@ -1,5 +1,19 @@
 "use strict";
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1';
+
+const _origConsoleInfo = console.info.bind(console);
+const _origConsoleWarn = console.warn.bind(console);
+const SIGNAL_SESSION_NOISE = /Closing session|Opening session|Session already closed|Removing old closed session|Migrating session to/;
+
+console.info = (...args) => {
+  if (typeof args[0] === 'string' && SIGNAL_SESSION_NOISE.test(args[0])) return;
+  _origConsoleInfo(...args);
+};
+console.warn = (...args) => {
+  if (typeof args[0] === 'string' && SIGNAL_SESSION_NOISE.test(args[0])) return;
+  _origConsoleWarn(...args);
+};
+
 import './config.js';
 import './api.js';
 import { createRequire } from 'module';
