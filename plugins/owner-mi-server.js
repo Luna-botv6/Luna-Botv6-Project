@@ -1,26 +1,15 @@
-import fetch from 'node-fetch';
 import { isRegistered, saveCredentials, resetCredentials } from '../lib/funcion/panel-auth.js';
-import { ensureBotIdentity } from '../lib/funcion/bot-identity.js';
-
-const PANEL_CENTRAL_HTTP = 'http://204.12.204.5:4012';
+import { getPanelTunnelUrl } from '../lib/funcion/cloudflare-tunnel.js';
 
 const pendingUsernames = new Map();
 const AUTODELETE_MS = 120000;
 
-async function buildLink() {
-  try {
-    const {botId, secret} = await ensureBotIdentity(PANEL_CENTRAL_HTTP);
-    const resp = await fetch(`${PANEL_CENTRAL_HTTP}/bot/create-token`, {
-      method: 'POST',
-      headers: {'content-type': 'application/json'},
-      body: JSON.stringify({botId, secret})
-    });
-    const data = await resp.json();
-    if (!data.ok) return null;
-    return `${PANEL_CENTRAL_HTTP}/api/${data.token}/panel`;
-  } catch {
-    return null;
+async function buildLinksText() {
+  const tunnelUrl = getPanelTunnelUrl();
+  if (!tunnelUrl) {
+    return '⚠️ El túnel todavía no está listo. Probá de nuevo en unos segundos.';
   }
+  return tunnelUrl + '/panel';
 }
 
 async function responder(conn, m, texto) {
@@ -42,10 +31,10 @@ const handler = async (m, {conn, text, command, isROwner}) => {
         '_Ejemplo: .reg Lunabot_'
       );
     }
-    const link = await buildLink();
+    const linksText = await buildLinksText();
     return responder(conn, m,
       '🔗 *Tu acceso al panel*\n\n' +
-      (link || '⚠️ No se pudo conectar con el panel central. Probá de nuevo en un rato.') +
+      linksText +
       '\n\n⚠️ No compartas tu usuario y contraseña con nadie, ni siquiera con el creador del bot. Es la única forma de garantizar tu seguridad y la del bot.\n\n' +
       '_¿Te olvidaste tus datos? Usá .resetserver_'
     );
@@ -83,12 +72,12 @@ const handler = async (m, {conn, text, command, isROwner}) => {
     saveCredentials(usuario, password);
     pendingUsernames.delete(m.sender);
 
-    const link = await buildLink();
+    const linksText = await buildLinksText();
     const confirmacion = await responder(conn, m,
       '🔐 *Listo, guardá esto en un lugar seguro*\n\n' +
       'Usuario: *' + usuario + '*\n' +
       'Contraseña: *' + password + '*\n\n' +
-      (link ? '🔗 ' + link : '⚠️ No se pudo armar el link (faltan variables de entorno).') +
+      '🔗 ' + linksText +
       '\n\n⚠️ No compartas estos datos con nadie, ni con el creador del bot.\n' +
       '🕑 Este mensaje se autodestruye en 2 minutos.'
     );
