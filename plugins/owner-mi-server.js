@@ -1,31 +1,10 @@
-import fetch from 'node-fetch';
 import { isRegistered, saveCredentials, resetCredentials } from '../lib/funcion/panel-auth.js';
-import { ensureBotIdentity } from '../lib/funcion/bot-identity.js';
 import { getPanelTunnelUrl } from '../lib/funcion/cloudflare-tunnel.js';
-
-const PANEL_CENTRAL_HTTP = 'http://204.12.204.5:4012';
 
 const pendingUsernames = new Map();
 const AUTODELETE_MS = 120000;
 
-async function buildLink() {
-  try {
-    const {botId, secret} = await ensureBotIdentity(PANEL_CENTRAL_HTTP);
-    const resp = await fetch(`${PANEL_CENTRAL_HTTP}/bot/create-token`, {
-      method: 'POST',
-      headers: {'content-type': 'application/json'},
-      body: JSON.stringify({botId, secret})
-    });
-    const data = await resp.json();
-    if (!data.ok) return null;
-    return `${PANEL_CENTRAL_HTTP}/api/${data.token}/panel`;
-  } catch {
-    return null;
-  }
-}
-
 async function buildLinksText() {
-  await buildLink();
   const tunnelUrl = getPanelTunnelUrl();
   if (!tunnelUrl) {
     return '⚠️ El túnel todavía no está listo. Probá de nuevo en unos segundos.';
