@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { isRegistered, saveCredentials, resetCredentials } from '../lib/funcion/panel-auth.js';
 import { ensureBotIdentity } from '../lib/funcion/bot-identity.js';
+import { getPanelTunnelUrl } from '../lib/funcion/cloudflare-tunnel.js';
 
 const PANEL_CENTRAL_HTTP = 'http://204.12.204.5:4012';
 
@@ -23,6 +24,23 @@ async function buildLink() {
   }
 }
 
+function buildLinksText() {
+  return buildLink().then((centralLink) => {
+    const tunnelUrl = getPanelTunnelUrl();
+    const lines = [];
+    if (centralLink) {
+      lines.push('🔗 *Link principal (recomendado):*\n' + centralLink);
+    }
+    if (tunnelUrl) {
+      lines.push('🔗 *Link alternativo (Cloudflare):*\n' + tunnelUrl + '/panel');
+    }
+    if (lines.length === 0) {
+      return '⚠️ No se pudo conectar con el panel central ni con el túnel de Cloudflare. Probá de nuevo en un rato.';
+    }
+    return lines.join('\n\n');
+  });
+}
+
 async function responder(conn, m, texto) {
   return conn.sendMessage(m.chat, {text: texto}, {quoted: m});
 }
@@ -42,10 +60,10 @@ const handler = async (m, {conn, text, command, isROwner}) => {
         '_Ejemplo: .reg Lunabot_'
       );
     }
-    const link = await buildLink();
+    const linksText = await buildLinksText();
     return responder(conn, m,
       '🔗 *Tu acceso al panel*\n\n' +
-      (link || '⚠️ No se pudo conectar con el panel central. Probá de nuevo en un rato.') +
+      linksText +
       '\n\n⚠️ No compartas tu usuario y contraseña con nadie, ni siquiera con el creador del bot. Es la única forma de garantizar tu seguridad y la del bot.\n\n' +
       '_¿Te olvidaste tus datos? Usá .resetserver_'
     );
@@ -83,12 +101,12 @@ const handler = async (m, {conn, text, command, isROwner}) => {
     saveCredentials(usuario, password);
     pendingUsernames.delete(m.sender);
 
-    const link = await buildLink();
+    const linksText = await buildLinksText();
     const confirmacion = await responder(conn, m,
       '🔐 *Listo, guardá esto en un lugar seguro*\n\n' +
       'Usuario: *' + usuario + '*\n' +
       'Contraseña: *' + password + '*\n\n' +
-      (link ? '🔗 ' + link : '⚠️ No se pudo armar el link (faltan variables de entorno).') +
+      linksText +
       '\n\n⚠️ No compartas estos datos con nadie, ni con el creador del bot.\n' +
       '🕑 Este mensaje se autodestruye en 2 minutos.'
     );
