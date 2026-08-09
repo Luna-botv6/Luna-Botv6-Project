@@ -24,21 +24,13 @@ async function buildLink() {
   }
 }
 
-function buildLinksText() {
-  return buildLink().then((centralLink) => {
-    const tunnelUrl = getPanelTunnelUrl();
-    const lines = [];
-    if (centralLink) {
-      lines.push('🔗 *Link principal (recomendado):*\n' + centralLink);
-    }
-    if (tunnelUrl) {
-      lines.push('🔗 *Link alternativo (Cloudflare):*\n' + tunnelUrl + '/panel');
-    }
-    if (lines.length === 0) {
-      return '⚠️ No se pudo conectar con el panel central ni con el túnel de Cloudflare. Probá de nuevo en un rato.';
-    }
-    return lines.join('\n\n');
-  });
+async function buildLinksText() {
+  await buildLink();
+  const tunnelUrl = getPanelTunnelUrl();
+  if (!tunnelUrl) {
+    return '⚠️ El túnel todavía no está listo. Probá de nuevo en unos segundos.';
+  }
+  return tunnelUrl + '/panel';
 }
 
 async function responder(conn, m, texto) {
@@ -106,7 +98,7 @@ const handler = async (m, {conn, text, command, isROwner}) => {
       '🔐 *Listo, guardá esto en un lugar seguro*\n\n' +
       'Usuario: *' + usuario + '*\n' +
       'Contraseña: *' + password + '*\n\n' +
-      linksText +
+      '🔗 ' + linksText +
       '\n\n⚠️ No compartas estos datos con nadie, ni con el creador del bot.\n' +
       '🕑 Este mensaje se autodestruye en 2 minutos.'
     );
