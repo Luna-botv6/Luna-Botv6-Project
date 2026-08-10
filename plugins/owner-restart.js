@@ -1,80 +1,18 @@
-import { writeFileSync, existsSync, unlinkSync, readFileSync } from 'fs';
-import { execSync } from 'child_process';
-import { hasAutoUpdateDecision, startAutoUpdateScheduler, ensureConfigSkipWorktree } from '../lib/funcion/self-update.js';
+import { existsSync, unlinkSync, readFileSync } from 'fs';
+import { hasAutoUpdateDecision, startAutoUpdateScheduler } from '../lib/funcion/self-update.js';
+import { runUpdateAndRestart } from '../lib/funcion/update-and-restart.js';
 
 startAutoUpdateScheduler();
 
 const RESTART_FILE = '/tmp/luna-restart-notify.json';
-const REPO_URL = 'https://github.com/Luna-botv6/Luna-Botv6-Project.git';
-
-function hasGitRepo() {
-  try {
-    execSync('git rev-parse --git-dir', { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function initRepo(conn, chat) {
-  await conn.sendMessage(chat, {
-    text: '⚙️ *No se encontro repositorio Git*\n\n🔧 Inicializando y vinculando con GitHub...'
-  });
-  execSync('git init', { encoding: 'utf8' });
-  execSync(`git remote add origin ${REPO_URL}`, { encoding: 'utf8' });
-  execSync('git fetch origin', { encoding: 'utf8', timeout: 60000 });
-  execSync('git checkout -B main --track origin/main', { encoding: 'utf8' });
-  execSync('git reset --hard origin/main', { encoding: 'utf8', timeout: 60000 });
-  ensureConfigSkipWorktree();
-}
 
 const handler = async (m, { conn }) => {
   await m.reply('🔄 Actualizando y reiniciando sistema, espera un momento...');
 
-  try {
-    if (!hasGitRepo()) {
-      await initRepo(conn, m.chat);
-      await conn.sendMessage(m.chat, {
-        text: '✅ *Repositorio inicializado correctamente*\n\n⏳ _Instalando dependencias..._'
-      });
-      execSync('npm install --silent', { encoding: 'utf8', timeout: 60000 });
-    } else {
-      ensureConfigSkipWorktree();
-      const gitOutput = execSync('git pull origin main', { encoding: 'utf8', timeout: 30000 });
-      const updated = !gitOutput.includes('Already up to date');
-
-      if (updated) {
-        const lines = gitOutput.split('\n').filter(l => l.trim());
-        const fileLines = lines.filter(l => /\|/.test(l) && /[+\-]/.test(l));
-        const fileList = fileLines.map(l => `　📄 ${l.split('|')[0].trim()} ✅`).join('\n');
-        const summary = lines.find(l => l.includes('file') && l.includes('changed')) || '';
-
-        await conn.sendMessage(m.chat, {
-          text:
-            '📦 *Actualizacion detectada*\n\n' +
-            `📂 *Archivos:*\n${fileList || '　📄 Sin detalle'}\n\n` +
-            `📊 ${summary}\n\n` +
-            '⏳ _Instalando dependencias..._'
-        });
-        execSync('npm install --silent', { encoding: 'utf8', timeout: 60000 });
-      } else {
-        await conn.sendMessage(m.chat, {
-          text: '✅ *Ya esta en la ultima version*\n\n⏳ Reiniciando de todas formas...'
-        });
-      }
-    }
-  } catch (e) {
-    await conn.sendMessage(m.chat, {
-      text: `⚠️ *No se pudo actualizar*\n\n${e.message}\n\n⏳ Reiniciando sin actualizar...`
-    });
-  }
-
-  writeFileSync(RESTART_FILE, JSON.stringify({ chat: m.chat }), 'utf8');
-
-  setTimeout(() => {
-    if (global.gc) global.gc();
-    process.kill(process.ppid, 'SIGTERM');
-  }, 3000);
+  await runUpdateAndRestart({
+    notify: (texto) => conn.sendMessage(m.chat, { text: texto }),
+    restartNotifyChat: m.chat
+  });
 };
 
 handler.all = async function (m, { conn }) {
