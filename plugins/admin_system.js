@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { addOwner, removeOwner } from '../lib/funcion/owners-manager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -162,12 +163,10 @@ const handler = async (m, { conn, args, command, usedPrefix, isOwner }) => {
 
     await conn.sendMessage(m.chat, { react: { text: '⏱️', key: m.key }});
 
-    try {
-      global.owner.push([numero, 'OWNER-AGREGADO', true]);
-      const success = updateConfigFile('owner', numero);
-      if (success) {
-        await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }});
-        conn.reply(m.chat, `
+    const resultado = addOwner(numero, 'OWNER-AGREGADO');
+    if (resultado.success) {
+      await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }});
+      conn.reply(m.chat, `
 ✅ *OWNER AGREGADO EXITOSAMENTE*
 
 👤 *Número:* ${numero}
@@ -175,14 +174,9 @@ const handler = async (m, { conn, args, command, usedPrefix, isOwner }) => {
 
 *El cambio se ha guardado permanentemente en config.js*
 `, m);
-      } else {
-        await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key }});
-        conn.reply(m.chat, '❌ *Error al guardar en el archivo de configuración.*', m);
-      }
-    } catch (error) {
-      console.error('Error en agregarowner:', error);
+    } else {
       await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key }});
-      conn.reply(m.chat, '❌ *Error al agregar el owner.*', m);
+      conn.reply(m.chat, `❌ *${resultado.error}*`, m);
     }
   }
 
@@ -252,25 +246,18 @@ const handler = async (m, { conn, args, command, usedPrefix, isOwner }) => {
     if (global.owner.length === 1) return conn.reply(m.chat, '⚠️ *No puedes quitar el último owner.*', m);
 
     await conn.sendMessage(m.chat, { react: { text: '⏱️', key: m.key }});
-    try {
-      global.owner.splice(ownerIndex, 1);
-      const success = removeFromConfigFile('owner', numero);
-      if (success) {
-        await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }});
-        conn.reply(m.chat, `
+    const resultado = removeOwner(numero);
+    if (resultado.success) {
+      await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }});
+      conn.reply(m.chat, `
 ✅ *OWNER REMOVIDO EXITOSAMENTE*
 
 👤 *Número:* ${numero}
 📋 *Total de owners restantes:* ${global.owner.length}
 `, m);
-      } else {
-        await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key }});
-        conn.reply(m.chat, '❌ *Error al guardar en el archivo de configuración.*', m);
-      }
-    } catch (error) {
-      console.error('Error en removerowner:', error);
+    } else {
       await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key }});
-      conn.reply(m.chat, '❌ *Error al remover el owner.*', m);
+      conn.reply(m.chat, `❌ *${resultado.error}*`, m);
     }
   }
 
@@ -324,30 +311,24 @@ const handler = async (m, { conn, args, command, usedPrefix, isOwner }) => {
     if (ownerIndex === -1) return conn.reply(m.chat, '❌ *Este número no está registrado como owner.*', m);
     if (global.owner.length === 1) return conn.reply(m.chat, '⚠️ *No puedes quitar el último owner. Debe haber al menos uno.*', m);
 
+    const ownerAntes = global.owner.find(([num]) => num === numero);
+
     await conn.sendMessage(m.chat, { react: { text: '⏱️', key: m.key }});
-    try {
-      const removedOwner = global.owner[ownerIndex];
-      global.owner.splice(ownerIndex, 1);
-      const success = removeFromConfigFile('owner', numero);
-      if (success) {
-        await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }});
-        conn.reply(m.chat, `
+    const resultado = removeOwner(numero);
+    if (resultado.success) {
+      await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }});
+      conn.reply(m.chat, `
 ✅ *OWNER ELIMINADO EXITOSAMENTE*
 
 👤 *Número:* ${numero}
-🏷️ *Nombre:* ${removedOwner[1]}
+🏷️ *Nombre:* ${ownerAntes?.[1] || ''}
 📋 *Total de owners restantes:* ${global.owner.length}
 
 *El cambio se ha guardado permanentemente en config.js*
 `, m);
-      } else {
-        await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key }});
-        conn.reply(m.chat, '❌ *Error al guardar en el archivo de configuración.*', m);
-      }
-    } catch (error) {
-      console.error('Error en quitarowner:', error);
+    } else {
       await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key }});
-      conn.reply(m.chat, '❌ *Error al quitar el owner.*', m);
+      conn.reply(m.chat, `❌ *${resultado.error}*`, m);
     }
   }
 
