@@ -8,25 +8,19 @@ global.botnumber = ""
 global.confirmCode = ""
 global.authFile = `MysticSession`;
 
-// Cambiar a true si el Bot responde a sus comandos con otros comandos.
-// Cambiar a false para usar el Bot desde el mismo numero del Bot.
-// Error de m.isBaileys marcado como false fix temporal
 global.isBaileysFail = false
 
 global.defaultLenguaje = 'es';
 
 global.lidOwners = [
   "128213531545849",
-  "29717298188532",
-  "5219994092751",
-  "5217421108292"
+  "29717298188532"
 ];
 
 global.owner = [
   ['5493483466763', '👑 Ehl villano 👑', true],
   ['50259727165', 'MOD-DECO', true],
-  ['5217551392489', 'MOD-Jaz', true],
-  ['5217773461176', 'MOD-ALEXA', true],
+
 ];
 
 global.suittag = ['5493483466763'];
