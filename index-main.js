@@ -9,7 +9,7 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import fsSync from 'fs';
 import v8 from 'v8';
-import { ensureConfigSkipWorktree } from './src/lib/funcion/self-update.js';
+import { ensureConfigSkipWorktree } from './lib/funcion/self-update.js';
 
 ensureConfigSkipWorktree();
 
