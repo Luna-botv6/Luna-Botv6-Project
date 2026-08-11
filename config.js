@@ -19,7 +19,7 @@ global.lidOwners = [
 
 global.owner = [
   ['5493483466763', '👑 Ehl villano 👑', true],
-  ['50259727165', 'MOD-DECO', true],
+  ['50259727165', 'MOD-DECO', true]
 
 ];
 
