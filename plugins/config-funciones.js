@@ -37,27 +37,29 @@ async function safeSetConfig(chatId, config) {
 }
 
 const CONFIG_MAP = {
-  welcome:     { key: 'welcome',    group: true, admin: true },
-  bye:         { key: 'bye',        group: true, admin: true },
-  detect:      { key: 'detect',     group: true, admin: true },
-  detect2:     { key: 'detect2',    group: true, admin: true },
-  antidelete:  { key: 'antidelete', group: true, admin: true },
-  antilink:    { key: 'antiLink',   group: true, admin: true },
-  antilink2:   { key: 'antiLink2',  group: true, admin: true },
-  modoadmin:   { key: 'modoadmin',  group: true, admin: true },
-  autosticker: { key: 'autosticker',group: true, admin: true },
-  audios:      { key: 'audios',     group: true, admin: true },
-  antitoxic:   { key: 'antiToxic',  group: true, admin: true },
-  afk:         { key: 'afkAllowed', group: true, admin: true },
-  restrict:    { key: 'restrict',   bot: true,   owner: true },
-  audios_bot:  { key: 'audios_bot', bot: true,   owner: true },
-  autoread:    { key: 'autoread2',  bot: true,   owner: true },
-  anticall:    { key: 'antiCall',   bot: true,   owner: true },
-  antispam:    { key: 'antispam',   bot: true,   owner: true },
-  antiprivado: { key: 'antiprivado',file: true,  owner: true },
-  modopublico: { key: 'modopublico',file: true,  owner: true },
-  vierwimage:  { key: 'vierwimage', file: true,  owner: true },
-  modogrupos:  { key: 'modogrupos', file: true,  owner: true }
+  welcome:      { key: 'welcome',      group: true, admin: true },
+  bye:          { key: 'bye',          group: true, admin: true },
+  detect:       { key: 'detect',       group: true, admin: true },
+  detect2:      { key: 'detect2',      group: true, admin: true },
+  antidelete:   { key: 'antidelete',   group: true, admin: true },
+  antilink:     { key: 'antiLink',     group: true, admin: true },
+  antilink2:    { key: 'antiLink2',    group: true, admin: true },
+  modoadmin:    { key: 'modoadmin',    group: true, admin: true },
+  autosticker:  { key: 'autosticker',  group: true, admin: true },
+  audios:       { key: 'audios',       group: true, admin: true },
+  antitoxic:    { key: 'antiToxic',    group: true, admin: true },
+  antiviewonce: { key: 'antiviewonce', group: true, admin: true },
+  anti18:       { key: 'anti18',       group: true, admin: true },
+  afk:          { key: 'afkAllowed',   group: true, admin: true },
+  restrict:     { key: 'restrict',     bot: true,   owner: true },
+  audios_bot:   { key: 'audios_bot',   bot: true,   owner: true },
+  autoread:     { key: 'autoread2',    bot: true,   owner: true },
+  anticall:     { key: 'antiCall',     bot: true,   owner: true },
+  antispam:     { key: 'antispam',     bot: true,   owner: true },
+  antiprivado:  { key: 'antiprivado',  file: true,  owner: true },
+  modopublico:  { key: 'modopublico',  file: true,  owner: true },
+  vierwimage:   { key: 'vierwimage',   file: true,  owner: true },
+  modogrupos:   { key: 'modogrupos',   file: true,  owner: true }
 };
 
 async function getOwnerNumbers(conn) {
@@ -160,19 +162,11 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
         },
         {
           emoji: '🔇',
-          title: `Audios en Grupo • ${BOT_NAME}`,
-          desc: '_Controla si el bot puede enviar audios en este grupo_\n_Requiere ser admin_',
-          keys: ['audios'],
+          title: `Audios • ${BOT_NAME}`,
+          desc: '_Controla los audios en el grupo y a nivel global del bot_\n_Grupo: admin · Global: owner_',
+          keys: ['audios', 'audios_bot'],
           firstEnable: 'audios',
           firstDisable: 'audios'
-        },
-        {
-          emoji: '🤖',
-          title: `Audios del Bot • ${BOT_NAME}`,
-          desc: '_Controla los audios del bot a nivel global_\n_Solo owner_',
-          keys: ['audios_bot'],
-          firstEnable: 'audios_bot',
-          firstDisable: 'audios_bot'
         },
         {
           emoji: '🔒',
@@ -205,6 +199,22 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
           keys: ['antidelete', 'antitoxic'],
           firstEnable: 'antidelete',
           firstDisable: 'antidelete'
+        },
+        {
+          emoji: '👁️',
+          title: `Anti View Once • ${BOT_NAME}`,
+          desc: '_Revela automáticamente imágenes y videos de una sola vista_\n_Requiere ser admin_',
+          keys: ['antiviewonce'],
+          firstEnable: 'antiviewonce',
+          firstDisable: 'antiviewonce'
+        },
+        {
+          emoji: '🔞',
+          title: `Anti +18 • ${BOT_NAME}`,
+          desc: '_Detecta y elimina imágenes/stickers con contenido para adultos_\n_Requiere ser admin_',
+          keys: ['anti18'],
+          firstEnable: 'anti18',
+          firstDisable: 'anti18'
         },
         {
           emoji: '🔍',
