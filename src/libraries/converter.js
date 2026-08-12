@@ -18,7 +18,7 @@ function ffmpeg(buffer, args = [], ext = '', ext2 = '') {
           .on('close', async (code) => {
             try {
               await promises.unlink(tmp);
-              if (code !== 0) return reject(code);
+              if (code !== 0) return reject(new Error(`ffmpeg exited with code ${code}`));
               resolve({
                 data: await promises.readFile(out),
                 filename: out,
@@ -84,9 +84,19 @@ function toVideo(buffer, ext) {
   ], ext, 'mp4');
 }
 
+/**
+ * Convert WebP Sticker to PNG for Image Analysis
+ * @param {Buffer} buffer WebP Buffer
+ * @return {Promise<{data: Buffer, filename: String, delete: Function}>}
+ */
+function toImage(buffer) {
+  return ffmpeg(buffer, [], 'webp', 'png');
+}
+
 export {
   toAudio,
   toPTT,
   toVideo,
+  toImage,
   ffmpeg,
 };
