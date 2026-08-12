@@ -1,9 +1,9 @@
 import { getConfig } from '../lib/funcConfig.js';
 import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 import { addWarning, resetWarnings } from '../lib/advertencias.js';
-import { toImage } from '../src/libraries/converter.js';
 import { createHash } from 'crypto';
 import fs from 'fs';
+import sharp from 'sharp';
 
 const THRESHOLD_FUERTE = 0.75;
 const THRESHOLD_SEXY = 0.90;
@@ -176,6 +176,44 @@ async function getModel() {
   return _loadingPromise;
 }
 
+const MAX_FRAMES_ANIMADO = 3;
+
+async function stickerAPng(webpBuffer) {
+  return sharp(webpBuffer, { animated: false }).png().toBuffer();
+}
+
+async function getStickerFrames(webpBuffer) {
+  try {
+    const meta = await sharp(webpBuffer, { animated: true }).metadata();
+    const pageCount = meta.pages || 1;
+
+    if (pageCount <= 1) {
+      return [await stickerAPng(webpBuffer)];
+    }
+
+    const indices = new Set([
+      0,
+      Math.floor(pageCount / 2),
+      pageCount - 1
+    ]);
+
+    const frames = [];
+    for (const idx of indices) {
+      if (frames.length >= MAX_FRAMES_ANIMADO) break;
+      try {
+        const frameBuf = await sharp(webpBuffer, { animated: false, page: idx }).png().toBuffer();
+        frames.push(frameBuf);
+      } catch {
+        // si un frame puntual falla, seguimos con los demás
+      }
+    }
+
+    return frames.length ? frames : [await stickerAPng(webpBuffer)];
+  } catch {
+    return [await stickerAPng(webpBuffer)];
+  }
+}
+
 async function esContenido18(buffer) {
   const hash = hashBuffer(buffer);
   const cached = getCachedResult(hash);
@@ -249,20 +287,23 @@ handler.before = async function (m, { conn }) {
   const isOwnerSender = esOwner(m.sender, conn);
   const isPrivilegiado = groupData.isAdmin || isOwnerSender;
 
-  let converted = null;
-
   try {
     const media = m.message[tipo];
     const raw = await conn.downloadM(media, tipo === 'stickerMessage' ? 'sticker' : 'image');
     if (!raw || !raw.length) return;
 
-    let buffer = raw;
+    let flagged = false;
+
     if (tipo === 'stickerMessage') {
-      converted = await toImage(raw);
-      buffer = converted.data;
+      const frames = await getStickerFrames(raw);
+      for (const frameBuf of frames) {
+        flagged = await esContenido18(frameBuf);
+        if (flagged) break;
+      }
+    } else {
+      flagged = await esContenido18(raw);
     }
 
-    const flagged = await esContenido18(buffer);
     if (!flagged) return;
 
     const tag = m.sender.split('@')[0];
@@ -295,10 +336,8 @@ handler.before = async function (m, { conn }) {
       });
     }
   } catch (e) {
-    const detalle = e instanceof Error ? (e.stack || e.message) : JSON.stringify(e) ?? String(e);
+    const detalle = e instanceof Error ? (e.stack || e.message) : (JSON.stringify(e) ?? String(e));
     console.error('[anti18] error procesando media:', detalle);
-  } finally {
-    if (converted) await converted.delete().catch(() => {});
   }
 };
 

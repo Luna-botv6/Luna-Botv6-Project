@@ -90,7 +90,7 @@ function toVideo(buffer, ext) {
  * @return {Promise<{data: Buffer, filename: String, delete: Function}>}
  */
 function toImage(buffer) {
-  return ffmpeg(buffer, [], 'webp', 'png');
+  return ffmpeg(buffer, ['-vframes', '1'], 'webp', 'png');
 }
 
 export {
