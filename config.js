@@ -4,20 +4,20 @@ import {fileURLToPath} from 'url';
 import fs from 'fs'; 
 import moment from 'moment-timezone';
 
-global.botnumber = ""
-global.confirmCode = ""
+global.botnumber = "51971313887"
+global.confirmCode = "51971313887"
 global.authFile = `MysticSession`;
 
 global.isBaileysFail = false
 
 global.defaultLenguaje = 'es';
 
-global.lidOwners = [
+global.lidOwners = [51971313887
   "128213531545849",
   "29717298188532"
 ];
 
-global.owner = [
+global.owner = [51971313887
   ['5493483466763', '👑 Ehl villano 👑', true],
   ['50259727165', 'MOD-DECO', true]
 
