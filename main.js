@@ -64,6 +64,42 @@ serialize();
 
 const msgRetryCounterMap = new Map();
 
+// --- Historial de reinicios limpios (sobrevive a process.exit, a diferencia de los contadores en memoria) ---
+// Si hay demasiados reinicios limpios en poco tiempo, es señal de un problema de fondo
+// (ban real, red inestable) y no tiene sentido seguir reintentando en ciclos cortos.
+const RESTART_HISTORY_PATH = './database/reconnect-restart-history.json';
+const RESTART_WINDOW_MS = 3600000; // 1 hora
+const RESTART_THRESHOLD = 3; // reinicios limpios en esa ventana antes de forzar una espera larga
+const RESTART_COOLDOWN_MS = 1800000; // 30 minutos de espera extra si se supera el umbral
+
+function getRestartHistory() {
+  try {
+    if (!fs.existsSync(RESTART_HISTORY_PATH)) return [];
+    const data = JSON.parse(fs.readFileSync(RESTART_HISTORY_PATH, 'utf8'));
+    const cutoff = Date.now() - RESTART_WINDOW_MS;
+    return Array.isArray(data) ? data.filter(t => t > cutoff) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function recordRestartEvent() {
+  try {
+    const history = getRestartHistory();
+    history.push(Date.now());
+    fs.writeFileSync(RESTART_HISTORY_PATH, JSON.stringify(history, null, 2));
+    return history.length;
+  } catch (e) {
+    console.error('[ReconnectHistory] Error guardando historial:', e.message);
+    return 0;
+  }
+}
+
+function getReconnectCooldownExtra() {
+  const recentRestarts = getRestartHistory().length;
+  return recentRestarts >= RESTART_THRESHOLD ? RESTART_COOLDOWN_MS : 0;
+}
+
 global.__filename = function filename(pathURL = import.meta.url, rmPrefix = platform !== 'win32') {
   return rmPrefix ? /file:\/\/\//.test(pathURL) ? fileURLToPath(pathURL) : pathURL : pathToFileURL(pathURL).toString();
 };
@@ -725,24 +761,34 @@ async function connectionUpdate(update) {
     } else if (reason === DisconnectReason.connectionClosed) {
       conn.logger.warn(`[ ⚠ ] Conexión cerrada, reconectando...`);
       global._reconnectClosed = (global._reconnectClosed || 0) + 1;
-      if (global._hasBeenConnected && global._reconnectClosed >= 6) {
+      if (global._hasBeenConnected && global._reconnectClosed >= 10) {
+        const recentRestarts = recordRestartEvent();
+        const cooldownExtra = getReconnectCooldownExtra();
+        if (cooldownExtra > 0) {
+          console.log(chalk.red(`[ ⚠ ] ${recentRestarts} reinicios limpios en la última hora. Esperando ${Math.round(cooldownExtra / 60000)} minutos extra antes de reintentar...`));
+        }
         console.log('[ ♻ ] Reinicio limpio para liberar memoria...');
-        setTimeout(() => process.exit(0), 60000);
+        setTimeout(() => process.exit(0), 60000 + cooldownExtra);
       } else {
         const delay = Math.min(300000, 3000 * Math.pow(2, global._reconnectClosed - 1)) + Math.floor(Math.random() * 1000);
-        console.log(`[ ⏳ ] Reintento ${global._reconnectClosed}/6 en ${Math.round(delay / 1000)}s...`);
+        console.log(`[ ⏳ ] Reintento ${global._reconnectClosed}/10 en ${Math.round(delay / 1000)}s...`);
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
 
     } else if (reason === DisconnectReason.connectionLost) {
       conn.logger.warn(`[ ⚠ ] Conexión perdida, reconectando...`);
       global._reconnectLost = (global._reconnectLost || 0) + 1;
-      if (global._hasBeenConnected && global._reconnectLost >= 6) {
+      if (global._hasBeenConnected && global._reconnectLost >= 10) {
+        const recentRestarts = recordRestartEvent();
+        const cooldownExtra = getReconnectCooldownExtra();
+        if (cooldownExtra > 0) {
+          console.log(chalk.red(`[ ⚠ ] ${recentRestarts} reinicios limpios en la última hora. Esperando ${Math.round(cooldownExtra / 60000)} minutos extra antes de reintentar...`));
+        }
         console.log('[ ♻ ] Reinicio limpio para liberar memoria...');
-        setTimeout(() => process.exit(0), 60000);
+        setTimeout(() => process.exit(0), 60000 + cooldownExtra);
       } else {
         const delay = Math.min(300000, 3000 * Math.pow(2, global._reconnectLost - 1)) + Math.floor(Math.random() * 1000);
-        console.log(`[ ⏳ ] Reintento ${global._reconnectLost}/6 en ${Math.round(delay / 1000)}s...`);
+        console.log(`[ ⏳ ] Reintento ${global._reconnectLost}/10 en ${Math.round(delay / 1000)}s...`);
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
 

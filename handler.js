@@ -26,6 +26,7 @@ import { getGroupDataForPlugin } from './lib/funcion/pluginHelper.js';
 import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
 import { isProtectedOwner, resolveTargetForOwnerCheck } from './lib/funcion/ownerGuard.js';
+import { checkRateLimit, recordMessage, checkWarmupLimit, recordGlobalMessage, recordIncomingMessage } from './lib/funcion/private-rate-limit.js';
 
 EventEmitter.defaultMaxListeners = 30;
 
@@ -106,6 +107,24 @@ function logError(e, plugin = 'general') {
 let mconn;
 let currentConn;
 
+const humanDelayCache = new Map();
+
+
+const GLOBAL_MIN_GAP_MS = 400;
+const GLOBAL_MAX_GAP_MS = 800;
+let nextGlobalSlot = 0;
+
+async function waitGlobalSlot() {
+  const jitter = GLOBAL_MIN_GAP_MS + Math.random() * (GLOBAL_MAX_GAP_MS - GLOBAL_MIN_GAP_MS);
+  const now = Date.now();
+  const scheduledTime = Math.max(now, nextGlobalSlot);
+  nextGlobalSlot = scheduledTime + jitter;
+  const wait = scheduledTime - now;
+  if (wait > 0) {
+    await new Promise(resolve => setTimeout(resolve, wait));
+  }
+}
+
 startCacheCleanupInterval(groupCache, recentMessages, recentParticipantEvents, translationsCache, customCommandsCache, processedVoiceMessages, CACHE_TTL, DUPLICATE_TIMEOUT);
 
 setInterval(() => {
@@ -114,6 +133,7 @@ setInterval(() => {
     limitCache(recentMessages, 200);
     limitCache(recentParticipantEvents, 30);
     limitCache(translationsCache, 5);
+    limitCache(humanDelayCache, 500);
     if (processedVoiceMessages.size > MAX_VOICE_CACHE) {
       const toDelete = Array.from(processedVoiceMessages).slice(0, 100);
       toDelete.forEach(id => processedVoiceMessages.delete(id));
@@ -142,6 +162,58 @@ export async function handler(chatUpdate) {
           if (typeof content?.buttonText === 'string') content = { ...content, buttonText: _applyName(content.buttonText) };
           if (Array.isArray(content?.sections)) content = { ...content, sections: JSON.parse(_applyName(JSON.stringify(content.sections))) };
         }
+        
+        // Rate limiting para mensajes en privado
+        if (jid && !jid.endsWith('@g.us') && !jid.endsWith('@broadcast')) {
+          const isOwnerJid = isProtectedOwner(jid);
+
+          if (!isOwnerJid) {
+            const warmupCheck = checkWarmupLimit(jid);
+            if (!warmupCheck.allowed) {
+              if (warmupCheck.reason === 'per_user') {
+                console.log(chalk.red(`[🛡️ ANTI-BAN] Usuario ${jid} spameando en chat privado — protocolo anti-ban activado, usuario bloqueado (${warmupCheck.userSentToday}/${warmupCheck.userCap} mensajes hoy, límite individual)`));
+              } else {
+                console.log(chalk.red(`[🛡️ ANTI-BAN] Warm-up diario del número agotado (${warmupCheck.sentToday}/${warmupCheck.cap}) — se bloquean mensajes privados a todos hasta mañana`));
+              }
+              return null;
+            }
+
+            const isRegisteredUser = !!global.db?.data?.users?.[jid];
+
+            if (isRegisteredUser) {
+              const rateLimitCheck = checkRateLimit(jid);
+              if (!rateLimitCheck.allowed) {
+                if (rateLimitCheck.reason === 'cooldown') {
+                  // Espaciado interno entre partes de una misma respuesta (ej. .play mandando
+                  // varios mensajes seguidos): esperar el resto del cooldown y mandar el
+                  // contenido real, NO avisarle al usuario ni descartar el mensaje.
+                  await new Promise(resolve => setTimeout(resolve, rateLimitCheck.remainingTime * 1000));
+                } else {
+                  console.log(`[PrivateRateLimit] Mensaje bloqueado para ${jid}: ${rateLimitCheck.reason}`);
+                  if (rateLimitCheck.message) {
+                    await _origSend(jid, { text: rateLimitCheck.message });
+                  }
+                  return null;
+                }
+              }
+
+              const lastDelay = humanDelayCache.get(jid) || 0;
+              if (Date.now() - lastDelay > 4000) {
+                const humanDelay = 3000 + Math.random() * 4000; // 3-7s con jitter, evita timing robótico
+                await new Promise(resolve => setTimeout(resolve, humanDelay));
+              }
+              humanDelayCache.set(jid, Date.now());
+            }
+
+            await waitGlobalSlot();
+
+            const result = await _origSend(jid, content, options);
+            if (warmupCheck.inWarmup) recordGlobalMessage(jid);
+            if (isRegisteredUser) recordMessage(jid);
+            return result;
+          }
+        }
+        
         return _origSend(jid, content, options);
       };
       this._sendMessagePatched = true;
@@ -168,6 +240,9 @@ export async function handler(chatUpdate) {
 
     let { sender, chat } = extractSenderAndChat(m, this);
     if (!sender || !chat) return;
+
+    if (!m.isGroup) recordIncomingMessage(sender);
+
 
     const _muteDB = global.db?.data?.mutes || {};
     const _senderNum = sender.replace(/[^0-9]/g, '');
