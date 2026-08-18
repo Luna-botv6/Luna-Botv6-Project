@@ -49,6 +49,7 @@ import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.
 import mentionListener from './plugins/game-ialuna.js';
 import { startBirthdayChecker } from './plugins/cumple.js';
 import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
+import { manejarCanalRelay } from './lib/funcion/canal-relay.js';
 import { installUsersProxy } from './lib/funcion/databaseManager.js';
 import { updateConnectionState, reportBan } from './logBans.js';
 
@@ -980,6 +981,7 @@ global.reloadHandler = async function(restatConn) {
     }
   });
   manejarEventosGrupo(conn);
+  manejarCanalRelay(conn);
   conn.ev.on('group-participants.update', conn.participantsUpdate);
   conn.ev.on('messages.delete', conn.onDelete);
   conn.ev.on('call', conn.onCall);
