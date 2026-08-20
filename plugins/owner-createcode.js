@@ -1,18 +1,11 @@
+import { customCommandsStore } from '../lib/funcion/custom-commands-store.js';
+import { customCommandsCodegen } from '../lib/funcion/custom-commands-codegen.js';
 import fs from 'fs';
 import path from 'path';
 
 global.codeCreationSessions = global.codeCreationSessions || {};
-global.savedCodes = global.savedCodes || {};
-
-function escapeForTemplate(text) {
-  return text
-    .replace(/\\/g, '\\\\')
-    .replace(/`/g, '\\`')
-    .replace(/\$/g, '\\$');
-}
 
 const handler = async (m, { text, conn, isOwner, participants, command }) => {
-  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
   const isAuthorized = isOwner || global.lidOwners.includes(m.sender);
   if (!isAuthorized) return m.reply('⛔ *Solo los propietarios pueden usar este comando.*');
 
@@ -34,15 +27,16 @@ Usa: \`/setmessage tu mensaje aquí\``);
 
   case 'editcode':
     if (!text) {
-      if (!Object.keys(global.savedCodes).length) return m.reply('⛔ *No hay comandos creados aún.*');
+      const lista = customCommandsStore.listar();
+      if (!lista.length) return m.reply('⛔ *No hay comandos creados aún.*');
       let list = '*📋 Lista de comandos creados:*\n';
-      for (let key in global.savedCodes) list += `- /${key}\n`;
+      for (const c of lista) list += `- /${c.nombre}\n`;
       return m.reply(`${list}\n\n*Usa:* /editcode nombrecomando`);
     }
     const commandName = text.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (!global.savedCodes[commandName]) return m.reply(`⛔ *El comando /${commandName} no existe.*`);
+    const savedCommand = customCommandsStore.obtener(commandName);
+    if (!savedCommand) return m.reply(`⛔ *El comando /${commandName} no existe.*`);
 
-    const savedCommand = global.savedCodes[commandName];
     let editMenu = `🛠️ *Editando el comando /${commandName}*\n\n`;
     editMenu += `📝 *Mensaje actual:* "${savedCommand.message}"\n`;
     editMenu += `🏷️ *Etiqueta:* ${savedCommand.tagAll ? 'Todos' : savedCommand.tagUser ? 'Usuario' : 'Ninguna'}\n`;
@@ -54,44 +48,49 @@ Usa: \`/setmessage tu mensaje aquí\``);
 
     return m.reply(editMenu);
 
-  case 'edit':
+  case 'edit': {
     if (!text) return m.reply('⛔ *Usa: /edit nombrecomando nuevo mensaje*');
     const parts = text.split(' ');
     const cmdName = parts[0];
     const newMessage = parts.slice(1).join(' ');
-    if (!global.savedCodes[cmdName] || !newMessage) return m.reply('⛔ *Comando no encontrado o mensaje vacío.*');
+    const existente = customCommandsStore.obtener(cmdName);
+    if (!existente || !newMessage) return m.reply('⛔ *Comando no encontrado o mensaje vacío.*');
 
-    global.savedCodes[cmdName].message = newMessage;
-    await regenerateCode(cmdName, m, conn, participants);
+    const sesion = { ...existente, message: newMessage };
+    await customCommandsCodegen.generarOActualizarComando(cmdName, sesion);
     return m.reply(`✅ *Mensaje del comando /${cmdName} actualizado y recargado exitosamente!*`);
+  }
 
-  case 'edittag':
+  case 'edittag': {
     if (!text) return m.reply('⛔ *Usa: /edittag nombrecomando tipo* (tipos: no, si, todos)');
     const tagParts = text.split(' ');
     const tagCmdName = tagParts[0];
     const tagType = tagParts[1]?.toLowerCase();
-    if (!global.savedCodes[tagCmdName] || !tagType) return m.reply('⛔ *Comando no encontrado o tipo inválido.*');
+    const existente = customCommandsStore.obtener(tagCmdName);
+    if (!existente || !tagType) return m.reply('⛔ *Comando no encontrado o tipo inválido.*');
 
-    global.savedCodes[tagCmdName].tagAll = false;
-    global.savedCodes[tagCmdName].tagUser = false;
-    if (tagType === 'todos') global.savedCodes[tagCmdName].tagAll = true;
-    else if (['si', 'sí', 's'].includes(tagType)) global.savedCodes[tagCmdName].tagUser = true;
+    const sesion = { ...existente, tagAll: false, tagUser: false };
+    if (tagType === 'todos') sesion.tagAll = true;
+    else if (['si', 'sí', 's'].includes(tagType)) sesion.tagUser = true;
 
-    await regenerateCode(tagCmdName, m, conn, participants);
+    await customCommandsCodegen.generarOActualizarComando(tagCmdName, sesion);
     return m.reply(`✅ *Etiqueta del comando /${tagCmdName} actualizada y recargada exitosamente!*`);
+  }
 
-  case 'editimage':
+  case 'editimage': {
     if (!text) return m.reply('⛔ *Usa: /editimage nombrecomando* y responde con una imagen, o /editimage nombrecomando remove');
     const imgParts = text.split(' ');
     const imgCmdName = imgParts[0];
     const imgAction = imgParts[1]?.toLowerCase();
-    if (!global.savedCodes[imgCmdName]) return m.reply('⛔ *Comando no encontrado.*');
+    const existente = customCommandsStore.obtener(imgCmdName);
+    if (!existente) return m.reply('⛔ *Comando no encontrado.*');
 
     if (imgAction === 'remove') {
-      global.savedCodes[imgCmdName].needsImage = false;
-      global.savedCodes[imgCmdName].imagePath = null;
-      global.savedCodes[imgCmdName].imageName = null;
-      await regenerateCode(imgCmdName, m, conn, participants);
+      if (existente.imagePath && fs.existsSync(existente.imagePath)) {
+        try { fs.unlinkSync(existente.imagePath); } catch {}
+      }
+      const sesion = { ...existente, needsImage: false, imagePath: null, imageName: null };
+      await customCommandsCodegen.generarOActualizarComando(imgCmdName, sesion);
       return m.reply(`✅ *Imagen del comando /${imgCmdName} eliminada y recargada exitosamente!*`);
     }
 
@@ -105,24 +104,26 @@ Usa: \`/setmessage tu mensaje aquí\``);
       const imagePath = path.join(imageDir, imageName);
       fs.writeFileSync(imagePath, media);
 
-      global.savedCodes[imgCmdName].needsImage = true;
-      global.savedCodes[imgCmdName].imagePath = imagePath;
-      global.savedCodes[imgCmdName].imageName = imageName;
+      if (existente.imagePath && fs.existsSync(existente.imagePath)) {
+        try { fs.unlinkSync(existente.imagePath); } catch {}
+      }
 
-      await regenerateCode(imgCmdName, m, conn, participants);
+      const sesion = { ...existente, needsImage: true, imagePath, imageName };
+      await customCommandsCodegen.generarOActualizarComando(imgCmdName, sesion);
       return m.reply(`✅ *Imagen del comando /${imgCmdName} actualizada y recargada exitosamente!*`);
     } catch {
       return m.reply('⛔ *Error al guardar la imagen.*');
     }
+  }
 
   case 'setmessage':
     if (!global.codeCreationSessions[userId]) return m.reply('⛔ *Primero usa /createcode o /editcode*');
     if (!text) return m.reply('⛔ *Debes escribir el mensaje.*');
     global.codeCreationSessions[userId].message = text;
     global.codeCreationSessions[userId].step = 'tag_set';
-    return m.reply(`✅ *Mensaje guardado:*\n"${text}"\n\n🏷️ *Paso 2:* ¿Etiquetar al usuario o a todos?\nUsa: \`/settag si\`, \`/settag no\` o \`/settag todos\``);
+    return m.reply(`✅ *Mensaje guardado:*\n"${text}"\n\n🏷️ *Paso 2:* ¿Etiquetar al usuario o a todos?\nUsa: \`/setctag si\`, \`/setctag no\` o \`/setctag todos\``);
 
-  case 'settag':
+  case 'setctag':
     if (!global.codeCreationSessions[userId] || global.codeCreationSessions[userId].step !== 'tag_set')
       return m.reply('⛔ *Debes completar los pasos anteriores primero.*');
     if (!text) return m.reply('⛔ *Responde con si / no / todos*');
@@ -170,20 +171,37 @@ Usa: \`/setmessage tu mensaje aquí\``);
       return m.reply('⛔ *Error al guardar la imagen.*');
     }
 
-  case 'setcommand':
-    if (!global.codeCreationSessions[userId] || global.codeCreationSessions[userId].step !== 'command_set')
+  case 'setcommand': {
+    const sesionActual = global.codeCreationSessions[userId];
+    if (!sesionActual || sesionActual.step !== 'command_set')
       return m.reply('⛔ *Debes completar los pasos anteriores primero.*');
-    if (!text && !global.codeCreationSessions[userId].editing) return m.reply('⛔ *Debes escribir el nombre del comando.*');
+    if (!text && !sesionActual.editing) return m.reply('⛔ *Debes escribir el nombre del comando.*');
 
-    const finalName = global.codeCreationSessions[userId].editing
-      ? global.codeCreationSessions[userId].commandName
+    const finalName = sesionActual.editing
+      ? sesionActual.commandName
       : text.toLowerCase().replace(/[^a-z0-9]/g, '');
 
     if (!finalName) return m.reply('⛔ *Nombre inválido.*');
 
-    await generateCode(global.codeCreationSessions[userId], finalName, m, conn, participants);
+    const yaExiste = customCommandsStore.obtener(finalName);
+    if (!yaExiste) {
+      const colision = customCommandsCodegen.nombreColisiona(finalName);
+      if (colision) {
+        delete global.codeCreationSessions[userId];
+        return m.reply(`⛔ *El nombre "${finalName}" ya lo usa otro comando del bot.*\nProbá con otro nombre distinto.`);
+      }
+    }
+
+    await customCommandsCodegen.generarOActualizarComando(finalName, sesionActual);
     delete global.codeCreationSessions[userId];
-    return;
+
+    let msg = `✅ *¡Comando ${yaExiste ? 'editado' : 'creado'} exitosamente!*\n📄 *Archivo:* ${finalName}.js\n⚡ *Comando:* /${finalName}`;
+    if (sesionActual.tagAll) msg += '\n💥 *Etiqueta:* Todos';
+    else if (sesionActual.tagUser) msg += '\n🏷️ *Etiqueta:* Usuario';
+    msg += `\n\n✏️ *Si quieres editar este comando más tarde usa:* /editcode ${finalName}`;
+
+    return m.reply(msg);
+  }
 
   case 'cancelcode':
     if (global.codeCreationSessions[userId]) {
@@ -193,110 +211,9 @@ Usa: \`/setmessage tu mensaje aquí\``);
   }
 };
 
-async function generateCode(session, commandName, m, conn, participants) {
-  const { message, tagUser, tagAll, needsImage, imagePath, imageName } = session;
-  let code = 'import fs from \'fs\'\n\n';
-  code += `const handler = async (m, { conn, participants }) => {
-  let responseText = \`${escapeForTemplate(message)}\`\n`;
-  if (tagUser) code += '  responseText = "@" + m.sender.split("@")[0] + "\\n" + responseText\n';
-  if (tagAll) {
-    code += '  let mentions = participants.map(p => p.id)\n';
-    code += '  responseText = mentions.map(v => "@" + v.split("@")[0]).join(" ") + "\\n" + responseText\n';
-  }
-  if (needsImage && imagePath) {
-    code += `  const imagePath = './codeimagenes/${imageName}'\n`;
-    code += `  if (fs.existsSync(imagePath)) {
-    const imageBuffer = fs.readFileSync(imagePath)
-    await conn.sendMessage(m.chat, { image: imageBuffer, caption: responseText, mentions: ${tagAll ? 'participants.map(p => p.id)' : tagUser ? '[m.sender]' : '[]'} }, { quoted: m })
-  } else {
-    m.reply(responseText, null, { mentions: ${tagAll ? 'participants.map(p => p.id)' : tagUser ? '[m.sender]' : '[]'} })
-  }`;
-  } else {
-    code += `  m.reply(responseText, null, { mentions: ${tagAll ? 'participants.map(p => p.id)' : tagUser ? '[m.sender]' : '[]'} })`;
-  }
-  code += `\n}\n\nhandler.help = ['${commandName}']\nhandler.tags = ['custom']\nhandler.command = /^${commandName}$/i\nexport default handler`;
-
-  const customDir = './custom-commands';
-  if (!fs.existsSync(customDir)) fs.mkdirSync(customDir, { recursive: true });
-  const fileName = `${commandName}.js`;
-  const filePath = `./custom-commands/${fileName}`;
-  fs.writeFileSync(filePath, code);
-  global.savedCodes[commandName] = session;
-
-  try {
-    delete global.plugins[`custom-commands/${commandName}.js`];
-    const fullPath = path.resolve(filePath);
-    const module = await import(`file://${fullPath}?t=${Date.now()}`);
-    global.plugins[`custom-commands/${commandName}.js`] = module.default || module;
-
-    if (global.customCommandsCache) {
-      global.customCommandsCache.set(fileName, module.default || module);
-    }
-  } catch (e) {
-    console.log('Error cargando comando:', e.message);
-  }
-
-  let msg = `✅ *¡Comando ${session.editing ? 'editado' : 'creado'} exitosamente!*\n📄 *Archivo:* ${fileName}\n⚡ *Comando:* /${commandName}`;
-  if (tagAll) msg += '\n💥 *Etiqueta:* Todos';
-  else if (tagUser) msg += '\n🏷️ *Etiqueta:* Usuario';
-
-  msg += `\n\n✏️ *Si quieres editar este comando más tarde usa:* /editcode ${commandName}`;
-
-  m.reply(msg);
-}
-
-async function regenerateCode(commandName, m, conn, participants) {
-  const session = global.savedCodes[commandName];
-  const { message, tagUser, tagAll, needsImage, imagePath, imageName } = session;
-
-  const cacheKey = `custom-${commandName}.js`;
-  if (global.customCommandsCache) {
-    global.customCommandsCache.delete(cacheKey);
-  }
-
-  let code = 'import fs from \'fs\'\n\n';
-  code += `const handler = async (m, { conn, participants }) => {
-  let responseText = \`${escapeForTemplate(message)}\`\n`;
-  if (tagUser) code += '  responseText = "@" + m.sender.split("@")[0] + "\\n" + responseText\n';
-  if (tagAll) {
-    code += '  let mentions = participants.map(p => p.id)\n';
-    code += '  responseText = mentions.map(v => "@" + v.split("@")[0]).join(" ") + "\\n" + responseText\n';
-  }
-  if (needsImage && imagePath) {
-    code += `  const imagePath = './codeimagenes/${imageName}'\n`;
-    code += `  if (fs.existsSync(imagePath)) {
-    const imageBuffer = fs.readFileSync(imagePath)
-    await conn.sendMessage(m.chat, { image: imageBuffer, caption: responseText, mentions: ${tagAll ? 'participants.map(p => p.id)' : tagUser ? '[m.sender]' : '[]'} }, { quoted: m })
-  } else {
-    m.reply(responseText, null, { mentions: ${tagAll ? 'participants.map(p => p.id)' : tagUser ? '[m.sender]' : '[]'} })
-  }`;
-  } else {
-    code += `  m.reply(responseText, null, { mentions: ${tagAll ? 'participants.map(p => p.id)' : tagUser ? '[m.sender]' : '[]'} })`;
-  }
-  code += `\n}\n\nhandler.help = ['${commandName}']\nhandler.tags = ['custom']\nhandler.command = /^${commandName}$/i\nexport default handler`;
-
-  const customDir = './custom-commands';
-  if (!fs.existsSync(customDir)) fs.mkdirSync(customDir, { recursive: true });
-  const filePath = `./custom-commands/${commandName}.js`;
-  fs.writeFileSync(filePath, code);
-
-  try {
-    delete global.plugins[`custom-commands/${commandName}.js`];
-    const fullPath = path.resolve(filePath);
-    const module = await import(`file://${fullPath}?t=${Date.now()}`);
-    global.plugins[`custom-commands/${commandName}.js`] = module.default || module;
-
-    if (global.customCommandsCache) {
-      global.customCommandsCache.set(`${commandName}.js`, module.default || module);
-    }
-  } catch (e) {
-    console.log('Error recargando comando:', e.message);
-  }
-}
-
-handler.help = ['createcode', 'createadv', 'editcode', 'edit', 'edittag', 'editimage', 'setmessage', 'settag', 'setimage', 'uploadimage', 'setcommand', 'cancelcode'];
+handler.help = ['createcode', 'createadv', 'editcode', 'edit', 'edittag', 'editimage', 'setmessage', 'setctag', 'setimage', 'uploadimage', 'setcommand', 'cancelcode'];
 handler.tags = ['owner'];
-handler.command = /^(createcode|createadv|editcode|edit|edittag|editimage|setmessage|settag|setimage|uploadimage|setcommand|cancelcode)$/i;
+handler.command = /^(createcode|createadv|editcode|edit|edittag|editimage|setmessage|setctag|setimage|uploadimage|setcommand|cancelcode)$/i;
 handler.owner = true;
 
 export default handler;
