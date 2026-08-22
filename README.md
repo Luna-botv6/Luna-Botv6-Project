@@ -179,11 +179,93 @@ const LunaBot = {
 
 ## 🆕 Últimas Actualizaciones
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=20&pause=1000&color=00FFF7&center=true&vCenter=true&width=700&lines=🆕+Actualizaciones+Recientes;✨+Sistema+Multi-Idioma+Integrado;🖼️+Personalizá+el+Menú+del+Bot;✏️+Cambiá+el+Nombre+del+Bot" alt="Updates" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=20&pause=1000&color=00FFF7&center=true&vCenter=true&width=700&lines=🆕+Actualización+de+Agosto+2026;📡+Reenvío+Automático+de+Canales;✨+Creá+Comandos+desde+el+Panel;🖥️+Torre+de+Control+Renovada" alt="Updates" />
 
 </div>
 
 <details open>
+<summary><b>🗓️ Agosto 2026 — La actualización más grande hasta ahora 🚀</b></summary>
+
+<br>
+
+<p>
+  <img src="https://img.shields.io/badge/📡%20Canales-Reenvío%20automático-8B5CF6?style=for-the-badge&labelColor=5B21B6"/>
+  <img src="https://img.shields.io/badge/✨%20Comandos-Desde%20el%20panel-3B82F6?style=for-the-badge&labelColor=1E3A8A"/>
+  <img src="https://img.shields.io/badge/🖥️%20Panel-Renovado-10B981?style=for-the-badge&labelColor=065F46"/>
+</p>
+
+Un mes entero de trabajo — reenvío de canales, un panel de administración que ya reemplaza casi todo lo que antes había que hacer por WhatsApp, y varias funciones nuevas para vos y para los que usan tu bot. Un repaso completo:
+
+### 📡 Reenvío automático de Canales
+
+Un canal de difusión de WhatsApp puede reenviar automático todo lo que postees ahí — a uno o varios grupos, y hasta a **otro canal**. Sin comandos, sin reenviar nada a mano.
+
+| Combinación | Estado |
+|:--|:--:|
+| Canal → Grupo | ✅ |
+| Grupo → Grupo | ✅ |
+| Canal → Canal | ✅ |
+| Texto / Imagen / Video / Sticker / Audio | ✅ Todos |
+
+- Configuración 100% desde el panel: pegás el link de invitación del canal, elegís el grupo (o canal) receptor, y listo
+- Podés vincular tantos grupos/canales como quieras a un mismo canal
+- Elegís qué tipos de contenido reenviar (por ejemplo, solo texto e imágenes, sin video)
+- Delay anti-ban entre cada envío — más lento con muchos receptores, pero cuida el número del bot
+- Pausar, filtrar por tipo, o eliminar el reenvío cuando quieras, todo con un toque
+
+### ✨ Creá comandos personalizados desde el panel
+
+Lo que antes era un ida y vuelta de 5 mensajes por WhatsApp (`.createcode` → `.setmessage` → `.setctag` → `.setimage` → `.setcommand`) ahora es un formulario único: nombre, mensaje, a quién etiqueta, e imagen opcional. El comando queda activo al toque.
+
+> [!TIP]
+> El flujo viejo por WhatsApp sigue andando igual que siempre, por si lo preferís — ahora comparte toda la lógica con el panel por dentro.
+
+**Y de yapa, una función nueva dentro de Crear Comando — disparadores por frases, sin comando ni prefijo:**
+
+El bot responde solo cuando alguien escribe una frase específica en el grupo (por ejemplo "soy nueva" o "recién me uní"), sin que nadie tenga que escribir ningún comando.
+
+- Podés cargar varias frases distintas para el mismo disparador
+- Elegís si puede dispararlo cualquiera, solo admins, o solo el owner
+- Opcional: que la primera vez responda un mensaje, y si esa misma persona repite la frase, responda otro distinto (por ejemplo, para no repetir un saludo de bienvenida dos veces a la misma persona)
+- Imagen opcional en cada uno de los dos mensajes
+- Funciona en grupos
+
+### 🖥️ Torre de Control — el panel de administración
+
+Tu bot ahora tiene un panel web completo para vos como owner. Para entrar por primera vez:
+
+```bash
+.miserver
+```
+
+La primera vez te va a pedir crear un usuario y contraseña — **no compartas ni el usuario/contraseña ni el link con nadie**. Las próximas veces, con escribir `.miserver` de nuevo el bot te devuelve el link directo. ¿Te olvidaste la contraseña? No hay drama, el bot te guía paso a paso para restablecerla.
+
+**Todo lo que podés hacer desde ahí:**
+
+| Sección | Qué hace |
+|:--|:--|
+| 🏠 **Inicio** | Resumen general — subbots conectados, permisos activos, descargas en vivo |
+| 📥 **Descargas** | Monitoreo en vivo de lo que se está bajando en cada grupo |
+| 🔒 **Permisos por grupo** | Activás o bloqueás la descarga en cada grupo, y le podés poner un **límite diario de descargas** si querés (se resetea solo cada día) |
+| 🤖 **Subbots** | Ves cuáles están conectados, desconectás o eliminás en un toque |
+| 👥 **Grupo** | Elegís un grupo y desde ahí: mandás mensajes (con imagen, o etiquetando a todos), activás/desactivás funciones del grupo, armás encuestas, configurás el reenvío de canales, o hacés acciones de riesgo (banear el grupo, salir) |
+| 👤 **Usuarios** | Buscás a alguien y ves sus baneos, bloqueos y advertencias |
+| 🔑 **Owners** | Agregás o quitás owners por número |
+| ⚙️ **Funciones de owner** | Switches globales del bot, se aplican al toque |
+| 🛠️ **Sistema** | Actualizás el bot a la última versión de GitHub y lo reiniciás |
+| 🎵 **Música** | Buscás y reproducís un tema de YouTube ahí mismo |
+| ✨ **Crear Comando** | Todo lo explicado arriba |
+
+### 🎨 Stickers nuevos
+
+| Comando | Qué hace |
+|:--|:--|
+| `.grafiti <texto>` | Sticker animado con letras de grafiti coloridas |
+| `.txt <texto>` | Sticker tipo nota, fondo rosado |
+
+</details>
+
+<details>
 <summary><b>🌍 28/05/2026 — Sistema Multi-Idioma Global 🌐</b></summary>
 
 <br>
