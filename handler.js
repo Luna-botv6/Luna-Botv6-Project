@@ -22,7 +22,7 @@ import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
 import { invalidateGroupCount } from './src/libraries/print.js';
-import { getGroupDataForPlugin } from './lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, resolveIsSuperAdmin } from './lib/funcion/pluginHelper.js';
 import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
 import { isProtectedOwner, resolveTargetForOwnerCheck } from './lib/funcion/ownerGuard.js';
@@ -109,7 +109,9 @@ let currentConn;
 
 const humanDelayCache = new Map();
 
-
+// Throttle global: espacia TODOS los envíos privados entre sí (no solo por usuario),
+// para evitar ráfagas agregadas del bot aunque cada usuario individual esté dentro de su límite.
+// Valores de partida, no son límites oficiales de WhatsApp — ajustar si hace falta.
 const GLOBAL_MIN_GAP_MS = 400;
 const GLOBAL_MAX_GAP_MS = 800;
 let nextGlobalSlot = 0;
@@ -594,7 +596,7 @@ export async function handler(chatUpdate) {
               userIsAdmin        = groupData.isAdmin;
               _isAdmin           = groupData.isAdmin;
               _isBotAdmin        = groupData.isBotAdmin;
-              _isRAdmin          = groupData.groupMetadata?.participants?.find(p => this.decodeJid(p.id) === this.decodeJid(m.sender))?.admin === 'superadmin';
+              _isRAdmin          = resolveIsSuperAdmin(m.sender, groupData);
               _groupDataResolved = true;
             } catch (e) {}
             if (!userIsAdmin) continue;
@@ -667,7 +669,7 @@ export async function handler(chatUpdate) {
               const _gd = await getGroupDataForPlugin(this, m.chat, m.sender);
               _isAdmin    = _gd.isAdmin;
               _isBotAdmin = _gd.isBotAdmin;
-              _isRAdmin   = _gd.groupMetadata?.participants?.find(p => this.decodeJid(p.id) === this.decodeJid(m.sender))?.admin === 'superadmin';
+              _isRAdmin   = resolveIsSuperAdmin(m.sender, _gd);
             } catch (e) {}
           }
 

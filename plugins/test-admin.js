@@ -33,5 +33,6 @@ const handler = async (m, { conn }) => {
 
 handler.command = /^testadmin$/i;
 handler.group = true;
+handler.owner = true;
 
 export default handler;

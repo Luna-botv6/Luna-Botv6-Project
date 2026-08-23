@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { isAdminNoTTL, hasAdminCacheForGroup, getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, resolveIsAdmin } from '../lib/funcion/pluginHelper.js';
 import {
   getPendingTemplate,
   setPendingTemplate,
@@ -40,9 +40,7 @@ const handler = async (m, { conn, args, isOwner, usedPrefix, command, text }) =>
     const groupData = await getGroupDataForPlugin(conn, chatId, m.sender);
     const participants = groupData?.participants || [];
 
-    const isAdmin = hasAdminCacheForGroup(chatId)
-      ? isAdminNoTTL(chatId, m.sender)
-      : groupData.isAdmin;
+    const isAdmin = resolveIsAdmin(chatId, m.sender, groupData);
 
     if (!isAdmin && !isOwner) return m.reply(t.solo_admins);
 
