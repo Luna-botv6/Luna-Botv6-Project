@@ -191,7 +191,6 @@ export async function handleMuteViolation({ conn, chat, sender, messageKey }) {
   await conn.sendMessage(chat, { delete: messageKey }).catch(() => {});
 
   const count = addWarnCount(chat, sender);
-  await conn.sendMessage(chat, { text: `[MUTE-WARN] sender=${sender} count=${count} mapSize=${global._muteWarnings?.size}` }).catch(() => {});
   if (count <= SILENT_DELETES) return;
 
   const warnNum = count - SILENT_DELETES;

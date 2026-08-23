@@ -1,6 +1,7 @@
 import fs from 'fs';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const PICWISH_KEY = 'wx7nsni3xk8655dxq';
 const API_URL     = 'https://techhk.aoscdn.com/api/tasks/visual/scale';
@@ -39,7 +40,7 @@ const handler = async (m, { conn, usedPrefix, command }) => {
 
   const isPrems = global.db?.data?.users?.[m.sender]?.premiumTime > 0;
   const isAdmin = m.isGroup
-    ? (await (async () => { try { const meta = await conn.groupMetadata(m.chat); return meta.participants.find(p => p.id === m.sender)?.admin; } catch { return false; } })())
+    ? (await getGroupDataForPlugin(conn, m.chat, m.sender)).isAdmin
     : false;
   const ownerNums = (global.owner || []).map(o => String(Array.isArray(o) ? o[0] : o).replace(/\D/g, ''));
   const isOwner   = ownerNums.includes(m.sender.replace(/\D/g, ''));

@@ -1,3 +1,5 @@
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+
 export async function all(m) {
   if (!global.db.data) return;
 
@@ -80,12 +82,11 @@ export async function all(m) {
         if (isMatch) {
           const _args = args;
           const text = args.join(' ');
-          const groupMetadata = (m.isGroup ? ((this.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(() => null)) : {}) || {};
-          const participants = (m.isGroup ? groupMetadata.participants : []) || [];
-          const user = (m.isGroup ? participants.find((u) => this.decodeJid(u.id) === m.sender) : {}) || {};
-          const bot = (m.isGroup ? participants.find((u) => this.decodeJid(u.id) === this.user.jid) : {}) || {};
-          const isAdmin = user?.admin === 'admin' || user?.admin === 'superadmin' || false;
-          const isBotAdmin = bot?.admin || false;
+          const groupInfo = m.isGroup ? await getGroupDataForPlugin(this, m.chat, m.sender) : { groupMetadata: {}, participants: [], isAdmin: false, isBotAdmin: false };
+          const groupMetadata = groupInfo.groupMetadata || {};
+          const participants = groupInfo.participants || [];
+          const isAdmin = groupInfo.isAdmin;
+          const isBotAdmin = groupInfo.isBotAdmin;
           const isOwnerCheck = global.owner.map(([num]) => num).includes(m.sender.replace(/[^0-9]/g, '')) || m.fromMe;
 
           if (plugin.admin && !isAdmin) {
