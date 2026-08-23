@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { isAdminNoTTL, hasAdminCacheForGroup, getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, resolveIsAdmin } from '../lib/funcion/pluginHelper.js';
 import { getTagallMode, setTagallMode, resetTagallMode } from '../lib/funcion/tagallStore.js';
 import { getCustomTemplate } from '../lib/funcion/tagallTemplateStore.js';
 import { renderTagallTemplate } from '../lib/funcion/tagallPlaceholders.js';
@@ -27,9 +27,7 @@ const handler = async (m, { conn, args, isOwner, usedPrefix, command }) => {
     const groupData = await getGroupDataForPlugin(conn, chatId, m.sender);
     const participants = groupData?.participants || [];
 
-    const isAdmin = hasAdminCacheForGroup(chatId)
-      ? isAdminNoTTL(chatId, m.sender)
-      : groupData.isAdmin;
+    const isAdmin = resolveIsAdmin(chatId, m.sender, groupData);
 
     if (!isAdmin && !isOwner) return m.reply(t.solo_admins);
 

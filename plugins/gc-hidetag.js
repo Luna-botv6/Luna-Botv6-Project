@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { getGroupDataForPlugin, isAdminNoTTL, hasAdminCacheForGroup } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, resolveIsAdmin } from '../lib/funcion/pluginHelper.js';
 import { getLidMapping } from '../lib/stats.js';
 import { registerDynamicMessage } from '../lib/funcion/dynamicMessageTracker.js';
 
@@ -11,15 +11,6 @@ function getLang(idioma) {
   const t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.gc_hidetag;
   _langCache.set(idioma, t);
   return t;
-}
-
-async function resolveParticipants(conn, chatId) {
-  try {
-    const meta = await conn.groupMetadata(chatId).catch(() => null);
-    return meta?.participants || [];
-  } catch {
-    return [];
-  }
 }
 
 function resolveNumFromParticipants(num, participants) {
@@ -51,9 +42,13 @@ const handler = async (m, { conn, text, isOwner }) => {
     const isLidOwner = global.lidOwners?.includes(senderNum);
     const isGlobalOwner = global.owner?.some(([num]) => num === senderNum);
 
-    const isAdmin = hasAdminCacheForGroup(chatId)
-      ? isAdminNoTTL(chatId, m.sender)
-      : (await getGroupDataForPlugin(conn, chatId, m.sender)).isAdmin;
+    let groupDataCache = null;
+    const getGroupData = async () => {
+      if (!groupDataCache) groupDataCache = await getGroupDataForPlugin(conn, chatId, m.sender);
+      return groupDataCache;
+    };
+
+    const isAdmin = resolveIsAdmin(chatId, m.sender, await getGroupData());
 
     if (!isAdmin && !isOwner && !isLidOwner && !isGlobalOwner) return m.reply(t.solo_admins);
 
@@ -100,7 +95,7 @@ const handler = async (m, { conn, text, isOwner }) => {
       } else {
         let real = getLidMapping(jid);
         if (!real) {
-          if (!participants) participants = await resolveParticipants(conn, chatId);
+          if (!participants) participants = (await getGroupData()).participants || [];
           const match = participants.find(p => p.lid === jid || p.id === jid);
           real = match?.id || null;
         }
@@ -117,7 +112,7 @@ const handler = async (m, { conn, text, isOwner }) => {
     while ((match = mentionPattern.exec(finalText)) !== null) numsInText.push(match[1]);
 
     if (numsInText.length) {
-      if (!participants) participants = await resolveParticipants(conn, chatId);
+      if (!participants) participants = (await getGroupData()).participants || [];
       for (const num of numsInText) {
         const alreadyResolved = extraMentions.some(j => j.split('@')[0] === num);
         if (alreadyResolved) continue;

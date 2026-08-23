@@ -1,7 +1,7 @@
 
 
 
-import { clearGroupCache } from '../lib/funcion/pluginHelper.js';
+import fs from 'fs';
 
 const handler = async (m, {conn, args, groupMetadata, participants, usedPrefix, command, isBotAdmin, isSuperAdmin}) => {
   const datas = global;
@@ -33,7 +33,6 @@ const handler = async (m, {conn, args, groupMetadata, participants, usedPrefix, 
         await delay(2000);
         const responseb = await conn.groupParticipantsUpdate(m.chat, [user], 'remove');
         if (responseb[0].status === '404') m.reply(error, m.chat, {mentions: conn.parseMention(error)});
-        else clearGroupCache(m.chat, conn);
         await delay(10000);
       } else return m.reply(tradutor.texto9);
     }
