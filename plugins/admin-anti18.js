@@ -4,9 +4,12 @@ import { addWarning, resetWarnings } from '../lib/advertencias.js';
 import { createHash } from 'crypto';
 import fs from 'fs';
 import sharp from 'sharp';
+import fetch from 'node-fetch';
+import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
 
-const THRESHOLD_FUERTE = 0.75;
-const THRESHOLD_SEXY = 0.90;
+const SERVER_URL = 'https://project-via.boxmine.xyz';
+const API_KEY = cargarOGenerarAPIKey();
+
 const MAX_WARNS = 3;
 
 const CACHE_PATH = './database/anti18-cache.json';
@@ -39,10 +42,6 @@ const FRASES_ADMIN = [
 function elegirFrase(lista) {
   return lista[Math.floor(Math.random() * lista.length)];
 }
-
-let _model = null;
-let _tf = null;
-let _loadingPromise = null;
 
 const _cache = new Map();
 let _cacheLoaded = false;
@@ -162,18 +161,14 @@ function releaseSlot() {
   }
 }
 
-async function getModel() {
-  if (_model) return _model;
-  if (_loadingPromise) return _loadingPromise;
-
-  _loadingPromise = (async () => {
-    _tf = await import('@tensorflow/tfjs-node');
-    const nsfwjs = await import('nsfwjs');
-    _model = await nsfwjs.load();
-    return _model;
-  })();
-
-  return _loadingPromise;
+async function fetchWithTimeout(url, options = {}, timeout = 20000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 const MAX_FRAMES_ANIMADO = 3;
@@ -221,29 +216,32 @@ async function esContenido18(buffer) {
 
   await acquireSlot();
   let flagged = false;
+  let success = false;
 
   try {
-    const model = await getModel();
-    const tensor = _tf.node.decodeImage(buffer, 3);
-    let predictions;
-    try {
-      predictions = await model.classify(tensor);
-    } finally {
-      tensor.dispose();
+    const res = await fetchWithTimeout(SERVER_URL + '/classify-nsfw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
+      body: JSON.stringify({ imageBase64: buffer.toString('base64') })
+    }, 20000);
+
+    if (res && res.ok) {
+      const data = await res.json();
+      if (data?.status) {
+        flagged = !!data.flagged;
+        success = true;
+      }
     }
-
-    const porn = predictions.find(p => p.className === 'Porn');
-    const hentai = predictions.find(p => p.className === 'Hentai');
-    const sexy = predictions.find(p => p.className === 'Sexy');
-
-    if (porn && porn.probability >= THRESHOLD_FUERTE) flagged = true;
-    else if (hentai && hentai.probability >= THRESHOLD_FUERTE) flagged = true;
-    else if (sexy && sexy.probability >= THRESHOLD_SEXY) flagged = true;
+    if (!success) {
+      console.error('[anti18] server de IA no clasificó la imagen, se deja pasar sin bloquear');
+    }
+  } catch (e) {
+    console.error('[anti18] error consultando server de IA:', e.message);
   } finally {
     releaseSlot();
   }
 
-  setCachedResult(hash, flagged);
+  if (success) setCachedResult(hash, flagged);
   return flagged;
 }
 
