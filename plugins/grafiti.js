@@ -1,1 +1,87 @@
-function _0x16fc(_0x1812ec,_0x59e05c){_0x1812ec=_0x1812ec-0x11b;const _0x44ad62=_0x44ad();let _0x16fcbf=_0x44ad62[_0x1812ec];return _0x16fcbf;}const _0x58dc94=_0x16fc;(function(_0x4ab403,_0x119b8e){const _0x4bf962=_0x16fc,_0x3f79bc=_0x4ab403();while(!![]){try{const _0x37503d=-parseInt(_0x4bf962(0x141))/0x1+-parseInt(_0x4bf962(0x11f))/0x2+parseInt(_0x4bf962(0x137))/0x3*(-parseInt(_0x4bf962(0x12a))/0x4)+-parseInt(_0x4bf962(0x147))/0x5+parseInt(_0x4bf962(0x12e))/0x6*(parseInt(_0x4bf962(0x129))/0x7)+parseInt(_0x4bf962(0x139))/0x8*(-parseInt(_0x4bf962(0x146))/0x9)+-parseInt(_0x4bf962(0x11b))/0xa*(-parseInt(_0x4bf962(0x140))/0xb);if(_0x37503d===_0x119b8e)break;else _0x3f79bc['push'](_0x3f79bc['shift']());}catch(_0x5f23dd){_0x3f79bc['push'](_0x3f79bc['shift']());}}}(_0x44ad,0x96c5c));function _0x44ad(){const _0x539659=['Crack\x20lam','quoted','Luna\x20Bot','grafiti\x20<texto>','5167547QvtIQc','184qaDvWu','readFileSync','message','sendMessage','6lKbElV','sticker','help','luna-bot-v6','signal','includes','text2','abort','text','72291VoTuyw','./config.js','1496LwLLCN','tags','arrayBuffer','grafiti','data','packsticker2','&pack=','902BPVDde','631827qfzikt','content-type','from','Luna-Botv6','sender','49752CPrNoM','1472010rShrFS','❀\x20Por\x20favor,\x20responde\x20un\x20mensaje\x20o\x20escribe\x20un\x20texto.','users','504530bVVvuI','⚠️\x20Ocurrió\x20un\x20error\x20al\x20generar\x20el\x20sticker.\x0a\x0a','length','get','2378752sKUaSt','catch','utf-8','chat','Handler\x20bloqueado','error'];_0x44ad=function(){return _0x539659;};return _0x44ad();}import _0x2debe7 from'fs';import _0x441476 from'node-fetch';import{obtenerMenuIuman,verificarMenuIuman}from'../src/assets/images/menu/languages/es/menu-img.js';import{cargarOGenerarAPIKey}from'../src/libraries/api/apiKeyManager.js';const configContent=_0x2debe7[_0x58dc94(0x12b)](_0x58dc94(0x138),_0x58dc94(0x121));if(!configContent[_0x58dc94(0x133)](_0x58dc94(0x144)))throw new Error(_0x58dc94(0x123));try{verificarMenuIuman();}catch{throw new Error('Archivo\x20de\x20configuracion\x20faltante\x20o\x20invalido');}const SERVER_URL=obtenerMenuIuman(),API_KEY=cargarOGenerarAPIKey(),DL_HEADERS={'X-Client-Name':_0x58dc94(0x131),'X-API-Key':API_KEY},TIMEOUT=0xea60,ft=async(_0x3d994f,_0x4c1105={})=>{const _0x2399fa=_0x58dc94,_0x1f6f5f=new AbortController(),_0x5dac0c=setTimeout(()=>_0x1f6f5f[_0x2399fa(0x135)](),TIMEOUT);try{const _0x4cdd1e=await _0x441476(_0x3d994f,{'signal':_0x1f6f5f[_0x2399fa(0x132)],'headers':_0x4c1105});return clearTimeout(_0x5dac0c),_0x4cdd1e;}catch(_0x40d528){clearTimeout(_0x5dac0c);throw _0x40d528;}};let handler=async(_0x132579,{conn:_0x129667,text:_0x2a682e})=>{const _0x343771=_0x58dc94;_0x132579[_0x343771(0x126)]?.[_0x343771(0x136)]&&(_0x2a682e=_0x132579[_0x343771(0x126)][_0x343771(0x136)]);if(!_0x2a682e)return _0x129667['sendMessage'](_0x132579[_0x343771(0x122)],{'text':_0x343771(0x148)},{'quoted':_0x132579});try{const _0x2bb3ec=global['db'][_0x343771(0x13d)][_0x343771(0x149)][_0x132579[_0x343771(0x145)]]||{},_0x401960=_0x2bb3ec['text1']||global['packsticker']||_0x343771(0x127),_0x5b5964=_0x2bb3ec[_0x343771(0x134)]||global[_0x343771(0x13e)]||_0x343771(0x125),_0x4df6bb=await ft(SERVER_URL+'/api/sticker/grafiti?text='+encodeURIComponent(_0x2a682e)+_0x343771(0x13f)+encodeURIComponent(_0x401960)+'&author='+encodeURIComponent(_0x5b5964),DL_HEADERS),_0x4e83c2=_0x4df6bb['headers'][_0x343771(0x11e)](_0x343771(0x142))||'';if(!_0x4df6bb['ok']||_0x4e83c2[_0x343771(0x133)]('application/json')){const _0x19d8bb=await _0x4df6bb['json']()[_0x343771(0x120)](()=>({}));throw new Error(_0x19d8bb[_0x343771(0x124)]||'Error\x20del\x20servidor');}const _0x4e1cee=Buffer[_0x343771(0x143)](await _0x4df6bb[_0x343771(0x13b)]());if(_0x4e1cee[_0x343771(0x11d)]<0x1f4)throw new Error('Sticker\x20inválido');await _0x129667[_0x343771(0x12d)](_0x132579[_0x343771(0x122)],{'sticker':_0x4e1cee},{'quoted':_0x132579});}catch(_0x192e71){await _0x129667['sendMessage'](_0x132579[_0x343771(0x122)],{'text':_0x343771(0x11c)+_0x192e71[_0x343771(0x12c)]},{'quoted':_0x132579});}};handler[_0x58dc94(0x130)]=[_0x58dc94(0x128)],handler[_0x58dc94(0x13a)]=[_0x58dc94(0x12f)],handler['command']=[_0x58dc94(0x13c)];export default handler;
+import fs from 'fs'
+import fetch from 'node-fetch'
+import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js'
+import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
+
+const configContent = fs.readFileSync('./config.js', 'utf-8')
+if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado')
+try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
+
+const SERVER_URL = obtenerMenuIuman()
+const API_KEY = cargarOGenerarAPIKey()
+const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
+const TIMEOUT = 60000
+
+const ft = async (url, headers = {}) => {
+  const c = new AbortController()
+  const t = setTimeout(() => c.abort(), TIMEOUT)
+  try { const r = await fetch(url, { signal: c.signal, headers }); clearTimeout(t); return r }
+  catch (e) { clearTimeout(t); throw e }
+}
+
+let handler = async (m, { conn, text }) => {
+    const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+    const t = _tr?.plugins?.grafiti || {};
+    if (m.quoted?.text) {
+        text = m.quoted.text
+    }
+
+    if (!text) {
+        return conn.sendMessage(
+            m.chat,
+            {
+                text: t.sin_texto || '❀ Por favor, responde un mensaje o escribe un texto.'
+            },
+            { quoted: m }
+        )
+    }
+
+    try {
+        const user = global.db.data.users[m.sender] || {}
+
+        const pack = user.text1 || global.packsticker || 'Luna Bot'
+        const author = user.text2 || global.packsticker2 || 'Crack lam'
+
+        const res = await ft(
+            SERVER_URL + '/api/sticker/grafiti?text=' + encodeURIComponent(text) +
+            '&pack=' + encodeURIComponent(pack) + '&author=' + encodeURIComponent(author),
+            DL_HEADERS
+        )
+
+        const contentType = res.headers.get('content-type') || ''
+        if (!res.ok || contentType.includes('application/json')) {
+            const data = await res.json().catch(() => ({}))
+            throw new Error(data.error || 'Error del servidor')
+        }
+
+        const buffer = Buffer.from(await res.arrayBuffer())
+        if (buffer.length < 500) throw new Error('Sticker inválido')
+
+        await conn.sendMessage(
+            m.chat,
+            {
+                sticker: buffer
+            },
+            {
+                quoted: m
+            }
+        )
+
+    } catch (e) {
+        await conn.sendMessage(
+            m.chat,
+            {
+                text: (t.error?.replace('{msg}', e.message) || `⚠️ Ocurrió un error al generar el sticker.\n\n${e.message}`)
+            },
+            {
+                quoted: m
+            }
+        )
+    }
+}
+
+handler.help = ['grafiti <texto>']
+handler.tags = ['sticker']
+handler.command = ['grafiti']
+
+export default handler

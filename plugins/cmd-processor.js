@@ -3,6 +3,9 @@ import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 export async function all(m) {
   if (!global.db.data) return;
 
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.cmd_processor || {};
+
   if (!global.db.data.sticker) global.db.data.sticker = {};
 
   const isDirectSticker = m.message?.stickerMessage;
@@ -90,15 +93,15 @@ export async function all(m) {
           const isOwnerCheck = global.owner.map(([num]) => num).includes(m.sender.replace(/[^0-9]/g, '')) || m.fromMe;
 
           if (plugin.admin && !isAdmin) {
-            return this.reply(m.chat, 'Solo admins pueden usar este comando', m);
+            return this.reply(m.chat, t.solo_admins || 'Solo admins pueden usar este comando', m);
           }
 
           if (plugin.group && !m.isGroup) {
-            return this.reply(m.chat, 'Este comando solo funciona en grupos', m);
+            return this.reply(m.chat, t.solo_grupos || 'Este comando solo funciona en grupos', m);
           }
 
           if (plugin.owner && !isOwnerCheck) {
-            return this.reply(m.chat, 'Solo el owner puede usar este comando', m);
+            return this.reply(m.chat, t.solo_owner || 'Solo el owner puede usar este comando', m);
           }
 
           const senderNum = this.decodeJid(m.sender || '').replace(/[^0-9]/g, '');
@@ -152,7 +155,7 @@ export async function all(m) {
   } catch (error) {
     console.error('Error procesando comando de sticker:', error);
     try {
-      await this.reply(m.chat, stickerData.text || 'Error al procesar comando', m);
+      await this.reply(m.chat, stickerData.text || (t.error_procesar || 'Error al procesar comando'), m);
     } catch (e) {
       console.error('Error crítico en cmd-processor:', e);
     }

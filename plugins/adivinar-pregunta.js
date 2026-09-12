@@ -52,14 +52,16 @@ const tiempos = { facil: 30, medio: 45, dificil: 60 };
 const premios = { facil: 500, medio: 1000, dificil: 2500 };
 
 const handler = async (m, { command, args, usedPrefix }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.adivinar_pregunta || {};
   const id = m.chat;
 
   if (command === 'adivinar') {
-    if (juegosPregunta[id]) return m.reply('❗ Ya hay una pregunta activa. Usa /respuesta <texto> para responder.');
+    if (juegosPregunta[id]) return m.reply(t.activa || '❗ Ya hay una pregunta activa. Usa /respuesta <texto> para responder.');
 
     const dificultad = (args[0] || '').toLowerCase();
     if (!['facil', 'medio', 'dificil'].includes(dificultad)) {
-      return m.reply(`✨ ¿Qué dificultad prefieres?\n\n🟢 *${usedPrefix}adivinar facil*\n🟡 *${usedPrefix}adivinar medio*\n🔴 *${usedPrefix}adivinar dificil*\n\n✍️ Responde con: *${usedPrefix}respuesta <tu respuesta>*`);
+      return m.reply((t.dificultad?.replace(/\{usedPrefix\}/g, usedPrefix)) || `✨ ¿Qué dificultad prefieres?\n\n🟢 *${usedPrefix}adivinar facil*\n🟡 *${usedPrefix}adivinar medio*\n🔴 *${usedPrefix}adivinar dificil*\n\n✍️ Responde con: *${usedPrefix}respuesta <tu respuesta>*`);
     }
 
     const lista = preguntas[dificultad];
@@ -76,17 +78,17 @@ const handler = async (m, { command, args, usedPrefix }) => {
       mensaje10s: false
     };
 
-    m.reply(`❓ *Pregunta (${dificultad.toUpperCase()})*\n\n${seleccion.pregunta}\n\n⏳ Tienes *${tiempo} segundos*.\n✍️ Usa *${usedPrefix}respuesta <tu respuesta>*\n🧠 Puedes pedir una pista con *${usedPrefix}pista2*`);
+    m.reply((t.pregunta?.replace('{dificultad}', dificultad.toUpperCase()).replace('{pregunta}', seleccion.pregunta).replace('{tiempo}', tiempo).replace(/\{usedPrefix\}/g, usedPrefix)) || `❓ *Pregunta (${dificultad.toUpperCase()})*\n\n${seleccion.pregunta}\n\n⏳ Tienes *${tiempo} segundos*.\n✍️ Usa *${usedPrefix}respuesta <tu respuesta>*\n🧠 Puedes pedir una pista con *${usedPrefix}pista2*`);
 
     // Notificación de 10 segundos restantes
     setTimeout(() => {
-      if (juegosPregunta[id]) m.reply('⚠️ ¡Te quedan *10 segundos*!');
+      if (juegosPregunta[id]) m.reply(t.quedan_10s || '⚠️ ¡Te quedan *10 segundos*!');
     }, (tiempo - 10) * 1000);
 
     // Fin de tiempo
     setTimeout(() => {
       if (juegosPregunta[id]) {
-        m.reply(`⏱️ Tiempo agotado. La respuesta correcta era: *${juegosPregunta[id].respuesta}*.`);
+        m.reply((t.tiempo_agotado?.replace('{respuesta}', juegosPregunta[id].respuesta)) || `⏱️ Tiempo agotado. La respuesta correcta era: *${juegosPregunta[id].respuesta}*.`);
         delete juegosPregunta[id];
       }
     }, tiempo * 1000);
@@ -94,30 +96,30 @@ const handler = async (m, { command, args, usedPrefix }) => {
 
   if (command === 'respuesta') {
     const juego = juegosPregunta[id];
-    if (!juego) return m.reply('❌ No hay ninguna pregunta activa. Usa /adivinar para empezar.');
+    if (!juego) return m.reply(t.sin_activa || '❌ No hay ninguna pregunta activa. Usa /adivinar para empezar.');
 
     const texto = args.join(' ').toLowerCase().trim();
-    if (!texto) return m.reply('✍️ Escribe tu respuesta después de /respuesta');
+    if (!texto) return m.reply(t.escribe_respuesta || '✍️ Escribe tu respuesta después de /respuesta');
 
     const ahora = Date.now();
     if (ahora - juego.inicio > juego.limite) {
       delete juegosPregunta[id];
-      return m.reply(`⌛ Se acabó el tiempo. La respuesta era *${juego.respuesta}*.`);
+      return m.reply((t.tiempo_acabado?.replace('{respuesta}', juego.respuesta)) || `⌛ Se acabó el tiempo. La respuesta era *${juego.respuesta}*.`);
     }
 
     if (texto === juego.respuesta) {
       global.db.data.users[m.sender].exp += premios[juego.dificultad];
       delete juegosPregunta[id];
-      return m.reply(`✅ ¡Correcto! Has ganado *${premios[juego.dificultad]} XP*`);
+      return m.reply((t.correcto?.replace('{xp}', premios[juego.dificultad])) || `✅ ¡Correcto! Has ganado *${premios[juego.dificultad]} XP*`);
     } else {
-      return m.reply('❌ Respuesta incorrecta. Intenta otra vez antes de que se acabe el tiempo.');
+      return m.reply(t.incorrecto || '❌ Respuesta incorrecta. Intenta otra vez antes de que se acabe el tiempo.');
     }
   }
 
   if (command === 'pista2') {
     const juego = juegosPregunta[id];
-    if (!juego) return m.reply('❌ No hay ningún juego activo.');
-    return m.reply(`🧩 *Pista:* ${juego.pista}`);
+    if (!juego) return m.reply(t.sin_juego || '❌ No hay ningún juego activo.');
+    return m.reply((t.pista?.replace('{pista}', juego.pista)) || `🧩 *Pista:* ${juego.pista}`);
   }
 };
 

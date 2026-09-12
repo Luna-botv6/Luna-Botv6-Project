@@ -5,6 +5,8 @@ if (global.subbotEnabled === undefined) global.subbotEnabled = true;
 const BOT = () => global.BotName || 'Luna';
 
 const handler = async (m, { conn, command }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.subbot_control || {};
   const isOn = command === 'subbotson';
 
   global.subbotEnabled = isOn;
@@ -13,17 +15,17 @@ const handler = async (m, { conn, command }) => {
   const { used, total, pct } = connectionManager.getRamStatus();
 
   const estado = isOn
-    ? `✅ *Sistema de SubBots activado*`
-    : `❌ *Sistema de SubBots desactivado*`;
+    ? (t.activado || `✅ *Sistema de SubBots activado*`)
+    : (t.desactivado || `❌ *Sistema de SubBots desactivado*`);
 
   const msg =
     `${estado}\n\n` +
-    `🤖 Bot: ${BOT()}\n` +
-    `📊 SubBots activos: ${active}\n` +
-    `🧠 RAM: ${pct}% (${used}MB/${total}MB)\n\n` +
+    (t.bot?.replace('{bot}', BOT()) || `🤖 Bot: ${BOT()}`) + '\n' +
+    (t.subbots_activos?.replace('{cantidad}', active) || `📊 SubBots activos: ${active}`) + '\n' +
+    (t.ram?.replace('{pct}', pct).replace('{usado}', used).replace('{total}', total) || `🧠 RAM: ${pct}% (${used}MB/${total}MB)`) + '\n\n' +
     (isOn
-      ? `_Los usuarios pueden usar /serbot para crear su SubBot._`
-      : `_Ningún usuario podrá crear nuevos SubBots hasta que se reactive._`);
+      ? (t.on_tip || `_Los usuarios pueden usar /serbot para crear su SubBot._`)
+      : (t.off_tip || `_Ningún usuario podrá crear nuevos SubBots hasta que se reactive._`));
 
   conn.sendMessage(m.chat, { text: msg }, { quoted: m });
 };

@@ -1,7 +1,7 @@
 import uploadImage from '../src/libraries/uploadImage.js';
 import fetch from 'node-fetch';
 import axios from 'axios';
-import * as Jimp from 'jimp';
+import { Jimp } from 'jimp';
 import FormData from 'form-data';
 import fs from 'fs';
 
@@ -53,16 +53,8 @@ export default handler;
 async function toanime(input) {
   try {
     const baseUrl = 'https://tools.betabotz.eu.org';  
-    const image = await Jimp.Jimp.read(input);
-    const buffer = await new Promise((resolve, reject) => {
-      image.getBuffer('image/jpeg', (err, buf) => {
-        if (err) {
-          reject('Terjadi Error Saat Mengambil Data......');
-        } else {
-          resolve(buf);
-        }
-      });
-    });
+    const image = await Jimp.read(input);
+    const buffer = await image.getBuffer('image/jpeg');
     const form = new FormData();
     form.append('image', buffer, { filename: 'toanime.jpg' });
     const { data } = await axios.post(`${baseUrl}/ai/toanime`, form, {

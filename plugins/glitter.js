@@ -1,17 +1,20 @@
-import * as Jimp from 'jimp';
+import { Jimp, loadFont } from 'jimp';
+import { SANS_64_WHITE } from 'jimp/fonts';
 import { Sticker } from 'wa-sticker-formatter';
 
 const handler = async (m, { conn, args }) => {
-  if (!args[0]) throw 'Ejemplo:\n.glitter Hola cómo estás';
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.glitter || {};
+  if (!args[0]) throw (t.ejemplo || 'Ejemplo:\n.glitter Hola cómo estás');
   const text = args.join(' ').trim();
-  if (text.length > 40) throw 'Máximo 40 caracteres';
+  if (text.length > 40) throw (t.max_caracteres || 'Máximo 40 caracteres');
 
   const SIZE = 512;
   const MARGIN = 16;
   const MAX_WIDTH = SIZE - MARGIN * 2;
 
-  let image = new Jimp(SIZE, SIZE, 0x00000000);
-  const font = await Jimp.loadFont(Jimp.FONT_SANS_64_WHITE);
+  let image = new Jimp({ width: SIZE, height: SIZE, color: 0x00000000 });
+  const font = await loadFont(SANS_64_WHITE);
 
   const words = text.split(' ');
   let line1 = '';
@@ -36,8 +39,8 @@ const handler = async (m, { conn, args }) => {
       const letter = line[i];
       if (letter === ' ') { cursorX += letterSpacing; continue; }
 
-      let letterImg = new Jimp(80, 100, 0x00000000);
-      letterImg.print(font, 0, 0, letter);
+      let letterImg = new Jimp({ width: 80, height: 100, color: 0x00000000 });
+      letterImg.print({ font, x: 0, y: 0, text: letter });
       const r = Math.floor(Math.random() * 200) + 55;
       const g = Math.floor(Math.random() * 200) + 55;
       const b = Math.floor(Math.random() * 200) + 55;
@@ -53,7 +56,7 @@ const handler = async (m, { conn, args }) => {
     startY += 115;
   }
 
-  const buffer = await image.getBufferAsync(Jimp.MIME_PNG);
+  const buffer = await image.getBuffer('image/png');
   image = null;
 
   let sticker = new Sticker(buffer, {
@@ -67,7 +70,7 @@ const handler = async (m, { conn, args }) => {
   sticker = null;
 
   if (stickerBuffer.length > 100 * 1024) {
-    throw '⚠️ El sticker supera los 100 KB, intenta con menos texto';
+    throw (t.sticker_pesado || '⚠️ El sticker supera los 100 KB, intenta con menos texto');
   }
 
   await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m });

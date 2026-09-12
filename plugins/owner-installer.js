@@ -107,7 +107,9 @@ const deletePlugin = async (pluginName) => {
 };
 
 const handler = async (m, { text }) => {
-  if (!text) return m.reply('❌ Ej .plg url .plg nombre');
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.owner_installer || {};
+  if (!text) return m.reply((t.ejemplo_uso || '❌ Ej .plg url .plg nombre'));
 
   try {
     const input = text.trim();
@@ -117,7 +119,7 @@ const handler = async (m, { text }) => {
       const pluginName = path.basename(input); 
       const pluginPath = await downloadPlugin(input, pluginName); 
       await addToGitignore(pluginPath); 
-      m.reply(`✅ ${pluginName} instalado`);
+      m.reply((t.instalado?.replace('{plugin}', pluginName) || `✅ ${pluginName} instalado`));
     } else {
       const result = await deletePlugin(input); 
       m.reply(result);

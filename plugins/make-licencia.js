@@ -1,14 +1,16 @@
 import fetch from 'node-fetch';
-import * as Jimp from 'jimp';
+import { Jimp, loadFont, HorizontalAlign } from 'jimp';
 
 const handler = async (m, { conn, text }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.make_licencia || {};
   const who = m.quoted?.sender || m.mentionedJid?.[0] || (m.fromMe ? conn.user.jid : m.sender);
-  const userText = text?.trim() || 'Licencia para dejarte en visto';
-  const nombre = m.pushName || 'Usuario';
+  const userText = text?.trim() || (t.textoDefecto || 'Licencia para dejarte en visto');
+  const nombre = m.pushName || (t.usuario || 'Usuario');
   const fecha = new Date().toLocaleDateString('es-ES');
-  const vencimiento = 'nunca';
+  const vencimiento = t.nunca || 'nunca';
 
-  await m.reply('⏳ Generando licencia...');
+  await m.reply(t.generando || '⏳ Generando licencia...');
 
   let base = null;
   let avatar = null;
@@ -28,24 +30,24 @@ const handler = async (m, { conn, text }) => {
     ])
 
     ;[base, avatar] = await Promise.all([
-  Jimp.Jimp.read(baseBuffer),
-  Jimp.Jimp.read(avatarBuffer)
+  Jimp.read(baseBuffer),
+  Jimp.read(avatarBuffer)
 ]);
     avatar.resize({ w: 170, h: 165 });
     base.composite(avatar, 385, 180);
     avatar = null;
 
     const [fontWhite, fontBlack, fontSmall] = await Promise.all([
-  Jimp.loadFont('/home/container/node_modules/@jimp/plugin-print/fonts/open-sans/open-sans-32-white/open-sans-32-white.fnt'),
-  Jimp.loadFont('/home/container/node_modules/@jimp/plugin-print/fonts/open-sans/open-sans-32-black/open-sans-32-black.fnt'),
-  Jimp.loadFont('/home/container/node_modules/@jimp/plugin-print/fonts/open-sans/open-sans-16-black/open-sans-16-black.fnt')
+  loadFont('/home/container/node_modules/@jimp/plugin-print/fonts/open-sans/open-sans-32-white/open-sans-32-white.fnt'),
+  loadFont('/home/container/node_modules/@jimp/plugin-print/fonts/open-sans/open-sans-32-black/open-sans-32-black.fnt'),
+  loadFont('/home/container/node_modules/@jimp/plugin-print/fonts/open-sans/open-sans-16-black/open-sans-16-black.fnt')
 ]);
 
-   base.print({ font: fontSmall, x: 260, y: 175, text: 'nombre:' });
+   base.print({ font: fontSmall, x: 260, y: 175, text: t.labelNombre || 'nombre:' });
    base.print({ font: fontSmall, x: 260, y: 195, text: nombre });
-   base.print({ font: fontSmall, x: 260, y: 225, text: 'fecha:' });
+   base.print({ font: fontSmall, x: 260, y: 225, text: t.labelFecha || 'fecha:' });
    base.print({ font: fontSmall, x: 260, y: 255, text: fecha });
-   base.print({ font: fontSmall, x: 260, y: 285, text: 'vencimiento:' });
+   base.print({ font: fontSmall, x: 260, y: 285, text: t.labelVencimiento || 'vencimiento:' });
    base.print({ font: fontSmall, x: 260, y: 315, text: vencimiento });
     const imgW = base.bitmap.width;
     const imgH = base.bitmap.height;
@@ -53,7 +55,7 @@ const handler = async (m, { conn, text }) => {
     const y = imgH - 110;
     const maxW = imgW - 20;
     const maxH = 70;
-    const opts = { text: userText, alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER };
+    const opts = { text: userText, alignmentX: HorizontalAlign.CENTER };
 
     for (const [dx, dy] of [[-3,0],[3,0],[0,-3],[0,3],[-2,-2],[2,-2],[-2,2],[2,2]]) {
       base.print({
@@ -75,7 +77,7 @@ const handler = async (m, { conn, text }) => {
 
     await conn.sendMessage(m.chat, { image: output }, { quoted: m });
   } catch (e) {
-    await m.reply(`❌ Error: ${e.message}`);
+    await m.reply(t.error?.replace('{error}', e.message) || `❌ Error: ${e.message}`);
   } finally {
     base = null;
     avatar = null;

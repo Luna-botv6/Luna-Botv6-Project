@@ -4,11 +4,13 @@ import path from 'path';
 import chalk from 'chalk';
 
 let handler = async (m, { conn, usedPrefix }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.listasubbots || {};
   try {
     const subBotDir = './sub-lunabot/';
 
     if (!fs.existsSync(subBotDir)) {
-      return m.reply('📋 *Lista de SubBots*\n\n❌ No hay SubBots activos en este momento.');
+      return m.reply((t.sin_subbots || '📋 *Lista de SubBots*\n\n❌ No hay SubBots activos en este momento.'));
     }
 
     const userDirs = fs.readdirSync(subBotDir);
@@ -48,7 +50,7 @@ let handler = async (m, { conn, usedPrefix }) => {
           }
 
           const socket = connectionManager.getSocket(dirName);
-          const status = socket?.user?.jid ? '🟢 Conectado' : '🟢 Activo';
+          const status = socket?.user?.jid ? (t.conectado || '🟢 Conectado') : (t.activo || '🟢 Activo');
 
           subbots.push({
             jid: userJid,
@@ -65,27 +67,27 @@ let handler = async (m, { conn, usedPrefix }) => {
     }
 
     if (subbots.length === 0) {
-      return m.reply('📋 *Lista de SubBots*\n\n❌ No hay SubBots activos en este momento.');
+      return m.reply((t.sin_subbots || '📋 *Lista de SubBots*\n\n❌ No hay SubBots activos en este momento.'));
     }
 
-    let message = '📋 *Lista de SubBots Activos*\n\n';
-    message += `🤖 *Total:* ${subbots.length} SubBot${subbots.length > 1 ? 's' : ''}\n\n`;
+    let message = (t.titulo_activos || '📋 *Lista de SubBots Activos*\n\n');
+    message += (t.total?.replace('{cantidad}', subbots.length) || `🤖 *Total:* ${subbots.length} SubBot${subbots.length > 1 ? 's' : ''}\n\n`);
 
     subbots.forEach((bot, index) => {
-      message += `*${index + 1}.* ${bot.status}\n`;
-      message += `   👤 ${bot.displayName}\n`;
-      message += `   📱 +${bot.userId}\n`;
+      message += (t.item_num?.replace('{num}', index + 1).replace('{estado}', bot.status) || `*${index + 1}.* ${bot.status}`) + '\n';
+      message += (t.item_nombre?.replace('{nombre}', bot.displayName) || `   👤 ${bot.displayName}`) + '\n';
+      message += (t.item_numero?.replace('{numero}', bot.userId) || `   📱 +${bot.userId}`) + '\n';
       message += `   @${bot.userId}\n\n`;
     });
 
-    message += `\n💡 *Tip:* Usa *${usedPrefix}stopbot* para detener tu SubBot`;
+    message += (t.tip?.replace('{prefix}', usedPrefix) || `\n💡 *Tip:* Usa *${usedPrefix}stopbot* para detener tu SubBot`);
 
     const mentions = subbots.map((bot) => bot.jid);
 
     return conn.reply(m.chat, message, m, { mentions });
   } catch (error) {
     console.error(chalk.red('❌ Error en listasubbots:'), error);
-    return m.reply('❌ Error al obtener la lista de SubBots.');
+    return m.reply((t.error || '❌ Error al obtener la lista de SubBots.'));
   }
 };
 

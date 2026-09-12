@@ -58,6 +58,8 @@ const juegos = [
 ];
 
 async function handler(m, { conn, args, usedPrefix, command }) {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.game_sopadeletras || {};
   conn.sopadeletras = conn.sopadeletras || {};
   const id = m.chat;
 
@@ -67,7 +69,8 @@ async function handler(m, { conn, args, usedPrefix, command }) {
 
     const timeout = setTimeout(() => {
       if (conn.sopadeletras[id]) {
-        conn.reply(id, `⏰ *Se acabó el tiempo.* La palabra era *${conn.sopadeletras[id].palabra}*.\n¡Intenta nuevamente con *${usedPrefix + command}*!`, m);
+        const prx = usedPrefix + command;
+        conn.reply(id, (t.tiempo_acabado?.replace('{palabra}', conn.sopadeletras[id].palabra).replace('{prefix}', prx) || `⏰ *Se acabó el tiempo.* La palabra era *${conn.sopadeletras[id].palabra}*.\n¡Intenta nuevamente con *${prx}*!`), m);
         delete conn.sopadeletras[id];
       }
     }, 90000);
@@ -81,15 +84,16 @@ async function handler(m, { conn, args, usedPrefix, command }) {
     };
 
     // Mensaje a los 30 segundos (quedan 15)
-    setTimeout(() => {
+setTimeout(() => {
       if (conn.sopadeletras[id]) {
-        conn.reply(id, '⏳ *¡Te quedan 15 segundos!* ¡Tu Puedes! 🫂', m);
+        conn.reply(id, t.aviso || '⏳ *¡Te quedan 15 segundos!* ¡Tú Puedes! 🫂', m);
       }
     }, 75000);
 
+    const prx = usedPrefix + command;
     await conn.sendMessage(id, {
       image: { url: juegoSeleccionado.ruta },
-      caption: `🧩 *Sopa de Letras: Encuentra la Palabra*\n\n🔤 Palabra a buscar: *${partida.palabra}*\n📌 Responde con: *${usedPrefix + command} fila columna*\n📝 Ejemplo: *${usedPrefix + command} 3 10*\n\n📖 *¿Cómo se juega?*\n1️⃣ Busca la palabra en la imagen.\n2️⃣ Cuando encuentres la primera letra (ej: la "N" de "naranja"), anota la fila donde empieza.\n3️⃣ Luego sigue la palabra horizontalmente y encuentra la letra donde termina (ej: la "A").\n4️⃣ Cuenta la columna donde termina.\n✅ Usa esos números para responder: fila donde comienza, columna donde termina.\n\n⏱️ *Tienes 45 segundos para responder.*\n🎯 ¡Mucha suerte!`
+      caption: (t.caption?.replace('{palabra}', partida.palabra).replace('{prefix}', prx) || `🧩 *Sopa de Letras: Encuentra la Palabra*\n\n🔤 Palabra a buscar: *${partida.palabra}*\n📌 Responde con: *${prx} fila columna*\n📝 Ejemplo: *${prx} 3 10*\n\n📖 *¿Cómo se juega?*\n1️⃣ Busca la palabra en la imagen.\n2️⃣ Cuando encuentres la primera letra (ej: la "N" de "naranja"), anota la fila donde empieza.\n3️⃣ Luego sigue la palabra horizontalmente y encuentra la letra donde termina (ej: la "A").\n4️⃣ Cuenta la columna donde termina.\n✅ Usa esos números para responder: fila donde comienza, columna donde termina.\n\n⏱️ *Tienes 45 segundos para responder.*\n🎯 ¡Mucha suerte!`)
     });
     return;
   }
@@ -99,11 +103,11 @@ async function handler(m, { conn, args, usedPrefix, command }) {
     const columna = parseInt(args[1]);
 
     if (isNaN(fila) || isNaN(columna)) {
-      return m.reply(`❌ Las coordenadas deben ser números válidos.\nUso correcto:\n${usedPrefix + command} fila columna`);
+      return m.reply((t.coords_invalidas?.replace('{prefix}', usedPrefix + command) || `❌ Las coordenadas deben ser números válidos.\nUso correcto:\n${usedPrefix + command} fila columna`));
     }
 
     const partida = conn.sopadeletras[id];
-    if (!partida) return m.reply(`⚠️ No tienes una partida activa. Usa:\n${usedPrefix + command}`);
+    if (!partida) return m.reply((t.sin_partida?.replace('{prefix}', usedPrefix + command) || `⚠️ No tienes una partida activa. Usa:\n${usedPrefix + command}`));
 
     clearTimeout(partida.timeout); // Detener el conteo si responde
 
@@ -116,16 +120,19 @@ async function handler(m, { conn, args, usedPrefix, command }) {
 
       delete conn.sopadeletras[id];
 
+      const expTxt = expGanada;
+      const diamTxt = diamantesGanados;
       return m.reply(
+        (t.correcto?.replace('{palabra}', partida.palabra).replace('{fila}', fila).replace('{columna}', columna).replace('{exp}', expTxt).replace('{diam}', diamTxt) ||
         `🎉 ¡Correcto! La palabra *${partida.palabra}* estaba en fila ${fila}, columna ${columna}.\n` +
-        `Has ganado +${expGanada} EXP y +${diamantesGanados} diamantes 💎.`
+        `Has ganado +${expGanada} EXP y +${diamantesGanados} diamantes 💎.`)
       );
     } else {
-      return m.reply('❌ Incorrecto. La palabra no está en esa posición. Intenta de nuevo.');
+      return m.reply(t.incorrecto || '❌ Incorrecto. La palabra no está en esa posición. Intenta de nuevo.');
     }
   }
 
-  return m.reply(`❗ Uso correcto:\n- Iniciar juego: *${usedPrefix + command}*\n- Responder: *${usedPrefix + command} fila columna*`);
+  return m.reply((t.uso?.replace('{prefix}', usedPrefix + command) || `❗ Uso correcto:\n- Iniciar juego: *${usedPrefix + command}*\n- Responder: *${usedPrefix + command} fila columna*`));
 }
 
 handler.command = /^sopadeletras$/i;

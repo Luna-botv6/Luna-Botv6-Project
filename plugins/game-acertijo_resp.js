@@ -9,23 +9,35 @@ const normalize = str => str
   .replace(/[\u0300-\u036f]/g, '')
   .trim();
 
-const buildCaption = (question, secsLeft, hint) =>
-  '╭━━━「 🧩 *ACERTIJO* 」━━━╮\n' +
-  '┃\n' +
-  `┃ 🤔 *${question}*\n` +
-  (hint ? `┃ ${hint}\n` : '') +
-  '┃\n' +
-  `┃ ⏱ *Tiempo restante* › ${secsLeft}s\n` +
-  '┃ 🏆 *Premio* › +500 Exp\n' +
-  '┃\n' +
-  '┃ 💬 Responde *citando este mensaje*\n' +
-  '┃\n' +
-  '╰━━━━━━━━━━━━━━━━━━━━━━━╯';
+const buildCaption = (question, secsLeft, hint, t) => {
+  if (t && t.caption) {
+    return t.caption
+      .replace('{question}', question)
+      .replace('{secsLeft}', secsLeft)
+      + (hint ? ((t.hint_line || `┃ ${hint}\n`).replace('{hint}', hint)) : '');
+  }
+  return (
+    '╭━━━「 🧩 *ACERTIJO* 」━━━╮\n' +
+    '┃\n' +
+    `┃ 🤔 *${question}*\n` +
+    (hint ? `┃ ${hint}\n` : '') +
+    '┃\n' +
+    `┃ ⏱ *Tiempo restante* › ${secsLeft}s\n` +
+    '┃ 🏆 *Premio* › +500 Exp\n' +
+    '┃\n' +
+    '┃ 💬 Responde *citando este mensaje*\n' +
+    '┃\n' +
+    '╰━━━━━━━━━━━━━━━━━━━━━━━╯'
+  );
+};
 
 const handler = (m) => m;
 handler.all = async function (m, { conn }) {
   try {
     if (!m || m.fromMe || !m.text || !m.chat) return;
+
+    const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+    const t = _tr?.plugins?.game_acertijo_resp || {};
 
     const id = m.chat;
     if (!this.tekateki || !(id in this.tekateki)) return;
@@ -46,6 +58,10 @@ handler.all = async function (m, { conn }) {
 
       const ganador = m.sender;
       const msg =
+        (t.ganador && t.ganador
+          .replace('{respuesta}', json.response)
+          .replace('{ganador}', ganador.split('@')[0])
+          .replace('{poin}', poin)) ||
         '╭━━━「 🎉 *¡CORRECTO!* 」━━━╮\n' +
         '┃\n' +
         `┃ ✅ *Respuesta* › ${json.response}\n` +
@@ -59,8 +75,9 @@ handler.all = async function (m, { conn }) {
     }
 
     if (similarity(intento, respuesta) >= THRESHOLD) {
+      const hint = (t.casi?.replace('{letra}', json.response[0].toUpperCase())) || `🔥 ¡Casi! Empieza por "${json.response[0].toUpperCase()}"`;
       const newMsg = await conn.sendMessage(id,
-        { text: buildCaption(json.question, secsLeft, `🔥 ¡Casi! Empieza por "${json.response[0].toUpperCase()}"`) },
+        { text: buildCaption(json.question, secsLeft, hint, t) },
         { quoted: sentMsg }
       );
       this.tekateki[id][0] = newMsg;
@@ -68,7 +85,7 @@ handler.all = async function (m, { conn }) {
     }
 
     const newMsg = await conn.sendMessage(id,
-      { text: '❌ *Incorrecto*\n' + buildCaption(json.question, secsLeft) },
+      { text: (t.incorrecto_titulo || '❌ *Incorrecto*\n') + buildCaption(json.question, secsLeft, null, t) },
       { quoted: sentMsg }
     );
     this.tekateki[id][0] = newMsg;

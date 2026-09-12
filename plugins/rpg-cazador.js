@@ -19,17 +19,19 @@ function msToTime(ms) {
 }
 
 const handler = async (m, { conn, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es')
+  const t = _tr?.plugins?.rpg_cazador || {}
   const id  = m.sender
   const cmd = args?.[0]?.toLowerCase() || ''
 
-  if (!cmd || cmd === 'help' || cmd === 'ayuda') return m.reply(HELP_MSG)
+  if (!cmd || cmd === 'help' || cmd === 'ayuda') return m.reply(t.help || HELP_MSG)
 
   if (cmd === 'ver' || cmd === 'status') {
     const status = getHunterStatus(id)
 
     if (isCapturedByHunter(id)) {
       return m.reply(
-        `⛓️ *Estás capturado por el Cazador.*\n\n` +
+        t.capturado || `⛓️ *Estás capturado por el Cazador.*\n\n` +
         `No puedes usar comandos RPG.\n` +
         `Solo un rescate puede liberarte.\n` +
         `📣 Usa: *rescate pedir*`
@@ -37,11 +39,14 @@ const handler = async (m, { conn, args }) => {
     }
 
     if (status.active) {
+      const pctEscape = Math.round(([0.40,0.28,0.15][status.level-1]))*100 || '?'
+      const pctPelea = Math.round(([0.05,0.03,0.02][status.level-1]))*100 || '?'
       return m.reply(
+        t.cazador_aqui?.replace('{nivel}', status.level).replace('{nombre}', status.hunterName).replace('{escape}', pctEscape).replace('{pelea}', pctPelea) ||
         `🎯 *¡El Cazador está aquí!* [Nivel ${status.level} — ${status.hunterName}]\n\n` +
         `No puedes ignorarlo. Debes actuar ahora:\n` +
-        `• *cazador correr* — ${Math.round(([0.40,0.28,0.15][status.level-1]))*100 || '?'}% de escapar\n` +
-        `• *cazador pelear* — ${Math.round(([0.05,0.03,0.02][status.level-1]))*100 || '?'}% de ganarle\n\n` +
+        `• *cazador correr* — ${pctEscape}% de escapar\n` +
+        `• *cazador pelear* — ${pctPelea}% de ganarle\n\n` +
         `⚠️ Cada segundo que esperas es un riesgo.`
       )
     }
@@ -55,35 +60,37 @@ const handler = async (m, { conn, args }) => {
       ? Math.max(0, 30 * 60 * 1000 - (Date.now() - status.windowStart))
       : 0
 
+    const aviso = status.threat >= 80
+        ? (t.peligro_extremo || `🔴 *Peligro extremo.* El cazador puede aparecer en cualquier momento.`)
+        : status.threat >= 40
+          ? (t.nivel_medio || `🟡 *Nivel medio.* Evita ganar mucho más por ahora.`)
+          : status.threat > 0
+            ? (t.amenaza_baja || `🟢 *Amenaza baja.* Sigue jugando con cuidado.`)
+            : (t.sin_amenaza || `✅ *Sin amenaza.* El cazador no te busca por ahora.`)
+
     return m.reply(
+      (t.estado?.replace('{barra}', threatBar()).replace('{amenaza}', status.threat).replace('{nivel}', status.level).replace('{nombre}', status.hunterName).replace('{exp}', status.gainExp.toLocaleString()).replace('{diamantes}', status.gainMoney.toLocaleString()).replace('{tiempo}', msToTime(windowLeft)).replace('{escapes}', status.escapeAttempts) ||
       `🎯 *Estado del Cazador*\n\n` +
       `📊 Amenaza: ${threatBar()} *${status.threat}%*\n` +
       `🎯 Nivel del Cazador: *${status.level} — ${status.hunterName}*\n` +
       `⭐ EXP acumulada: *${status.gainExp.toLocaleString()}* / 8,000\n` +
       `💎 Diamantes acumulados: *${status.gainMoney.toLocaleString()}* / 5,000\n` +
       `⏱️ Ventana activa: *${msToTime(windowLeft)}*\n` +
-      `🏃 Escapes previos: *${status.escapeAttempts}*\n\n` +
-      (status.threat >= 80
-        ? `🔴 *Peligro extremo.* El cazador puede aparecer en cualquier momento.`
-        : status.threat >= 40
-          ? `🟡 *Nivel medio.* Evita ganar mucho más por ahora.`
-          : status.threat > 0
-            ? `🟢 *Amenaza baja.* Sigue jugando con cuidado.`
-            : `✅ *Sin amenaza.* El cazador no te busca por ahora.`)
+      `🏃 Escapes previos: *${status.escapeAttempts}*\n\n`) + aviso
     )
   }
 
   if (cmd === 'correr' || cmd === 'run' || cmd === 'escapar') {
     if (isCapturedByHunter(id)) {
       return m.reply(
-        `⛓️ Ya estás capturado. No puedes correr.\n` +
+        t.ya_capturado_correr || `⛓️ Ya estás capturado. No puedes correr.\n` +
         `📣 Usa: *rescate pedir*`
       )
     }
 
     if (!isHunterActive(id)) {
       return m.reply(
-        `🤔 El cazador no está aquí ahora mismo.\n` +
+        t.no_cazador || `🤔 El cazador no está aquí ahora mismo.\n` +
         `💡 Usa *cazador ver* para ver tu nivel de amenaza.`
       )
     }
@@ -100,14 +107,14 @@ const handler = async (m, { conn, args }) => {
   if (cmd === 'pelear' || cmd === 'fight' || cmd === 'luchar') {
     if (isCapturedByHunter(id)) {
       return m.reply(
-        `⛓️ Ya estás capturado. No puedes pelear.\n` +
+        t.ya_capturado_pelear || `⛓️ Ya estás capturado. No puedes pelear.\n` +
         `📣 Usa: *rescate pedir*`
       )
     }
 
     if (!isHunterActive(id)) {
       return m.reply(
-        `🤔 El cazador no está aquí ahora mismo.\n` +
+        t.no_cazador || `🤔 El cazador no está aquí ahora mismo.\n` +
         `💡 Usa *cazador ver* para ver tu nivel de amenaza.`
       )
     }
@@ -115,7 +122,7 @@ const handler = async (m, { conn, args }) => {
     return m.reply(fightHunter(id).message)
   }
 
-  return m.reply(`❓ Subcomando no reconocido.\n\n${HELP_MSG}`)
+  return m.reply((t.subcomando || `❓ Subcomando no reconocido.\n\n`) + (t.help || HELP_MSG))
 }
 
 handler.help = ['cazador']

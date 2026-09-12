@@ -4,18 +4,20 @@ import { join, dirname } from 'path';
 const BACKUP_DIR = join(process.cwd(), 'backup');
 
 const handler = async (m, { conn, usedPrefix }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.owner_backup || {};
 
   try {
     const backupConfig = join(BACKUP_DIR, 'config.js');
     if (!existsSync(backupConfig)) {
-      await conn.reply(m.chat, '❌ No se encontró archivo backup/config.js', m);
+      await conn.reply(m.chat, (t.no_backup_config || '❌ No se encontró archivo backup/config.js'), m);
       return;
     }
 
     try {
       await import(backupConfig);
     } catch {
-      await conn.reply(m.chat, '❌ Error al cargar backup/config.js', m);
+      await conn.reply(m.chat, (t.error_load_config || '❌ Error al cargar backup/config.js'), m);
       return;
     }
 
@@ -25,19 +27,19 @@ const handler = async (m, { conn, usedPrefix }) => {
     const sender = m.sender.replace(/[^0-9]/g, '');
 
     if (!allOwners.includes(sender)) {
-      await conn.reply(m.chat, '🚫 No tienes permisos para restaurar el backup.', m);
+      await conn.reply(m.chat, (t.sin_permisos || '🚫 No tienes permisos para restaurar el backup.'), m);
       return;
     }
 
-    await conn.reply(m.chat, '⏳ Iniciando restauración de backup...', m);
+    await conn.reply(m.chat, (t.iniciando || '⏳ Iniciando restauración de backup...'), m);
     await restoreBackup(BACKUP_DIR, process.cwd());
     await conn.sendButton(
       m.chat,
-      '✅ Backup restaurado con éxito.\nPuedes eliminar la carpeta backup usando el botón:',
+      (t.exito || '✅ Backup restaurado con éxito.\nPuedes eliminar la carpeta backup usando el botón:'),
       'LunaBot V6',
       null,
       [
-        ['🗑 Eliminar Backup', `${usedPrefix}eliminarbackup`]
+        [(t.btn_eliminar_backup || '🗑 Eliminar Backup'), `${usedPrefix}eliminarbackup`]
       ],
       null,
       null,
@@ -46,7 +48,7 @@ const handler = async (m, { conn, usedPrefix }) => {
 
 
   } catch (e) {
-    await conn.reply(m.chat, '❌ Error al restaurar backup:\n' + (e.message || e), m);
+    await conn.reply(m.chat, (t.error_restaurar?.replace('{error}', e.message || e) || '❌ Error al restaurar backup:\n' + (e.message || e)), m);
   }
 };
 

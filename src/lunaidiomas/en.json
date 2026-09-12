@@ -183,6 +183,69 @@
     "personalizar_restaurar": "Restore to original"
   },
   "plugins": {
+    "anonymous_chat": {
+      "no_chat": "*[❗] You are not in a chat, please wait until you are in one.*"
+    },
+    "game_dinamicayo": {
+      "llena": "⚠️ The dynamic is already full.",
+      "cupos_llenos": "⚠️ The slots for the {equipo} team are already full."
+    },
+    "harem": {
+      "vacio": "❌ You have no waifus in your harem.",
+      "titulo": "💖 Your Harem 💖",
+      "valor": "Value",
+      "rareza": "Rarity"
+    },
+    "pista4": {
+      "sin_cancion": "❗ There is no active song. Use /cancion to start.",
+      "pista": "🕵️ *Clue:* {pista}"
+    },
+    "rawpart": {
+      "solo_grupos": "Groups only",
+      "titulo": "RAW PARTICIPANTS:"
+    },
+    "rpg_apostar": {
+      "sin_apostador": "🎰 *The Gambler*\n\nThere is no gambler here right now.\nAppears randomly while you play.\n\n💎 Your balance: *{money}*\n⭐ Your EXP: *{exp}*",
+      "con_apostador": "🎰 *The Gambler is here!*\n\n• *apostar <amount>* — Bet diamonds\n• *apostar exp <amount>* — Bet EXP\n\n🎲 Win: double • Lose: everything bet"
+    },
+    "rpg_bounty": {
+      "usuario_no_encontrado": "User not found.",
+      "bounty": "🚨 Bounty for @{userId}\n⭐ Stars: *{stars}*\n💸 Fine: *{fine}*\n🔎 Reason: {reason}",
+      "pagar_propia": "You must pay your own fine.",
+      "sin_multa": "You don't have an active fine or you don't have enough money.",
+      "pagada": "✅ You paid the fine and your bounty has been removed.",
+      "usos": "Uses: bounty | bounty ver | bounty pagar"
+    },
+    "rpg_espia": {
+      "ayuda": "🕵️ *The Spy*\n\nMention someone to spy on their status.\n\n💡 Usage: *espia @usuario*\n💎 Cost: *500 diamonds*\n\n📋 Info it reveals:\n• Current HP • Bounty • If captured\n• If the hunter is nearby",
+      "self": "❌ You can't spy on yourself."
+    },
+    "rpg_juez": {
+      "ver": "⚖️ *The Judge*\n\n🚨 Your bounty: *{stars}*\n💎 Fine: *{fine}*\n📋 Active judge: *{activo}*\n\n{opciones}",
+      "opciones_activo": "• *juez pagar* — Pay fine x3\n• *juez mision* — 2h mission\n• *juez huir* — 50% escape",
+      "aparece": "💡 Appears automatically with 4+ bounty stars.",
+      "si": "Yes ⚠️",
+      "no": "No",
+      "comandos": "💡 Commands: *juez ver* | *juez pagar* | *juez mision* | *juez huir*"
+    },
+    "rpg_muerto": {
+      "ver": "🧟 *The Living Dead*\n\n❤️ Your HP: *{hp}/{maxHp}*\n📋 Present: *{presente}*\n\n{opciones}",
+      "opciones_activo": "• *muerto aceptar* — Full heal, -50% EXP 1h\n• *muerto rechazar* — Ignore it",
+      "aparece": "💡 Appears when your HP drops below 30%.",
+      "si": "Yes ⚠️",
+      "no": "No",
+      "comandos": "💡 Commands: *muerto ver* | *muerto aceptar* | *muerto rechazar*"
+    },
+    "rpg_vagabundo": {
+      "sin_vagabundo": "🧓 *The Vagabond*\n\nThere's no vagabond here right now.\nAppears randomly while you play.\n\n⚠️ If you ignore him 3 times in a row he curses you:\n   -20% EXP gained for 30 minutes.\n\n🎲 If you give what he asks: 50% you get double\n💨 50% he leaves with yours\n\n🔢 Ignores accumulated: *{ignores}/3*",
+      "con_vagabundo": "🧓 *{name} is here!*\n\nHe asks for: {emoji} *{amount} {label}*\n⏱️ He leaves in *{remaining}s*\n\n• *vagabundo dar* — Help him\n• *vagabundo ignorar* — Ignore him",
+      "comandos": "💡 Commands: *vagabundo ver* | *vagabundo dar* | *vagabundo ignorar*"
+    },
+    "votewaifu": {
+      "uso": "Usage: .vote <WaifuName> <value>",
+      "numero_valido": "The value must be a number.",
+      "votado": "✅ You voted {valor} points to {nombre}"
+    },
     "wink": {
       "sin_imagen": "╭━━━〔 🎭 *WINK LOTTIE* 〕━━━╮\n┃\n┃ ⚠️ *You need to send or reply to*\n┃ *an image* to create a wink.\n┃\n┃ 🎬 *Available effects:*\n┃ _{efectos}_\n┃\n┃ 💡 *Usage examples:*\n┃ • _.wink spin_ + attached image\n┃ • _.wink zoom_ replying to a photo\n┃ • _.wink_ → random effect 🎲\n┃ • _.wink list_ → see all effects\n╰━━━━━━━━━━━━━━━━━━━━━╯",
       "lista": "╭━━━〔 🎭 *WINK EFFECTS* 〕━━━╮\n┃\n{lista}\n┃\n┃ 💡 *How to use:*\n┃ _.wink <effect>_ + image\n┃ _.wink_ → picks a random one 🎲\n╰━━━━━━━━━━━━━━━━━━━━━╯",
@@ -1818,6 +1881,1171 @@
       "uso": "⚙️ *Usage:* _.setnamebot <name>_\n\n_Example: .setnamebot MyBot_\n\n📝 The name will replace the bot brand in all messages.",
       "ok": "✅ Bot name updated to *{nombre}*\n\n_All messages will now use your brand._",
       "muy_largo": "❌ The name is too long. Maximum 40 characters."
+    },
+    "canalid": {
+      "uso": "Use: *{prefix} <invite_code>*\n\nExample:\n{prefix} 0029VbANyNuLo4hedEWlvJ3Y\n\nYou'll find the code at the end of the channel link:\nhttps://www.whatsapp.com/channel/*<code>*",
+      "jidNo": "Not available",
+      "sinNombre": "Unnamed",
+      "sinDescripcion": "No description",
+      "info": "📡 *Channel Info*\n\n*Name:* {nombre}\n*JID:* `{jid}`\n*Subscribers:* {suscriptores}\n*Description:* {descripcion}\n\nTo configure it in your bot add to *.env*:\n`NEWSLETTER_ID={jid}`\n`NEWSLETTER_NAME={nombre}`\n\n🌙 {bot}",
+      "error": "❌ Could not get the channel info.\n\nCheck that the code is correct.\n\nError: {error}"
+    },
+    "convertidor_tts3": {
+      "formatoErroneo": "*[❗] Incorrect usage format, missing voice or text.*\n\n*—◉ Example:*\n◉ {prefix} voice_name | text\n\n*—◉ Usage example:*\n◉ {prefix} {voz} | this is a sample text\n\n*—◉ List of available voices:*\n◉ {voces}",
+      "vozNoEncontrada": "[❗] No voice was found with the name \"{voz}\".\n\n—◉ List of available voices:\n◉ {voces}"
+    },
+    "convertidor_tts4": {
+      "sinVoces": "No voices related to 'latino' or 'spanish' were found.",
+      "consulta": "Entry query!\n\n*Example:*\n{prefix} [number]|[text]\n\n*Select a number*\n",
+      "espere": "Please wait...\n{titulo}"
+    },
+    "info_donar": {
+      "texto": "┏━━━━━━━━━━━━━━━━━┓\n┃ 🌙 *LunaBot V6* ┃\n┗━━━━━━━━━━━━━━━━━┛\n\nHello, *{nombre}*!  \nThanks for using *LunaBot V6*.\n\n✨ *Donations*\n\n• *Main (PayPal)*: gercoto17@gmail.com\n  https://www.paypal.com/donate?business=gercoto17%40gmail.com\n\n• *Bruno Sobrino* (alternative support):\n  https://www.paypal.me/BrunoSob\n\nAny help is welcome and keeps the bot active and improving. ❤️\n\nThanks for your support!\n\n⚙️ *Version*: LunaBot V6  "
+    },
+    "info_gruposofc": {
+      "texto": "┏━━━━━━━━━━━━━━━┓\n┃✨ Hello, this is our community ✨\n┗━━━━━━━━━━━━━━━┛\n\n📣 Join our OFFICIAL WHATSAPP CHANNEL:\n\n👉 *https://www.whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y*\n\n🖤 We're waiting for you with news, bots, updates and more!"
+    },
+    "make_efectos2": {
+      "sinTexto": "✏️ Write a text after the command.\n📌 Example: /{cmd} Hello world\n\nSee all effects: /{prefix}efectos",
+      "generando": "⏳ Generating image...",
+      "error": "❌ Could not generate the image, try again.",
+      "exito": "✅ *Effect:* {efecto}\n📝 *Text:* {texto}"
+    },
+    "make_licencia": {
+      "textoDefecto": "License to leave you on read",
+      "usuario": "User",
+      "nunca": "never",
+      "generando": "⏳ Generating license...",
+      "labelNombre": "name:",
+      "labelFecha": "date:",
+      "labelVencimiento": "expiry:",
+      "error": "❌ Error: {error}"
+    },
+    "numeroia": {
+      "soloOwner": "⚠️ Only the *owner* can use this command.",
+      "usoComando": "⚠️ Use the command like this: `/iadd 1234567890`",
+      "noEncontrado": "❌ LUNA_KEYWORDS was not found in the file.",
+      "exito": "✅ Number updated successfully:\n• Previous: @{anterior}\n• New: @{nuevo}\n\n(Restart the bot to apply the changes).",
+      "error": "❌ An error occurred while trying to update the number."
+    },
+    "responder_mensaje": {
+      "correcto": "🎉 Correct! It was: *{respuesta}*\nYou earned {xp} XP.",
+      "incorrecta": "❌ Wrong answer. Try again."
+    },
+    "rewardwaifu": {
+      "sinWaifus": "❌ You have no claimed waifus. Use {prefix}rw and {prefix}claim",
+      "cooldown": "⏳ You already received your reward today.\nCome back in {horas}h {minutos}m.",
+      "sinValor": "💤 Your waifus don't have enough value for a reward yet.",
+      "recompensa": "🎁 Gacha Reward 🎁\n\nTotal harem value: {valor}\nXP gained: +{xp}\nCoins gained: +{monedas}\n\nKeep collecting waifus to get more rewards."
+    },
+    "simularcunple": {
+      "soloGrupos": "This command only works in groups",
+      "uso": "Use the command like this:\n/{prefix} @user",
+      "feliz": "🎂 *HAPPY BIRTHDAY* 🎂\n",
+      "hoy": "🎉 Today we celebrate the birthday of {nombres}! 🎂\n\n",
+      "textoUno": "🥳 May you have an incredible day full of joy,\n   love and lots of surprises. You deserve it all! 💜\n\n",
+      "emoji": "🎈🎁🎊🌟✨🎆🎇🪅🎠\n"
+    },
+    "agregar_audio": {
+      "solo_grupos": "❌ This command only works in groups.",
+      "solo_admins": "❌ Only admins can add audios.",
+      "falta_frase": "❌ You must provide the phrase that will trigger the audio.\n\n📌 Example: reply to an audio with:\n{prefix} Hey guys",
+      "falta_cita": "❌ You must reply to an audio or voice note with:\n{prefix} {frase}",
+      "no_es_audio": "❌ The message you replied to is not an audio or a voice note.",
+      "colision_default": "❌ That phrase is already used by one of the bot's audios, choose another.",
+      "ya_existe": "❌ An audio is already saved with that phrase, choose another.",
+      "no_descarga": "❌ I couldn't download the audio, try again.",
+      "error_convertir": "❌ Error converting the audio.",
+      "conversion_vacia": "❌ The audio conversion didn't generate any valid file.",
+      "error_guardar": "❌ I couldn't save the audio on the server.",
+      "exito": "✅ *Audio added successfully*\n\n🗣️ *Phrase:* _{frase}_\n📁 *File:* {archivo}\n\n_When someone types \"{frase}\" in any group, the bot will reply with this audio._\n_You can turn it off per group with the audio configuration command._"
+    },
+    "eliminar_audio": {
+      "lista_titulo": "🗑️ *Saved custom audios*\n\n",
+      "lista_item": "> *{pos}.* {nombre}\n",
+      "lista_footer": "\n_To delete one, use:_\n_`.elaudios <phrase or number>`_",
+      "solo_grupos": "❌ This command only works in groups.",
+      "solo_admins": "❌ Only admins can delete audios.",
+      "sin_audios": "📭 No custom audios saved yet.",
+      "no_encontrado": "❌ I couldn't find any audio with that phrase or number.\n\n{lista}",
+      "exito": "✅ *Audio deleted*\n\n🗣️ *Phrase:* _{frase}_\n📁 *File:* {archivo}\n\n_It won't be played in any group anymore._"
+    },
+    "audioia": {
+      "estado_activado": "enabled ✅",
+      "estado_desactivado": "disabled ❌",
+      "estado_msg": "🎙️ The *audio-AI* mode is *{estado}* in this group.\n\nUse *{prefix}audioia on* so Luna replies to the audios sent here, or *{prefix}audioia off* to stop listening to them.",
+      "activado": "🎙️ Done, now I listen and reply to the audios sent in this group.",
+      "desactivado": "🔇 Done, I'll stop listening to the audios in this group."
+    },
+    "cmd_processor": {
+      "solo_admins": "Only admins can use this command",
+      "solo_grupos": "This command only works in groups",
+      "solo_owner": "Only the owner can use this command",
+      "error_procesar": "Error processing command"
+    },
+    "herramienta_afk": {
+      "solo_admins": "❌ Only admins can use this command.",
+      "usar_enable": "Use: /enable afk",
+      "activado": "✅ The AFK state has been enabled in this group.",
+      "usar_disable": "Use: /disable afk",
+      "desactivado": "❌ The AFK state has been disabled in this group."
+    },
+    "herramientas_fixlid": {
+      "solo_lid": "❌ This command can only be used if you appear as LID.",
+      "corregido": "✅ LID fixed: now you'll appear as {nombre} ({id})",
+      "no_encontrado": "⚠️ I couldn't find your real number in the group.",
+      "error": "❌ An error occurred while trying to fix the LID."
+    },
+    "herramientas_readviewonce": {
+      "no_admin": "🚫 *Only an admin or the owner can use this command*",
+      "no_citado": "👀 *Reply to a one-time-view image or video to reveal it*",
+      "no_viewonce": "⚠️ *That's not a one-time-view image or video*"
+    },
+    "herramientas_stats_top": {
+      "solo_owner": "This command is only for the *bot owners*.",
+      "sin_bd": "The statistics database was not found.",
+      "titulo": "╭━━━〔 *TOP 10 EXP - LunaBotV6* 〕━━━╮\n",
+      "item_pos": "\n{pos}. *{id}*\n",
+      "nivel": "   ✨ Level: *{nivel}*\n",
+      "exp": "   ⚡ EXP: *{exp}*\n",
+      "diamantes": "   💎 Diamonds: *{diamantes}*\n",
+      "lunacoins": "   🪙 LunaCoins: *{lunacoins}*\n",
+      "pie": "\n╰━━━━━━━━━━━━━━━━━━━━━━━╯"
+    },
+    "gc_setpp": {
+      "responde_imagen": "*⚠️️ Reply to an image.*",
+      "exito": "⚘ *_Image updated successfully._*"
+    },
+    "gc_stickerly": {
+      "uso": "🔍 Usage: *{prefix} <term>*\nExample: {prefix} cat",
+      "buscando": "🔍 Searching sticker...",
+      "sin_resultados": "❌ No stickers found for that term.",
+      "sin_sticker": "❌ Couldn't get the sticker.",
+      "sin_descarga": "❌ Couldn't download the sticker.",
+      "error": "❌ Error searching for the sticker."
+    },
+    "owner_autoread": {
+      "activado": "✅ {command} activated successfully.",
+      "desactivado": "🚫 {command} deactivated successfully.",
+      "word_activado": "activated",
+      "word_desactivado": "deactivated",
+      "estado_actual": "📌 Current status of {command}:\n- In memory: {memoria}\n- In JSON: {json}\n\nUse:\n{prefix}{command} on\n{prefix}{command} off",
+      "uso_incorrecto": "📌 Correct usage:\n{prefix}{command} on\n{prefix}{command} off"
+    },
+    "owner_backup": {
+      "no_backup_config": "❌ backup/config.js file not found",
+      "error_load_config": "❌ Error loading backup/config.js",
+      "sin_permisos": "🚫 You don't have permission to restore the backup.",
+      "iniciando": "⏳ Starting backup restore...",
+      "exito": "✅ Backup restored successfully.\nYou can delete the backup folder using the button:",
+      "btn_eliminar_backup": "🗑 Delete Backup",
+      "error_restaurar": "❌ Error restoring backup:\n{error}"
+    },
+    "owner_block_unblock": {
+      "uso_erroneo": "*[❗] WRONG USAGE, EXAMPLE:*\n*{comando} @{usuario}*",
+      "bloqueado": "BLOCKED",
+      "desbloqueado": "UNBLOCKED",
+      "exito": "*[✅] {accion} successfully to @{usuario}*",
+      "error_block": "*[❌] Could not block the user.\n\nWhatsApp is rejecting the action (bad-request).\nTry blocking them manually from your main phone."
+    },
+    "owner_delbackup": {
+      "sin_permisos": "🚫 You don't have permission to delete the backup folder.",
+      "no_existe": "❌ The backup folder doesn't exist.",
+      "eliminada": "🗑️ Backup folder deleted successfully.",
+      "error_eliminar": "❌ Error deleting the backup folder:\n{error}"
+    },
+    "owner_deletechat": {
+      "sin_chats": "⚠️ No chats found to delete.",
+      "borrando": "🗑️ Deleting {cantidad} chats...",
+      "resumen": "✅ Process completed\n📊 Chats deleted: {borrados}\n❌ Errors: {errores}",
+      "error_critico": "❌ Critical error deleting chats."
+    },
+    "owner_hostinfo": {
+      "titulo": "🔍 *Bot environment debug*",
+      "hostname_info": "🖥️ Internal hostname: {hostname}",
+      "puerto_info": "🔌 Detected port (PORT/SERVER_PORT): {puerto}",
+      "server_http_info": "🌐 HTTP server active (opts.server): {estado}",
+      "ips_locales": "📡 *Local network IPs:*",
+      "env_vars": "🧩 *Related environment variables:*",
+      "si": "Yes",
+      "no": "No"
+    },
+    "owner_installer": {
+      "ejemplo_uso": "❌ E.g. .plg url .plg name",
+      "instalado": "✅ {plugin} installed"
+    },
+    "owner_join": {
+      "sin_solicitudes": "📋 *No pending group requests.*",
+      "link_invalido": "❌ Send a valid WhatsApp group link.",
+      "info_grupo": "📋 *Group Information*\n\n🔗 Link: {link}\n⏳ Time: *{tiempo}*\n\nℹ️ To add the bot, open the group link and add it manually."
+    },
+    "owner_limpiargrups": {
+      "buscando": "🔍 Looking for groups where the bot is alone or has only 1 member...",
+      "sin_grupos": "✅ No groups to clean up.",
+      "item_grupo": "• {nombre} ({total} participants)",
+      "encontrados": "🗑️ Found {cantidad} group(s):\n{lista}\n\nTrying to leave...",
+      "salido": "✅ {nombre}",
+      "fallido": "❌ {nombre}: {error}",
+      "resumen_titulo": "📋 Result:\n\n",
+      "salio_de": "*Left:*\n{lista}\n\n",
+      "errores_lista": "*Errors:*\n{lista}",
+      "error_critico": "❌ Critical error:\n{error}"
+    },
+    "owner_reporte": {
+      "ayuda": "╭─「 *📋 REPORT TO OWNER* 」\n│\n│ Send your report like this:\n│ *{comando}* _description of the issue_\n│\n│ 📌 If it's a bug in a command, include the prefix:\n│ *{comando}* The command *{prefix}play* doesn't work\n╰─",
+      "muy_corto": "⚠️ The report is too short. Describe the issue in more detail.",
+      "muy_largo": "⚠️ The report exceeds 1000 characters. Summarize a bit.",
+      "chat_privado": "Private chat",
+      "titulo_reporte": "╭─「 *🚨 NEW REPORT* 」",
+      "linea_usuario": "├ 👤 *User:* @{numero}",
+      "linea_numero": "├ 📱 *Number:* wa.me/{numero}",
+      "linea_origen": "├ 📍 *Origin:* {origen}",
+      "linea_fecha": "├ 📅 *Date:* {fecha} — {hora}",
+      "linea_comando": "├ 🔧 *Reported command:* {comando}",
+      "linea_descripcion": "├ 📝 *Description:*",
+      "linea_mensaje_citado": "├ 💬 *Quoted message:*",
+      "enviado": "✅ Your report was sent successfully.\n\nThanks for reporting, we'll review it as soon as possible 🙏"
+    },
+    "owner_setppbot": {
+      "sin_imagen": "*[❗INFO❗] IMAGE NOT FOUND, PLEASE REPLY TO AN IMAGE USING THE COMMAND {comando}*",
+      "exito": "*[❗INFO❗] THE BOT NUMBER PROFILE PICTURE WAS CHANGED SUCCESSFULLY*"
+    },
+    "owner_setvar": {
+      "ejemplo1": "❌ E.g. .setvar global.groq = gsk",
+      "ejemplo2": "❌ E.g. .setvar variable = value",
+      "actualizada": "✅ {variable} updated to {valor}",
+      "error": "❌ {error}"
+    },
+    "owner_sinprefijo": {
+      "solo_admin": "⚠️ Only admins can use this command",
+      "solo_grupos": "⚠️ This command only works in groups",
+      "ya_activado": "✅ No-prefix mode is already ENABLED in this group",
+      "activado": "✅ *No-prefix mode ENABLED*\n\nNow members can use commands without prefixes.\n\n*Examples:*\n• play bad bunny\n• menu\n• sticker (reply to an image)\n• ig (instagram url)\n\n*Note:* Prefixes will still work normally.\n\nTo disable it use: /withprefix",
+      "ya_desactivado": "✅ No-prefix mode is already DISABLED in this group",
+      "desactivado": "✅ *No-prefix mode DISABLED*\n\nNow commands will only work with a prefix.\n\n*Examples:*\n• /play bad bunny\n• /menu\n• /sticker (reply to an image)\n\nTo enable it use: /noprefix"
+    },
+    "owner_toggleia": {
+      "estado_activa": "✅ ENABLED",
+      "estado_desactivada": "❌ DISABLED",
+      "titulo": "*Luna-Bot AI*",
+      "estado": "Status: {estado}",
+      "activa_desc": "• The bot will reply to mentions and private messages",
+      "desactivada_desc": "• The bot will NOT reply automatically\n• Normal commands still work"
+    },
+    "listasubbots": {
+      "sin_subbots": "📋 *SubBots List*\n\n❌ No active SubBots right now.",
+      "conectado": "🟢 Connected",
+      "activo": "🟢 Active",
+      "titulo_activos": "📋 *Active SubBots List*\n\n",
+      "total": "🤖 *Total:* {cantidad} SubBots",
+      "item_num": "*{num}.* {estado}",
+      "item_nombre": "   👤 {nombre}",
+      "item_numero": "   📱 +{numero}",
+      "tip": "\n💡 *Tip:* Use *{prefix}stopbot* to stop your SubBot",
+      "error": "❌ Error getting the SubBots list."
+    },
+    "subbot_control": {
+      "activado": "✅ *SubBots system enabled*",
+      "desactivado": "❌ *SubBots system disabled*",
+      "bot": "🤖 Bot: {bot}",
+      "subbots_activos": "📊 Active SubBots: {cantidad}",
+      "ram": "🧠 RAM: {pct}% ({usado}MB/{total}MB)",
+      "on_tip": "_Users can use /serbot to create their SubBot._",
+      "off_tip": "_No user will be able to create new SubBots until it's re-enabled._"
+    },
+    "subbot_stop": {
+      "no_resolver_numero": "❌ Could not resolve your real number.",
+      "sin_subbot_activo": "❌ You don't have an active SubBot to stop.",
+      "no_conectado": "⚠️ Your SubBot is not connected right now.",
+      "detenido": "✅ SubBot stopped successfully.\n\n💡 *Tip:* Use *{prefix}deletebot* to completely delete the session.",
+      "error_detener": "❌ Error stopping the SubBot: {error}",
+      "sin_sesion": "❌ You don't have a SubBot session to delete.",
+      "eliminada": "✅ SubBot session deleted successfully.\n\n🤖 Use *{prefix}serbot* to create a new SubBot.",
+      "error_eliminar": "❌ Error deleting the session: {error}"
+    },
+    "subbot": {
+      "sistema_desactivado": "❌ The SubBots system is disabled.",
+      "cooldown": "⏳ Wait {tiempo} before trying again.",
+      "sin_espacio": "❌ No space available for more SubBots.",
+      "ram_insuficiente": "❌ Not enough RAM to create a SubBot.\n📊 Current usage: {pct}% ({usado}MB/{total}MB)\n🔒 At least {minimo}MB free is required (available: {libre}MB)",
+      "lid_no_resuelto": "⚠️ I still don't know your real number.\n\nPlease *interact with me for a moment* (send me any direct message) so I can get your number.\n\nThen use: */serbot <your_number> --code*\nExample: */serbot 5493483466763 --code*",
+      "conexion_en_progreso": "⏳ You already have a connection in progress.",
+      "ya_activo": "✅ You already have an active SubBot."
+    },
+    "downloader_threads": {
+      "sin_enlace": "*Enter a Threads link*",
+      "info": "亗 T H R E A D S\n\n*User :* {usuario}\n*Description :* {descripcion}\n*Likes :* {likes}\n*Verified :* {verificado}\n*Files :* {archivos}\n*Link :* {enlace}",
+      "sin_resultados": "*🍟 No results for :* {enlace}"
+    },
+    "sticker_brat": {
+      "sin_texto": "❀ Please reply to a message or type some text.",
+      "error": "⚠️ An error occurred while generating the sticker.\n\n{msg}"
+    },
+    "sticker_bratgif": {
+      "sin_texto": "❀ Please reply to a message or type some text.",
+      "error": "⚠️ An error occurred while generating the sticker.\n\n{msg}"
+    },
+    "sticker_txt": {
+      "sin_texto": "❀ Please reply to a message or type some text.",
+      "error": "⚠️ An error occurred while generating the sticker.\n\n{msg}"
+    },
+    "grafiti": {
+      "sin_texto": "❀ Please reply to a message or type some text.",
+      "error": "⚠️ An error occurred while generating the sticker.\n\n{msg}"
+    },
+    "glitter": {
+      "ejemplo": "Example:\n.glitter Hi how are you",
+      "max_caracteres": "Maximum 40 characters",
+      "sticker_pesado": "⚠️ The sticker exceeds 100 KB, try with less text"
+    },
+    "recordatorio": {
+      "ayuda": "📌 *How to use /recordar:*\n\n1. *Create reminder:*\n→ /recordar 10m We play @user\n→ /recordar 1h30m We start event\n\n2. *Cancel reminder:*\n→ /recordar cancelar <ID>\n\n3. *Edit reminder:*\n→ /recordar editar <ID> 15m New message\n\nYou can use: seconds (s), minutes (m), hours (h).",
+      "cancelado": "✅ Reminder *{id}* cancelled.",
+      "no_encontrado": "❌ No reminder found with ID *{id}*.",
+      "sin_existencia": "❌ That ID does not exist.",
+      "tiempo_invalido": "⏱️ Invalid time. Use: 10s, 5m, 1h30m...",
+      "texto_faltante": "📝 Add the new text for the reminder.",
+      "editado_msg": "⏰ *Reminder edited:*\n{msg}",
+      "editado_ok": "✏️ Reminder *{id}* edited successfully.",
+      "mensaje_faltante": "📝 Write the message to remind.",
+      "recordatorio_msg": "⏰ *Reminder:* {msg}",
+      "programado": "✅ Reminder scheduled for {tiempo} with ID *{id}*"
+    },
+    "game_apusta": {
+      "cooldown": "⏳ Wait *{tiempo} seconds* before playing again.",
+      "carrera_iniciada": "🏁 Race started! Check the competitors:\n{carrera}\n\nWho will win? Tap a button to bet.",
+      "eleccion_invalida": "❌ You must bet on 🐢 or 🐇. Example: /carrera 🐢",
+      "ganaste": "🎉 You won!\nThe winner was: *{ganador}*\n+150 EXP\n+100 Diamonds",
+      "perdiste": "😢 You lost...\nThe winner was: *{ganador}*\nGood luck next time!"
+    },
+    "game_sopadel": {
+      "tiempo_acabado": "⏰ *Time's up.* The word was *{palabra}*.\nTry again with *{prefix}*!",
+      "aviso": "⏳ *15 seconds left!* Go veees buddy, thanks! 🫂",
+      "caption": "🧩 *Word Search: Find the Word*\n\n🔤 Word to find: *{palabra}*\n📌 Reply with: *{prefix} row column*\n📝 Example: *{prefix} 3 10*\n\n📖 *How to play?*\n1️⃣ Find the word in the image.\n2️⃣ When you find the first letter (e.g. the \"N\" of \"orange\"), write down the row where it starts.\n3️⃣ Then follow the word horizontally and find the letter where it ends (e.g. the \"A\").\n4️⃣ Count the column where it ends.\n✅ Use those numbers to reply: starting row, ending column.\n\n⏱️ *You have 45 seconds to answer.*\n🎯 Good luck!",
+      "coords_invalidas": "❌ Coordinates must be valid numbers.\nCorrect usage:\n{prefix} row column",
+      "sin_partida": "⚠️ You don't have an active game. Use:\n{prefix}",
+      "correcto": "🎉 Correct! The word *{palabra}* was at row {fila}, column {columna}.\nYou earned +{exp} EXP and +{diam} diamonds 💎.",
+      "incorrecto": "❌ Incorrect. The word is not in that position. Try again.",
+      "uso": "❗ Correct usage:\n- Start game: *{prefix}*\n- Answer: *{prefix} row column*"
+    },
+    "game_sopadeletras": {
+      "tiempo_acabado": "⏰ *Time's up.* The word was *{palabra}*.\nTry again with *{prefix}*!",
+      "aviso": "⏳ *15 seconds left!* You can do it! 🫂",
+      "caption": "🧩 *Word Search: Find the Word*\n\n🔤 Word to find: *{palabra}*\n📌 Reply with: *{prefix} row column*\n📝 Example: *{prefix} 3 10*\n\n📖 *How to play?*\n1️⃣ Find the word in the image.\n2️⃣ When you find the first letter (e.g. the \"N\" of \"orange\"), write down the row where it starts.\n3️⃣ Then follow the word horizontally and find the letter where it ends (e.g. the \"A\").\n4️⃣ Count the column where it ends.\n✅ Use those numbers to reply: starting row, ending column.\n\n⏱️ *You have 45 seconds to answer.*\n🎯 Good luck!",
+      "coords_invalidas": "❌ Coordinates must be valid numbers.\nCorrect usage:\n{prefix} row column",
+      "sin_partida": "⚠️ You don't have an active game. Use:\n{prefix}",
+      "correcto": "🎉 Correct! The word *{palabra}* was at row {fila}, column {columna}.\nYou earned +{exp} EXP and +{diam} diamonds 💎.",
+      "incorrecto": "❌ Incorrect. The word is not in that position. Try again.",
+      "uso": "❗ Correct usage:\n- Start game: *{prefix}*\n- Answer: *{prefix} row column*"
+    },
+    "game_batallanaval": {
+      "juego_en_curso": "There is already a game in progress. Use *batalla reiniciar* to cancel.",
+      "jugador1_espera": "Player 1 joined. Waiting for the second player...\nType *{prefix} unirse*",
+      "sin_juego": "No active game. Use *batalla iniciar* first.",
+      "dos_jugadores": "There are already two players.",
+      "ya_en_juego": "You are already in the game.",
+      "juego_iniciado": "Game started!\nPlayer 1: @{j1}\nPlayer 2: @{j2}\n\n@{j1} turn\nUse *{prefix} disparar A3*",
+      "sin_juego_activo": "There is no active game or it hasn't started.",
+      "no_en_juego": "You are not in this game.",
+      "no_turno": "It's not your turn.",
+      "sin_coordenada": "You must type a coordinate. Example: *{prefix} disparar B2*",
+      "coordenada_invalida": "Invalid coordinate. Use letters A-D and numbers 1-4. Example: B2",
+      "ya_disparado": "You already fired at that position.",
+      "tocado": "Hit! You hit an enemy ship.",
+      "agua": "Water. There is no ship at {coord}.",
+      "ganaste_win": "{mensaje}!\n\n@{jugador} has won the naval battle!",
+      "tablero_actual": "Current board:",
+      "turno_de": "@{jugador} turn",
+      "sin_reinicio": "There is no game to reset.",
+      "reiniciado": "Game reset.",
+      "ayuda": "Available commands:\n\n- *{prefix} iniciar* → Create game\n- *{prefix} unirse* → Join game\n- *{prefix} disparar A3* → Fire\n- *{prefix} reiniciar* → Cancel game"
+    },
+    "game_buscamina": {
+      "nuevo_juego": "╭━〔 🎮 *MINESWEEPER* 🎮 〕━⬣\n┃ New game started!\n┃ To play use:\n┃ • `buscaminas revelar A1` - Reveal cell\n┃ • `buscaminas bandera A1` - Place/remove flag\n┃ • `buscaminas tablero` - View current board\n┃ 🎁 Prize: 10,000 XP + 6,000 💎\n╰━━━━━━━━━━━━━━━━━━⬣\n\n",
+      "sin_juego_activo": "❌ You don't have an active game. Use `buscaminas` to start",
+      "juego_terminado": "❌ The game has ended. Use `buscaminas` for a new game",
+      "coordenada_invalida": "❌ Invalid coordinate. Use format: A1, B2, etc.",
+      "boom": "💣 BOOM! You lost",
+      "victoria": "🎉 Congratulations! You won Minesweeper",
+      "exp_ganada": "✨ Experience gained:",
+      "diamantes_ganados": "💎 Diamonds gained:",
+      "comando_invalido": "❌ Invalid command. Use: reveal, flag or board"
+    },
+    "game_dinamica": {
+      "cerrada": "🔒 Dynamic closed and reset.",
+      "sin_activa": "❌ There is no active dynamic.",
+      "sin_plantilla": "❗ You must include a base message after the number.\n\nExample:\n/abrirdinamica 4 Dynamics text...",
+      "activada": "✅ Dynamic activated for *{max}* people. Participate by replying {modo}.\n\nExample for team: /yo naranja",
+      "llena": "⚠️ The dynamic is already full.",
+      "cupos_llenos": "⚠️ All slots for team {equipo} are already full."
+    },
+    "game_usarprote": {
+      "ya_activa": "⚠️ You already have active protection ({min} min remaining).\n\n",
+      "armadura_label": "Armor",
+      "sin_armadura": "No armor",
+      "bounty_label": "Bounty",
+      "regalo": "🎁 Congratulations! You have been gifted 5 mysticcoins so you can activate protection.",
+      "arg_invalido": "❌ Invalid argument. Use: /usarprote [5|12|24]"
+    },
+    "rpg_mercader": {
+      "sin_mercader": "🧙 *The Wandering Merchant*\n\nThere is no merchant available right now.\nHe appears randomly while you play.\n\n💡 Keep using commands and maybe he will appear.",
+      "con_mercader": "🧙 *{name} is here!*\n\n{lines}\n\n⏱️ He leaves in *{remaining}s*\n💡 Buy: *mercader comprar <1|2|3>*",
+      "uso_comprar": "💡 Usage: *mercader comprar <1|2|3>*",
+      "comandos": "💡 Commands: *mercader ver* | *mercader comprar <1|2|3>*"
+    },
+    "buscador_npmjs": {
+      "sin_titulo": "〔 ❀ 〕ENTER THE *TITLE* OF A *MODULE* OR *PLUGIN* FROM THE *NPMJS* PLATFORM",
+      "sin_resultados": "〔 ❀ 〕NO *RESULTS* FOUND FOR YOUR *SEARCH* ON THE *NPMJS* PLATFORM",
+      "titulo": "Title",
+      "version": "Version",
+      "info": "Information",
+      "enlace": "Link",
+      "sin_info": "No Information"
+    },
+    "buscador_peliculas": {
+      "nombre_pelicula": "*Type the name of the movie*",
+      "sin_resultados": "*No results found.*",
+      "resultados": "🎬 *Results for:* {text}",
+      "error": "*An error occurred while searching for the movie.*"
+    },
+    "buscador_tiktoksearch": {
+      "sin_busqueda": "❗ Type what you want to search.\n\nExample:\n.tiktoksearch naruto",
+      "buscando": "🔎 Searching videos on TikTok...",
+      "sin_resultados": "❌ No results found.",
+      "busqueda": "Search",
+      "resultados": "Results",
+      "preparando": "Preparing album...",
+      "sin_descripcion": "No description",
+      "error": "❌ Error:\n{msg}"
+    },
+    "info_creador": {
+      "sin_nombre": "No name",
+      "sin_dueños": "• No owners configured",
+      "texto": "🌙 *Hello, I'm {botname}* 🌙\n\n👨‍💻 *Code Creator:*\nThis bot was developed with great care by *German Miño*, the original creator of the {botname} code. His vision and effort made this project possible.\n\n📞 *Creator Contact:*\n• wa.me/5493483466763\n\n👤 *Owner(s) of this instance:*\nThe code creator has NO control over the actions of each bot instance. Everyone who installs {botname} owns THEIR OWN bot and can freely decide (block users, turn off the bot, settings, etc.).\n\nThe owners of this instance are:\n{owners}\n\n📢 *Official Channel:*\nhttps://www.whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y\n\n✨ Thank you for using {botname}!"
+    },
+    "informaragrupos": {
+      "solo_owner": "This command is only for the Owner.",
+      "sin_mensaje": "✍️ Write a message or reply to one to send it.",
+      "comunicado": "*📣 Administrator Announcement*\n\n{mensaje}\n\n⭐️ Thank you for being here.\n\nℹ️ Note: This message was sent by the administrator of this bot. Not official from the Luna-Botv6-Project project.\n\n🔗 *Official channel:* https://whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y",
+      "exito": "✅ Message sent successfully to {n} chat(s)."
+    },
+    "personalidad": {
+      "titulo": "PERSONALITY",
+      "nombre": "Name",
+      "genero": "Gender",
+      "buena": "Good Morals",
+      "mala": "Bad Morals",
+      "tipo": "Type of person",
+      "estado": "Always is",
+      "inteligencia": "Intelligence",
+      "morosidad": "Slowness",
+      "coraje": "Courage",
+      "miedo": "Fear",
+      "fama": "Fame",
+      "generos": [
+        "Hombre",
+        "Mujer",
+        "Homosexual",
+        "Bisexual",
+        "Pansexual",
+        "Feminista",
+        "Heterosexual",
+        "Macho alfa",
+        "Marimacha",
+        "PlayStationSexual",
+        "Sr. Manuela",
+        "Pollosexual"
+      ],
+      "tipos": [
+        "Kind-hearted",
+        "Arrogant",
+        "Stingy",
+        "Generous",
+        "Humble",
+        "Shy",
+        "Cowardly",
+        "Nosy",
+        "Crystal",
+        "Non-binary XD",
+        "Jerk"
+      ],
+      "estados": [
+        "Annoying",
+        "In a bad mood",
+        "Distracted",
+        "Bothersome",
+        "Gossipy",
+        "Shopping",
+        "Watching anime",
+        "Chatting because he's single",
+        "Lying down doing nothing",
+        "Womanizer",
+        "On his phone"
+      ]
+    },
+    "adivemoji": {
+      "juego_activo": "🎮 A game is already active. Use /pista3 or /rpta3 to answer.",
+      "indica_dificultad": "🔸 Choose the difficulty:\n\n*{usedPrefix}adivemoji facil*\n*{usedPrefix}adivemoji medio*\n*{usedPrefix}adivemoji dificil*",
+      "empezar": "🎯 *Guess the emoji!* ({dificultad})\n\n{emoji}\n\n⏳ You have *60 seconds*.\n🔍 Use */pista3* if you need help.\n✅ Reply with: *{usedPrefix}rpta3 your_answer*",
+      "sin_juego": "❌ There's no active game.",
+      "sin_juego_inicio": "🎮 There's no active game. Use /adivemoji to start.",
+      "pista": "🧩 *Hint:* {pista}",
+      "escribe_respuesta": "✏️ Write your answer: *{usedPrefix}rpta3 your_answer*",
+      "tiempo_agotado": "⏰ Time's up! The correct answer was: *{respuesta}*",
+      "correcto": "🎉 *Correct!* The answer was *{respuesta}*.\n🪙 Reward: *+{recompensa} XP*",
+      "incorrecto": "❌ Wrong answer. Try again or use /pista3."
+    },
+    "adivinar_pregunta": {
+      "activa": "❗ There is already an active question. Use /respuesta <text> to answer.",
+      "dificultad": "✨ Which difficulty do you prefer?\n\n🟢 *{usedPrefix}adivinar facil*\n🟡 *{usedPrefix}adivinar medio*\n🔴 *{usedPrefix}adivinar dificil*\n\n✍️ Reply with: *{usedPrefix}respuesta <your answer>*",
+      "pregunta": "❓ *Question ({dificultad})*\n\n{pregunta}\n\n⏳ You have *{tiempo} seconds*.\n✍️ Use *{usedPrefix}respuesta <your answer>*\n🧠 You can ask for a hint with *{usedPrefix}pista2*",
+      "quedan_10s": "⚠️ You only have *10 seconds* left!",
+      "tiempo_agotado": "⏱️ Time's up. The correct answer was: *{respuesta}*.",
+      "sin_activa": "❌ There's no active question. Use /adivinar to start.",
+      "escribe_respuesta": "✍️ Write your answer after /respuesta",
+      "tiempo_acabado": "⌛ Time's up. The answer was *{respuesta}*.",
+      "correcto": "✅ Correct! You earned *{xp} XP*",
+      "incorrecto": "❌ Wrong answer. Try again before time runs out.",
+      "sin_juego": "❌ There's no active game.",
+      "pista": "🧩 *Hint:* {pista}"
+    },
+    "game_acertijo": {
+      "caption": "╭━━━「 🧩 *RIDDLE* 」━━━╮\n┃\n┃ 🤔 *{question}*\n┃\n┃ ⏱ *Time left* › {secsLeft}s\n┃ 🏆 *Prize* › +{poin} Exp\n┃\n┃ 💬 Answer *quoting this message*\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━╯",
+      "activo": "⚠️ There's already an active riddle, answer it first!",
+      "sin_acertijos": "❌ There are no riddles in the database.",
+      "tiempo_fin": "╭━「 ⏰ *TIME'S UP* 」━╮\n┃\n┃ 😔 Nobody answered correctly.\n┃ Better luck next time! 🍀\n┃\n╰━━━━━━━━━━━━━━━━━━━━━╯"
+    },
+    "game_acertijo_resp": {
+      "caption": "╭━━━「 🧩 *RIDDLE* 」━━━╮\n┃\n┃ 🤔 *{question}*\n┃\n┃ ⏱ *Time left* › {secsLeft}s\n┃ 🏆 *Prize* › +500 Exp\n┃\n┃ 💬 Answer *quoting this message*\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━╯",
+      "hint_line": "┃ {hint}\n",
+      "casi": "🔥 So close! It starts with \"{letra}\"",
+      "incorrecto_titulo": "❌ *Incorrect*\n",
+      "ganador": "╭━━━「 🎉 *CORRECT!* 」━━━╮\n┃\n┃ ✅ *Answer* › {respuesta}\n┃ 👤 *Winner* › @{ganador}\n┃ 🏆 *Exp earned* › +{poin}\n┃\n╰━━━━━━━━━━━━━━━━━━━━━━━╯"
+    },
+    "game_quini6": {
+      "tiempo_zero": "0 minutes",
+      "tiempo_terminado": "Finished!",
+      "tiempo_formato": "{minutes}m {seconds}s",
+      "usuario_default": "User",
+      "en_curso_titulo": "🎰 *Quini6 in progress!* \n\n",
+      "tiempo_restante": "⏰ Time remaining: {tiempo}\n",
+      "participantes_label": "👥 Participants: {participantes}\n",
+      "para_participar": "To participate, send:\n",
+      "ejemplo_cmd": "*{usedPrefix}quini6 12 34 05 22 44 07*",
+      "ya_participas": "⚠️ You already joined this Quini6!",
+      "seis_numeros": "❌ You must pick exactly 6 numbers (e.g. /quini6 12 34 05 22 44 07)",
+      "numeros_rango": "❌ Numbers must be between 00 and 45",
+      "sin_diamantes": "❌ You don't have enough diamonds! You need {precio} 💎 but you only have {tienes} 💎",
+      "numeros_registrados": "✅ Numbers registered!\nYour numbers: {numeros}\nGood luck! 🍀",
+      "nuevo_sorteo_titulo": "🎰 *NEW QUINI6 DRAW STARTED!* 🎰\n\n",
+      "precio_entrada": "💎 *Entry price:* 200 diamonds\n",
+      "duracion": "⏰ *Duration:* 30 minutes\n",
+      "elige_numeros": "🎯 *Pick 6 numbers between 00 and 45 (e.g. {usedPrefix}quini6 12 34 05 22 44 07)*\n\n",
+      "buena_suerte_todos": "Good luck to everyone! 🍀",
+      "sin_quini": "❌ There's no active Quini6.",
+      "lista_item": "🎫 @{username} - {numeros}",
+      "participantes_registrados": "{participantes} registered participants",
+      "info_titulo": "🎰 *QUINI6 INFORMATION* 🎰\n\n",
+      "info_participantes": "👥 *Participants:* {participantes}\n",
+      "info_tiempo": "⏰ *Time remaining:* {tiempo}\n\n",
+      "info_lista": "*Participants:*\n{lista}\n\n",
+      "info_para_participar": "• *{usedPrefix}quini6 12 34 05 22 44 07* to participate",
+      "resultados_titulo": "🎉 *QUINI6 RESULTS!* 🎉\n\n",
+      "numeros_ganadores": "🎯 *Winning numbers:* {numeros}\n\n",
+      "premios_obtenidos": "🏆 *Prizes won:*\n\n",
+      "linea_usuario": "👤 @{username}\n",
+      "linea_aciertos": "🎯 Matches: {aciertos}\n",
+      "linea_gano": "💎 Won: {premio} diamonds\n",
+      "linea_exp": "📈 EXP: {exp}\n\n",
+      "sin_ganadores": "No participant matched any number this time. Better luck next time!\n\n",
+      "despedida": "🎊 Thanks for participating! Good luck in the next draw! 🍀"
+    },
+    "game_ruleta": {
+      "cooldown": "⏳ You must wait *{tiempoRestante} seconds* before playing again.",
+      "primera_advertencia": "⚠️ *FIRST WARNING* ⚠️\n\nYou're using the roulette command too fast.\n*You've used {commandCount} commands in the last 10 seconds.*\n\n🚨 If you use the command 5 times in 10 seconds:\n💸 You'll lose 45% of your Diamonds\n⭐ You'll lose 45% of your EXP",
+      "ultima_advertencia": "🔥 *LAST WARNING* 🔥\n\n*DANGER!* You've used {commandCount} commands in 10 seconds.\n*ONLY 1 MORE COMMAND UNTIL THE FINE!*\n\n⭐ EXP: {posibleMultaExp} / 💎 Diamonds: {posibleMultaMoney}\n\n🛑 *STOP NOW!* Wait a few seconds before continuing.",
+      "multa_spam": "🚫 *SPAM FINE APPLIED* 🚫\n\n💸 EXP lost: {multaExp}\n💎 Diamonds lost: {multaMoney}\n\n⏰ Wait between commands to avoid penalties.",
+      "bienvenida": "🎰 *Welcome to the Color Roulette!* 🎰\nBet using EXP or Diamonds:\n\n🟢 Verde (x5) — Hard, high reward\n🔴 Rojo (x3) — Medium chance\n⚪ Blanco (x2) — High chance\n\nExample:\n{usedPrefix}ruleta exp rojo 50\n{usedPrefix}ruleta money verde 100",
+      "btn_exp_verde": "🟢 Exp Verde 300",
+      "btn_money_rojo": "🔴 Diamantes Rojo 50",
+      "btn_exp_blanco": "⚪ Exp Blanco 250",
+      "tipo_invalido": "❌ Bet \"exp\" or \"money\".",
+      "color_invalido": "❌ Valid colors: verde, rojo or blanco.",
+      "cantidad_invalida": "❌ Enter a valid amount greater than 0.",
+      "sin_exp": "❌ You don't have enough *EXP*.",
+      "sin_money": "❌ You don't have enough *Diamonds*.",
+      "ganaste": "🎉 You won! The color was *{resultado}*.\nYou won *{ganancia} {moneda}*",
+      "perdiste": "😢 You lost... The color was *{resultado}*.\nYou lost *{cantidad} {moneda}*"
+    },
+    "rpg_armor": {
+      "help": "🛡️ *Armor System*\n\n📋 *Commands:*\n• *armadura comprar <tipo>* — Buy and equip armor\n• *armadura ver* — View your current armor\n• *armadura reparar* — Repair durability\n• *armadura tienda* — View available types and prices\n\n🗡️ *Types:* light • medium • heavy • mystic",
+      "tipo_invalido": "❌ Invalid type.\n\n🗡️ Available: light, medium, heavy, mystic\n💡 Use *armadura tienda* to see prices.",
+      "sin_recursos": "❌ *Not enough resources.*\n\n{emoji} {tipo}: *{costo} 💎* + *{costoExp} EXP*\n",
+      "te_faltan_diamantes": "You need: *{falta} 💎*\n",
+      "te_falta_exp": "You need: *{falta} EXP*",
+      "tienda_titulo": "🏪 *Armor Shop*",
+      "linea_item": "{emoji} *{tipo}*\n   🗡️ DEF: {defensa} • ❤️ Uses: {usos} • 💎 {costo} + ⭐ {costoExp} EXP",
+      "tienda_saldo": "💎 Your balance: *{saldo} diamonds*",
+      "tienda_comprar": "💡 Buy: *armadura comprar <tipo>*",
+      "equipada": "{emoji} *Armor equipped!*\n\n🛡️ Type: *{tipo}*\n⚔️ Defense: *{defensa}*\n❤️ Durability: *{durMax}/{durMax}* {barra}\n💎 Paid: *{costo}*\n💰 Remaining balance: *{saldo}*",
+      "reemplazaste": "\n\n⚠️ You replaced your previous *{tipo}* armor.",
+      "sin_armadura": "🚫 *You don't have armor equipped.*\n\n💡 Use *armadura tienda* to see options.\n❤️ HP: *{hp}/{maxHp}*",
+      "tu_armadura": "🛡️ *Your Armor*\n\n{emoji} Type: *{tipo}*\n⚔️ Defense: *{defensa}*\n❤️ Durability: *{dur}/{max}* {barra}\n📊 Status: {estado}\n",
+      "reparacion": "🔧 Repair: *{costo} 💎*\n",
+      "saldo_linea": "\n💎 Balance: *{saldo}*\n❤️ HP: *{hp}/{maxHp}*",
+      "sin_armadura_reparar": "❌ You have no armor to repair.\n💡 Use *armadura comprar <tipo>* to equip one.",
+      "perfectas": "✨ *Your armor is in perfect condition.*\n\n🛡️ {tipo} • {barra} {dur}/{max}",
+      "sin_fondos_reparar": "❌ *Not enough funds to repair.*\n\n🔧 Repair cost: *{costo} 💎*\n💎 Your balance: *{saldo}*\nYou need: *{falta} 💎*\n\n📊 Current durability: *{dur}/{max}* {barra}",
+      "reparada": "🔧 *Armor repaired!*\n\n🛡️ Type: *{tipo}*\n❤️ Durability: *{durMax}/{durMax}* {barra}\n📊 Status: ✨ Perfect\n💎 Paid: *{costo}*\n💰 Remaining balance: *{saldo}*",
+      "subcomando": "❓ Subcommand not recognized.\n\n"
+    },
+    "rpg_cazador": {
+      "help": "🎯 *The Hunter*\n\nA bounty hunter who appears when you accumulate too many earnings in a short time.\n\n📋 *Commands:*\n• *cazador ver* — View your current threat level\n• *cazador correr* — Try to escape (40% success)\n• *cazador pelear* — Fight it (5% success)\n\n⚠️ *Run and fight only work when the hunter appears.*",
+      "capturado": "⛓️ *You are captured by the Hunter.*\n\nYou can't use RPG commands.\nOnly a rescue can free you.\n📣 Use: *rescate pedir*",
+      "cazador_aqui": "🎯 *The Hunter is here!* [Level {nivel} — {nombre}]\n\nYou can't ignore him. You must act now:\n• *cazador correr* — {escape}% chance to escape\n• *cazador pelear* — {pelea}% chance to win\n\n⚠️ Every second you wait is a risk.",
+      "estado": "🎯 *Hunter Status*\n\n📊 Threat: {barra} *{amenaza}%*\n🎯 Hunter level: *{nivel} — {nombre}*\n⭐ Earned EXP: *{exp}* / 8,000\n💎 Earned diamonds: *{diamantes}* / 5,000\n⏱️ Active window: *{tiempo}*\n🏃 Previous escapes: *{escapes}*\n\n",
+      "peligro_extremo": "🔴 *Extreme danger.* The hunter can appear at any moment.",
+      "nivel_medio": "🟡 *Medium level.* Avoid earning much more for now.",
+      "amenaza_baja": "🟢 *Low threat.* Keep playing carefully.",
+      "sin_amenaza": "✅ *No threat.* The hunter is not after you right now.",
+      "ya_capturado_correr": "⛓️ You are already captured. You can't run.\n📣 Use: *rescate pedir*",
+      "no_cazador": "🤔 The hunter is not here right now.\n💡 Use *cazador ver* to see your threat level.",
+      "ya_capturado_pelear": "⛓️ You are already captured. You can't fight.\n📣 Use: *rescate pedir*",
+      "subcomando": "❓ Subcommand not recognized.\n\n"
+    },
+    "rpg_comprar": {
+      "help": "🛒 *RPG Shop*\n\n📋 *Commands:*\n• *comprar tienda* — View all items\n• *comprar tienda <categoria>* — survival | potions | food\n• *comprar <item>* — Buy an item\n• *comprar inventario* — View your inventory\n\n💡 To use items: *usar <item>*",
+      "stock": " (you have: {cantidad})",
+      "exp_parte": " + ⭐ {exp} EXP",
+      "categoria_titulo": "🛒 *{categoria}*",
+      "tienda_saldo": "💎 Your balance: *{saldo}*",
+      "tienda_comprar_item": "💡 Buy: *comprar <nombre_item>*",
+      "tienda_titulo": "🛒 *RPG Shop*",
+      "tienda_ver_categoria": "💡 See details: *comprar tienda <categoria>*",
+      "inventario_linea": "{emoji} {nombre}: *{cantidad}*",
+      "mercader_titulo": "\n\n🧙 *Merchant Items:*\n",
+      "inventario_titulo": "🎒 *Your Inventory*",
+      "diamantes_linea": "\n\n💎 Diamonds: *{diamantes}*",
+      "usar_item_linea": "💡 Use item: *usar <nombre_item>*",
+      "item_no_encontrado": "❓ Item not found: *{item}*\n\n💡 Use *comprar tienda* to see what's available.",
+      "maximo_alcanzado": "❌ You already have the maximum of *{nombre}* ({max} units).",
+      "sin_diamantes": "❌ *Not enough diamonds.*\n\n{emoji} {nombre}: *{costo} 💎*\nYour balance: *{saldo} 💎*\nYou need: *{falta} 💎*",
+      "sin_exp": "❌ *Not enough EXP.*\n\n{emoji} {nombre}: *{costoExp} ⭐ EXP*\nYour EXP: *{exp}*\nYou need: *{falta} EXP*",
+      "comprado": "{emoji} *Purchased!*\n\nItem: *{nombre}*\n💎 Paid: *{costo}*\n💰 Remaining balance: *{saldo}*\n🎒 You now have: *{qty}/{max}*\n\n💡 Use: *usar {item}*",
+      "cat_supervivencia": "Survival",
+      "cat_pociones": "Potions",
+      "cat_comidas": "Food",
+      "item_totem_nombre": "Preservation Totem",
+      "item_totem_desc": "On death, you only lose 25% EXP and 💎 instead of 50%. Single use.",
+      "item_pocion_menor_nombre": "Minor Potion",
+      "item_pocion_menor_desc": "+25 HP when used.",
+      "item_pocion_media_nombre": "Medium Potion",
+      "item_pocion_media_desc": "+50 HP when used.",
+      "item_pocion_mayor_nombre": "Major Potion",
+      "item_pocion_mayor_desc": "+100 HP when used (full).",
+      "item_carne_asada_nombre": "Grilled Meat",
+      "item_carne_asada_desc": "+15 HP and +5% hunting success for 30 min.",
+      "item_elixir_bosque_nombre": "Forest Elixir",
+      "item_elixir_bosque_desc": "+20 HP and reduces damage taken by 10% for 30 min.",
+      "item_festin_real_nombre": "Royal Feast",
+      "item_festin_real_desc": "+30 HP and +10% earned EXP for 30 min.",
+      "mercader_armadura_temporal": "Temporary Armor",
+      "mercader_pocion_doble": "Double Potion",
+      "mercader_amuleto_escape": "Escape Amulet",
+      "mercader_mapa_tesoro": "Treasure Map",
+      "mercader_sello_inocencia": "Seal of Innocence"
+    },
+    "rpg_rescate": {
+      "help": "🆘 *Rescue System*\n\n📌 *How it works:*\n1️⃣ The captured player uses: *rescate pedir*\n   ⚠️ You have 5 minutes or you will progressively lose HP\n2️⃣ Another player rescues him: *rescate rescatar @usuario*\n3️⃣ If the rescue fails, the rescuer is also captured\n\n📋 *Commands:*\n• *rescate pedir* — Ask for rescue (you can repeat it)\n• *rescate rescatar @usuario* — Try to free someone\n• *rescate ver* [@usuario] — See status and remaining HP",
+      "no_capturado": "❌ You are not captured.\n💡 Use *rescate ver* to see your status.",
+      "muerto_cautiverio": "💀 *You died in captivity.*\nNobody arrived in time.\nYou lost *{exp} EXP* and *{diamantes} diamonds*.\nYou were released but with great consequences.",
+      "solicitud_activa": "⏳ You already have an active request.\n❤️ Current HP: *{hp}/{maxHp}*{dano}\n⏱️ Time remaining: *{min} min*\n💡 Tell someone: *rescate rescatar* and mention you",
+      "dano_reciente": " (-{dano} since last time)",
+      "solicitud_enviada": "📣 *Rescue request sent.*\n⚠️ You have *5 minutes* or you will lose *{dano} HP per minute*.\n❤️ Current HP: *{hp}/{maxHp}*\n💡 Someone must mention *{nombre}* and use: *rescate rescatar @usuario*",
+      "menciona_a_quien": "❌ Mention who to rescue.\n💡 Usage: *rescate rescatar @usuario*",
+      "no_auto_rescate": "❌ You can't rescue yourself.",
+      "estas_capturado": "❌ You are captured, you can't rescue anyone.\n💡 Use *rescate pedir* first.",
+      "no_capturado_target": "❌ {nombre} is not captured.",
+      "sin_solicitud_target": "⏳ {nombre} is captured but hasn't asked for rescue.\nTell them to use *rescate pedir* first.",
+      "murio_cautiverio": "💀 *{nombre} died in captivity* before being rescued.\nLost *{exp} EXP* and *{diamantes} diamonds*.",
+      "tiempo_expiro": "⏰ *The rescue time expired.* {nombre} was released by death.\nLost *{exp} EXP* and *{diamantes} diamonds*.",
+      "perdio_hp": "\n⚠️ {nombre} lost *{dano} HP* while waiting. HP: *{hp}/{maxHp}*",
+      "rescate_exito": "✅ Rescue successful! *{nombre}* has been freed.",
+      "rescate_fallido": "❌ Rescue failed! *{helper}* was captured in the attempt.",
+      "estado_capturado": "⛓️ Captured",
+      "estado_libre": "✅ Free",
+      "bounty_texto": "{estrellas} ({diamantes} diamonds)",
+      "rescate_activo": "📣 Active • {min} min remaining",
+      "hp_linea": "\n❤️ HP: *{hp}/{maxHp}*",
+      "dano_recien": " (-{dano} just now)",
+      "ver_titulo": "👤 {nombre}{hpLine}\n📊 Status: {estado}\n🆘 Rescue: {rescate}\n🚨 Bounty: {bounty}",
+      "subcomando": "❓ Subcommand not recognized.\n\n"
+    },
+    "rpg_usar": {
+      "help": "💊 *Use Item*\n\n📋 *Usage:* usar <nombre_item>\n\n🧪 *Active items:*\n• pocion_menor — +25 HP\n• pocion_media — +50 HP\n• pocion_mayor — +100 HP (full)\n• carne_asada — +15 HP, +5% hunt 30min\n• elixir_bosque — +20 HP, -10% damage 30min\n• festin_real — +30 HP, +10% EXP 30min\n\n🧿 *totem* — Activates on death only, can't be used manually.\n\n💡 View inventory: *comprar inventario*",
+      "item_desconocido": "❓ Unknown item: *{item}*\n\n💡 Use *usar help* to see available items.",
+      "pasivo_texto": "{emoji} *{nombre}*\n\nThis item is *passive* — {descripcion}\n🎒 You have: *{qty}*\n\n💡 It's obtained from: *mercader*",
+      "pasivo_totem": "Activates automatically when you die.",
+      "pasivo_amuleto_escape": "Activates automatically the next time the hunter catches you.",
+      "pasivo_mapa_tesoro": "Applies when you buy it from the merchant.",
+      "pasivo_sello_inocencia": "Applies when you buy it from the merchant.",
+      "pasivo_default": "activates on its own.",
+      "no_tienes": "❌ You don't have *{nombre}* in your inventory.\n\n💡 Buy: *comprar {item}*",
+      "hp_max": "❤️ Your HP is already at max (*{hp}/{maxHp}*).\nNo point in using *{nombre}* now.",
+      "efecto_activo": "⏳ You already have the *{nombre}* effect active.\nTime remaining: *{tiempo}*\n\nWait for it to expire before using another.",
+      "usada": "{emoji} *{nombre} used!*",
+      "hp_linea_ganado": "❤️ HP: *{antes}* → *{actual}/{maxHp}* (+{ganado})\n",
+      "hp_linea_simple": "❤️ HP: *{actual}/{maxHp}*\n",
+      "buff_caza": "🎯 +5% hunting success",
+      "buff_dano": "🛡️ -10% damage taken",
+      "buff_exp": "⭐ +10% earned EXP",
+      "buff_activo": "Active buff",
+      "efecto_linea": "✨ Effect: *{buff}* for 30 min\n",
+      "quedan": "🎒 Remaining: *{cantidad}* in inventory",
+      "item_armadura_temporal_nombre": "Temporary Armor",
+      "item_pocion_doble_nombre": "Double Potion",
+      "item_amuleto_escape_nombre": "Escape Amulet",
+      "item_mapa_tesoro_nombre": "Treasure Map",
+      "item_sello_inocencia_nombre": "Seal of Innocence",
+      "item_totem_nombre": "Preservation Totem",
+      "item_pocion_menor_nombre": "Minor Potion",
+      "item_pocion_media_nombre": "Medium Potion",
+      "item_pocion_mayor_nombre": "Major Potion",
+      "item_carne_asada_nombre": "Grilled Meat",
+      "item_elixir_bosque_nombre": "Forest Elixir",
+      "item_festin_real_nombre": "Royal Feast"
+    },
+    "antilink_config": {
+      "titulo": "🔗 *{bot} — AntiLink Config*",
+      "descripcion": "_Choose which type of links to block in this group._",
+      "linea_categoria": "> *{num}.* {emoji} {label} → {estado}\n",
+      "toggle_todo": "\n> *0.* {texto}",
+      "desactivar_todo": "🔴 Disable ALL",
+      "activar_todo": "🟢 Enable ALL",
+      "responder_numeros": "\n_Reply with one number or several at once:_",
+      "ejemplo": "_Example: `1 3 5` or only `0` for everything_",
+      "tiempo_respuesta": "_⏳ You have 60 seconds to reply_",
+      "antilink_off": "⚠️ Antilink is not enabled in this group.\nEnable it first with the corresponding command.",
+      "actualizado": "✅ *Configuration updated*",
+      "todo_activado": "🟢 All categories ENABLED",
+      "todo_desactivado": "🔴 All categories DISABLED",
+      "linea_estado": "> {estado} {emoji} {label}\n",
+      "cat_general": "General links (http/https/www)",
+      "cat_whatsapp": "WhatsApp groups",
+      "cat_whchannel": "WhatsApp channels",
+      "cat_facebook": "Facebook / FB",
+      "cat_instagram": "Instagram",
+      "cat_tiktok": "TikTok",
+      "cat_twitter": "Twitter / X",
+      "cat_youtube": "YouTube",
+      "cat_telegram": "Telegram",
+      "cat_discord": "Discord"
+    },
+    "audios_config": {
+      "titulo": "🔊 *{bot} — Audios Config*",
+      "descripcion": "_Choose which audios to enable or disable in this group._",
+      "linea_item": "> *{num}.* {label}{tag} → {estado}\n",
+      "toggle_todo": "\n> *0.* {texto}",
+      "desactivar_todo": "🔴 Disable ALL",
+      "activar_todo": "🟢 Enable ALL",
+      "responder_numeros": "\n_Reply with one number or several at once:_",
+      "ejemplo": "_Example: `1 3 5` or only `0` for everything_",
+      "tiempo_respuesta": "_⏳ You have 60 seconds to reply_",
+      "audios_off": "⚠️ Audios are not enabled in this group.\nEnable them first with the corresponding command.",
+      "sin_audios": "⚠️ There are no audios to configure yet.",
+      "actualizado": "✅ *Configuration updated*",
+      "todo_activado": "🟢 All audios ENABLED",
+      "todo_desactivado": "🔴 All audios DISABLED",
+      "linea_estado": "> {estado} {label}\n"
+    },
+    "fix_esperando_mensaje": {
+      "solo_admin": "⚠️ Only admins can use this command.",
+      "cooldown": "⏰ Wait {tiempo}s before using this command again.",
+      "sin_carpeta": "❌ The session folder does not exist.",
+      "resincronizando_privado": "🔄 Resyncing private chat...",
+      "chat_resincronizado": "✅ Chat resynced\n\n💡 The bot should now respond normally.\n\n📌 If the problem persists:\n1. Use {prefix}s to restart\n2. Delete the chat and send a message again",
+      "error_privado": "⚠️ Error resyncing. Try:\n1. {prefix}s (restart)\n2. Delete and reopen the chat",
+      "resincronizando_grupo": "🔄 Resyncing the group...",
+      "error_acceso": "⚠️ The bot can't access this group.\n\n💡 Possible solutions:\n1. Make sure the bot is admin\n2. Remove and add the bot again\n3. Restart the bot: {prefix}s",
+      "grupo_sync_ok": "✅ Group resynced successfully\n🗑️ Session files cleaned: {deleted}\n👥 Participants detected: {participantes}\n🤖 Bot is admin: {es_admin}\n\n💡 The bot should now respond normally.\n\n📌 If the problem persists:\n1. {prefix}s (restart bot)\n2. Remove and add the bot again",
+      "grupo_sync_simple": "✅ Group resynced\n📝 No corrupted files found\n👥 Participants: {participantes}\n\n💡 The bot should work now.\n\n🔧 If it doesn't work: {prefix}s",
+      "resync_parcial": "⚠️ Partial resync completed\n🗑️ Files cleaned: {deleted}\n\n💡 Restart the bot:\n{prefix}s",
+      "error_critico": "❌ Critical error. Restart the bot: {prefix}s",
+      "si": "Yes",
+      "no": "No"
+    },
+    "gc_add": {
+      "uso": "*[❗] Usage: `.add 1234567890`*",
+      "solo_admin": "*[❗] Only admins can use this command.*",
+      "numero_invalido": "*[❗] Invalid number*",
+      "fail_msg": "❌ **ERROR: COULD NOT GENERATE INVITE LINK**\n\n👤 *User:* @{usuario}\n📱 *Number to invite:* +{numero}  \n📋 *Reason:* Lack of admin permissions\n\n❌ **THE BOT NEEDS ADMIN PERMISSIONS**\n\n🔧 *Solution:*\n1️⃣ Make the bot a group admin\n2️⃣ Give the \"Manage group link\" permission\n3️⃣ Retry the command\n\n⚠️ *Admins, please act quickly.*",
+      "invitacion": "✨ **𝐆𝐫𝐨𝐮𝐩 𝐈𝐧𝐯𝐢𝐭𝐚𝐭𝐢𝐨𝐧** ✨\n\n🎉 𝐇𝐞𝐥𝐥𝐨! 𝐘𝐨𝐮 𝐡𝐚𝐯𝐞 𝐚 𝐬𝐩𝐞𝐜𝐢𝐚𝐥 𝐢𝐧𝐯𝐢𝐭𝐚𝐭𝐢𝐨𝐧 🎉\n\n👤 **𝐈𝐧𝐯𝐢𝐭𝐞𝐝 𝐛𝐲:** {invitador}\n🏠 **𝐆𝐫𝐨𝐮𝐩:** {grupo}\n\n{link}\n\n🌟 **𝐖𝐞 𝐰𝐨𝐮𝐥𝐝 𝐥𝐨𝐯𝐞 𝐭𝐨 𝐡𝐚𝐯𝐞 𝐲𝐨𝐮 𝐰𝐢𝐭𝐡 𝐮𝐬!** 🌟\n💫 𝐂𝐥𝐢𝐜𝐤 𝐭𝐡𝐞 𝐥𝐢𝐧𝐤 𝐚𝐧𝐝 𝐣𝐨𝐢𝐧 𝐭𝐡𝐞 𝐟𝐮𝐧 💫\n\n💝 _𝐈𝐟 𝐲𝐨𝐮 𝐝𝐨𝐧'𝐭 𝐰𝐚𝐧𝐭 𝐭𝐨 𝐣𝐨𝐢𝐧, 𝐣𝐮𝐬𝐭 𝐢𝐠𝐧𝐨𝐫𝐞 𝐭𝐡𝐢𝐬 𝐦𝐞𝐬𝐬𝐚𝐠𝐞_ 💝",
+      "ad_title": "Group invitation",
+      "exito": "🎉 **𝐈𝐧𝐯𝐢𝐭𝐚𝐭𝐢𝐨𝐧 𝐒𝐞𝐧𝐭** 🎉\n\n✨ **𝐃𝐞𝐭𝐚𝐢𝐥𝐬:**\n👤 **𝐈𝐧𝐯𝐢𝐭𝐞𝐝 𝐛𝐲:** {invitador}\n📱 **𝐍𝐮𝐦𝐛𝐞𝐫:** +{numero}\n✅ **𝐒𝐭𝐚𝐭𝐮𝐬:** 𝐋𝐢𝐧𝐤 𝐬𝐞𝐧𝐭 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲\n\n🌟 **𝐓𝐡𝐞 𝐢𝐧𝐯𝐢𝐭𝐚𝐭𝐢𝐨𝐧 𝐰𝐚𝐬 𝐬𝐞𝐧𝐭 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲!** 🌟\n💝 _𝐖𝐞 𝐡𝐨𝐩𝐞 𝐭𝐡𝐞𝐲 𝐣𝐨𝐢𝐧 𝐨𝐮𝐫 𝐜𝐨𝐦𝐦𝐮𝐧𝐢𝐭𝐲 𝐬𝐨𝐨𝐧_ 💝",
+      "error_envio": "❌ **ERROR SENDING INVITATION**\n\n📱 *Number:* +{numero}\n❌ *Error:* {error}\n\n⚠️ *The link was generated but could not be sent.*",
+      "error_critico": "❌ **ERROR IN THE INVITATION SYSTEM**\n\nError: {error}\n\n🔧 *Contact the bot administrator.*",
+      "sin_privado": "⚠️ *Privacy note*\n\nFor my safety I cannot message *+{numero}* in private without their consent 😊\n\nHere is a nice message with the group link for you to forward to them:"
+    },
+    "herramientas_tz": {
+      "texto": "```\n< 𝙏𝙊𝙊𝙇𝙎 -𝙏𝙕 />\n\n▢ Peru       : {peru}\n▢ Mexico     : {mexico}\n▢ Bolivia    : {bolivia}\n▢ Chile      : {chile}\n▢ Argentina  : {argentina}\n▢ Colombia   : {colombia}\n▢ Ecuador    : {ecuador}\n▢ Costa Rica : {costa_rica}\n▢ Cuba       : {cuba}\n▢ Guatemala  : {guatemala}\n▢ Honduras   : {honduras}\n▢ Nicaragua  : {nicaragua}\n▢ Panama     : {panama}\n▢ Uruguay    : {uruguay}\n▢ Venezuela  : {venezuela}\n▢ Paraguay   : {paraguay}\n▢ New York   : {new_york}\n▢ Brazil     : {brasil}\n▢ Asia       : {asia}\n▢ Africa     : {africa}\n```\n{invisible}\n▢ Server TZ:\n • {stz}\n • {sh}"
+    },
+    "downloader_mediafire": {
+      "uso": "_*< DOWNLOADS - MEDIAFIRE />*_\n\n*[ ℹ️ ] Enter a MediaFire link.*\n\n*[ 💡 ] Example:* {ejemplo} http://www.mediafire.com/file/7a28wroqlhtfws7/archivo.jpeg",
+      "url_invalida": "❌ *This is not a valid MediaFire link.*\n\nIt must have the format:\nhttp://www.mediafire.com/file/xxxxx/name.ext",
+      "buscando": "🔎 *Looking for the download link...*\n{barra}",
+      "iniciando": "📄 *{nombre}*\n📦 {tamano}\n\n⬇️ *Starting download...*\n{barra}",
+      "descargando": "📄 *{nombre}*\n📦 {tamano}\n\n⬇️ *Downloading...*\n{barra}",
+      "enviando": "📄 *{nombre}*\n📦 {tamano}\n\n📤 *Sending file...*\n{barra}",
+      "caption": "*✅ DOWNLOAD COMPLETE - MEDIAFIRE*\n\n📄 *Name:* {nombre}\n📦 *Size:* {tamano}\n🗓️ *Date:* {fecha}\n🧬 *Type:* {mime}",
+      "enviado": "✅ *{nombre}* sent successfully.\n{barra}",
+      "error": "❌ *Could not process the MediaFire link.*\n\n🧾 *Detail:* {error}"
+    },
+    "owner_actualizacion": {
+      "buscando": "🔍 Checking for updates in the repository...\n⏳ This may take a few seconds.",
+      "no_commits": "❌ Could not fetch the repository commits.",
+      "actualizado": "✅ No new updates since the last check.\n\n💡 The bot is up to date.",
+      "desconocido": "Unknown",
+      "archivo_modificado": "{emoji} {archivo}",
+      "mas_archivos": "{archivos}\n... and {restantes} more files",
+      "sin_archivos": "No modified files were found.",
+      "comparando": "🔍 Comparing {cantidad} files with the local version...",
+      "nuevo_local": "❓ \"{archivo}\" - New file or not found locally",
+      "archivo_actualizado": "✅ \"{archivo}\" - Up to date",
+      "archivo_diferente": "⚠️ \"{archivo}\" - Local version differs",
+      "archivo_error_compare": "❌ \"{archivo}\" - Error while comparing",
+      "nueva_detectada": "📢 New update detected\n\n",
+      "autor": "👤 Author: {login}\n",
+      "fecha": "📅 Date: {fecha}\n",
+      "mensaje": "💬 Message: {mensaje}\n\n",
+      "archivos_modificados": "📁 Modified files ({cantidad}):\n{archivos}\n\n",
+      "estado_local": "🔍 Local status:\n{resultados}\n\n",
+      "commit_reciente": "• {mensaje} ({autor})",
+      "commits_recientes": "📋 Recent commits:\n{commits}\n\n",
+      "aplicar_cambios": "💡 To apply changes: restart the bot if you have auto-update enabled.",
+      "error_general": "❌ Error while querying the repository.",
+      "error_limite": "\n⚠️ API limit reached. Try again in a few minutes.",
+      "error_repo_no_encontrado": "\n🔍 Repository not found or private.",
+      "error_sin_internet": "\n🌐 No internet connection.",
+      "error_detalle": "\n📋 Error: {error}"
+    },
+    "owner_mi_server": {
+      "tunel_no_listo": "⚠️ The tunnel is not ready yet. Try again in a few seconds.",
+      "solo_owner": "This command is only for the Owner.",
+      "solo_privado": "🔒 This command only works in private chat.",
+      "bienvenida": "👋 *Welcome to the Luna-BotV6 panel*\n\nIt's your first time here. First choose a username:\n*.reg YourUser*\n\n_Example: .reg Lunabot_",
+      "acceso_panel": "🔗 *Your panel access*\n\n",
+      "advertencia": "\n\n⚠️ Don't share your username and password with anyone, not even with the bot creator. It's the only way to guarantee your security and the bot's.\n\n",
+      "recordatorio": "_Forgot your data? Use .resetserver_",
+      "ya_configurado": "⚠️ You already have a configured username. If you forgot it, use *.resetserver* to start over.",
+      "usuario_corto": "❌ Choose a username of at least 3 characters. Example: .reg Lunabot",
+      "usuario_espacios": "❌ The username cannot have spaces. Example: .reg Lunabot",
+      "usuario_ok": "✅ Your username is *{usuario}*\n\n",
+      "elegir_password": "Now choose a password:\n*.password YourSecurePassword*\n\n",
+      "ejemplo_password": "_Example: .password 629827#@6#88#7_",
+      "reg_primero": "❌ First choose your username with *.reg YourUser*.",
+      "password_corta": "❌ The password must have at least 6 characters.",
+      "guardado": "🔐 *Done, save this in a safe place*\n\n",
+      "usuario_label": "Username: *{usuario}*\n",
+      "password_label": "Password: *{password}*\n\n",
+      "advertencia_datos": "\n\n⚠️ Don't share this data with anyone, not even with the bot creator.\n",
+      "autodestruccion": "🕑 This message self-destructs in 2 minutes.",
+      "reset_ok": "♻️ Your username and password were deleted. Use *.miserver* to set up a new one."
+    },
+    "sticker_ttp_attp": {
+      "menu": "🎨 *ANIMATED STICKERS*\n✏️ Write the command + your text.\n\n─────────────────\n🌈 */attp*   — Changes colors\n🏀 */ttp3*   — Bounces with colors\n🔍 */ttp4*   — Pulse zoom\n💥 */ttp5*   — Shake vibration\n🌊 */ttp6*   — Wave of colors\n👻 */ttp7*   — Appears and disappears\n🔥 */ttp8*   — Color glitch\n✍️ */ttp9*   — Letter by letter writing\n💡 */ttp10*  — Blinking neon\n⬇️ */ttp11*  — Falls from above\n📈 */ttp12*  — Increasing scale\n🎨 */ttp13*  — Rainbow per letter\n─────────────────\n📌 *Example:* /ttp9 Hello world",
+      "generando": "⏳ Generating sticker...",
+      "error_http": "HTTP {codigo}",
+      "respuesta_inesperada": "Unexpected server response",
+      "sticker_pequeno": "Sticker too small",
+      "error": "❌ Error: {msg}"
+    },
+    "aprobar_rechazar": {
+      "solo_grupos": "🌙 This command only works in groups",
+      "necesito_admin": "✨ I need to be an admin to manage join requests",
+      "solo_admins": "🌟 Only admins can manage join requests",
+      "estado_on": "enabled ✅",
+      "estado_off": "disabled ❌",
+      "aprobarauto_estado": "🌙 *Auto-Approve*\n\n💫 Status: {estado}\n\n✦ *Commands:*\n• {prefix}aprobarauto on\n• {prefix}aprobarauto off",
+      "aprobarauto_activado_con_pendientes": "✅ *Auto-Approve Enabled*\n\n🌟 {count} pending request(s) approved\n\n💫 I'll now automatically approve all new requests",
+      "aprobarauto_activado_sin_pendientes": "✅ *Auto-Approve Enabled*\n\n🌟 I'll now automatically approve all join requests",
+      "aprobarauto_desactivado": "❌ *Auto-Approve Disabled*\n\n💫 Requests will need to be managed manually",
+      "rechazarauto_estado": "🌙 *Auto-Reject*\n\n💫 Status: {estado}\n\n✦ *Commands:*\n• {prefix}rechazarauto on\n• {prefix}rechazarauto off",
+      "rechazarauto_activado_con_pendientes": "❌ *Auto-Reject Enabled*\n\n💫 {count} pending request(s) rejected\n\n⚠️ I'll now automatically reject all new requests",
+      "rechazarauto_activado_sin_pendientes": "❌ *Auto-Reject Enabled*\n\n💫 I'll now automatically reject all join requests",
+      "rechazarauto_desactivado": "✅ *Auto-Reject Disabled*\n\n💫 Requests will need to be managed manually",
+      "estado_on_corto": "✅ ON",
+      "estado_off_corto": "❌ OFF",
+      "solicitudes_vacio": "💫 No pending requests\n\n✦ *Current status:*\n• Auto-approve: {autoApprove}\n• Auto-reject: {autoReject}",
+      "solicitudes_header": "🌙 *Pending Join Requests*\n\n📊 Total: {total}\n\n",
+      "solicitudes_item": "{index}. 📱 +{numero}\n",
+      "solicitudes_footer": "\n✦ *Commands:*\n• {prefix}aprobar 1\n• {prefix}rechazar 1\n• {prefix}aprobartodos\n• {prefix}rechazartodos",
+      "error_obtener_solicitudes": "⚠️ Error getting requests",
+      "indica_numero": "Enter the request number",
+      "sin_pendientes": "No pending requests",
+      "numero_invalido": "Invalid number",
+      "aprobar_exito": "✅ Request approved\n\n👤 +{numero}",
+      "error_aprobar": "Error approving",
+      "rechazar_exito": "❌ Request rejected\n\n👤 +{numero}",
+      "error_rechazar": "Error rejecting",
+      "aprobar_todos_exito": "✅ All requests approved\n\n📊 Total: {total}",
+      "rechazar_todos_exito": "❌ All requests rejected\n\n📊 Total: {total}",
+      "auto_aprobado": "✅ *Auto-Approve*\n\n🌟 {count} {persona} been automatically approved\n\n💫 Welcome to the group!",
+      "persona_singular": "person has",
+      "persona_plural": "people have",
+      "auto_rechazado": "❌ *Auto-Reject*\n\n💫 {count} {solicitud} been automatically rejected",
+      "solicitud_singular": "request has",
+      "solicitud_plural": "requests have",
+      "error_inesperado": "Unexpected error"
+    },
+    "admin_anti18": {
+      "frases_owner": [
+        "Uhmm... you sent something that's not allowed but you're my creator 😳 I won't delete it, but please set the example 💢",
+        "Uhmm you crossed the line, you enabled a feature to block +18 content but you're the owner so I can't delete it, that's how I was set up 😠 you're supposed to set the example!! 💢",
+        "Ay ay ay, my creator... you of all people sending this 😤 I can't delete it, I don't have permission, but it's noted in my little bot heart 💢",
+        "So you too, huh? 🙄 I won't delete anything because you're my owner, but please set the example next time 😠",
+        "Owner turning anti18 on and owner breaking anti18 the same day... the irony 😑 I won't delete anything, but it's close 💢",
+        "I can't do anything because you're the one who programmed me this way 🙃 just so you know, I'm a little disappointed 💢",
+        "C'mon, seriously? The very person who built me sending this 😤 I'll let it slide this time, but don't push it",
+        "Uhmm... this goes against my rules but I can't act against you 😔 just letting you know it's not okay 💢"
+      ],
+      "frases_admin": [
+        "Uhmm... you sent something that's not allowed but you're an admin, so I can't delete it 😠 but watch it next time 💢",
+        "The admin sending +18 content, of course... 🙄 I won't delete anything because you have the rank, but you're supposed to set the example!! 💢",
+        "Hey admin, this isn't cool 😤 I won't delete it since you outrank it, but it's noted 💢",
+        "Admin permissions save you from deletion, but not from my annoyed face 😑💢",
+        "Uhmm... as an admin you should take better care of the group, not mess it up 😠 I won't delete anything, but consider yourself warned",
+        "Admins have to follow the rules too, you know 💢 I won't delete this one because I can't, but don't make it a habit",
+        "C'mon admin, with power comes responsibility 🙃 I won't touch the message, but please set the example next time",
+        "Uhmm... you're the one moderating the group, so this looks kind of odd, doesn't it? 😤 I won't delete anything, but heads up"
+      ],
+      "contenido_eliminado": "🔞 *Adult content detected*\n\n@{tag} your message was deleted, this group doesn't allow adult content.\n📌 Warning {warns}/{max}",
+      "expulsado": "🚫 @{tag} was removed from the group for accumulating {max} warnings for adult content."
+    },
+    "analizar": {
+      "sin_imagen": "Send or quote an image 🖼️",
+      "analizando": "⏳ Analyzing image...",
+      "resultado": "🏷️ *Detected tags:*\n{tags}\n\n🎨 *Dominant colors:*\n{colores}",
+      "colores": {}
+    },
+    "admin_system": {
+      "solo_owners": "❌ *Only owners can use this command.*",
+      "agregarowner_ayuda": "📋 *ADD OWNER*\n\n*Correct usage:*\n• `{cmd} @user`\n• `{cmd} 5492483466763`\n\n*Note:* The number must include the country code without the + symbol",
+      "numero_corto": "❌ *The number must have at least 10 digits.*",
+      "numero_ya_owner": "⚠️ *This number is already an owner.*",
+      "agregarowner_exito": "✅ *OWNER ADDED SUCCESSFULLY*\n\n👤 *Number:* {numero}\n📋 *Total owners:* {total}\n\n*The change has been saved permanently in config.js*",
+      "error_resultado": "❌ *{mensaje}*",
+      "agregarlid_ayuda": "📋 *ADD LID OWNER*\n\n*Correct usage:*\n• `{cmd} @user`\n• `{cmd} 535353553636`\n\n*What's a LID?*\n• LIDs are special WhatsApp identifiers\n• Used for business accounts or in certain specific cases",
+      "lid_corto": "❌ *The LID must have at least 10 digits.*",
+      "lid_ya_registrado": "⚠️ *This LID is already registered as an owner.*",
+      "agregarlid_exito": "✅ *LID OWNER ADDED SUCCESSFULLY*\n\n🆔 *LID:* {lid}\n📋 *Total LID owners:* {total}\n\n*The change has been saved permanently in config.js*",
+      "error_guardar_config": "❌ *Error saving to the configuration file.*",
+      "error_agregar_lid": "❌ *Error adding the LID.*",
+      "removerowner_ayuda": "🗑️ *REMOVE OWNER*\n\n*Correct usage:*\n• `{cmd} 5492483466763`",
+      "numero_no_registrado": "❌ *This number isn't registered as an owner.*",
+      "no_quitar_ultimo": "⚠️ *You can't remove the last owner.*",
+      "no_quitar_ultimo_extendido": "⚠️ *You can't remove the last owner. There must be at least one.*",
+      "removerowner_exito": "✅ *OWNER REMOVED SUCCESSFULLY*\n\n👤 *Number:* {numero}\n📋 *Remaining owners:* {total}",
+      "removerlid_ayuda": "🗑️ *REMOVE LID OWNER*\n\n*Correct usage:*\n• `{cmd} 535353553636`",
+      "lid_no_registrado": "❌ *This LID isn't registered as an owner.*",
+      "removerlid_exito": "✅ *LID OWNER REMOVED SUCCESSFULLY*\n\n🆔 *LID:* {lid}\n📋 *Total LID owners:* {total}",
+      "error_remover_lid": "❌ *Error removing the LID.*",
+      "quitarowner_ayuda": "🗑️ *DELETE OWNER*\n\n*Correct usage:*\n• `{cmd} 5492483466763`",
+      "quitarowner_exito": "✅ *OWNER DELETED SUCCESSFULLY*\n\n👤 *Number:* {numero}\n🏷️ *Name:* {nombre}\n📋 *Remaining owners:* {total}\n\n*The change has been saved permanently in config.js*",
+      "quitarlid_ayuda": "🗑️ *DELETE LID OWNER*\n\n*Correct usage:*\n• `{cmd} 535353553636`",
+      "quitarlid_exito": "✅ *LID OWNER DELETED SUCCESSFULLY*\n\n🆔 *LID:* {lid}\n📋 *Remaining LID owners:* {total}\n\n*The change has been saved permanently in config.js*",
+      "error_quitar_lid": "❌ *Error deleting the LID.*",
+      "listaradmins_header": "📋 *BOT ADMINISTRATORS*\n\n👑 *OWNERS ({total}):*\n",
+      "listaradmins_item": "{i}. {num} ({nombre})\n",
+      "listaradmins_lid_header": "\n🆔 *UNIQUE LID OWNERS ({total}):*\n",
+      "listaradmins_lid_item": "{i}. {lid}\n",
+      "listaradmins_sin_lids": "*No specific LID owners (only regular owners are used)*\n",
+      "listaradmins_footer": "\n💡 *Note:* Regular owners automatically get LID owner access.",
+      "limpiarlids_exito": "✅ *LID CLEANUP COMPLETE*\n\n🔢 *LIDs before:* {antes}\n🔢 *LIDs after:* {despues}\n🗑️ *LIDs removed (duplicates):* {removidos}\n\n{detalle}\n\n*Regular owners still have automatic access.*",
+      "limpiarlids_lista_header": "📋 *Removed LIDs:*\n",
+      "error_limpiar_lids": "❌ *Error cleaning up the LIDs.*"
+    },
+    "downloader_play": {
+      "grupo_desactivado": "🚫 Downloads are disabled for this group.",
+      "limite_grupo": "🚫 This group reached the daily limit of *{limite}* downloads. Try again tomorrow.",
+      "error_critico": "❌ Critical error: {mensaje}",
+      "error_desconocido": "Unknown error",
+      "desconocido": "Unknown",
+      "boton_audio": "🎵 Audio",
+      "boton_video": "🎬 Video",
+      "boton_reintentar": "🔄 Retry",
+      "conectando": "📌 Connecting to server...",
+      "descargando": "⬇️ Downloading...",
+      "descargando_servicio": "⬇️ Downloading...\n📧 Service: {{servicio}}",
+      "enviando": "⬇️ Sending to WhatsApp...\n📧 Service: {{servicio}}",
+      "completado": "✅ {{etiquetaTipo}} downloaded \"{{titulo}}\" in {{segundos}}s\n📧 Service: {{servicio}}{{aviso}}",
+      "falta_consulta": "🎵 Write the name of the song or paste the YouTube link",
+      "falta_enlace": "❌ Missing YouTube link",
+      "enlace_invalido": "❌ Invalid YouTube link",
+      "sin_resultados": "❌ No results found",
+      "fallback_generico": "❌ *Could not process*\n\n📛 Try another link\n\n_💡 If it still fails, try another name or check bot permissions_",
+      "timeout": "⏳ *It took too long to respond*\n\n⚠️ The server is still trying another service, the download may finish on its own\n\n_Wait a moment before requesting again — doing it again now might charge you two downloads for the same audio/video_"
+    },
+    "rpg_npc": {
+      "mercader_nombres": [
+        "Aldric the Wanderer",
+        "Mira of the Roads",
+        "Tobias the Peddler",
+        "Sera the Merchant"
+      ],
+      "juez_nombres": [
+        "Grand Judge Vorn",
+        "Lady Astra the Relentless",
+        "Magistrate Drek",
+        "The Dark Tribunal"
+      ],
+      "undead_nombres": [
+        "Valdris the Undead",
+        "The Hungry Shadow",
+        "Moris the Wanderer",
+        "The Abyss Specter"
+      ],
+      "espia_nombres": [
+        "Cipher",
+        "The Shadow",
+        "Inx the Informant",
+        "Vera Faceless",
+        "The Whisperer"
+      ],
+      "vagabundo_nombres": [
+        "The Old Wanderer",
+        "Thomas the Ragged",
+        "Mira the Beggar",
+        "The Nameless",
+        "Gruk the Vagabond"
+      ],
+      "salvador_nombres": [
+        "Lyra the Wanderer",
+        "The Stranger",
+        "Vex the Rebel",
+        "Aria the Dark",
+        "Thane the Fugitive"
+      ],
+      "cazador_niveles": [
+        "Tracker",
+        "Hunter",
+        "Executioner"
+      ],
+      "cazador_nombres_1": [
+        "Kael the Tracker",
+        "Gray Shadow",
+        "Mortis",
+        "Zaren"
+      ],
+      "cazador_nombres_2": [
+        "The Executioner",
+        "Red Shadow",
+        "Kael the Relentless",
+        "Drak"
+      ],
+      "cazador_nombres_3": [
+        "The Dark Triad",
+        "Mortis and his Allies",
+        "The Hunter Council"
+      ],
+      "apariciones": [
+        "👁️ *Heavy footsteps echo behind you...*",
+        "🌑 *A dark silhouette blocks your path...*",
+        "⚔️ *The ground shakes. Someone found you.*",
+        "🩸 *A whistle cuts through the air.*",
+        "🔱 *You feel someone has been following you for a while.*"
+      ],
+      "items": {
+        "armadura_temporal": {
+          "nombre": "Temporary Armor",
+          "desc": "DEF +10 for 1 hour. Does not replace your real armor."
+        },
+        "pocion_doble": {
+          "nombre": "Double Potion",
+          "desc": "+80 instant HP. Special item, not available in store."
+        },
+        "amuleto_escape": {
+          "nombre": "Escape Amulet",
+          "desc": "Next time the hunter catches you, you escape automatically. One use."
+        },
+        "mapa_tesoro": {
+          "nombre": "Treasure Map",
+          "desc": "Reveals a spot with 500-3000 diamonds. One use."
+        },
+        "sello_inocencia": {
+          "nombre": "Seal of Innocence",
+          "desc": "Removes all your bounty stars instantly."
+        }
+      },
+      "mercader_linea": "{{n}}. {{emoji}} *{{nombre}}* — {{costo}}💎\n   📝 {{desc}}",
+      "mercader_aparecio": "\n\n🧙 *{{name}} appeared!*\n━━━━━━━━━━━━━━━━━━━━\nYou have *3 minutes* to buy something special:\n\n{{lines}}\n\n💡 Use: *mercader comprar <1|2|3>*\n━━━━━━━━━━━━━━━━━━━━",
+      "mercader_no_disponible": "🧙 The merchant is not available right now.",
+      "mercader_se_fue": "⏰ The merchant already left. Maybe he will come back later.",
+      "mercader_num_invalido": "❌ Invalid number. Choose 1, 2 or 3.",
+      "mercader_sin_diamantes": "❌ No diamonds. You need *{{costo}}💎* but you only have *{{saldo}}💎*.",
+      "mercader_mapa_tesoro": "🗺️ *The map led to a treasure!*\n\n💎 You found *{{recompensa}} hidden diamonds*.\n💰 Remaining balance: *{{saldoFinal}}*",
+      "mercader_comprado": "{{emoji}} *Bought from {{nombre}}!*\n\nItem: *{{item}}*\n💎 You paid: *{{costo}}*\n💰 Remaining balance: *{{saldo}}*",
+      "juez_opt_pagar": "Pay fine x3 and go free",
+      "juez_opt_mision": "Redemption mission (no crime for 2h)",
+      "juez_opt_huir": "Run (50% success, if you fail you get caught)",
+      "juez_encontro": "\n\n⚖️ *{{name}} found you!*\n━━━━━━━━━━━━━━━━━━━━\nYou have *{{estrellas}}⭐* of bounty. You must answer:\n\n{{opciones}}\n━━━━━━━━━━━━━━━━━━━━",
+      "juez_no_presente": "⚖️ The Judge is not here.",
+      "juez_sin_dinero": "❌ Not enough. The fine is *{{multa}}💎* and you have *{{saldo}}💎*.",
+      "juez_pago_ok": "⚖️ *{{name}} accepts the payment.*\n\n💎 You paid *{{multa}} diamonds*.\n✅ Your bounty was removed. You are free.",
+      "juez_mision_ok": "📋 *Redemption mission accepted.*\n\n*{{name}}* gives you 2 hours to prove you changed.\n✅ Bounty suspended. If you commit a crime in that time, everything returns.\n⏱️ Duration: *2 hours*",
+      "juez_escapaste": "🏃 *You escaped the Judge!*\n\n*{{name}}* could not catch you... for now.\n⚠️ He will return. And the next fine will be bigger.",
+      "juez_atrapado": "⛓️ *The Judge caught you!*\n\nThe escape failed. *{{name}}* chained you.\n🚨 +1 bounty star • +300💎 fine\n📣 Use: *rescate pedir*",
+      "juez_accion_invalida": "❓ Invalid action. Use: pagar | mision | huir",
+      "undead_detecto": "\n\n🧟 *{{name}} detected your weakness!*\n━━━━━━━━━━━━━━━━━━━━\nYour HP is at *{{hp}}/{{maxHp}}*. You have a dark offer:\n\n💀 He heals you to *100% HP* right now.\n⚠️ In exchange, for *1 hour* you earn *50% less EXP*.\n\n• *muerto aceptar* — Accept the deal\n• *muerto rechazar* — Reject\n━━━━━━━━━━━━━━━━━━━━",
+      "undead_no_aqui": "🧟 The Living Dead is not here.",
+      "undead_trato_ok": "🧟 *Deal accepted with {{name}}.*\n\n❤️ HP restored: *{{hpAntes}}* → *{{maxHp}}*\n⚠️ Penalty: *-50% EXP* for 1 hour.\n💀 Your soul belongs to him... temporarily.",
+      "undead_rechazaste": "💪 You rejected *{{name}}*.\nHe went on his way... for now.",
+      "usuario_no_encontrado": "User not found.",
+      "espia_sin_dinero": "❌ The spy charges *{{costo}}💎*. You have *{{saldo}}💎*.",
+      "espia_objetivo_no_encontrado": "❌ Target not found.",
+      "espia_informe": "🕵️ *{{nombre}}'s report*\n━━━━━━━━━━━━━━━━━━━━\n🎯 Target: @{{objetivo}}\n❤️ HP: *{{hp}}/{{maxHp}}* ({{hpPct}}%)\n🚨 Bounty: *{{bounty}}*\n⛓️ Status: *{{estado}}*\n🎯 Hunter nearby: *{{cazador}}*\n━━━━━━━━━━━━━━━━━━━━\n💎 You paid: *{{costo}}*",
+      "estado_capturado": "Captured",
+      "estado_libre": "Free",
+      "cazador_si": "Yes ⚠️",
+      "cazador_no": "No ✅",
+      "apostador_aparecio": "\n\n🎰 *The Gambler appeared!*\n━━━━━━━━━━━━━━━━━━━━\nHe challenges you to a bet. Choose:\n\n• *apostar <amount>* — Bet diamonds (min 100)\n• *apostar exp <amount>* — Bet EXP\n\n🎲 If you win: you get the *double*\n💀 If you lose: you lose everything you bet\n━━━━━━━━━━━━━━━━━━━━",
+      "apostador_no_aqui": "🎰 The Gambler is no longer here.",
+      "apostador_minima": "❌ Minimum bet: 100.",
+      "apostador_sin_exp": "❌ Not enough EXP. You have *{{exp}}*.",
+      "apostador_ganaste_exp": "🎲 *You won!*\n⭐ +*{{monto}} EXP* (double of what you bet)",
+      "apostador_perdiste_exp": "🎲 *You lost.*\n⭐ -*{{monto}} EXP*",
+      "apostador_sin_dinero": "❌ Not enough. You have *{{saldo}}💎*.",
+      "apostador_ganaste_dinero": "🎲 *You won!*\n💎 +*{{monto}} diamonds* (double of what you bet)",
+      "apostador_perdiste_dinero": "🎲 *You lost.*\n💎 -*{{monto}} diamonds*",
+      "vagabundo_aparecio": "\n\n🧓 *{{name}} appeared!*\n━━━━━━━━━━━━━━━━━━━━\nHe looks at you with tired eyes and says:\n_\"Could you give me {{emoji}} *{{cantidad}} {{recurso}}*? I would be grateful...\"_\n\n🎲 50% returns the *double*\n💨 50% disappears with yours\n⚠️ Ignoring him 3 times brings bad luck\n\n• *vagabundo dar* — Help him\n• *vagabundo ignorar* — Ignore him\n━━━━━━━━━━━━━━━━━━━━",
+      "vagabundo_no_aqui": "🧓 There is no vagrant here right now.",
+      "vagabundo_se_fue": "⏰ The vagrant already left. You have ignored him *{{veces}}*/3 times.",
+      "vagabundo_maldicion": "⏰ *The vagrant waited and left.*\n\n😤 *{{name}}* got tired of being ignored.\n💀 *He cursed you!* -20% EXP earned for 30 minutes.",
+      "vagabundo_maldicion_ignorar": "😤 You ignored *{{name}}*.\n\n💀 *Curse!* You have ignored the vagrant 3 times.\n-20% EXP earned for *30 minutes*.",
+      "vagabundo_ignorado": "😶 You ignored *{{name}}*.\nHe walked away mumbling...\n⚠️ You have ignored him *{{veces}}*/3 times.",
+      "vagabundo_sin_recursos": "❌ You do not have enough {{emoji}} *{{recurso}}*.\nYou need *{{cantidad}}* and it is not enough.\n*{{name}}* left sad.",
+      "vagabundo_sabio": "🧓 *{{name}}* looks at you gratefully...\n\n✨ _\"You are very generous. May destiny reward you.\"_\n\n🎉 *The vagrant was a disguised sage!*\n{{emoji}} He returned the *double*: +*{{recompensa}} {{recurso}}*\n💰 You earned *{{ganancia}} {{recurso}}* net.",
+      "vagabundo_desaparece": "🧓 *{{name}}* takes what you gave him...\n\n💨 _\"Thanks... maybe we will meet again.\"_\n\nHe fades into the shadows with your *{{cantidad}} {{recurso}}*.\n😅 No luck this time.",
+      "vagabundo_uso": "💡 Use: *vagabundo dar* | *vagabundo ignorar*",
+      "cazador_nivel_1": "Tracker",
+      "cazador_nivel_2": "Hunter",
+      "cazador_nivel_3": "Executioner",
+      "cazador_acum_exp": "*{{valor}} EXP*",
+      "cazador_acum_dinero": "*{{valor}} 💎*",
+      "cazador_aliados": "⚠️ He comes accompanied by *{{aliados}} ally(ies)*. Escaping will be harder.",
+      "cazador_detecto": "\n\n━━━━━━━━━━━━━━━━━━━━\n{{aparicion}}\n{{emoji}} *{{name}}* [Level {{nivel}}] detected your activity ({{acum}} accumulated).{{aliados}}\n\n🏃 Escape: *{{escapePct}}%* • ⚔️ Beat him: *{{peleaPct}}%*\n\n• *cazador correr* — Try to run\n• *cazador pelear* — Fight him\n━━━━━━━━━━━━━━━━━━━━",
+      "cazador_escapaste": "🏃 *You escaped!*\n⚠️ The hunter is still looking for you.\n📈 Reappearance chance: *{{prob}}%*{{nivel}}\n💡 Each escape makes him more dangerous.",
+      "cazador_nivel_up": "⬆️ The hunter rose to *Level {{nivel}} — {{name}}*. It will be harder to escape.",
+      "cazador_totem": "🧿 *Your totem activated* — you only lost *{{exp}} EXP* and *{{dinero}} 💎*",
+      "cazador_perdida": "💀 You lost *{{exp}} EXP* and *{{dinero}} 💎*",
+      "cazador_atrapado": "⛓️ *They caught you!*\n*{{name}}* was too fast.\n\n{{perdida}}\n🛡️ Your armor was destroyed • ❤️ -{{dano}} HP\n\n⛓️ Only another player can rescue you.\n📣 Use: *rescate pedir*",
+      "cazador_victoria": "⚔️ *IMPOSSIBLE VICTORY!*\nYou defeated *{{name}}* [Level {{nivel}}].\n\n🏆 Reward:\n⭐ +*{{exp}} EXP*\n💎 +*{{dinero}} diamonds*\n\n🎖️ The hunter fled. For now you are free.",
+      "cazador_derrota": "💀 *TOTAL DEFEAT!*\n*{{name}}* [Level {{nivel}}] crushed you effortlessly.\n\n{{totem}}📉 You lost *{{exp}} EXP* and *{{dinero}} 💎*\n🛡️ Armor *{{armadura}}* destroyed • ❤️ -{{dano}} HP\n🚨 +{{estrellas}} bounty stars\n\n⛓️ Only a rescue can free you.\n📣 Use: *rescate pedir*",
+      "cazador_totem_reducida": "🧿 *Your totem activated* — reduced loss.\n",
+      "cazador_salvador": "🦸 *{{name}} appeared!*\n\nWhile the hunter was not paying attention,\n*{{name}}* freed you and stole part of the loot.\n\n🎁 *He left you:*\n⭐ +*{{exp}} EXP*\n💎 +*{{dinero}} diamonds*\n💰 He stole *{{botin}} 💎* from the hunter\n\n✅ You are free. But be careful — the hunter will return.",
+      "cazador_botin": "\n🏹 *Hunter Loot shared:*\n👤 Rescuer: ⭐ +*{{rescuerExp}} EXP* • 💎 +*{{rescuerMoney}}*\n🆓 Freed: ⭐ +*{{capturedExp}} EXP* • 💎 +*{{capturedMoney}}*\n_(stolen from the Hunter's loot)_",
+      "cazador_tarde": "⏰ *You took too long to answer.*\n*{{name}}* [Level {{nivel}}] took advantage of your carelessness and caught you.\n\n{{perdida}}🛡️ Your armor was destroyed • ❤️ -{{dano}} HP\n\n⛓️ Only another player can rescue you.\n📣 Use: *rescate pedir*",
+      "recurso_diamantes": "diamonds",
+      "recurso_exp": "EXP"
     }
   },
   "functions": {

@@ -25,27 +25,30 @@ function getAntiLinkConfig(config) {
   return { ...DEFAULT_ANTILINK_CONFIG, ...(config.antiLinkConfig || {}) };
 }
 
-function buildMenu(alConfig) {
+function buildMenu(alConfig, t) {
   const BOT = () => global.BotName || 'Luna';
   const allOn = CATEGORIES.every(c => alConfig[c.key]);
 
-  let menu = `🔗 *${BOT()} — AntiLink Config*\n\n`;
-  menu += `_Elige qué tipo de links bloquear en este grupo._\n\n`;
+  let menu = (t.titulo?.replace('{bot}', BOT()) || `🔗 *${BOT()} — AntiLink Config*`) + `\n\n`;
+  menu += (t.descripcion || `_Elige qué tipo de links bloquear en este grupo._`) + `\n\n`;
 
   CATEGORIES.forEach((cat, i) => {
     const estado = alConfig[cat.key] ? '✅' : '❌';
-    menu += `> *${i + 1}.* ${cat.emoji} ${cat.label} → ${estado}\n`;
+    const label = t[`cat_${cat.key}`] || cat.label;
+    menu += t.linea_categoria?.replace('{num}', i + 1).replace('{emoji}', cat.emoji).replace('{label}', label).replace('{estado}', estado) || `> *${i + 1}.* ${cat.emoji} ${cat.label} → ${estado}\n`;
   });
 
-  menu += `\n> *0.* ${allOn ? '🔴 Desactivar TODO' : '🟢 Activar TODO'}\n`;
-  menu += `\n_Responde con el número o varios a la vez:_\n`;
-  menu += `_Ejemplo: \`1 3 5\` o solo \`0\` para todo_\n`;
-  menu += `_⏳ Tienes 60 segundos para responder_`;
+  menu += (t.toggle_todo?.replace('{texto}', allOn ? (t.desactivar_todo || '🔴 Desactivar TODO') : (t.activar_todo || '🟢 Activar TODO')) || `\n> *0.* ${allOn ? '🔴 Desactivar TODO' : '🟢 Activar TODO'}`) + `\n`;
+  menu += (t.responder_numeros || `\n_Responde con el número o varios a la vez:_`) + `\n`;
+  menu += (t.ejemplo || `_Ejemplo: \`1 3 5\` o solo \`0\` para todo_`) + `\n`;
+  menu += t.tiempo_respuesta || `_⏳ Tienes 60 segundos para responder_`;
 
   return menu;
 }
 
 const handler = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.antilink_config || {};
   if (!m.isGroup) return;
 
   const groupData = await getGroupDataForPlugin(conn, m.chat, m.sender);
@@ -54,7 +57,7 @@ const handler = async (m, { conn }) => {
   const config = getConfig(m.chat);
   if (!config.antiLink && !config.antiLink2) {
     await conn.sendMessage(m.chat, {
-      text: `⚠️ El antilink no está activado en este grupo.\nActívalo primero con el comando correspondiente.`
+      text: t.antilink_off || `⚠️ El antilink no está activado en este grupo.\nActívalo primero con el comando correspondiente.`
     }, { quoted: m });
     return;
   }
@@ -72,11 +75,13 @@ const handler = async (m, { conn }) => {
   pendingSessions.set(m.chat, { adminId: m.sender, timer, type: 'antilink' });
 
   await conn.sendMessage(m.chat, {
-    text: buildMenu(alConfig)
+    text: buildMenu(alConfig, t)
   }, { quoted: m });
 };
 
 handler.before = async function (m, { conn }) {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.antilink_config || {};
   if (!m.isGroup || !m.text || !pendingSessions.has(m.chat)) return;
 
   const session = pendingSessions.get(m.chat);
@@ -105,15 +110,18 @@ handler.before = async function (m, { conn }) {
 
   setConfig(m.chat, { antiLinkConfig: alConfig });
 
-  let reply = `✅ *Configuración actualizada*\n\n`;
+  let reply = (t.actualizado || `✅ *Configuración actualizada*`) + `\n\n`;
 
   if (nums.includes(0)) {
     const newState = alConfig[CATEGORIES[0].key];
-    reply += `> ${newState ? '🟢 Todas las categorías ACTIVADAS' : '🔴 Todas las categorías DESACTIVADAS'}`;
+    reply += `> ${newState ? (t.todo_activado || '🟢 Todas las categorías ACTIVADAS') : (t.todo_desactivado || '🔴 Todas las categorías DESACTIVADAS')}`;
   } else {
     nums.forEach(n => {
       const cat = CATEGORIES[n - 1];
-      if (cat) reply += `> ${alConfig[cat.key] ? '✅' : '❌'} ${cat.emoji} ${cat.label}\n`;
+      if (cat) {
+        const label = t[`cat_${cat.key}`] || cat.label;
+        reply += t.linea_estado?.replace('{estado}', alConfig[cat.key] ? '✅' : '❌').replace('{emoji}', cat.emoji).replace('{label}', label) || `> ${alConfig[cat.key] ? '✅' : '❌'} ${cat.emoji} ${cat.label}\n`;
+      }
     });
   }
 

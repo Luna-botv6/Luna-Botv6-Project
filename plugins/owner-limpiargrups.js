@@ -1,6 +1,8 @@
 const handler = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.owner_limpiargrups || {};
   try {
-    await m.reply('🔍 Buscando grupos con el bot solo o con 1 integrante...');
+    await m.reply((t.buscando || '🔍 Buscando grupos con el bot solo o con 1 integrante...'));
 
     const botJid = conn.decodeJid(conn.user.jid);
     const groupsObj = await conn.groupFetchAllParticipating();
@@ -18,11 +20,11 @@ const handler = async (m, { conn }) => {
     }
 
     if (solos.length === 0) {
-      return m.reply('✅ No hay grupos para limpiar.');
+      return m.reply((t.sin_grupos || '✅ No hay grupos para limpiar.'));
     }
 
-    const listaAntes = solos.map(g => `• ${g.nombre} (${g.total} participante${g.total > 1 ? 's' : ''})`).join('\n');
-    await m.reply(`🗑️ Encontré ${solos.length} grupo(s):\n${listaAntes}\n\nIntentando salir...`);
+    const listaAntes = solos.map(g => (t.item_grupo?.replace('{nombre}', g.nombre).replace('{total}', g.total) || `• ${g.nombre} (${g.total} participante${g.total > 1 ? 's' : ''})`)).join('\n');
+    await m.reply((t.encontrados?.replace('{cantidad}', solos.length).replace('{lista}', listaAntes) || `🗑️ Encontré ${solos.length} grupo(s):\n${listaAntes}\n\nIntentando salir...`));
 
     const exitados = [];
     const fallidos = [];
@@ -30,21 +32,21 @@ const handler = async (m, { conn }) => {
     for (const { jid, nombre } of solos) {
       try {
         await conn.groupLeave(jid);
-        exitados.push(`✅ ${nombre}`);
+        exitados.push((t.salido?.replace('{nombre}', nombre) || `✅ ${nombre}`));
       } catch (err) {
-        fallidos.push(`❌ ${nombre}: ${err.message}`);
+        fallidos.push((t.fallido?.replace('{nombre}', nombre).replace('{error}', err.message) || `❌ ${nombre}: ${err.message}`));
       }
       await new Promise(resolve => setTimeout(resolve, 600));
     }
 
-    let resumen = '📋 Resultado:\n\n';
-    if (exitados.length) resumen += `*Salió de:*\n${exitados.join('\n')}\n\n`;
-    if (fallidos.length) resumen += `*Errores:*\n${fallidos.join('\n')}`;
+    let resumen = (t.resumen_titulo || '📋 Resultado:\n\n');
+    if (exitados.length) resumen += (t.salio_de?.replace('{lista}', exitados.join('\n')) || `*Salió de:*\n${exitados.join('\n')}\n\n`);
+    if (fallidos.length) resumen += (t.errores_lista?.replace('{lista}', fallidos.join('\n')) || `*Errores:*\n${fallidos.join('\n')}`);
 
     await m.reply(resumen.trim());
 
   } catch (err) {
-    await m.reply(`❌ Error crítico:\n${err.message}`);
+    await m.reply((t.error_critico?.replace('{error}', err.message) || `❌ Error crítico:\n${err.message}`));
   }
 };
 

@@ -6,16 +6,18 @@ import('node-fetch').then(function ({ default: fetch }) {
 const fakeYouToken = '187b56b2217ac09dbe6ae610f19b35dfbc53cdd5857f818f03b45d048287b4bc';
 
 const handler = async (m, { conn, isOwner, usedPrefix, command, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.convertidor_tts4 || {};
   let ListVoice = await (await fetch('https://api.fakeyou.com/tts/list')).json();
   let lister = ListVoice.models.filter(model => 
     /latin|latino|spanish|español/i.test(model.title)
   );
   if (!lister.length) {
-    return m.reply('No se encontraron voces relacionadas con \'latino\' o \'español\'.');
+    return m.reply(t.sinVoces || 'No se encontraron voces relacionadas con \'latino\' o \'español\'.');
   }
 
   let readMore = String.fromCharCode(8206).repeat(4001);
-  let query = `Consulta de entrada!\n\n*Ejemplo:*\n${usedPrefix + command} [número]|[texto]\n\n*Seleccione un número*\n` + readMore + lister.map((item, index) => '  ' + (index + 1) + '. ' + item.title).join('\n');
+  let query = (t.consulta?.replace('{prefix}', usedPrefix + command) || `Consulta de entrada!\n\n*Ejemplo:*\n${usedPrefix + command} [número]|[texto]\n\n*Seleccione un número*\n`) + readMore + lister.map((item, index) => '  ' + (index + 1) + '. ' + item.title).join('\n');
   let text;
   if (args.length >= 1) {
     text = args.slice(0).join(' ');
@@ -29,7 +31,7 @@ const handler = async (m, { conn, isOwner, usedPrefix, command, args }) => {
   if (!atas) return m.reply(query);
   if (!bawah) return m.reply(query);
   const { modelToken, title } = await getModelByIndex(lister, atas);
-  m.reply('Espere por favor...\n' + title);
+  m.reply(t.espere?.replace('{titulo}', title) || 'Espere por favor...\n' + title);
   try {
     let res = await requestSpeech(modelToken, bawah);
     if (res) {

@@ -86,18 +86,23 @@ function msToTime(ms) {
 }
 
 const handler = async (m, { conn, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es')
+  const t = _tr?.plugins?.rpg_usar || {}
   const userId = m.sender
   const itemKey = args?.[0]?.toLowerCase().replace(/-/g, '_') || ''
 
-  if (!itemKey || itemKey === 'help' || itemKey === 'ayuda') return m.reply(HELP_MSG)
+  if (!itemKey || itemKey === 'help' || itemKey === 'ayuda') return m.reply(t.help || HELP_MSG)
 
   const itemDef = ITEMS_USABLES[itemKey]
   if (!itemDef) {
     return m.reply(
+      t.item_desconocido?.replace('{item}', itemKey) ||
       `❓ Item desconocido: *${itemKey}*\n\n` +
       `💡 Usa *usar help* para ver los items disponibles.`
     )
   }
+
+  const nombreItem = t[`item_${itemKey}_nombre`] || itemDef.nombre
 
   if (itemDef.uso === 'pasivo') {
     const user = getPlayerState(userId)
@@ -108,7 +113,9 @@ const handler = async (m, { conn, args }) => {
       mapa_tesoro:    'Se aplica al comprarlo en el mercader.',
       sello_inocencia:'Se aplica al comprarlo en el mercader.'
     }
+    const descPasivo = t[`pasivo_${itemKey}`] || pasiveDescriptions[itemKey] || (t.pasivo_default || 'se activa solo.')
     return m.reply(
+      t.pasivo_texto?.replace('{emoji}', itemDef.emoji).replace('{nombre}', nombreItem).replace('{descripcion}', descPasivo).replace('{qty}', qty) ||
       `${itemDef.emoji} *${itemDef.nombre}*\n\n` +
       `Este item es *pasivo* — ${pasiveDescriptions[itemKey] || 'se activa solo.'}\n` +
       `🎒 Tienes: *${qty}*\n\n` +
@@ -118,6 +125,7 @@ const handler = async (m, { conn, args }) => {
 
   if (!hasItem(userId, itemKey, 1)) {
     return m.reply(
+      t.no_tienes?.replace('{nombre}', nombreItem).replace('{item}', itemKey) ||
       `❌ No tienes *${itemDef.nombre}* en tu inventario.\n\n` +
       `💡 Comprar: *comprar ${itemKey}*`
     )
@@ -129,6 +137,7 @@ const handler = async (m, { conn, args }) => {
 
   if (hpAntes >= maxHp && !itemDef.buff) {
     return m.reply(
+      t.hp_max?.replace('{hp}', hpAntes).replace('{maxHp}', maxHp).replace('{nombre}', nombreItem) ||
       `❤️ Ya tienes el HP al máximo (*${hpAntes}/${maxHp}*).\n` +
       `No tiene sentido usar *${itemDef.nombre}* ahora.`
     )
@@ -141,6 +150,7 @@ const handler = async (m, { conn, args }) => {
     if (buffActivo) {
       const remaining = buffActivo.expiresAt - Date.now()
       return m.reply(
+        t.efecto_activo?.replace('{nombre}', nombreItem).replace('{tiempo}', msToTime(remaining)) ||
         `⏳ Ya tienes el efecto *${itemDef.nombre}* activo.\n` +
         `Tiempo restante: *${msToTime(remaining)}*\n\n` +
         `Espera a que expire antes de usar otro.`
@@ -177,19 +187,21 @@ const handler = async (m, { conn, args }) => {
   const qtyRestante = inv[itemKey] || 0
 
   let msg =
-    `${itemDef.emoji} *¡${itemDef.nombre} usada!*\n\n` +
-    (hpGanado > 0 ? `❤️ HP: *${hpAntes}* → *${userPost.hp}/${maxHp}* (+${hpGanado})\n` : `❤️ HP: *${userPost.hp}/${maxHp}*\n`)
+    (t.usada?.replace('{emoji}', itemDef.emoji).replace('{nombre}', nombreItem) || `${itemDef.emoji} *¡${itemDef.nombre} usada!*`) + `\n\n` +
+    (hpGanado > 0
+      ? (t.hp_linea_ganado?.replace('{antes}', hpAntes).replace('{actual}', userPost.hp).replace('{maxHp}', maxHp).replace('{ganado}', hpGanado) || `❤️ HP: *${hpAntes}* → *${userPost.hp}/${maxHp}* (+${hpGanado})\n`)
+      : (t.hp_linea_simple?.replace('{actual}', userPost.hp).replace('{maxHp}', maxHp) || `❤️ HP: *${userPost.hp}/${maxHp}*\n`))
 
   if (itemDef.buff) {
     const buffLabel = {
-      hunt_bonus:       '🎯 +5% éxito en caza',
-      damage_reduction: '🛡️ -10% daño recibido',
-      exp_bonus:        '⭐ +10% EXP ganada'
-    }[itemDef.buff.type] || 'Buff activo'
-    msg += `✨ Efecto: *${buffLabel}* por 30 min\n`
+      hunt_bonus:       t.buff_caza || '🎯 +5% éxito en caza',
+      damage_reduction: t.buff_dano || '🛡️ -10% daño recibido',
+      exp_bonus:        t.buff_exp || '⭐ +10% EXP ganada'
+    }[itemDef.buff.type] || (t.buff_activo || 'Buff activo')
+    msg += t.efecto_linea?.replace('{buff}', buffLabel) || `✨ Efecto: *${buffLabel}* por 30 min\n`
   }
 
-  msg += `🎒 Quedan: *${qtyRestante}* en inventario`
+  msg += t.quedan?.replace('{cantidad}', qtyRestante) || `🎒 Quedan: *${qtyRestante}* en inventario`
 
   return m.reply(msg)
 }

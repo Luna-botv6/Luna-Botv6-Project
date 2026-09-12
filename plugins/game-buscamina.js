@@ -117,6 +117,8 @@ function checkWin(gameData) {
 }
 
 const handler = async (m, { conn, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.game_buscamina || {};
   const userId = m.sender;
   
   // Inicializar datos del usuario si no existen
@@ -136,14 +138,7 @@ const handler = async (m, { conn, args }) => {
     const gameData = initGame(5, 5); // Tablero 5x5 con 5 minas
     global.db.data.users[userId].buscaminas = gameData;
     
-    let message = '╭━〔 🎮 *BUSCAMINAS* 🎮 〕━⬣\n';
-    message += '┃ ¡Nuevo juego iniciado!\n';
-    message += '┃ Para jugar usa:\n';
-    message += '┃ • `buscaminas revelar A1` - Revelar celda\n';
-    message += '┃ • `buscaminas bandera A1` - Colocar/quitar bandera\n';
-    message += '┃ • `buscaminas tablero` - Ver tablero actual\n';
-    message += '┃ 🎁 Premio: 10,000 XP + 6,000 💎\n';
-    message += '╰━━━━━━━━━━━━━━━━━━⬣\n\n';
+    let message = (t.nuevo_juego || '╭━〔 🎮 *BUSCAMINAS* 🎮 〕━⬣\n┃ ¡Nuevo juego iniciado!\n┃ Para jugar usa:\n┃ • `buscaminas revelar A1` - Revelar celda\n┃ • `buscaminas bandera A1` - Colocar/quitar bandera\n┃ • `buscaminas tablero` - Ver tablero actual\n┃ 🎁 Premio: 10,000 XP + 6,000 💎\n╰━━━━━━━━━━━━━━━━━━⬣\n\n');
     message += displayBoard(gameData);
     
     return m.reply(message);
@@ -152,11 +147,11 @@ const handler = async (m, { conn, args }) => {
   const gameData = global.db.data.users[userId].buscaminas;
   
   if (!gameData) {
-    return m.reply('❌ No tienes un juego activo. Usa `buscaminas` para empezar');
+    return m.reply(t.sin_juego_activo || '❌ No tienes un juego activo. Usa `buscaminas` para empezar');
   }
   
   if (gameData.gameOver || gameData.won) {
-    return m.reply('❌ El juego ha terminado. Usa `buscaminas` para nuevo juego');
+    return m.reply(t.juego_terminado || '❌ El juego ha terminado. Usa `buscaminas` para nuevo juego');
   }
   
   // Mostrar tablero
@@ -166,14 +161,14 @@ const handler = async (m, { conn, args }) => {
   
   // Procesar coordenadas
   if (!coordinate || coordinate.length < 2) {
-    return m.reply('❌ Coordenada inválida. Usa formato: A1, B2, etc.');
+    return m.reply(t.coordenada_invalida || '❌ Coordenada inválida. Usa formato: A1, B2, etc.');
   }
   
   const row = coordinate.charCodeAt(0) - 65; // A=0, B=1, etc.
   const col = parseInt(coordinate.slice(1)) - 1; // 1=0, 2=1, etc.
   
   if (row < 0 || row >= gameData.size || col < 0 || col >= gameData.size) {
-    return m.reply('❌ Coordenada inválida. Usa formato: A1, B2, etc.');
+    return m.reply(t.coordenada_invalida || '❌ Coordenada inválida. Usa formato: A1, B2, etc.');
   }
   
   // Revelar celda
@@ -218,7 +213,7 @@ const handler = async (m, { conn, args }) => {
         }
       }
       
-      let message = '💣 ¡BOOM! Has perdido\n\n';
+      let message = (t.boom || '💣 ¡BOOM! Has perdido') + '\n\n';
       message += displayBoard(gameData);
       return m.reply(message);
     }
@@ -233,9 +228,9 @@ const handler = async (m, { conn, args }) => {
       addExp(userId, expGained);
       addMoney(userId, diamondsGained);
       
-      let message = '🎉 ¡Felicidades! Has ganado el Buscaminas\n';
-      message += `✨ Experiencia ganada: *${expGained.toLocaleString()}*\n`;
-      message += `💎 Diamantes ganados: *${diamondsGained.toLocaleString()}*\n\n`;
+      let message = (t.victoria || '🎉 ¡Felicidades! Has ganado el Buscaminas') + '\n';
+      message += `${t.exp_ganada || '✨ Experiencia ganada:'} *${expGained.toLocaleString()}*\n`;
+      message += `${t.diamantes_ganados || '💎 Diamantes ganados:'} *${diamondsGained.toLocaleString()}*\n\n`;
       message += displayBoard(gameData);
       return m.reply(message);
     }
@@ -252,7 +247,7 @@ const handler = async (m, { conn, args }) => {
   }
   
   // Comando no reconocido
-  m.reply('❌ Comando no válido. Usa: revelar, bandera o tablero');
+  m.reply((t.comando_invalido || '❌ Comando no válido. Usa: revelar, bandera o tablero'));
 };
 
 handler.help = ['buscaminas'];

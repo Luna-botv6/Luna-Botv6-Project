@@ -1,8 +1,10 @@
-import * as Jimp from 'jimp';
+import { Jimp } from 'jimp';
 
 const handler = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.gc_setpp || {};
   try {
-    if (!m.quoted) throw '*⚠️️ Responde a una imagen.*';
+    if (!m.quoted) throw (t.responde_imagen || '*⚠️️ Responde a una imagen.*');
 
     const quoted = m.quoted;
     const media = await quoted.download();
@@ -10,10 +12,10 @@ const handler = async (m, { conn }) => {
 
     async function resizeImage(buffer) {
       const image = await Jimp.read(buffer);
-      const resized = image.getWidth() > image.getHeight()
-        ? image.resize(720, Jimp.AUTO)
-        : image.resize(Jimp.AUTO, 720);
-      return { img: await resized.getBufferAsync(Jimp.MIME_JPEG) };
+      const resized = image.width > image.height
+        ? image.resize({ w: 720 })
+        : image.resize({ h: 720 });
+      return { img: await resized.getBuffer('image/jpeg') };
     }
 
     const { img } = await resizeImage(media);
@@ -24,9 +26,9 @@ const handler = async (m, { conn }) => {
       content: [{ tag: 'picture', attrs: { type: 'image' }, content: img }]
     });
 
-    m.reply('⚘ *_Imagen actualizada con éxito._*');
+    m.reply(t.exito || '⚘ *_Imagen actualizada con éxito._*');
   } catch {
-    throw '*⚠️️ Responde a una imagen.*';
+    throw (t.responde_imagen || '*⚠️️ Responde a una imagen.*');
   }
 };
 
