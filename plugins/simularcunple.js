@@ -2,12 +2,14 @@ import fetch from 'node-fetch';
 
 const GIF_URL = 'https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/InShot_20260315_144951431.mp4';
 
-const handler = async (m, { conn, participants }) => {
+const handler = async (m, { conn, participants, usedPrefix, command }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.simularcunple || {};
 
-  if (!m.isGroup) return m.reply('Este comando solo funciona en grupos');
+  if (!m.isGroup) return m.reply(t.soloGrupos || 'Este comando solo funciona en grupos');
 
   if (!m.mentionedJid || m.mentionedJid.length === 0) {
-    return m.reply('Usa el comando así:\n/similarc @usuario');
+    return m.reply(t.uso?.replace('{prefix}', usedPrefix + command) || 'Usa el comando así:\n/similarc @usuario');
   }
 
   const birthdayJids = m.mentionedJid;
@@ -20,12 +22,11 @@ const handler = async (m, { conn, participants }) => {
   const nombresCumple = birthdayJids.map(j => `@${j.split('@')[0]}`).join(', ');
 
   const msg =
-'🎂 *FELIZ CUMPLEAÑOS* 🎂\n' +
-`🎉 Hoy celebramos el cumpleaños de ${nombresCumple}! 🎂\n\n` +
-'🥳 Que tengas un día increíble lleno de alegría,\n' +
-'   amor y muchas sorpresas. Lo merecés todo! 💜\n\n' +
-'🎈🎁🎊🌟✨🎆🎇🪅🎠\n' +
-hidetag;
+  (t.feliz || '🎂 *FELIZ CUMPLEAÑOS* 🎂\n') +
+  (t.hoy?.replace('{nombres}', nombresCumple) || `🎉 Hoy celebramos el cumpleaños de ${nombresCumple}! 🎂\n\n`) +
+  (t.textoUno || '🥳 Que tengas un día increíble lleno de alegría,\n   amor y muchas sorpresas. Lo merecés todo! 💜\n\n') +
+  (t.emoji || '🎈🎁🎊🌟✨🎆🎇🪅🎠\n') +
+  hidetag;
 
   const gifBuffer = await fetch(GIF_URL).then(r => r.arrayBuffer()).then(b => Buffer.from(b));
 

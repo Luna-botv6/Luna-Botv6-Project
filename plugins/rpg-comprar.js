@@ -53,20 +53,24 @@ const HELP_MSG =
   `• *comprar inventario* — Ver tu inventario\n\n` +
   `💡 Para usar items: *usar <item>*`
 
-function formatItem(key, item, inv = null) {
-  const stock = inv ? ` (tienes: ${inv[key] || 0})` : ''
+function formatItem(key, item, inv = null, t) {
+  const stock = inv ? (t.stock?.replace('{cantidad}', inv[key] || 0) || ` (tienes: ${inv[key] || 0})`) : ''
+  const nombre = t[`item_${key}_nombre`] || item.nombre
+  const desc = t[`item_${key}_desc`] || item.desc
   return (
-    `${item.emoji} *${item.nombre}*${stock}\n` +
-    `   📝 ${item.desc}\n` +
-    `   💎 ${item.cost}${item.costExp > 0 ? ` + ⭐ ${item.costExp} EXP` : ''}`
+    `${item.emoji} *${nombre}*${stock}\n` +
+    `   📝 ${desc}\n` +
+    `   💎 ${item.cost}${item.costExp > 0 ? (t.exp_parte?.replace('{exp}', item.costExp) || ` + ⭐ ${item.costExp} EXP`) : ''}`
   )
 }
 
 const handler = async (m, { conn, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es')
+  const t = _tr?.plugins?.rpg_comprar || {}
   const userId = m.sender
   const cmd = args?.[0]?.toLowerCase() || ''
 
-  if (!cmd || cmd === 'help' || cmd === 'ayuda') return m.reply(HELP_MSG)
+  if (!cmd || cmd === 'help' || cmd === 'ayuda') return m.reply(t.help || HELP_MSG)
 
   if (cmd === 'tienda' || cmd === 'shop') {
     const cat = args?.[1]?.toLowerCase()
@@ -74,24 +78,24 @@ const handler = async (m, { conn, args }) => {
     const inv = user.inventory || {}
 
     if (cat && CATEGORIAS[cat]) {
-      const lines = CATEGORIAS[cat].map(k => formatItem(k, ITEMS[k], inv)).join('\n\n')
+      const lines = CATEGORIAS[cat].map(k => formatItem(k, ITEMS[k], inv, t)).join('\n\n')
       return m.reply(
-        `🛒 *${cat.charAt(0).toUpperCase() + cat.slice(1)}*\n\n${lines}\n\n` +
-        `💎 Tu saldo: *${user.money || 0}*\n` +
-        `💡 Comprar: *comprar <nombre_item>*`
+        (t.categoria_titulo?.replace('{categoria}', t[`cat_${cat}`] || cat.charAt(0).toUpperCase() + cat.slice(1)) || `🛒 *${cat.charAt(0).toUpperCase() + cat.slice(1)}*`) + `\n\n${lines}\n\n` +
+        (t.tienda_saldo?.replace('{saldo}', user.money || 0) || `💎 Tu saldo: *${user.money || 0}*`) + `\n` +
+        (t.tienda_comprar_item || `💡 Comprar: *comprar <nombre_item>*`)
       )
     }
 
     const sections = Object.entries(CATEGORIAS).map(([catName, keys]) => {
       const lines = keys.map(k => `  ${ITEMS[k].emoji} ${k} — ${ITEMS[k].cost}💎`).join('\n')
-      return `*${catName.toUpperCase()}*\n${lines}`
+      return `*${t[`cat_${catName}`] || catName.toUpperCase()}*\n${lines}`
     }).join('\n\n')
 
     return m.reply(
-      `🛒 *Tienda RPG*\n\n${sections}\n\n` +
-      `💎 Tu saldo: *${user.money || 0}*\n` +
-      `💡 Ver detalle: *comprar tienda <categoria>*\n` +
-      `💡 Comprar: *comprar <nombre_item>*`
+      (t.tienda_titulo || `🛒 *Tienda RPG*`) + `\n\n${sections}\n\n` +
+      (t.tienda_saldo?.replace('{saldo}', user.money || 0) || `💎 Tu saldo: *${user.money || 0}*`) + `\n` +
+      (t.tienda_ver_categoria || `💡 Ver detalle: *comprar tienda <categoria>*`) + `\n` +
+      (t.tienda_comprar_item || `💡 Comprar: *comprar <nombre_item>*`)
     )
   }
 
@@ -100,7 +104,8 @@ const handler = async (m, { conn, args }) => {
     const inv = user.inventory || {}
     const lines = Object.entries(ITEMS).map(([key, item]) => {
       const qty = inv[key] || 0
-      return `${item.emoji} ${item.nombre}: *${qty}*`
+      const nombre = t[`item_${key}_nombre`] || item.nombre
+      return (t.inventario_linea?.replace('{emoji}', item.emoji).replace('{nombre}', nombre).replace('{cantidad}', qty) || `${item.emoji} ${item.nombre}: *${qty}*`)
     }).join('\n')
 
     const MERCADER_ITEMS = {
@@ -112,14 +117,14 @@ const handler = async (m, { conn, args }) => {
     }
     const mercaderLines = Object.entries(MERCADER_ITEMS)
       .filter(([key]) => (inv[key] || 0) > 0)
-      .map(([key, item]) => `${item.emoji} ${item.nombre}: *${inv[key]}*`)
+      .map(([key, item]) => `${item.emoji} ${t[`mercader_${key}`] || item.nombre}: *${inv[key]}*`)
       .join('\n')
 
     return m.reply(
-      `🎒 *Tu Inventario*\n\n${lines}` +
-      (mercaderLines ? `\n\n🧙 *Items del Mercader:*\n${mercaderLines}` : '') +
-      `\n\n💎 Diamantes: *${user.money || 0}*\n` +
-      `💡 Usar item: *usar <nombre_item>*`
+      (t.inventario_titulo || `🎒 *Tu Inventario*`) + `\n\n${lines}` +
+      (mercaderLines ? (t.mercader_titulo || `\n\n🧙 *Items del Mercader:*\n`) + mercaderLines : '') +
+      (t.diamantes_linea?.replace('{diamantes}', user.money || 0) || `\n\n💎 Diamantes: *${user.money || 0}*`) + `\n` +
+      (t.usar_item_linea || `💡 Usar item: *usar <nombre_item>*`)
     )
   }
 
@@ -128,7 +133,7 @@ const handler = async (m, { conn, args }) => {
 
   if (!itemDef) {
     return m.reply(
-      `❓ Item no encontrado: *${cmd}*\n\n` +
+      t.item_no_encontrado?.replace('{item}', cmd) || `❓ Item no encontrado: *${cmd}*\n\n` +
       `💡 Usa *comprar tienda* para ver los disponibles.`
     )
   }
@@ -136,9 +141,10 @@ const handler = async (m, { conn, args }) => {
   const user = getPlayerState(userId)
   const inv = user.inventory || {}
   const qty = inv[itemKey] || 0
+  const nombreItem = t[`item_${itemKey}_nombre`] || itemDef.nombre
 
   if (qty >= itemDef.max) {
-    return m.reply(`❌ Ya tienes el máximo de *${itemDef.nombre}* (${itemDef.max} unidades).`)
+    return m.reply(t.maximo_alcanzado?.replace('{nombre}', nombreItem).replace('{max}', itemDef.max) || `❌ Ya tienes el máximo de *${itemDef.nombre}* (${itemDef.max} unidades).`)
   }
 
   const saldo = user.money || 0
@@ -146,19 +152,21 @@ const handler = async (m, { conn, args }) => {
 
   if (saldo < itemDef.cost) {
     return m.reply(
+      (t.sin_diamantes?.replace('{emoji}', itemDef.emoji).replace('{nombre}', nombreItem).replace('{costo}', itemDef.cost).replace('{saldo}', saldo).replace('{falta}', itemDef.cost - saldo) ||
       `❌ *Sin diamantes suficientes.*\n\n` +
       `${itemDef.emoji} ${itemDef.nombre}: *${itemDef.cost} 💎*\n` +
       `Tu saldo: *${saldo} 💎*\n` +
-      `Te faltan: *${itemDef.cost - saldo} 💎*`
+      `Te faltan: *${itemDef.cost - saldo} 💎*`)
     )
   }
 
   if (itemDef.costExp > 0 && exp < itemDef.costExp) {
     return m.reply(
+      (t.sin_exp?.replace('{emoji}', itemDef.emoji).replace('{nombre}', nombreItem).replace('{costoExp}', itemDef.costExp).replace('{exp}', exp).replace('{falta}', itemDef.costExp - exp) ||
       `❌ *Sin EXP suficiente.*\n\n` +
       `${itemDef.emoji} ${itemDef.nombre}: *${itemDef.costExp} ⭐ EXP*\n` +
       `Tu EXP: *${exp}*\n` +
-      `Te falta: *${itemDef.costExp - exp} EXP*`
+      `Te falta: *${itemDef.costExp - exp} EXP*`)
     )
   }
 
@@ -166,12 +174,13 @@ const handler = async (m, { conn, args }) => {
   addItem(userId, itemKey, 1)
 
   return m.reply(
+    (t.comprado?.replace('{emoji}', itemDef.emoji).replace('{nombre}', nombreItem).replace('{costo}', itemDef.cost).replace('{saldo}', saldo - itemDef.cost).replace('{qty}', qty + 1).replace('{max}', itemDef.max).replace('{item}', itemKey) ||
     `${itemDef.emoji} *¡Comprado!*\n\n` +
     `Item: *${itemDef.nombre}*\n` +
     `💎 Pagaste: *${itemDef.cost}*\n` +
     `💰 Saldo restante: *${saldo - itemDef.cost}*\n` +
     `🎒 Tienes ahora: *${qty + 1}/${itemDef.max}*\n\n` +
-    `💡 Usar: *usar ${itemKey}*`
+    `💡 Usar: *usar ${itemKey}*`)
   )
 }
 

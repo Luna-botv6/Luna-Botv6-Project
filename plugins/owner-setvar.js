@@ -50,19 +50,21 @@ const updateConfigFile = async (variable, value) => {
 };
 
 const handler = async (m, { text }) => {
-  if (!text) return m.reply('❌ Ej .setvar global.groq = gsk');
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.owner_setvar || {};
+  if (!text) return m.reply((t.ejemplo1 || '❌ Ej .setvar global.groq = gsk'));
 
   const [variable, value] = text.split('=').map(item => item.trim());
 
-  if (!variable || !value) return m.reply('❌ Ej .setvar variable = valor');
+  if (!variable || !value) return m.reply((t.ejemplo2 || '❌ Ej .setvar variable = valor'));
 
   try {
     await ensureConfigIgnored(); 
     await updateConfigFile(variable, value); 
-    m.reply(`✅ ${variable.replace(/^global\./, '')} actualizada a ${value}`);
+    m.reply((t.actualizada?.replace('{variable}', variable.replace(/^global\./, '')).replace('{valor}', value) || `✅ ${variable.replace(/^global\./, '')} actualizada a ${value}`));
   } catch (error) {
     console.error('❌ Error al actualizar config.js:', error);
-    m.reply(`❌ ${error.message}`);
+    m.reply((t.error?.replace('{error}', error.message) || `❌ ${error.message}`));
   }
 };
 

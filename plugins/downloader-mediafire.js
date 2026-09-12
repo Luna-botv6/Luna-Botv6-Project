@@ -3,30 +3,33 @@ import cheerio from 'cheerio';
 import { lookup } from 'mime-types';
 
 const handler = async (m, { conn, args, usedPrefix, command }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.downloader_mediafire || {};
   if (!args[0]) {
-    throw `_*< DESCARGAS - MEDIAFIRE />*_\n\n*[ ℹ️ ] Ingresa un enlace de MediaFire.*\n\n*[ 💡 ] Ejemplo:* ${usedPrefix + command} http://www.mediafire.com/file/7a28wroqlhtfws7/archivo.jpeg`;
+    const ejemplo = usedPrefix + command;
+    throw t.uso?.replace('{ejemplo}', ejemplo) || `_*< DESCARGAS - MEDIAFIRE />*_\n\n*[ ℹ️ ] Ingresa un enlace de MediaFire.*\n\n*[ 💡 ] Ejemplo:* ${ejemplo} http://www.mediafire.com/file/7a28wroqlhtfws7/archivo.jpeg`;
   }
 
   const url = args[0].trim();
 
   if (!/^https?:\/\/(www\.)?mediafire\.com\/file\//i.test(url)) {
-    return m.reply('❌ *Ese no es un enlace válido de MediaFire.*\n\nDebe tener el formato:\nhttp://www.mediafire.com/file/xxxxx/nombre.ext');
+    return m.reply(t.url_invalida || '❌ *Ese no es un enlace válido de MediaFire.*\n\nDebe tener el formato:\nhttp://www.mediafire.com/file/xxxxx/nombre.ext');
   }
 
   let statusMsg;
 
   try {
-    statusMsg = await conn.sendMessage(m.chat, { text: `🔎 *Buscando el enlace de descarga...*\n${barraProgreso(0)}` }, { quoted: m });
+    statusMsg = await conn.sendMessage(m.chat, { text: t.buscando?.replace('{barra}', barraProgreso(0)) || `🔎 *Buscando el enlace de descarga...*\n${barraProgreso(0)}` }, { quoted: m });
 
     const info = await mediafireDl(url);
 
-    await editarEstado(conn, m, statusMsg, `📄 *${info.name}*\n📦 ${info.size}\n\n⬇️ *Iniciando descarga...*\n${barraProgreso(0)}`);
+    await editarEstado(conn, m, statusMsg, t.iniciando?.replace('{nombre}', info.name).replace('{tamano}', info.size).replace('{barra}', barraProgreso(0)) || `📄 *${info.name}*\n📦 ${info.size}\n\n⬇️ *Iniciando descarga...*\n${barraProgreso(0)}`);
 
     let ultimoPorcentaje = 0;
     const buffer = await descargarArchivo(info.link, async (porcentaje) => {
       if (porcentaje - ultimoPorcentaje >= 10 || porcentaje === 100) {
         ultimoPorcentaje = porcentaje;
-        await editarEstado(conn, m, statusMsg, `📄 *${info.name}*\n📦 ${info.size}\n\n⬇️ *Descargando...*\n${barraProgreso(porcentaje)}`);
+        await editarEstado(conn, m, statusMsg, t.descargando?.replace('{nombre}', info.name).replace('{tamano}', info.size).replace('{barra}', barraProgreso(porcentaje)) || `📄 *${info.name}*\n📦 ${info.size}\n\n⬇️ *Descargando...*\n${barraProgreso(porcentaje)}`);
       }
     });
 
@@ -34,16 +37,16 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
       throw new Error('El archivo descargado está vacío');
     }
 
-    await editarEstado(conn, m, statusMsg, `📄 *${info.name}*\n📦 ${info.size}\n\n📤 *Enviando archivo...*\n${barraProgreso(100)}`);
+    await editarEstado(conn, m, statusMsg, t.enviando?.replace('{nombre}', info.name).replace('{tamano}', info.size).replace('{barra}', barraProgreso(100)) || `📄 *${info.name}*\n📦 ${info.size}\n\n📤 *Enviando archivo...*\n${barraProgreso(100)}`);
 
-    const caption = `*✅ DESCARGA COMPLETA - MEDIAFIRE*\n\n📄 *Nombre:* ${info.name}\n📦 *Tamaño:* ${info.size}\n🗓️ *Fecha:* ${info.date}\n🧬 *Tipo:* ${info.mime}`;
+    const caption = t.caption?.replace('{nombre}', info.name).replace('{tamano}', info.size).replace('{fecha}', info.date).replace('{mime}', info.mime) || `*✅ DESCARGA COMPLETA - MEDIAFIRE*\n\n📄 *Nombre:* ${info.name}\n📦 *Tamaño:* ${info.size}\n🗓️ *Fecha:* ${info.date}\n🧬 *Tipo:* ${info.mime}`;
 
     await conn.sendFile(m.chat, buffer, info.name, caption, m, null, { mimetype: info.mime, asDocument: true });
 
-    await editarEstado(conn, m, statusMsg, `✅ *${info.name}* enviado correctamente.\n${barraProgreso(100)}`);
+    await editarEstado(conn, m, statusMsg, t.enviado?.replace('{nombre}', info.name).replace('{barra}', barraProgreso(100)) || `✅ *${info.name}* enviado correctamente.\n${barraProgreso(100)}`);
 
   } catch (error) {
-    const textoError = `❌ *No se pudo procesar el enlace de MediaFire.*\n\n🧾 *Detalle:* ${error.message}`;
+    const textoError = t.error?.replace('{error}', error.message) || `❌ *No se pudo procesar el enlace de MediaFire.*\n\n🧾 *Detalle:* ${error.message}`;
     if (statusMsg) {
       await editarEstado(conn, m, statusMsg, textoError);
     } else {

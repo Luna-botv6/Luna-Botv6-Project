@@ -1,15 +1,17 @@
 import axios from 'axios'
 
 let handler = async (m, { conn, text }) => {
+    const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+    const t = _tr?.plugins?.buscador_tiktoksearch || {};
     if (!text) {
         return conn.sendMessage(m.chat, {
-            text: '❗ Escribe qué quieres buscar.\n\nEjemplo:\n.tiktoksearch naruto'
+            text: t.sin_busqueda || '❗ Escribe qué quieres buscar.\n\nEjemplo:\n.tiktoksearch naruto'
         }, { quoted: m })
     }
 
     try {
         await conn.sendMessage(m.chat, {
-            text: '🔎 Buscando videos en TikTok...'
+            text: t.buscando || '🔎 Buscando videos en TikTok...'
         }, { quoted: m })
 
         const response = await tiktokSearch(text)
@@ -22,7 +24,7 @@ let handler = async (m, { conn, text }) => {
 
         if (!results.length) {
             return conn.sendMessage(m.chat, {
-                text: '❌ No se encontraron resultados.'
+                text: t.sin_resultados || '❌ No se encontraron resultados.'
             }, { quoted: m })
         }
 
@@ -34,10 +36,10 @@ await conn.sendMessage(m.chat, {
     text:
 `🎵 *TIKTOK SEARCH*
 
-📌 Búsqueda: ${text}
-📊 Resultados: ${selected.length}
+📌 ${t.busqueda || 'Búsqueda'}: ${text}
+📊 ${t.resultados || 'Resultados'}: ${selected.length}
 
-📦 Preparando álbum...`
+📦 ${t.preparando || 'Preparando álbum...'}`
 }, { quoted: m })
 
 try {
@@ -48,7 +50,7 @@ try {
                 video: {
                     url: item.videoUrl
                 },
-                caption: `🎬 ${item.description || 'Sin descripción'}`
+                caption: `🎬 ${item.description || (t.sin_descripcion || 'Sin descripción')}`
             }))
         },
         { quoted: m }
@@ -64,7 +66,7 @@ try {
                     video: {
                         url: item.videoUrl
                     },
-                    caption: `🎬 ${item.description || 'Sin descripción'}`
+                    caption: `🎬 ${item.description || (t.sin_descripcion || 'Sin descripción')}`
                 },
                 { quoted: m }
             )
@@ -76,7 +78,7 @@ try {
 
     } catch (e) {
         await conn.sendMessage(m.chat, {
-            text: `❌ Error:\n${e.message}`
+            text: (t.error?.replace('{msg}', e.message) || `❌ Error:\n${e.message}`)
         }, { quoted: m })
     }
 }
@@ -138,3 +140,4 @@ function shuffleArray(array) {
         ;[array[i], array[j]] = [array[j], array[i]]
     }
 }
+

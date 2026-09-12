@@ -2,17 +2,20 @@ import { getNpcState, gamblerBet } from '../lib/npcSystem.js'
 import { getPlayerState } from '../lib/stats.js'
 
 const handler = async (m, { conn, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.rpg_apostar || {};
   const id  = m.sender
   const npc = getNpcState(id)
 
   if (!npc.gamblerActive) {
     const u = getPlayerState(id)
     return m.reply(
+      t.sin_apostador?.replace('{money}', u.money || 0).replace('{exp}', u.exp || 0) || (
       `🎰 *El Apostador*\n\n` +
       `No hay ningún apostador aquí ahora.\n` +
       `Aparece aleatoriamente mientras juegas.\n\n` +
       `💎 Tu saldo: *${u.money || 0}*\n` +
-      `⭐ Tu EXP: *${u.exp || 0}*`
+      `⭐ Tu EXP: *${u.exp || 0}*`)
     )
   }
 
@@ -21,10 +24,11 @@ const handler = async (m, { conn, args }) => {
 
   if (!amount) {
     return m.reply(
+      t.con_apostador || (
       `🎰 *¡El Apostador está aquí!*\n\n` +
       `• *apostar <cantidad>* — Apuesta diamantes\n` +
       `• *apostar exp <cantidad>* — Apuesta EXP\n\n` +
-      `🎲 Ganas: doble • Pierdes: todo lo apostado`
+      `🎲 Ganas: doble • Pierdes: todo lo apostado`)
     )
   }
 

@@ -59,33 +59,35 @@ async function downloadQuotedAudio(quoted) {
 }
 
 const handler = async (m, { conn, args, usedPrefix, command }) => {
-  if (!m.isGroup) return m.reply('❌ Este comando solo funciona en grupos.');
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.agregar_audio || {};
+  if (!m.isGroup) return m.reply(t.solo_grupos || '❌ Este comando solo funciona en grupos.');
 
   const groupData = await getGroupDataForPlugin(conn, m.chat, m.sender);
-  if (!groupData.isAdmin && !groupData.isRAdmin) return m.reply('❌ Solo los administradores pueden agregar audios.');
+  if (!groupData.isAdmin && !groupData.isRAdmin) return m.reply(t.solo_admins || '❌ Solo los administradores pueden agregar audios.');
 
   const frase = args.join(' ').trim();
   if (!frase) {
-    return m.reply(`❌ Debes indicar la frase que activará el audio.\n\n📌 Ejemplo: responde a un audio con:\n${usedPrefix}${command} Holis chicos`);
+    return m.reply(t.falta_frase?.replace('{prefix}', `${usedPrefix}${command}`) || `❌ Debes indicar la frase que activará el audio.\n\n📌 Ejemplo: responde a un audio con:\n${usedPrefix}${command} Holis chicos`);
   }
 
   const quoted = m.quoted;
   if (!quoted) {
-    return m.reply(`❌ Debes responder a un audio o nota de voz con:\n${usedPrefix}${command} ${frase}`);
+    return m.reply(t.falta_cita?.replace('{prefix}', `${usedPrefix}${command}`).replace('{frase}', frase) || `❌ Debes responder a un audio o nota de voz con:\n${usedPrefix}${command} ${frase}`);
   }
 
   const mtype = quoted.mtype || Object.keys(quoted.message || {})[0];
   if (mtype !== 'audioMessage') {
-    return m.reply('❌ El mensaje al que respondes no es un audio ni una nota de voz.');
+    return m.reply(t.no_es_audio || '❌ El mensaje al que respondes no es un audio ni una nota de voz.');
   }
 
   const triggerKey = frase.toLowerCase();
 
   const collideDefault = AUDIOS_CATALOG.some(entry => entry.keywords.includes(triggerKey));
-  if (collideDefault) return m.reply('❌ Esa frase ya está usada por un audio del bot, elige otra.');
+  if (collideDefault) return m.reply(t.colision_default || '❌ Esa frase ya está usada por un audio del bot, elige otra.');
 
   const customAudios = getCustomAudios();
-  if (customAudios[triggerKey]) return m.reply('❌ Ya existe un audio guardado con esa frase, elige otra.');
+  if (customAudios[triggerKey]) return m.reply(t.ya_existe || '❌ Ya existe un audio guardado con esa frase, elige otra.');
 
   let rawBuffer;
   try {
@@ -94,16 +96,16 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     rawBuffer = null;
   }
 
-  if (!rawBuffer || !rawBuffer.length) return m.reply('❌ No pude descargar el audio, intenta de nuevo.');
+  if (!rawBuffer || !rawBuffer.length) return m.reply(t.no_descarga || '❌ No pude descargar el audio, intenta de nuevo.');
 
   let oggBuffer;
   try {
     oggBuffer = await convertBufferToOggOpus(rawBuffer);
   } catch {
-    return m.reply('❌ Error al convertir el audio.');
+    return m.reply(t.error_convertir || '❌ Error al convertir el audio.');
   }
 
-  if (!oggBuffer || !oggBuffer.length) return m.reply('❌ La conversión del audio no generó ningún archivo válido.');
+  if (!oggBuffer || !oggBuffer.length) return m.reply(t.conversion_vacia || '❌ La conversión del audio no generó ningún archivo válido.');
 
   ensureDir();
 
@@ -113,7 +115,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
   try {
     fs.writeFileSync(filepath, oggBuffer);
   } catch {
-    return m.reply('❌ No pude guardar el audio en el servidor.');
+    return m.reply(t.error_guardar || '❌ No pude guardar el audio en el servidor.');
   }
 
   await addCustomAudio(triggerKey, {
@@ -124,7 +126,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     date: Date.now()
   });
 
-  await m.reply(`✅ *Audio agregado correctamente*\n\n🗣️ *Frase:* _${frase}_\n📁 *Archivo:* ${filename}\n\n_Cuando alguien escriba "${frase}" en cualquier grupo, el bot responderá con este audio._\n_Podés desactivarlo por grupo con el comando de configuración de audios._`);
+  await m.reply(t.exito?.replace('{frase}', frase).replace('{frase}', frase).replace('{archivo}', filename) || `✅ *Audio agregado correctamente*\n\n🗣️ *Frase:* _${frase}_\n📁 *Archivo:* ${filename}\n\n_Cuando alguien escriba "${frase}" en cualquier grupo, el bot responderá con este audio._\n_Podés desactivarlo por grupo con el comando de configuración de audios._`);
 };
 
 handler.command = /^agaudios$/i;

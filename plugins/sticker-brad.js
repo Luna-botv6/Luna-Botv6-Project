@@ -20,6 +20,8 @@ const ft = async (url, headers = {}) => {
 }
 
 let handler = async (m, { conn, text }) => {
+    const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+    const t = _tr?.plugins?.sticker_brat || {};
     if (m.quoted?.text) {
         text = m.quoted.text
     }
@@ -28,7 +30,7 @@ let handler = async (m, { conn, text }) => {
         return conn.sendMessage(
             m.chat,
             {
-                text: '❀ Por favor, responde un mensaje o escribe un texto.'
+                text: t.sin_texto || '❀ Por favor, responde un mensaje o escribe un texto.'
             },
             { quoted: m }
         )
@@ -69,7 +71,7 @@ let handler = async (m, { conn, text }) => {
         await conn.sendMessage(
             m.chat,
             {
-                text: `⚠️ Ocurrió un error al generar el sticker.\n\n${e.message}`
+                text: (t.error?.replace('{msg}', e.message) || `⚠️ Ocurrió un error al generar el sticker.\n\n${e.message}`)
             },
             {
                 quoted: m

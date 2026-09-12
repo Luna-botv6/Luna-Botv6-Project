@@ -26,6 +26,8 @@ function findSubbotIdByPhone(phoneNumber) {
 }
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.subbot_stop || {};
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender;
 
   let resolvedPhone;
@@ -44,7 +46,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   }
 
   if (!resolvedPhone) {
-    return m.reply('❌ No se pudo resolver tu número real.');
+    return m.reply((t.no_resolver_numero || '❌ No se pudo resolver tu número real.'));
   }
 
   const id = findSubbotIdByPhone(resolvedPhone);
@@ -52,17 +54,17 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
   if (command === 'stopbot' || command === 'stop') {
     if (!id) {
-      return m.reply('❌ No tienes un SubBot activo para detener.');
+      return m.reply((t.sin_subbot_activo || '❌ No tienes un SubBot activo para detener.'));
     }
 
     const socket = connectionManager.getSocket(id);
 
     if (!socket) {
-      return m.reply('❌ No tienes un SubBot activo para detener.');
+      return m.reply((t.sin_subbot_activo || '❌ No tienes un SubBot activo para detener.'));
     }
 
     if (!connectionManager.isConnected(id)) {
-      return m.reply('⚠️ Tu SubBot no está conectado actualmente.');
+      return m.reply((t.no_conectado || '⚠️ Tu SubBot no está conectado actualmente.'));
     }
 
     try {
@@ -79,16 +81,16 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       connectionManager.removeConnection(id);
 
       console.log(chalk.green(`✅ SubBot ${id} detenido correctamente`));
-      return m.reply(`✅ SubBot detenido correctamente.\n\n💡 *Tip:* Usa *${usedPrefix}deletebot* para eliminar la sesión completamente.`);
+      return m.reply((t.detenido?.replace('{prefix}', usedPrefix) || `✅ SubBot detenido correctamente.\n\n💡 *Tip:* Usa *${usedPrefix}deletebot* para eliminar la sesión completamente.`));
     } catch (error) {
       console.error(chalk.red(`❌ Error deteniendo SubBot ${id}:`), error);
-      return m.reply(`❌ Error al detener el SubBot: ${error.message}`);
+      return m.reply((t.error_detener?.replace('{error}', error.message) || `❌ Error al detener el SubBot: ${error.message}`));
     }
   }
 
   if (command === 'deletebot' || command === 'delbot') {
     if (!id || !fs.existsSync(subbotPath)) {
-      return m.reply('❌ No tienes una sesión de SubBot para eliminar.');
+      return m.reply((t.sin_sesion || '❌ No tienes una sesión de SubBot para eliminar.'));
     }
 
     try {
@@ -113,10 +115,10 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       await fs.promises.rm(subbotPath, { recursive: true, force: true });
 
       console.log(chalk.green(`✅ Sesión de SubBot ${id} eliminada correctamente`));
-      return m.reply(`✅ Sesión de SubBot eliminada correctamente.\n\n🤖 Usa *${usedPrefix}serbot* para crear un nuevo SubBot.`);
+      return m.reply((t.eliminada?.replace('{prefix}', usedPrefix) || `✅ Sesión de SubBot eliminada correctamente.\n\n🤖 Usa *${usedPrefix}serbot* para crear un nuevo SubBot.`));
     } catch (error) {
       console.error(chalk.red(`❌ Error eliminando sesión de SubBot ${id}:`), error);
-      return m.reply(`❌ Error al eliminar la sesión: ${error.message}`);
+      return m.reply((t.error_eliminar?.replace('{error}', error.message) || `❌ Error al eliminar la sesión: ${error.message}`));
     }
   }
 };

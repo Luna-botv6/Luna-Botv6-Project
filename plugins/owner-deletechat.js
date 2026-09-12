@@ -1,14 +1,16 @@
 const handler = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.owner_deletechat || {};
   try {
     const chatId = m.chat;
 
     const allChats = Object.entries(conn.chats).filter(([jid, chat]) => chat.isChats);
 
     if (allChats.length === 0) {
-      return m.reply('⚠️ No se encontraron chats para borrar.');
+      return m.reply((t.sin_chats || '⚠️ No se encontraron chats para borrar.'));
     }
 
-    await m.reply(`🗑️ Borrando ${allChats.length} chats...`);
+    await m.reply((t.borrando?.replace('{cantidad}', allChats.length) || `🗑️ Borrando ${allChats.length} chats...`));
 
     let borrados = 0;
     let errores = 0;
@@ -56,12 +58,15 @@ const handler = async (m, { conn }) => {
     }
 
     await conn.sendMessage(chatId, {
-      text: `✅ Proceso completado\n📊 Chats borrados: ${borrados}\n❌ Errores: ${errores}`
+      text: (t.resumen ? t.resumen
+        .replace('{borrados}', borrados)
+        .replace('{errores}', errores) : null) ||
+        `✅ Proceso completado\n📊 Chats borrados: ${borrados}\n❌ Errores: ${errores}`
     });
 
   } catch (err) {
     console.error('Error al borrar chats:', err);
-    await m.reply('❌ Error crítico al borrar chats.');
+    await m.reply((t.error_critico || '❌ Error crítico al borrar chats.'));
   }
 };
 

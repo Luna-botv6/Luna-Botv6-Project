@@ -1,4 +1,6 @@
 const handlerYo = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.game_dinamicayo || {};
   const chatId = m.chat;
   const texto = (m.body || m.text || '').trim().toLowerCase();
   global.dinamicas = global.dinamicas || {};
@@ -12,7 +14,7 @@ const handlerYo = async (m, { conn }) => {
     if (texto !== '/yo') return;
 
     if (dinamica.participantes.includes(tag)) return;
-    if (dinamica.participantes.length >= dinamica.max) return m.reply('⚠️ La dinámica ya está llena.');
+    if (dinamica.participantes.length >= dinamica.max) return m.reply(t.llena || '⚠️ La dinámica ya está llena.');
 
     dinamica.participantes.push(tag);
 
@@ -40,7 +42,7 @@ const handlerYo = async (m, { conn }) => {
     const espaciosTotales = (dinamica.plantilla.match(new RegExp(equipo, 'g')) || []).length;
     const anotados = dinamica.participantes.filter(p => p.equipo === equipo).length;
 
-    if (anotados >= espaciosTotales) return m.reply(`⚠️ Ya están llenos los cupos para el equipo ${equipo}.`);
+    if (anotados >= espaciosTotales) return m.reply((t.cupos_llenos || '⚠️ Ya están llenos los cupos para el equipo {equipo}.').replace('{equipo}', equipo));
     if (dinamica.participantes.some(p => p.id === m.sender)) return;
 
     dinamica.participantes.push({ id: m.sender, equipo });

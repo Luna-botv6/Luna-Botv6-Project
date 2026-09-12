@@ -1,11 +1,13 @@
 import fetch from 'node-fetch';
 
 const handler = async (m, { conn, usedPrefix, command, text }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.convertidor_tts3 || {};
   const match = text.match(/^(\w+)\s*\|\s*(.+)/i);
   if (!match) {
     const voices = await getVoices();
     const voiceNames = voices.voices.map(voice => voice.name).join('\n◉ ');
-    return m.reply(`*[❗] Formato de uso erroneo, voz o texto faltante.*\n\n*—◉ Ejemplo:*\n◉ ${usedPrefix + command} nombre_voz | texto\n\n*—◉ Ejemplo de uso:*\n◉ ${usedPrefix + command} ${voices.voices[0].name} | este es un texto de ejemplo\n\n*—◉ Lista de voces disponibles:*\n◉ ${voiceNames}`
+    return m.reply(t.formatoErroneo?.replace('{prefix}', usedPrefix + command).replace('{voz}', voices.voices[0].name).replace('{voces}', voiceNames) || `*[❗] Formato de uso erroneo, voz o texto faltante.*\n\n*—◉ Ejemplo:*\n◉ ${usedPrefix + command} nombre_voz | texto\n\n*—◉ Ejemplo de uso:*\n◉ ${usedPrefix + command} ${voices.voices[0].name} | este es un texto de ejemplo\n\n*—◉ Lista de voces disponibles:*\n◉ ${voiceNames}`
     );
   }
   const [, voiceName, inputText] = match;
@@ -13,7 +15,7 @@ const handler = async (m, { conn, usedPrefix, command, text }) => {
   const voice = voices.voices.find(voice => voice.name.toLowerCase() === voiceName.toLowerCase());
   if (!voice) {
     const voiceNames = voices.voices.map(voice => voice.name).join('\n◉ ');
-    return m.reply(`[❗] No se encontró ninguna voz con el nombre "${voiceName}".\n\n—◉ Lista de voces disponibles:\n◉ ${voiceNames}`);
+    return m.reply(t.vozNoEncontrada?.replace('{voz}', voiceName).replace('{voces}', voiceNames) || `[❗] No se encontró ninguna voz con el nombre "${voiceName}".\n\n—◉ Lista de voces disponibles:\n◉ ${voiceNames}`);
   }
   const audio = await convertTextToSpeech(inputText, voice.voice_id);
   if (audio) {

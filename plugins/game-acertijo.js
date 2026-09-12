@@ -60,7 +60,11 @@ const pickAcertijo = (lista) => {
   return elegido;
 };
 
-const buildCaption = (question, secsLeft) =>
+const buildCaption = (question, secsLeft, t) =>
+  (t.caption && t.caption
+    .replace('{question}', question)
+    .replace('{secsLeft}', secsLeft)
+    .replace('{poin}', POIN)) ||
   '╭━━━「 🧩 *ACERTIJO* 」━━━╮\n' +
   '┃\n' +
   `┃ 🤔 *${question}*\n` +
@@ -73,25 +77,27 @@ const buildCaption = (question, secsLeft) =>
   '╰━━━━━━━━━━━━━━━━━━━━━━━╯';
 
 const handler = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.game_acertijo || {};
   conn.tekateki = conn.tekateki || {};
   const id = m.chat;
 
   if (id in conn.tekateki) {
-    return conn.reply(m.chat, '⚠️ Ya hay un acertijo activo, ¡respóndelo primero!', conn.tekateki[id][0]);
+    return conn.reply(m.chat, t.activo || '⚠️ Ya hay un acertijo activo, ¡respóndelo primero!', conn.tekateki[id][0]);
   }
 
   const acertijos = loadAcertijos();
-  if (!acertijos.length) return m.reply('❌ No hay acertijos en la base de datos.');
+  if (!acertijos.length) return m.reply(t.sin_acertijos || '❌ No hay acertijos en la base de datos.');
 
   const json = pickAcertijo(acertijos);
   const startTime = Date.now();
-  const sentMsg = await conn.reply(m.chat, buildCaption(json.question, (TIMEOUT / 1000).toFixed(0)), m);
+  const sentMsg = await conn.reply(m.chat, buildCaption(json.question, (TIMEOUT / 1000).toFixed(0), t), m);
 
   conn.tekateki[id] = [
     sentMsg, json, POIN,
     setTimeout(async () => {
       if (!conn.tekateki[id]) return;
-      const fin =
+      const fin = (t.tiempo_fin) ||
         '╭━「 ⏰ *SE ACABÓ EL TIEMPO* 」━╮\n' +
         '┃\n' +
         '┃ 😔 Nadie respondió correctamente.\n' +

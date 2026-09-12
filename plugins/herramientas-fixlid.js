@@ -1,10 +1,12 @@
 const handler = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.herramientas_fixlid || {};
   const senderLid = m.sender;
   const chatJid = m.chat;
   const pushName = m.pushName || 'SinNombre';
 
   if (!senderLid.includes('@lid')) {
-    return m.reply('❌ Este comando solo se puede usar si apareces como LID.');
+    return m.reply(t.solo_lid || '❌ Este comando solo se puede usar si apareces como LID.');
   }
 
   // Inicializar cachés globales si no existen
@@ -25,14 +27,14 @@ const handler = async (m, { conn }) => {
       if (cleanName === cleanPush || notify === cleanPush) {
         global.lidToJidCache.set(senderLid, p.id);
         global.lidToNameCache.set(senderLid, pName);
-        return m.reply(`✅ LID corregido: ahora aparecerás como ${pName} (${p.id})`);
+        return m.reply(t.corregido?.replace('{nombre}', pName).replace('{id}', p.id) || `✅ LID corregido: ahora aparecerás como ${pName} (${p.id})`);
       }
     }
 
-    return m.reply('⚠️ No se pudo encontrar tu número real en el grupo.');
+    return m.reply(t.no_encontrado || '⚠️ No se pudo encontrar tu número real en el grupo.');
   } catch (e) {
     console.log(e);
-    return m.reply('❌ Ocurrió un error al intentar corregir el LID.');
+    return m.reply(t.error || '❌ Ocurrió un error al intentar corregir el LID.');
   }
 };
 

@@ -16,28 +16,30 @@ function buildCatalog() {
   return [...defaults, ...customs];
 }
 
-function buildMenu(audiosConfig, catalog) {
+function buildMenu(audiosConfig, catalog, t) {
   const BOT = () => global.BotName || 'Luna';
   const allOn = catalog.every(c => audiosConfig[c.id] !== false);
 
-  let menu = `🔊 *${BOT()} — Audios Config*\n\n`;
-  menu += `_Elige qué audios activar o desactivar en este grupo._\n\n`;
+  let menu = (t.titulo?.replace('{bot}', BOT()) || `🔊 *${BOT()} — Audios Config*`) + `\n\n`;
+  menu += (t.descripcion || `_Elige qué audios activar o desactivar en este grupo._`) + `\n\n`;
 
   catalog.forEach((c, i) => {
     const estado = audiosConfig[c.id] !== false ? '✅' : '❌';
     const tag = c.custom ? ' 🆕' : '';
-    menu += `> *${i + 1}.* ${c.label}${tag} → ${estado}\n`;
+    menu += t.linea_item?.replace('{num}', i + 1).replace('{label}', c.label).replace('{tag}', tag).replace('{estado}', estado) || `> *${i + 1}.* ${c.label}${tag} → ${estado}\n`;
   });
 
-  menu += `\n> *0.* ${allOn ? '🔴 Desactivar TODO' : '🟢 Activar TODO'}\n`;
-  menu += `\n_Responde con el número o varios a la vez:_\n`;
-  menu += `_Ejemplo: \`1 3 5\` o solo \`0\` para todo_\n`;
-  menu += `_⏳ Tienes 60 segundos para responder_`;
+  menu += (t.toggle_todo?.replace('{texto}', allOn ? (t.desactivar_todo || '🔴 Desactivar TODO') : (t.activar_todo || '🟢 Activar TODO')) || `\n> *0.* ${allOn ? '🔴 Desactivar TODO' : '🟢 Activar TODO'}`) + `\n`;
+  menu += (t.responder_numeros || `\n_Responde con el número o varios a la vez:_`) + `\n`;
+  menu += (t.ejemplo || `_Ejemplo: \`1 3 5\` o solo \`0\` para todo_`) + `\n`;
+  menu += t.tiempo_respuesta || `_⏳ Tienes 60 segundos para responder_`;
 
   return menu;
 }
 
 const handler = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.audios_config || {};
   if (!m.isGroup) return;
 
   const groupData = await getGroupDataForPlugin(conn, m.chat, m.sender);
@@ -48,7 +50,7 @@ const handler = async (m, { conn }) => {
 
   if (!audiosEnabled) {
     await conn.sendMessage(m.chat, {
-      text: `⚠️ Los audios no están activados en este grupo.\nActívalos primero con el comando correspondiente.`
+      text: t.audios_off || `⚠️ Los audios no están activados en este grupo.\nActívalos primero con el comando correspondiente.`
     }, { quoted: m });
     return;
   }
@@ -57,7 +59,7 @@ const handler = async (m, { conn }) => {
   const catalog = buildCatalog();
 
   if (catalog.length === 0) {
-    await conn.sendMessage(m.chat, { text: '⚠️ No hay audios para configurar todavía.' }, { quoted: m });
+    await conn.sendMessage(m.chat, { text: t.sin_audios || '⚠️ No hay audios para configurar todavía.' }, { quoted: m });
     return;
   }
 
@@ -72,11 +74,13 @@ const handler = async (m, { conn }) => {
   pendingSessions.set(m.chat, { adminId: m.sender, timer, type: 'audiosConfig' });
 
   await conn.sendMessage(m.chat, {
-    text: buildMenu(audiosConfig, catalog)
+    text: buildMenu(audiosConfig, catalog, t)
   }, { quoted: m });
 };
 
 handler.before = async function (m, { conn }) {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.audios_config || {};
   if (!m.isGroup || !m.text || !pendingSessions.has(m.chat)) return;
 
   const session = pendingSessions.get(m.chat);
@@ -106,15 +110,15 @@ handler.before = async function (m, { conn }) {
 
   setConfig(m.chat, { audiosConfig });
 
-  let reply = `✅ *Configuración actualizada*\n\n`;
+  let reply = (t.actualizado || `✅ *Configuración actualizada*`) + `\n\n`;
 
   if (nums.includes(0)) {
     const newState = audiosConfig[catalog[0].id];
-    reply += `> ${newState !== false ? '🟢 Todos los audios ACTIVADOS' : '🔴 Todos los audios DESACTIVADOS'}`;
+    reply += `> ${newState !== false ? (t.todo_activado || '🟢 Todos los audios ACTIVADOS') : (t.todo_desactivado || '🔴 Todos los audios DESACTIVADOS')}`;
   } else {
     nums.forEach(n => {
       const item = catalog[n - 1];
-      if (item) reply += `> ${audiosConfig[item.id] !== false ? '✅' : '❌'} ${item.label}\n`;
+      if (item) reply += t.linea_estado?.replace('{estado}', audiosConfig[item.id] !== false ? '✅' : '❌').replace('{label}', item.label) || `> ${audiosConfig[item.id] !== false ? '✅' : '❌'} ${item.label}\n`;
     });
   }
 
