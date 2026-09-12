@@ -1,14 +1,16 @@
 let juegos = global.adivinaemoji = global.adivinaemoji || {};
 
 const handler = async (m, { command, args, text, usedPrefix, conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.adivemoji || {};
   const id = m.chat;
 
   if (command === 'adivemoji') {
-    if (juegos[id]) return m.reply('🎮 Ya hay un juego activo. Usa /pista3 o /rpta3 para responder.');
+    if (juegos[id]) return m.reply(t.juego_activo || '🎮 Ya hay un juego activo. Usa /pista3 o /rpta3 para responder.');
 
     const dificultad = (args[0] || '').toLowerCase();
     if (!['facil', 'medio', 'dificil'].includes(dificultad)) {
-      return m.reply(`🔸 Indica la dificultad:\n\n*${usedPrefix}adivemoji facil*\n*${usedPrefix}adivemoji medio*\n*${usedPrefix}adivemoji dificil*`);
+      return m.reply((t.indica_dificultad?.replace(/\{usedPrefix\}/g, usedPrefix)) || `🔸 Indica la dificultad:\n\n*${usedPrefix}adivemoji facil*\n*${usedPrefix}adivemoji medio*\n*${usedPrefix}adivemoji dificil*`);
     }
 
     const preguntas = {
@@ -49,18 +51,18 @@ const handler = async (m, { command, args, text, usedPrefix, conn }) => {
       tiempo: Date.now()
     };
 
-    return m.reply(`🎯 *¡Adivina el emoji!* (${dificultad.toUpperCase()})\n\n${seleccion.emoji}\n\n⏳ Tienes *60 segundos*.\n🔍 Usa */pista3* si necesitas ayuda.\n✅ Responde con: *${usedPrefix}rpta3 tu_respuesta*`);
+    return m.reply((t.empezar?.replace('{dificultad}', dificultad.toUpperCase()).replace('{emoji}', seleccion.emoji).replace('{usedPrefix}', usedPrefix)) || `🎯 *¡Adivina el emoji!* (${dificultad.toUpperCase()})\n\n${seleccion.emoji}\n\n⏳ Tienes *60 segundos*.\n🔍 Usa */pista3* si necesitas ayuda.\n✅ Responde con: *${usedPrefix}rpta3 tu_respuesta*`);
   }
 
   if (command === 'pista3') {
-    if (!juegos[id]) return m.reply('❌ No hay ningún juego activo.');
-    return m.reply(`🧩 *Pista:* ${juegos[id].pista}`);
+    if (!juegos[id]) return m.reply(t.sin_juego || '❌ No hay ningún juego activo.');
+    return m.reply((t.pista?.replace('{pista}', juegos[id].pista)) || `🧩 *Pista:* ${juegos[id].pista}`);
   }
 
   if (command === 'rpta3') {
-    if (!juegos[id]) return m.reply('🎮 No hay ningún juego activo. Usa /adivemoji para empezar.');
+    if (!juegos[id]) return m.reply(t.sin_juego_inicio || '🎮 No hay ningún juego activo. Usa /adivemoji para empezar.');
 
-    if (!text) return m.reply('✏️ Escribe tu respuesta: *' + usedPrefix + 'rpta3 tu_respuesta*');
+    if (!text) return m.reply((t.escribe_respuesta?.replace('{usedPrefix}', usedPrefix)) || '✏️ Escribe tu respuesta: *' + usedPrefix + 'rpta3 tu_respuesta*');
 
     const juego = juegos[id];
     const tiempoLimite = 60000; // 60 segundos
@@ -68,7 +70,7 @@ const handler = async (m, { command, args, text, usedPrefix, conn }) => {
 
     if (tiempoTranscurrido > tiempoLimite) {
       delete juegos[id];
-      return m.reply('⏰ ¡Tiempo agotado! La respuesta correcta era: *' + juego.respuesta + '*');
+      return m.reply((t.tiempo_agotado?.replace('{respuesta}', juego.respuesta)) || '⏰ ¡Tiempo agotado! La respuesta correcta era: *' + juego.respuesta + '*');
     }
 
     const respuestaUsuario = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -79,9 +81,9 @@ const handler = async (m, { command, args, text, usedPrefix, conn }) => {
       let recompensa = juego.dificultad === 'facil' ? 500 : juego.dificultad === 'medio' ? 1000 : 2500;
       if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = { exp: 0 };
       global.db.data.users[m.sender].exp += recompensa;
-      return m.reply(`🎉 *¡Correcto!* La respuesta era *${juego.respuesta}*.\n🪙 Recompensa: *+${recompensa} Exp*`);
+      return m.reply((t.correcto?.replace('{respuesta}', juego.respuesta).replace('{recompensa}', recompensa)) || `🎉 *¡Correcto!* La respuesta era *${juego.respuesta}*.\n🪙 Recompensa: *+${recompensa} Exp*`);
     } else {
-      return m.reply('❌ Respuesta incorrecta. Intenta de nuevo o usa /pista3.');
+      return m.reply(t.incorrecto || '❌ Respuesta incorrecta. Intenta de nuevo o usa /pista3.');
     }
   }
 };

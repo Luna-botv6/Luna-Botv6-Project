@@ -5,6 +5,8 @@ const userWarnings = {};
 const userCooldowns = {};
 
 const handler = async (m, { conn, usedPrefix, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.game_ruleta || {};
   const id = m.sender;
   const currentTime = Date.now();
   const cooldown = 120000; // 2 minutos
@@ -13,7 +15,7 @@ const handler = async (m, { conn, usedPrefix, args }) => {
   if (!userCooldowns[id]) userCooldowns[id] = 0;
   if (currentTime - userCooldowns[id] < cooldown) {
     const tiempoRestante = ((cooldown - (currentTime - userCooldowns[id])) / 1000).toFixed(0);
-    return m.reply(`⏳ Debes esperar *${tiempoRestante} segundos* antes de volver a jugar.`);
+    return m.reply((t.cooldown?.replace('{tiempoRestante}', tiempoRestante)) || `⏳ Debes esperar *${tiempoRestante} segundos* antes de volver a jugar.`);
   }
 
   if (!userCommandHistory[id]) userCommandHistory[id] = [];
@@ -31,7 +33,7 @@ const handler = async (m, { conn, usedPrefix, args }) => {
   if (commandCount >= 3 && userWarnings[id].count === 0) {
     userWarnings[id].count = 1;
     userWarnings[id].lastWarning = currentTime;
-    return m.reply(`⚠️ *PRIMERA ADVERTENCIA* ⚠️
+    return m.reply((t.primera_advertencia?.replace('{commandCount}', commandCount)) || `⚠️ *PRIMERA ADVERTENCIA* ⚠️
 
 Estás usando el comando de ruleta muy rápido.
 *Has usado ${commandCount} comandos en los últimos 10 segundos.*
@@ -50,7 +52,7 @@ Estás usando el comando de ruleta muy rápido.
     const posibleMultaExp = Math.floor(saldoExp * 0.45);
     const posibleMultaMoney = Math.floor(saldoMoney * 0.45);
 
-    return m.reply(`🔥 *ÚLTIMA ADVERTENCIA* 🔥
+    return m.reply((t.ultima_advertencia?.replace('{commandCount}', commandCount).replace('{posibleMultaExp}', posibleMultaExp).replace('{posibleMultaMoney}', posibleMultaMoney)) || `🔥 *ÚLTIMA ADVERTENCIA* 🔥
 
 *¡PELIGRO!* Has usado ${commandCount} comandos en 10 segundos.
 *¡SOLO FALTA 1 COMANDO MÁS PARA LA MULTA!*
@@ -72,7 +74,7 @@ Estás usando el comando de ruleta muy rápido.
     userCommandHistory[id] = [];
     userWarnings[id] = { count: 0, lastWarning: 0 };
 
-    return m.reply(`🚫 *MULTA POR SPAM APLICADA* 🚫
+    return m.reply((t.multa_spam?.replace('{multaExp}', multaExp).replace('{multaMoney}', multaMoney)) || `🚫 *MULTA POR SPAM APLICADA* 🚫
 
 💸 EXP perdido: ${multaExp}
 💎 Diamantes perdidos: ${multaMoney}
@@ -83,7 +85,7 @@ Estás usando el comando de ruleta muy rápido.
   userCommandHistory[id].push(currentTime);
 
   if (args.length < 3) {
-    const message = `🎰 *¡Bienvenido a la Ruleta de Colores!* 🎰
+    const message = (t.bienvenida?.replace(/\{usedPrefix\}/g, usedPrefix)) || `🎰 *¡Bienvenido a la Ruleta de Colores!* 🎰
 Apuesta usando EXP o Diamantes:
 
 🟢 Verde (x5) — Difícil, alta recompensa  
@@ -95,9 +97,9 @@ ${usedPrefix}ruleta exp rojo 50
 ${usedPrefix}ruleta money verde 100`;
 
     const botones = [
-      ['🟢 Exp Verde 300', `${usedPrefix}ruleta exp verde 300`],
-      ['🔴 Diamantes Rojo 50', `${usedPrefix}ruleta money rojo 50`],
-      ['⚪ Exp Blanco 250', `${usedPrefix}ruleta exp blanco 250`]
+      [(t.btn_exp_verde || '🟢 Exp Verde 300'), `${usedPrefix}ruleta exp verde 300`],
+      [(t.btn_money_rojo || '🔴 Diamantes Rojo 50'), `${usedPrefix}ruleta money rojo 50`],
+      [(t.btn_exp_blanco || '⚪ Exp Blanco 250'), `${usedPrefix}ruleta exp blanco 250`]
     ];
 
     await conn.sendButton(m.chat, message, 'LunaBot V6', null, botones, null, null, m);
@@ -108,19 +110,20 @@ ${usedPrefix}ruleta money verde 100`;
   const color = args[1]?.toLowerCase();
   const cantidad = parseInt(args[2]);
 
-  if (!['exp', 'money'].includes(tipo)) return m.reply('❌ Apuesta "exp" o "money".');
-  if (!['verde', 'rojo', 'blanco'].includes(color)) return m.reply('❌ Colores válidos: verde, rojo o blanco.');
-  if (isNaN(cantidad) || cantidad < 1) return m.reply('❌ Ingresa una cantidad válida mayor a 0.');
+  if (!['exp', 'money'].includes(tipo)) return m.reply(t.tipo_invalido || '❌ Apuesta "exp" o "money".');
+  if (!['verde', 'rojo', 'blanco'].includes(color)) return m.reply(t.color_invalido || '❌ Colores válidos: verde, rojo o blanco.');
+  if (isNaN(cantidad) || cantidad < 1) return m.reply(t.cantidad_invalida || '❌ Ingresa una cantidad válida mayor a 0.');
 
   const saldoExp = await getExp(id);
   const saldoMoney = await getMoney(id);
 
-  if (tipo === 'exp' && saldoExp < cantidad) return m.reply('❌ No tienes suficiente *Exp*.');
-  if (tipo === 'money' && saldoMoney < cantidad) return m.reply('❌ No tienes suficientes *Diamantes*.');
+  if (tipo === 'exp' && saldoExp < cantidad) return m.reply(t.sin_exp || '❌ No tienes suficiente *Exp*.');
+  if (tipo === 'money' && saldoMoney < cantidad) return m.reply(t.sin_money || '❌ No tienes suficientes *Diamantes*.');
 
   const colores = ['verde', 'rojo', 'blanco', 'rojo', 'blanco', 'rojo', 'blanco', 'rojo', 'blanco', 'rojo'];
   const resultado = colores[Math.floor(Math.random() * colores.length)];
 
+  const moneda = tipo === 'exp' ? 'Exp' : 'Diamantes';
   let ganancia = 0;
   if (color === resultado) {
     switch (resultado) {
@@ -138,7 +141,7 @@ ${usedPrefix}ruleta money verde 100`;
     }
 
     userCooldowns[id] = Date.now();
-    return m.reply(`🎉 ¡Ganaste! El color fue *${resultado.toUpperCase()}*.\nGanaste *${ganancia} ${tipo === 'exp' ? 'Exp' : 'Diamantes'}*`);
+    return m.reply((t.ganaste?.replace('{resultado}', resultado.toUpperCase()).replace('{ganancia}', ganancia).replace('{moneda}', moneda)) || `🎉 ¡Ganaste! El color fue *${resultado.toUpperCase()}*.\nGanaste *${ganancia} ${moneda}*`);
   } else {
     if (tipo === 'exp') {
       spendExp(id, cantidad);
@@ -147,7 +150,7 @@ ${usedPrefix}ruleta money verde 100`;
     }
 
     userCooldowns[id] = Date.now();
-    return m.reply(`😢 Perdiste... El color fue *${resultado.toUpperCase()}*.\nPerdiste *${cantidad} ${tipo === 'exp' ? 'Exp' : 'Diamantes'}*`);
+    return m.reply((t.perdiste?.replace('{resultado}', resultado.toUpperCase()).replace('{cantidad}', cantidad).replace('{moneda}', moneda)) || `😢 Perdiste... El color fue *${resultado.toUpperCase()}*.\nPerdiste *${cantidad} ${moneda}*`);
   }
 };
 

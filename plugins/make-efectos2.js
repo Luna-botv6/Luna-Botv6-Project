@@ -62,22 +62,24 @@ Escribe el nombre del efecto seguido de tu texto y el bot te genera una imagen c
 ▸ blackpink ▸ bornpink
 ─────────────────`;
 
-const handler = async (m, { conn, text, command }) => {
+const handler = async (m, { conn, text, command, usedPrefix }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.make_efectos2 || {};
   const cmd = command.toLowerCase();
 
   if (cmd === 'efectos') return m.reply(menu);
 
   const url = efectos[cmd];
-  if (!text) return m.reply(`✏️ Escribe un texto después del comando.\n📌 Ejemplo: /${cmd} Hola mundo\n\nVer todos los efectos: /efectos`);
+  if (!text) return m.reply(t.sinTexto?.replace('{cmd}', cmd).replace('{prefix}', usedPrefix) || `✏️ Escribe un texto después del comando.\n📌 Ejemplo: /${cmd} Hola mundo\n\nVer todos los efectos: /efectos`);
 
-  m.reply('⏳ Generando imagen...');
+  m.reply(t.generando || '⏳ Generando imagen...');
 
   try {
     const result = await mumaker.ephoto(url, text);
-    if (!result || !result.image) return m.reply('❌ No se pudo generar la imagen, intenta de nuevo.');
-    conn.sendFile(m.chat, result.image, 'efecto.png', `✅ *Efecto:* ${cmd}\n📝 *Texto:* ${text}`, m);
+    if (!result || !result.image) return m.reply(t.error || '❌ No se pudo generar la imagen, intenta de nuevo.');
+    conn.sendFile(m.chat, result.image, 'efecto.png', t.exito?.replace('{efecto}', cmd).replace('{texto}', text) || `✅ *Efecto:* ${cmd}\n📝 *Texto:* ${text}`, m);
   } catch (e) {
-    m.reply('❌ No se pudo generar la imagen, intenta de nuevo.');
+    m.reply(t.error || '❌ No se pudo generar la imagen, intenta de nuevo.');
   }
 };
 

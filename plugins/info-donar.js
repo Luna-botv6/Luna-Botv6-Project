@@ -1,6 +1,8 @@
 const handler = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.info_donar || {};
   const name = await conn.getName(m.sender);
-  const donar = `
+  const donar = (t.texto?.replace('{nombre}', name) || `
 ┏━━━━━━━━━━━━━━━━━┓
 ┃ 🌙 *LunaBot V6* ┃
 ┗━━━━━━━━━━━━━━━━━┛
@@ -21,7 +23,7 @@ Toda ayuda es bienvenida y permite mantener el bot activo y mejorar funciones. �
 ¡Gracias por tu apoyo!
 
 ⚙️ *Versión*: LunaBot V6  
-`.trim();
+`).trim();
 
   await conn.sendMessage(m.chat, { text: donar }, { quoted: m });
 };

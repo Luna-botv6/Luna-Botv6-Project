@@ -36,23 +36,26 @@ const HELP_MSG =
   `🗡️ *Tipos:* ligera • media • pesada • mistica`
 
 const handler = async (m, { conn, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es')
+  const t = _tr?.plugins?.rpg_armor || {}
   const userId = m.sender
   const cmd = (args && args[0]) ? args[0].toLowerCase() : ''
 
-  if (!cmd || cmd === 'help' || cmd === 'ayuda') return m.reply(HELP_MSG)
+  if (!cmd || cmd === 'help' || cmd === 'ayuda') return m.reply(t.help || HELP_MSG)
 
   // ─── TIENDA ───
   if (cmd === 'tienda' || cmd === 'shop' || cmd === 'lista') {
     const lines = Object.values(ARMOR_TYPES).map(a =>
+      t.linea_item?.replace('{emoji}', a.emoji).replace('{tipo}', a.type.charAt(0).toUpperCase() + a.type.slice(1)).replace('{defensa}', a.defense).replace('{usos}', a.maxDurability).replace('{costo}', a.cost).replace('{costoExp}', a.costExp) ||
       `${a.emoji} *${a.type.charAt(0).toUpperCase() + a.type.slice(1)}*\n` +
       `   🗡️ DEF: ${a.defense} • ❤️ Usos: ${a.maxDurability} • 💎 ${a.cost} + ⭐ ${a.costExp} EXP`
     ).join('\n\n')
 
     const user = getPlayerState(userId)
     return m.reply(
-      `🏪 *Tienda de Armaduras*\n\n${lines}\n\n` +
-      `💎 Tu saldo: *${user.money || 0} diamantes*\n` +
-      `💡 Comprar: *armadura comprar <tipo>*`
+      (t.tienda_titulo || `🏪 *Tienda de Armaduras*`) + `\n\n${lines}\n\n` +
+      (t.tienda_saldo?.replace('{saldo}', user.money || 0) || `💎 Tu saldo: *${user.money || 0} diamantes*`) + `\n` +
+      (t.tienda_comprar || `💡 Comprar: *armadura comprar <tipo>*`)
     )
   }
 
@@ -60,7 +63,7 @@ const handler = async (m, { conn, args }) => {
   if (cmd === 'comprar' || cmd === 'buy') {
     const tipo = args?.[1]?.toLowerCase()
     if (!tipo || !ARMOR_TYPES[tipo]) {
-      return m.reply(`❌ Tipo inválido.\n\n🗡️ Disponibles: ligera, media, pesada, mistica\n💡 Usa *armadura tienda* para ver precios.`)
+      return m.reply(t.tipo_invalido || `❌ Tipo inválido.\n\n🗡️ Disponibles: ligera, media, pesada, mistica\n💡 Usa *armadura tienda* para ver precios.`)
     }
 
     const armorDef = ARMOR_TYPES[tipo]
@@ -72,12 +75,12 @@ const handler = async (m, { conn, args }) => {
     if (saldo < armorDef.cost || userExp < armorDef.costExp) {
       const faltaDiamantes = Math.max(0, armorDef.cost - saldo)
       const faltaExp = Math.max(0, armorDef.costExp - userExp)
-      return m.reply(
+      let textoSinRecursos = t.sin_recursos?.replace('{emoji}', armorDef.emoji).replace('{tipo}', armorDef.type).replace('{costo}', armorDef.cost).replace('{costoExp}', armorDef.costExp) ||
         `❌ *Sin recursos suficientes.*\n\n` +
-        `${armorDef.emoji} ${armorDef.type}: *${armorDef.cost} 💎* + *${armorDef.costExp} EXP*\n` +
-        (faltaDiamantes > 0 ? `Te faltan: *${faltaDiamantes} 💎*\n` : '') +
-        (faltaExp > 0 ? `Te falta: *${faltaExp} EXP*` : '')
-      )
+        `${armorDef.emoji} ${armorDef.type}: *${armorDef.cost} 💎* + *${armorDef.costExp} EXP*\n`
+      if (faltaDiamantes > 0) textoSinRecursos += t.te_faltan_diamantes?.replace('{falta}', faltaDiamantes) || `Te faltan: *${faltaDiamantes} 💎*\n`
+      if (faltaExp > 0) textoSinRecursos += t.te_falta_exp?.replace('{falta}', faltaExp) || `Te falta: *${faltaExp} EXP*`
+      return m.reply(textoSinRecursos)
     }
 
 
@@ -91,15 +94,15 @@ const handler = async (m, { conn, args }) => {
       maxDurability: armorDef.maxDurability
     })
 
-    return m.reply(
+    let textoEquipado = t.equipada?.replace('{emoji}', armorDef.emoji).replace('{tipo}', armorDef.type).replace('{defensa}', armorDef.defense).replace('{durMax}', armorDef.maxDurability).replace('{barra}', durabilityBar(armorDef.maxDurability, armorDef.maxDurability)).replace('{costo}', armorDef.cost).replace('{saldo}', saldo - armorDef.cost) ||
       `${armorDef.emoji} *Armadura equipada!*\n\n` +
       `🛡️ Tipo: *${armorDef.type}*\n` +
       `⚔️ Defensa: *${armorDef.defense}*\n` +
       `❤️ Durabilidad: *${armorDef.maxDurability}/${armorDef.maxDurability}* ${durabilityBar(armorDef.maxDurability, armorDef.maxDurability)}\n` +
       `💎 Pagaste: *${armorDef.cost}*\n` +
-      `💰 Saldo restante: *${saldo - armorDef.cost}*` +
-      (tieneActual ? `\n\n⚠️ Reemplazaste tu armadura *${currentArmor.type}* anterior.` : '')
-    )
+      `💰 Saldo restante: *${saldo - armorDef.cost}*`
+    if (tieneActual) textoEquipado += t.reemplazaste?.replace('{tipo}', currentArmor.type) || `\n\n⚠️ Reemplazaste tu armadura *${currentArmor.type}* anterior.`
+    return m.reply(textoEquipado)
   }
 
   // ─── VER ───
@@ -109,6 +112,7 @@ const handler = async (m, { conn, args }) => {
 
     if (!armor || armor.type === 'ninguna') {
       return m.reply(
+        t.sin_armadura?.replace('{hp}', user.hp || 0).replace('{maxHp}', user.maxHp || 100) ||
         `🚫 *No tienes armadura equipada.*\n\n` +
         `💡 Usa *armadura tienda* para ver opciones.\n` +
         `❤️ HP: *${user.hp || 0}/${user.maxHp || 100}*`
@@ -120,16 +124,15 @@ const handler = async (m, { conn, args }) => {
     const status = armorStatus(armor)
     const repairCost = ((armor.maxDurability || 0) - (armor.durability || 0)) * COST_PER_DUR
 
-    return m.reply(
+    let textoVer = t.tu_armadura?.replace('{emoji}', armorDef.emoji || '🛡️').replace('{tipo}', armor.type).replace('{defensa}', armor.defense || 0).replace('{dur}', armor.durability || 0).replace('{max}', armor.maxDurability || 0).replace('{barra}', bar).replace('{estado}', status) ||
       `🛡️ *Tu Armadura*\n\n` +
       `${armorDef.emoji || '🛡️'} Tipo: *${armor.type}*\n` +
       `⚔️ Defensa: *${armor.defense || 0}*\n` +
       `❤️ Durabilidad: *${armor.durability || 0}/${armor.maxDurability || 0}* ${bar}\n` +
-      `📊 Estado: ${status}\n` +
-      (repairCost > 0 ? `🔧 Reparación: *${repairCost} 💎*\n` : '') +
-      `\n💎 Saldo: *${user.money || 0}*\n` +
-      `❤️ HP: *${user.hp || 0}/${user.maxHp || 100}*`
-    )
+      `📊 Estado: ${status}\n`
+    if (repairCost > 0) textoVer += t.reparacion?.replace('{costo}', repairCost) || `🔧 Reparación: *${repairCost} 💎*\n`
+    textoVer += t.saldo_linea?.replace('{saldo}', user.money || 0).replace('{hp}', user.hp || 0).replace('{maxHp}', user.maxHp || 100) || `\n💎 Saldo: *${user.money || 0}*\n❤️ HP: *${user.hp || 0}/${user.maxHp || 100}*`
+    return m.reply(textoVer)
   }
 
   // ─── REPARAR ───
@@ -137,12 +140,13 @@ const handler = async (m, { conn, args }) => {
     const armor = getArmorStats(userId)
 
     if (!armor || armor.type === 'ninguna') {
-      return m.reply('❌ No tienes armadura que reparar.\n💡 Usa *armadura comprar <tipo>* para equiparte.')
+      return m.reply(t.sin_armadura_reparar || `❌ No tienes armadura que reparar.\n💡 Usa *armadura comprar <tipo>* para equiparte.`)
     }
 
     const missing = (armor.maxDurability || 0) - (armor.durability || 0)
     if (missing <= 0) {
       return m.reply(
+        t.perfectas?.replace('{tipo}', armor.type).replace('{barra}', durabilityBar(armor.durability, armor.maxDurability)).replace('{dur}', armor.durability).replace('{max}', armor.maxDurability) ||
         `✨ *Tu armadura está en perfectas condiciones.*\n\n` +
         `🛡️ ${armor.type} • ${durabilityBar(armor.durability, armor.maxDurability)} ${armor.durability}/${armor.maxDurability}`
       )
@@ -154,6 +158,7 @@ const handler = async (m, { conn, args }) => {
 
     if (saldo < totalCost) {
       return m.reply(
+        t.sin_fondos_reparar?.replace('{costo}', totalCost).replace('{saldo}', saldo).replace('{falta}', totalCost - saldo).replace('{dur}', armor.durability).replace('{max}', armor.maxDurability).replace('{barra}', durabilityBar(armor.durability, armor.maxDurability)) ||
         `❌ *Sin fondos para reparar.*\n\n` +
         `🔧 Costo de reparación: *${totalCost} 💎*\n` +
         `💎 Tu saldo: *${saldo}*\n` +
@@ -166,6 +171,7 @@ const handler = async (m, { conn, args }) => {
     setArmor(userId, { ...armor, durability: armor.maxDurability })
 
     return m.reply(
+      t.reparada?.replace('{tipo}', armor.type).replace('{durMax}', armor.maxDurability).replace('{barra}', durabilityBar(armor.maxDurability, armor.maxDurability)).replace('{costo}', totalCost).replace('{saldo}', saldo - totalCost) ||
       `🔧 *Armadura reparada!*\n\n` +
       `🛡️ Tipo: *${armor.type}*\n` +
       `❤️ Durabilidad: *${armor.maxDurability}/${armor.maxDurability}* ${durabilityBar(armor.maxDurability, armor.maxDurability)}\n` +
@@ -175,7 +181,7 @@ const handler = async (m, { conn, args }) => {
     )
   }
 
-  return m.reply(`❓ Subcomando no reconocido.\n\n${HELP_MSG}`)
+  return m.reply((t.subcomando || `❓ Subcomando no reconocido.\n\n`) + (t.help || HELP_MSG))
 }
 
 handler.help = ['armadura']

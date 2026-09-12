@@ -73,6 +73,8 @@ async function bloquearUsuario(conn, jidReal, lidOriginal) {
 
 // ====================== HANDLER ======================
 const handler = async (m, { text, conn, usedPrefix, command }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.owner_block_unblock || {};
   console.log(`[DEBUG] Comando: ${command} | Texto: ${text}`);
 
   let user = m.mentionedJid?.[0] || 
@@ -80,7 +82,10 @@ const handler = async (m, { text, conn, usedPrefix, command }) => {
              (text ? text.replace(/[^0-9]/g, '').trim() : null);
 
   if (!user) {
-    const example = `*[❗] USO ERRÓNEO, EJEMPLO:*\n*${usedPrefix + command} @${m.sender.split('@')[0]}*`;
+    const example = (t.uso_erroneo ? t.uso_erroneo
+      .replace('{comando}', usedPrefix + command)
+      .replace('{usuario}', m.sender.split('@')[0]) : null) ||
+      `*[❗] USO ERRÓNEO, EJEMPLO:*\n*${usedPrefix + command} @${m.sender.split('@')[0]}*`;
     return conn.reply(m.chat, example, m, { mentions: [m.sender] });
   }
 
@@ -108,9 +113,13 @@ const handler = async (m, { text, conn, usedPrefix, command }) => {
   }
 
   if (exito) {
-    await conn.reply(m.chat, `*[✅] ${command.includes('block') ? 'BLOQUEADO' : 'DESBLOQUEADO'} correctamente a @${user.split('@')[0]}*`, m, { mentions: [user] });
+    const accion = command.includes('block') ? (t.bloqueado || 'BLOQUEADO') : (t.desbloqueado || 'DESBLOQUEADO');
+    await conn.reply(m.chat, (t.exito ? t.exito
+      .replace('{accion}', accion)
+      .replace('{usuario}', user.split('@')[0]) : null) ||
+      `*[✅] ${accion} correctamente a @${user.split('@')[0]}*`, m, { mentions: [user] });
   } else {
-    await conn.reply(m.chat, '*[❌] No se pudo bloquear al usuario.\n\nWhatsApp está rechazando la acción (bad-request).\nPrueba bloquearlo manualmente desde tu celular principal.', m);
+    await conn.reply(m.chat, (t.error_block || '*[❌] No se pudo bloquear al usuario.\n\nWhatsApp está rechazando la acción (bad-request).\nPrueba bloquearlo manualmente desde tu celular principal.'), m);
   }
 };
 

@@ -217,6 +217,84 @@ const MethodMobile = process.argv.includes("mobile");
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver));
 
+const idiomaConfigPath = './database/idioma-bot.json';
+const idiomaGlobalDisponibles = { '1': 'es', '2': 'en', '3': 'pt' };
+const nombreIdiomaGlobal = { es: 'Español', en: 'English', pt: 'Português' };
+
+function leerIdiomaGlobalGuardado() {
+  try {
+    if (!fs.existsSync(idiomaConfigPath)) return null;
+    const data = JSON.parse(fs.readFileSync(idiomaConfigPath, 'utf8'));
+    return ['es', 'en', 'pt'].includes(data?.idioma) ? data.idioma : null;
+  } catch {
+    return null;
+  }
+}
+
+async function configurarIdiomaGlobalInicial() {
+  const idiomaGuardado = leerIdiomaGlobalGuardado();
+  if (idiomaGuardado) {
+    global.defaultLenguaje = idiomaGuardado;
+    console.log(chalk.green(`[ ✅ ] Idioma global: ${nombreIdiomaGlobal[idiomaGuardado]} (${idiomaGuardado}) — se aplica en chats privados y grupos`));
+    console.log(chalk.cyan(`[ 💡 ] Para volver a activar el selector de idioma y que salga de nuevo el mensaje: borrá el archivo '${idiomaConfigPath}' y reiniciá el bot`));
+    return;
+  }
+
+  if (!fs.existsSync('./database')) fs.mkdirSync('./database', { recursive: true });
+
+  const modeNoInteractive = !process.stdin.isTTY;
+  if (modeNoInteractive) {
+    fs.writeFileSync(idiomaConfigPath, JSON.stringify({ idioma: 'es' }, null, 2));
+    global.defaultLenguaje = 'es';
+    console.log(chalk.cyan('[ ℹ️ ] Sin terminal interactiva: idioma global por defecto = Español. Para cambiarlo: borrá \'' + idiomaConfigPath + '\' y reiniciá'));
+    return;
+  }
+
+  const borde = chalk.bold.green('─'.repeat(56));
+  console.log('');
+  console.log(borde);
+  console.log(chalk.bold.green('   🌙  HOLA, BIENVENIDO A LUNA-BOTV6  🌙'));
+  console.log('   ' + chalk.yellow('Hello, welcome to LUNA-BOTV6'));
+  console.log('   ' + chalk.blue('Olá, bem-vindo ao LUNA-BOTV6'));
+  console.log(borde);
+  console.log(chalk.bold.green('   🌐  ¿En qué idioma querés que responda el bot?'));
+  console.log(chalk.yellow('   Which language do you want the bot to use?'));
+  console.log(chalk.blue('   Em qual idioma você quer que o bot responda?'));
+  console.log('');
+  console.log(chalk.bold.green('       1  »  🇪🇸  Español'));
+  console.log(chalk.bold.green('       2  »  🇺🇸  English'));
+  console.log(chalk.bold.green('       3  »  🇧🇷  Português'));
+  console.log(borde);
+  console.log(chalk.blackBright('   💡 Si no respondés en 20 segundos, arranca con Español.'));
+  console.log('');
+
+  const TIMEOUT_IDIOMA_MS = 20000;
+  let idiomaGlobal = null;
+  while (idiomaGlobal === null) {
+    let timerRespuesta;
+    const respuesta = await Promise.race([
+      question(chalk.bold.green('\nResponde 1, 2 o 3  /  Type 1, 2 or 3  /  Digite 1, 2 ou 3  --->  ')),
+      new Promise(r => { timerRespuesta = setTimeout(() => r('__TIMEOUT__'), TIMEOUT_IDIOMA_MS); })
+    ]);
+    if (respuesta === '__TIMEOUT__') {
+      console.log(chalk.yellow(`[ ⏳ ] Sin respuesta en ${TIMEOUT_IDIOMA_MS / 1000}s: arrancando con Español por defecto`));
+      idiomaGlobal = 'es';
+    } else if (['1', '2', '3'].includes(respuesta)) {
+      clearTimeout(timerRespuesta);
+      idiomaGlobal = idiomaGlobalDisponibles[respuesta];
+    } else {
+      clearTimeout(timerRespuesta);
+      console.log(chalk.red('✖ Opción inválida / Invalid option / Opção inválida'));
+    }
+  }
+  fs.writeFileSync(idiomaConfigPath, JSON.stringify({ idioma: idiomaGlobal }, null, 2));
+  global.defaultLenguaje = idiomaGlobal;
+  console.log(chalk.green(`[ ✅ ] Idioma global guardado: ${nombreIdiomaGlobal[idiomaGlobal]} (${idiomaGlobal}) — se aplica en chats privados y grupos`));
+  console.log(chalk.cyan(`[ 💡 ] Para volver a cambiarlo: borrá el archivo '${idiomaConfigPath}' y reiniciá el bot`));
+}
+
+await configurarIdiomaGlobalInicial();
+
 try {
   if (methodCodeQR) {
     opcion = '1';

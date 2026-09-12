@@ -2,21 +2,25 @@ import { callSpy } from '../lib/npcSystem.js'
 import { resolveMention } from '../lib/mentionHelper.js'
 
 const handler = async (m, { conn, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.rpg_espia || {};
   const id       = m.sender
   const targetId = resolveMention(m, args)
 
   if (!targetId) {
     return m.reply(
+      t.ayuda || (
       `🕵️ *El Espía*\n\n` +
       `Menciona a alguien para espiar su estado.\n\n` +
       `💡 Uso: *espia @usuario*\n` +
       `💎 Costo: *500 diamantes*\n\n` +
       `📋 Info que revela:\n` +
       `• HP actual • Bounty • Si está capturado\n• Si el cazador está cerca`
+      )
     )
   }
 
-  if (targetId === id) return m.reply('❌ No puedes espiarte a ti mismo.')
+  if (targetId === id) return m.reply(t.self || '❌ No puedes espiarte a ti mismo.')
 
   const result = callSpy(id, targetId)
   return m.reply(result.error || result.message, null, { mentions: [targetId] })

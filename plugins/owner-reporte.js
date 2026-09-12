@@ -9,8 +9,13 @@ function resolveJidLocal(senderId, participants) {
 }
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.owner_reporte || {};
 
   if (!text) throw (
+    (t.ayuda ? t.ayuda
+      .split('{comando}').join(usedPrefix + command)
+      .split('{prefix}').join(usedPrefix) : null) ||
     '╭─「 *📋 REPORTE AL OWNER* 」\n' +
     '│\n' +
     '│ Enviá tu reporte así:\n' +
@@ -21,8 +26,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     '╰─'
   );
 
-  if (text.length < 10) throw '⚠️ El reporte es muy corto. Describí el problema con más detalle.';
-  if (text.length > 1000) throw '⚠️ El reporte supera los 1000 caracteres. Resumí un poco.';
+  if (text.length < 10) throw (t.muy_corto || '⚠️ El reporte es muy corto. Describí el problema con más detalle.');
+  if (text.length > 1000) throw (t.muy_largo || '⚠️ El reporte supera los 1000 caracteres. Resumí un poco.');
 
   let realJid = m.sender;
 
@@ -47,7 +52,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   const fecha = ahora.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const hora  = ahora.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
-  let grupoNombre = 'Chat privado';
+  let grupoNombre = (t.chat_privado || 'Chat privado');
   if (m.isGroup) {
     try {
       const meta = await conn.groupMetadata(m.chat);
@@ -59,26 +64,26 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   const comandoDetectado = cmdMatch ? cmdMatch[0] : null;
 
   let teks =
-    '╭─「 *🚨 NUEVO REPORTE* 」\n' +
+    (t.titulo_reporte || '╭─「 *🚨 NUEVO REPORTE* 」') + '\n' +
     '│\n' +
-    `├ 👤 *Usuario:* @${numero}\n` +
-    `├ 📱 *Número:* wa.me/${numero}\n` +
-    `├ 📍 *Origen:* ${grupoNombre}\n` +
-    `├ 📅 *Fecha:* ${fecha} — ${hora}\n`;
+    (t.linea_usuario?.replace('{numero}', numero) || `├ 👤 *Usuario:* @${numero}`) + '\n' +
+    (t.linea_numero?.replace('{numero}', numero) || `├ 📱 *Número:* wa.me/${numero}`) + '\n' +
+    (t.linea_origen?.replace('{origen}', grupoNombre) || `├ 📍 *Origen:* ${grupoNombre}`) + '\n' +
+    (t.linea_fecha?.replace('{fecha}', fecha).replace('{hora}', hora) || `├ 📅 *Fecha:* ${fecha} — ${hora}`) + '\n';
 
   if (comandoDetectado) {
-    teks += `├ 🔧 *Comando reportado:* ${comandoDetectado}\n`;
+    teks += (t.linea_comando?.replace('{comando}', comandoDetectado) || `├ 🔧 *Comando reportado:* ${comandoDetectado}`) + '\n';
   }
 
   teks +=
     '│\n' +
-    '├ 📝 *Descripción:*\n' +
+    (t.linea_descripcion || '├ 📝 *Descripción:*') + '\n' +
     `│ ${text}\n`;
 
   if (m.quoted?.text) {
     teks +=
       '│\n' +
-      '├ 💬 *Mensaje citado:*\n' +
+      (t.linea_mensaje_citado || '├ 💬 *Mensaje citado:*') + '\n' +
       `│ ${m.quoted.text}\n`;
   }
 
@@ -88,7 +93,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     contextInfo: { mentionedJid: [realJid] }
   });
 
-  m.reply('✅ Tu reporte fue enviado correctamente.\n\nGracias por reportar, lo revisaremos a la brevedad 🙏');
+  m.reply((t.enviado || '✅ Tu reporte fue enviado correctamente.\n\nGracias por reportar, lo revisaremos a la brevedad 🙏'));
 };
 
 handler.help = ['reporte <mensaje>', 'report <mensaje>'];

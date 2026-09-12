@@ -2,6 +2,8 @@ import { getUserStats, setUserStats, getArmorStats, hasArmor } from '../lib/stat
 import { activarProteccion, tieneProteccion } from '../lib/usarprote.js';
 
 const handler = async (m, { conn, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.game_usarprote || {};
   const userId = m.sender;
 
   if (tieneProteccion(userId).activa) {
@@ -13,14 +15,14 @@ const handler = async (m, { conn, args }) => {
     const _min = Math.ceil(_restante / 60000)
     return conn.sendMessage(m.chat, {
       text:
-        `⚠️ Ya tienes protección activa (${_min} min restantes).
+        (t.ya_activa?.replace('{min}', _min) || `⚠️ Ya tienes protección activa (${_min} min restantes).
 
-` +
+`) +
         `❤️ HP: *${_stats.hp || 0}/${_stats.maxHp || 100}*
 ` +
-        `🛡️ Armadura: *${_tieneArmadura ? `${_armor.type} (${_armor.durability}/${_armor.maxDurability})` : 'Sin armadura'}*
+        `🛡️ ${t.armadura_label || 'Armadura'}: *${_tieneArmadura ? `${_armor.type} (${_armor.durability}/${_armor.maxDurability})` : (t.sin_armadura || 'Sin armadura')}*
 ` +
-        `🚨 Bounty: *${_stats.bountyStars ? '⭐'.repeat(_stats.bountyStars) : '—'}*`
+        `🚨 ${t.bounty_label || 'Bounty'}: *${_stats.bountyStars ? '⭐'.repeat(_stats.bountyStars) : '—'}*`
     }, { quoted: m })
   }
 
@@ -29,14 +31,14 @@ const handler = async (m, { conn, args }) => {
   if ((userStats.mysticcoins ?? 0) === 0) {
     userStats.mysticcoins = 5;
     setUserStats(userId, userStats);
-    await conn.sendMessage(m.chat, { text: '🎁 ¡Felicidades! Se te han regalado 5 mysticcoins para que puedas activar la protección.' }, { quoted: m });
+    await conn.sendMessage(m.chat, { text: t.regalo || '🎁 ¡Felicidades! Se te han regalado 5 mysticcoins para que puedas activar la protección.' }, { quoted: m });
   }
 
   const duracionesValidas = ['5', '12', '24'];
 
   if (args[0] && !duracionesValidas.includes(String(args[0]))) {
     return conn.sendMessage(m.chat, {
-      text: '❌ Argumento inválido. Usa: /usarprote [5|12|24]'
+      text: t.arg_invalido || '❌ Argumento inválido. Usa: /usarprote [5|12|24]'
     }, { quoted: m });
   }
 

@@ -1,4 +1,6 @@
 const handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.game_dinamica || {};
   const chatId = m.chat;
   global.dinamicas = global.dinamicas || {};
 
@@ -15,9 +17,9 @@ const handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
     }
     if (global.dinamicas[chatId]) {
       delete global.dinamicas[chatId];
-      return m.reply('🔒 Dinámica cerrada y reiniciada.');
+      return m.reply(t.cerrada || '🔒 Dinámica cerrada y reiniciada.');
     } else {
-      return m.reply('❌ No hay dinámica activa.');
+      return m.reply(t.sin_activa || '❌ No hay dinámica activa.');
     }
   }
 
@@ -30,7 +32,7 @@ const handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
 
     const max = Math.min(parseInt(args[0]) || 4, 50);
     const plantilla = args.slice(1).join(' ');
-    if (!plantilla) return m.reply('❗ Debes incluir un mensaje base después del número.\n\nEjemplo:\n/abrirdinamica 4 Texto de la dinámica...');
+    if (!plantilla) return m.reply(t.sin_plantilla || '❗ Debes incluir un mensaje base después del número.\n\nEjemplo:\n/abrirdinamica 4 Texto de la dinámica...');
 
     global.dinamicas[chatId] = {
       max,
@@ -40,7 +42,7 @@ const handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
       tipo: isAbrirEquipo ? 'equipo' : 'individual',
     };
 
-    return m.reply(`✅ Dinámica activada para *${max}* personas. Participa respondiendo ${isAbrirEquipo ? '*/yo [equipo]*' : '*/yo*'}.\n\nEjemplo para equipo: /yo naranja`);
+    return m.reply((t.activada?.replace('{max}', max).replace('{modo}', isAbrirEquipo ? '*/yo [equipo]*' : '*/yo*') || `✅ Dinámica activada para *${max}* personas. Participa respondiendo ${isAbrirEquipo ? '*/yo [equipo]*' : '*/yo*'}.\n\nEjemplo para equipo: /yo naranja`));
   }
 
   const dinamica = global.dinamicas[chatId];
@@ -52,7 +54,7 @@ const handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
 
     const tag = '@' + m.sender.split('@')[0];
     if (dinamica.participantes.includes(tag)) return;
-    if (dinamica.participantes.length >= dinamica.max) return m.reply('⚠️ La dinámica ya está llena.');
+    if (dinamica.participantes.length >= dinamica.max) return m.reply(t.llena || '⚠️ La dinámica ya está llena.');
 
     dinamica.participantes.push(tag);
 
@@ -82,7 +84,7 @@ const handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
     const espaciosTotales = (dinamica.plantilla.match(new RegExp(equipo, 'g')) || []).length;
     const anotados = dinamica.participantes.filter(p => p.equipo === equipo).length;
 
-    if (anotados >= espaciosTotales) return m.reply(`⚠️ Ya están llenos todos los cupos para el equipo ${equipo}.`);
+    if (anotados >= espaciosTotales) return m.reply((t.cupos_llenos?.replace('{equipo}', equipo) || `⚠️ Ya están llenos todos los cupos para el equipo ${equipo}.`));
     if (dinamica.participantes.some(p => p.id === m.sender)) return;
 
     dinamica.participantes.push({ id: m.sender, equipo });

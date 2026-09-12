@@ -2,6 +2,8 @@ import { getNpcState, vagrantAction } from '../lib/npcSystem.js'
 import { getPlayerState } from '../lib/stats.js'
 
 const handler = async (m, { conn, args }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.rpg_vagabundo || {};
   const id  = m.sender
   const cmd = args?.[0]?.toLowerCase() || ''
   const npc = getNpcState(id)
@@ -10,6 +12,7 @@ const handler = async (m, { conn, args }) => {
     const u = getPlayerState(id)
     if (!npc.vagrantActive) {
       return m.reply(
+        t.sin_vagabundo?.replace('{ignores}', npc.vagrantIgnores || 0) || (
         `🧓 *El Vagabundo*\n\n` +
         `No hay ningún vagabundo aquí ahora.\n` +
         `Aparece aleatoriamente mientras juegas.\n\n` +
@@ -17,7 +20,7 @@ const handler = async (m, { conn, args }) => {
         `   -20% EXP ganada por 30 minutos.\n\n` +
         `🎲 Si das lo que pide: 50% recibes el doble\n` +
         `💨 50% se va con lo tuyo\n\n` +
-        `🔢 Ignores acumulados: *${npc.vagrantIgnores || 0}/3*`
+        `🔢 Ignores acumulados: *${npc.vagrantIgnores || 0}/3*`)
       )
     }
 
@@ -26,11 +29,12 @@ const handler = async (m, { conn, args }) => {
     const remaining = Math.max(0, Math.ceil((expires - Date.now()) / 1000))
 
     return m.reply(
+      t.con_vagabundo?.replace('{name}', npc.vagrantName || '').replace('{emoji}', req.emoji || '⭐').replace('{amount}', req.amount || 0).replace('{label}', req.label || '').replace('{remaining}', remaining) || (
       `🧓 *¡${npc.vagrantName} está aquí!*\n\n` +
       `Pide: ${req.emoji || '⭐'} *${req.amount} ${req.label}*\n` +
       `⏱️ Se va en *${remaining}s*\n\n` +
       `• *vagabundo dar* — Ayudarlo\n` +
-      `• *vagabundo ignorar* — Ignorarlo`
+      `• *vagabundo ignorar* — Ignorarlo`)
     )
   }
 
@@ -40,7 +44,7 @@ const handler = async (m, { conn, args }) => {
     return m.reply(result.error || result.message)
   }
 
-  return m.reply('💡 Comandos: *vagabundo ver* | *vagabundo dar* | *vagabundo ignorar*')
+  return m.reply(t.comandos || '💡 Comandos: *vagabundo ver* | *vagabundo dar* | *vagabundo ignorar*')
 }
 
 handler.help = ['vagabundo']

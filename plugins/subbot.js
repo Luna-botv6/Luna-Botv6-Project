@@ -38,24 +38,32 @@ function calculateBackoff(attempt) {
 }
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
-  if (global.subbotEnabled === false) return m.reply(`❌ El sistema de SubBots está desactivado.`);
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.subbot || {};
+  if (global.subbotEnabled === false) return m.reply((t.sistema_desactivado || `❌ El sistema de SubBots está desactivado.`));
 
   const sender = m.sender;
   const userData = global.db.data.users?.[sender] || {};
   const lastSubs = userData.Subs || 0;
 
   if (Date.now() - lastSubs < SUBBOT_CONFIG.cooldownMs) {
-    return m.reply(`⏳ Espera ${msToTime(SUBBOT_CONFIG.cooldownMs - (Date.now() - lastSubs))} para volver a intentarlo.`);
+    return m.reply((t.cooldown?.replace('{tiempo}', msToTime(SUBBOT_CONFIG.cooldownMs - (Date.now() - lastSubs))) || `⏳ Espera ${msToTime(SUBBOT_CONFIG.cooldownMs - (Date.now() - lastSubs))} para volver a intentarlo.`));
   }
 
   if (connectionManager.getActiveConnectionCount() >= SUBBOT_CONFIG.maxSubbots) {
-    return m.reply('❌ No hay espacio disponible para más SubBots.');
+    return m.reply((t.sin_espacio || '❌ No hay espacio disponible para más SubBots.'));
   }
 
   if (!await isRamAvailable()) {
     const { heapUsedMB: used, heapTotalMB: total, heapFreeMB } = await getRamStatus();
     const pct = total > 0 ? Math.round((used / total) * 100) : 0;
-    return m.reply(`❌ RAM insuficiente para crear un SubBot.\n📊 Uso actual: ${pct}% (${used}MB/${total}MB)\n🔒 Se necesitan al menos ${SUBBOT_CONFIG.ramFreeMinMB}MB libres (disponibles: ${heapFreeMB}MB)`);
+    return m.reply((t.ram_insuficiente ? t.ram_insuficiente
+      .replace('{pct}', pct)
+      .replace('{usado}', used)
+      .replace('{total}', total)
+      .replace('{minimo}', SUBBOT_CONFIG.ramFreeMinMB)
+      .replace('{libre}', heapFreeMB) : null) ||
+      `❌ RAM insuficiente para crear un SubBot.\n📊 Uso actual: ${pct}% (${used}MB/${total}MB)\n🔒 Se necesitan al menos ${SUBBOT_CONFIG.ramFreeMinMB}MB libres (disponibles: ${heapFreeMB}MB)`);
   }
 
   const phoneArg = args.find(a => /^[0-9]{7,15}$/.test(a.trim()));
@@ -87,15 +95,15 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
   if (isLidUnresolved) {
     return m.reply(
-      `⚠️ Aún no conozco tu número real.\n\n` +
+      (t.lid_no_resuelto || `⚠️ Aún no conozco tu número real.\n\n` +
       `Por favor *interactúa conmigo un momento* (mandame cualquier mensaje en privado) para que pueda obtener tu número.\n\n` +
       `Luego usá: */serbot <tu_número> --code*\n` +
-      `Ejemplo: */serbot 5493483466763 --code*`
+      `Ejemplo: */serbot 5493483466763 --code*`)
     );
   }
 
-  if (connectionManager.isConnecting(userId)) return m.reply('⏳ Ya tienes una conexión en progreso.');
-  if (connectionManager.isConnected(userId)) return m.reply('✅ Ya tienes un SubBot activo.');
+  if (connectionManager.isConnecting(userId)) return m.reply((t.conexion_en_progreso || '⏳ Ya tienes una conexión en progreso.'));
+  if (connectionManager.isConnected(userId)) return m.reply((t.ya_activo || '✅ Ya tienes un SubBot activo.'));
 
   const subbotPath = path.join('./sub-lunabot/', userId);
   if (!fs.existsSync(subbotPath)) fs.mkdirSync(subbotPath, { recursive: true });

@@ -1,6 +1,8 @@
 import moment from 'moment-timezone';
 
 const handler = async (m, {conn}) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.herramientas_tz || {};
   const tzPE = moment().tz('America/Lima').format('DD/MM HH:mm');
   const tzMX = moment().tz('America/Mexico_City').format('DD/MM HH:mm');
   const tzBO = moment().tz('America/La_Paz').format('DD/MM HH:mm');
@@ -21,7 +23,10 @@ const handler = async (m, {conn}) => {
   const tzBR = moment().tz('America/Sao_Paulo').format('DD/MM HH:mm');
   const tzAS = moment().tz('Asia/Jakarta').format('DD/MM HH:mm');
   const tzAF = moment().tz('Africa/Malabo').format('DD/MM HH:mm');
-  await conn.sendMessage(m.chat, {text: `\`\`\`
+  const tzServer = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const tzServerTime = moment().tz(tzServer).format('DD/MM HH:mm');
+  const ltr = String.fromCharCode(8206).repeat(850);
+  const texto = t.texto?.replace('{peru}', tzPE).replace('{mexico}', tzMX).replace('{bolivia}', tzBO).replace('{chile}', tzCL).replace('{argentina}', tzAR).replace('{colombia}', tzCO).replace('{ecuador}', tzEC).replace('{costa_rica}', tzCR).replace('{cuba}', tzCU).replace('{guatemala}', tzGT).replace('{honduras}', tzHN).replace('{nicaragua}', tzNI).replace('{panama}', tzPA).replace('{uruguay}', tzUY).replace('{venezuela}', tzVE).replace('{paraguay}', tzPY).replace('{new_york}', tzNY).replace('{brasil}', tzBR).replace('{asia}', tzAS).replace('{africa}', tzAF).replace('{invisible}', ltr).replace('{stz}', tzServer).replace('{sh}', tzServerTime) || `\`\`\`
 < 𝙃𝙀𝙍𝙍𝘼𝙈𝙄𝙀𝙉𝙏𝘼𝙎 -𝙏𝙕 />
 
 ▢ Perú       : ${tzPE}
@@ -46,7 +51,8 @@ const handler = async (m, {conn}) => {
 ▢ África     : ${tzAF}
 \`\`\`
 ${String.fromCharCode(8206).repeat(850)}
-▢ TZ del servidor:\n • ${Intl.DateTimeFormat().resolvedOptions().timeZone}\n • ${moment().tz(Intl.DateTimeFormat().resolvedOptions().timeZone).format('DD/MM HH:mm')}`}, {quoted: m});
+▢ TZ del servidor:\n • ${Intl.DateTimeFormat().resolvedOptions().timeZone}\n • ${moment().tz(Intl.DateTimeFormat().resolvedOptions().timeZone).format('DD/MM HH:mm')}`;
+  await conn.sendMessage(m.chat, {text: texto}, {quoted: m});
 };
 
 handler.command = /^(tz|hora|fecha|horario)$/i;

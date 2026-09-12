@@ -69,6 +69,8 @@ function buildNoticeText(id, req) {
   );
 }
 const handler = async (m, { conn, text, isMods, isOwner, isPrems, usedPrefix, command }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.owner_join || {};
   if (m.type === 'protocolMessage' || m.type === 'protocol') return;
   if (m.messageStubType === 20 || m.messageStubType === 21) return;
   const cmd = command.toLowerCase();
@@ -77,7 +79,7 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems, usedPrefix, co
     const requests = loadRequests();
     const keys = Object.keys(requests);
     if (keys.length === 0) {
-      return m.reply('📋 *No hay solicitudes de grupo pendientes.*');
+      return m.reply((t.sin_solicitudes || '📋 *No hay solicitudes de grupo pendientes.*'));
     }
     const pendingId = keys[0];
     const req = requests[pendingId];
@@ -86,13 +88,16 @@ const handler = async (m, { conn, text, isMods, isOwner, isPrems, usedPrefix, co
   const link = (m.quoted?.text || text)?.trim();
   const match = link?.match(linkRegex);
   if (!link || !match) {
-    if (isOwner) return m.reply('❌ Envía un enlace válido de grupo de WhatsApp.');
+    if (isOwner) return m.reply((t.link_invalido || '❌ Envía un enlace válido de grupo de WhatsApp.'));
     return;
   }
   const [, code] = match;
   const { time, unit } = parseTime(text);
   if (isPrems || isMods || isOwner || m.fromMe) {
     await m.reply(
+      (t.info_grupo ? t.info_grupo
+        .replace('{link}', link)
+        .replace('{tiempo}', `${time} ${unit}${time > 1 ? 's' : ''}`) : null) ||
       '📋 *Información de Grupo*\n\n' +
       `🔗 Link: ${link}\n` +
       `⏳ Tiempo: *${time} ${unit}${time > 1 ? 's' : ''}*\n\n` +

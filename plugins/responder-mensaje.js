@@ -1,4 +1,6 @@
 const handler = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.responder_mensaje || {};
   conn.tebaklagu = conn.tebaklagu || {};
   const id = m.chat;
 
@@ -12,12 +14,12 @@ const handler = async (m, { conn }) => {
   if (!texto || !esRespuesta) return;
 
   if (texto === correcta) {
-    m.reply(`🎉 ¡Correcto! Era: *${juego.jawaban}*
+    m.reply(t.correcto?.replace('{respuesta}', juego.jawaban).replace('{xp}', conn.tebaklagu[id][2]) || `🎉 ¡Correcto! Era: *${juego.jawaban}*
 Ganaste ${conn.tebaklagu[id][2]} XP.`);
     clearTimeout(conn.tebaklagu[id][3]);
     delete conn.tebaklagu[id];
   } else {
-    m.reply('❌ Respuesta incorrecta. Intenta otra vez.');
+    m.reply(t.incorrecta || '❌ Respuesta incorrecta. Intenta otra vez.');
   }
 };
 

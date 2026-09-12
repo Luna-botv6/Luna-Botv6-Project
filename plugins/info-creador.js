@@ -1,14 +1,16 @@
 const handler = async (m, { conn }) => {
+  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
+  const t = _tr?.plugins?.info_creador || {};
   const owners = global.owner || [];
   
   let ownersList = '';
   if (owners.length > 0) {
-    ownersList = owners.map(([num, nombre]) => `• ${nombre || 'Sin nombre'}: wa.me/${num}`).join('\n');
+    ownersList = owners.map(([num, nombre]) => `• ${nombre || (t.sin_nombre || 'Sin nombre')}: wa.me/${num}`).join('\n');
   } else {
-    ownersList = '• No hay dueños configurados';
+    ownersList = (t.sin_dueños || '• No hay dueños configurados');
   }
 
-  const texto = `
+  const texto = (t.texto?.replaceAll('{botname}', global.BotName).replaceAll('{owners}', ownersList) || `
 🌙 *Hola, soy ${global.BotName}* 🌙
 
 👨‍💻 *Creador del Código:*
@@ -27,7 +29,7 @@ ${ownersList}
 https://www.whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y
 
 ✨ ¡Gracias por usar ${global.BotName}!
-`.trim();
+`).trim();
 
   await conn.sendMessage(m.chat, { text: texto }, { quoted: m });
 };
