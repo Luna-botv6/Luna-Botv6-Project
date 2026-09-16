@@ -9,7 +9,7 @@
 <br>
 
 <a href="https://github.com/Luna-botv6/Luna-Botv6-Project">
-  <img src="https://raw.githubusercontent.com/Luna-botv6/Luna-botv6/main/IMG-20250519-WA0115.jpg" alt="Luna Bot Logo" width="320" style="border-radius:30px; border: 3px solid #00fff7; box-shadow: 0 0 40px #00fff7;"/>
+  <img src="https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/src/assets/images/lm/luna-botv6.png" alt="Luna Bot Logo" width="550" style="border-radius:30px; border: 3px solid #00fff7; box-shadow: 0 0 40px #00fff7;"/>
 </a>
 
 <br><br>
@@ -48,6 +48,40 @@
 
 <div align="center">
 
+## 📋 En Resumen
+
+</div>
+
+**Luna Bot V6** es un bot de WhatsApp avanzado, **open source** (MIT) y gratuito, construido con **Baileys**, pensado para que los grupos tengan herramientas reales, diversión y una **IA que entiende el español rioplatense de forma natural**.
+
+| | 💎 Detalle |
+|:---|:---|
+| **Qué es** | Bot de WhatsApp con **290+ plugins** (400+ comandos reales) organizados por categoría |
+| **IA** | Conversación natural **sin prefijos** (`@Luna` + lo que necesites) · agentes especializados: inteligencia, música/descargas y control |
+| **Idiomas** | 🇪🇸 Español · 🇧🇷 Português · 🇺🇸 English — multi-idioma **por usuario** |
+| **Contenido** | Descargas YT/TikTok/IG/Spotify · juegos · RPG y economía · moderación · herramientas |
+| **Estabilidad** | Anti-ban real: delays humanos, rate limits y detección de baneos con logs |
+| **Privacidad** | No comparte datos de usuarios · todo corre desde la propia cuenta del bot |
+| **Stack** | Node.js v18+ (ESM) · Baileys · LowDB · FFmpeg · ImageMagick |
+| **Autor** | Germán Miño (Argentina) · mantenido activamente |
+| **Repositorio** | [github.com/Luna-botv6/Luna-Botv6-Project](https://github.com/Luna-botv6/Luna-Botv6-Project) · Licencia **MIT** |
+
+<div align="center">
+
+### ✨ Lo que hace destacar a Luna
+
+</div>
+
+- **Una IA que se entiende a todo**: se le habla como a una persona (sin comandos raros) y entiende el español de la calle — clima, recetas, letras, divisas, matemática, traducción y hasta *ejecutar comandos del grupo* por lenguaje natural.
+- **De los más completos en WhatsApp**: juegos, descargas, RPG con minería y tienda, economía, moderación de grupos y bienvenidas/despedidas configurables.
+- **Multi-idioma por usuario** y **compatibilidad total con LID** (los números nuevos que usa WhatsApp).
+- **Pensado para durar**: delays humanos y rate limits para reducir al mínimo el riesgo de ban, con detección de baneos y logs.
+- **Código abierto y mantenido**: licencia MIT, todo el código en GitHub, con actualizaciones activas.
+
+---
+
+<div align="center">
+
 <details open>
 <summary><b>🗺️ Tabla de Contenidos — hacé clic para expandir/colapsar</b></summary>
 
@@ -55,11 +89,12 @@
 
 | 🔗 Sección | 🔗 Sección | 🔗 Sección |
 |:---:|:---:|:---:|
-| [✨ ¿Qué es Luna Bot?](#-qué-es-luna-bot) | [🎬 Miralo en Acción](#-miralo-en-acción) | [⚖️ Luna vs Otros Bots](#️-luna-vs-otros-bots) |
-| [🆕 Últimas Actualizaciones](#-últimas-actualizaciones) | [🟢 Estado del Servicio](#-estado-del-servicio) | [🎮 Juegos](#-juegos-disponibles) |
-| [🤖 Luna IA](#-luna-ia--inteligencia-artificial) | [🌟 Características](#-características) | [🛣️ Roadmap](#️-roadmap) |
-| [🚀 Instalación Rápida](#-instalación-rápida) | [⚙️ Configuración](#️-configuración) | [⚡ Actualizaciones del Bot](#-sistema-de-actualización-inteligente) |
-| [🤝 Contribuir](#-contribuir) | [👨‍💻 Creador](#-creador) | [❤️ Apoyar el Proyecto](#️-apoyar-el-proyecto) |
+| [📋 En Resumen](#-en-resumen) | [✨ ¿Qué es Luna Bot?](#-qué-es-luna-bot) | [🎬 Miralo en Acción](#-miralo-en-acción) |
+| [⚖️ Luna vs Otros Bots](#️-luna-vs-otros-bots) | [🔐 Seguridad y Privacidad](#-seguridad-y-privacidad) | [🆕 Últimas Actualizaciones](#-últimas-actualizaciones) |
+| [🟢 Estado del Servicio](#-estado-del-servicio) | [🎮 Juegos](#-juegos-disponibles) | [🤖 Luna IA](#-luna-ia--inteligencia-artificial) |
+| [🌟 Características](#-características) | [🛣️ Roadmap](#️-roadmap) | [🚀 Instalación Rápida](#-instalación-rápida) |
+| [⚙️ Configuración](#️-configuración) | [⚡ Actualizaciones del Bot](#-sistema-de-actualización-inteligente) | [🤝 Contribuir](#-contribuir) |
+| [👨‍💻 Creador](#-creador) | [❤️ Apoyar el Proyecto](#️-apoyar-el-proyecto) |  |
 
 </details>
 
@@ -81,7 +116,7 @@
 const LunaBot = {
   version:     "6.0.0",
   estado:      "🔥 ACTIVO — 24/7",
-  tecnologia:  "Baileys + LowDB + IA Multi-Motor",
+  tecnologia:  "Baileys + LowDB + Agentes de Luna",
   plugins:     "290+ comandos organizados por categoría",
   idiomas:     ["🇦🇷 Español", "🇧🇷 Português", "🇺🇸 English"],
   caracteristicas: [
@@ -130,20 +165,22 @@ const LunaBot = {
 
 <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=18&pause=1000&color=00FFF7&center=true&vCenter=true&width=650&lines=Así+se+ve+una+conversación+real+con+Luna;Sin+comandos+raros+—+hablale+como+a+una+persona" alt="Demo" />
 
+<img src="https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/src/assets/images/lm/lm_fly.webp" width="150"/>
+
 <br><br>
 
 <table>
 <tr>
 <td align="center" width="33%">
-<img src="src/assets/images/demo/demo-ia.svg" width="100%"/>
+<img src="https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/src/assets/images/demo/demo-ia.svg" width="100%"/>
 <br><sub><b>💬 Conversación natural</b></sub>
 </td>
 <td align="center" width="33%">
-<img src="src/assets/images/demo/demo-comando.svg" width="100%"/>
+<img src="https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/src/assets/images/demo/demo-comando.svg" width="100%"/>
 <br><sub><b>🎯 Comando por lenguaje natural</b></sub>
 </td>
 <td align="center" width="33%">
-<img src="src/assets/images/demo/demo-juego.svg" width="100%"/>
+<img src="https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/src/assets/images/demo/demo-juego.svg" width="100%"/>
 <br><sub><b>👁️ Juego Veo Veo</b></sub>
 </td>
 </tr>
@@ -165,7 +202,7 @@ const LunaBot = {
 | Característica | 🌙 Luna Bot V6 | Bot genérico |
 |:---|:---:|:---:|
 | IA conversacional sin prefijos | ✅ | ❌ |
-| Fallback automático entre motores de IA | ✅ | ❌ |
+| Agentes de Luna especializados (IA · música · control) | ✅ | ❌ |
 | Multi-idioma por usuario (ES/EN/PT) | ✅ | ⚠️ Rara vez |
 | Caché en disco persistente | ✅ | ❌ |
 | Comandos detectados por lenguaje natural | ✅ | ❌ |
@@ -177,95 +214,49 @@ const LunaBot = {
 
 <div align="center">
 
+## 🔐 Seguridad y Privacidad
+
+<img src="https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/src/assets/images/lm/lm_face_happy.webp" width="150"/>
+
+<br>
+
+*Luna nació pensada para cuidarte: cuidarte a vos, a tu grupo y a tu número.*
+
+</div>
+
+En Luna la seguridad no es un extra que se agregó después. Desde el primer día está pensada para que **nadie más que vos tenga acceso a lo que pasa en el chat**, y para trabajar lo más parecido posible a como WhatsApp espera que se comporte una cuenta real.
+
+### 🛡️ Tus datos son tuyos, y de nadie más
+
+- Luna **no comparte números, conversaciones, fotos, audios ni datos de ningún usuario** con terceros.
+- Cuando una función necesita procesar algo (por ejemplo, entender una nota de voz o una imagen para la IA), ese contenido se usa **solo para responderte** y no se publica ni se comparte con nadie.
+- El bot **no tiene acceso a tus datos privados**: no lee chats que no le corresponden ni guarda historial que no le pidas.
+- Nada de tu número queda expuesto: **todo lo que hace Luna lo hace desde su propia cuenta**.
+
+### 🤝 Código original, pensado para cuidarte
+
+Todo el sistema de Luna se programó con la seguridad como base. No hay procesos ocultos, automatismos raros ni nada que use tu cuenta para otra cosa: es un código transparente, pensado para que la experiencia sea sana y confiable para el grupo y para vos.
+
+### ⚖️ Hecho para respetar las normas de WhatsApp
+
+- Luna funciona sobre una versión **mejorada y personalizada de Baileys**, con ajustes pensados para un comportamiento **estable y responsable** — sin spam, sin masificar mensajes y sin forzar límites.
+- Respeta los tiempos y los límites normales de uso, lo que **reduce al mínimo el riesgo de baneo**, sin saltear ninguna regla.
+- Es una librería **no oficial**, como todo bot de WhatsApp, pero está construida para moverse **dentro de lo que WhatsApp permite**: sin exponer tu número y sin generar actividad sospechosa.
+
+> [!TIP]
+> Lo más recomendable es usar un número dedicado para el bot. Cuanto más limpio y tranquilo sea el uso, más estable y segura va a ser la experiencia para todos.
+
+---
+
+<div align="center">
+
 ## 🆕 Últimas Actualizaciones
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=20&pause=1000&color=00FFF7&center=true&vCenter=true&width=700&lines=🆕+Actualización+de+Agosto+2026;📡+Reenvío+Automático+de+Canales;✨+Creá+Comandos+desde+el+Panel;🖥️+Torre+de+Control+Renovada" alt="Updates" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=20&pause=1000&color=00FFF7&center=true&vCenter=true&width=700&lines=🆕+Actualizaciones+Recientes;✨+Sistema+Multi-Idioma+Integrado;🖼️+Personalizá+el+Menú+del+Bot;✏️+Cambiá+el+Nombre+del+Bot" alt="Updates" />
 
 </div>
 
 <details open>
-<summary><b>🗓️ Agosto 2026 — La actualización más grande hasta ahora 🚀</b></summary>
-
-<br>
-
-<p>
-  <img src="https://img.shields.io/badge/📡%20Canales-Reenvío%20automático-8B5CF6?style=for-the-badge&labelColor=5B21B6"/>
-  <img src="https://img.shields.io/badge/✨%20Comandos-Desde%20el%20panel-3B82F6?style=for-the-badge&labelColor=1E3A8A"/>
-  <img src="https://img.shields.io/badge/🖥️%20Panel-Renovado-10B981?style=for-the-badge&labelColor=065F46"/>
-</p>
-
-Un mes entero de trabajo — reenvío de canales, un panel de administración que ya reemplaza casi todo lo que antes había que hacer por WhatsApp, y varias funciones nuevas para vos y para los que usan tu bot. Un repaso completo:
-
-### 📡 Reenvío automático de Canales
-
-Un canal de difusión de WhatsApp puede reenviar automático todo lo que postees ahí — a uno o varios grupos, y hasta a **otro canal**. Sin comandos, sin reenviar nada a mano.
-
-| Combinación | Estado |
-|:--|:--:|
-| Canal → Grupo | ✅ |
-| Grupo → Grupo | ✅ |
-| Canal → Canal | ✅ |
-| Texto / Imagen / Video / Sticker / Audio | ✅ Todos |
-
-- Configuración 100% desde el panel: pegás el link de invitación del canal, elegís el grupo (o canal) receptor, y listo
-- Podés vincular tantos grupos/canales como quieras a un mismo canal
-- Elegís qué tipos de contenido reenviar (por ejemplo, solo texto e imágenes, sin video)
-- Delay anti-ban entre cada envío — más lento con muchos receptores, pero cuida el número del bot
-- Pausar, filtrar por tipo, o eliminar el reenvío cuando quieras, todo con un toque
-
-### ✨ Creá comandos personalizados desde el panel
-
-Lo que antes era un ida y vuelta de 5 mensajes por WhatsApp (`.createcode` → `.setmessage` → `.setctag` → `.setimage` → `.setcommand`) ahora es un formulario único: nombre, mensaje, a quién etiqueta, e imagen opcional. El comando queda activo al toque.
-
-> [!TIP]
-> El flujo viejo por WhatsApp sigue andando igual que siempre, por si lo preferís — ahora comparte toda la lógica con el panel por dentro.
-
-**Y de yapa, una función nueva dentro de Crear Comando — disparadores por frases, sin comando ni prefijo:**
-
-El bot responde solo cuando alguien escribe una frase específica en el grupo (por ejemplo "soy nueva" o "recién me uní"), sin que nadie tenga que escribir ningún comando.
-
-- Podés cargar varias frases distintas para el mismo disparador
-- Elegís si puede dispararlo cualquiera, solo admins, o solo el owner
-- Opcional: que la primera vez responda un mensaje, y si esa misma persona repite la frase, responda otro distinto (por ejemplo, para no repetir un saludo de bienvenida dos veces a la misma persona)
-- Imagen opcional en cada uno de los dos mensajes
-- Funciona en grupos
-
-### 🖥️ Torre de Control — el panel de administración
-
-Tu bot ahora tiene un panel web completo para vos como owner. Para entrar por primera vez:
-
-```bash
-.miserver
-```
-
-La primera vez te va a pedir crear un usuario y contraseña — **no compartas ni el usuario/contraseña ni el link con nadie**. Las próximas veces, con escribir `.miserver` de nuevo el bot te devuelve el link directo. ¿Te olvidaste la contraseña? No hay drama, el bot te guía paso a paso para restablecerla.
-
-**Todo lo que podés hacer desde ahí:**
-
-| Sección | Qué hace |
-|:--|:--|
-| 🏠 **Inicio** | Resumen general — subbots conectados, permisos activos, descargas en vivo |
-| 📥 **Descargas** | Monitoreo en vivo de lo que se está bajando en cada grupo |
-| 🔒 **Permisos por grupo** | Activás o bloqueás la descarga en cada grupo, y le podés poner un **límite diario de descargas** si querés (se resetea solo cada día) |
-| 🤖 **Subbots** | Ves cuáles están conectados, desconectás o eliminás en un toque |
-| 👥 **Grupo** | Elegís un grupo y desde ahí: mandás mensajes (con imagen, o etiquetando a todos), activás/desactivás funciones del grupo, armás encuestas, configurás el reenvío de canales, o hacés acciones de riesgo (banear el grupo, salir) |
-| 👤 **Usuarios** | Buscás a alguien y ves sus baneos, bloqueos y advertencias |
-| 🔑 **Owners** | Agregás o quitás owners por número |
-| ⚙️ **Funciones de owner** | Switches globales del bot, se aplican al toque |
-| 🛠️ **Sistema** | Actualizás el bot a la última versión de GitHub y lo reiniciás |
-| 🎵 **Música** | Buscás y reproducís un tema de YouTube ahí mismo |
-| ✨ **Crear Comando** | Todo lo explicado arriba |
-
-### 🎨 Stickers nuevos
-
-| Comando | Qué hace |
-|:--|:--|
-| `.grafiti <texto>` | Sticker animado con letras de grafiti coloridas |
-| `.txt <texto>` | Sticker tipo nota, fondo rosado |
-
-</details>
-
-<details>
 <summary><b>🌍 28/05/2026 — Sistema Multi-Idioma Global 🌐</b></summary>
 
 <br>
@@ -378,6 +369,8 @@ Ejemplo: `.setnamebot Luna IA 🤖`
 
 <img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&weight=900&size=24&pause=1000&color=00FFF7&center=true&vCenter=true&width=700&lines=🤖+LUNA+IA+—+Inteligencia+Artificial;🌙+Hablale+Natural+·+Sin+Comandos;✨+Ella+Te+Entiende+Siempre" alt="Luna IA" />
 
+<img src="https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/src/assets/images/lm/lm_wave.webp" width="170"/>
+
 <br>
 
 ![IA Core](https://img.shields.io/badge/🧠-MOTOR_NLP_PROPIO-00fff7?style=for-the-badge&logo=openai&logoColor=black&labelColor=0d0d0d)
@@ -408,7 +401,7 @@ const LunaIA = {
     "Comandos por lenguaje natural 🎯","Imágenes automáticas 🖼️",
   ],
 
-  ia:          "múltiples motores con fallback automático — siempre responde",
+  ia:          "agentes de Luna especializados — siempre hay uno listo",
   busqueda:    "multi-fuente en paralelo — la mejor respuesta disponible",
   imagenes:    "búsqueda real + generación IA como último recurso",
   juegos:      ["Veo Veo 👁️", "Ahorcado 🎮"],
@@ -426,11 +419,15 @@ Mencioná a Luna en el grupo con su `@tag` seguido de lo que necesitás. Sin pre
 
 ---
 
-### 🧠 Motor de IA Multi-Motor con Fallback Automático
+### 🧩 Agentes de Luna
 
-Luna usa **múltiples motores de IA en cadena**. Si el primero falla o está ocupado, pasa automáticamente al siguiente sin que el usuario note nada. El orden se aleatoriza para distribuir la carga, y siempre hay un motor garantizado.
+Luna no es un solo bloque: por dentro trabaja con **varios agentes especializados**, cada uno entrenado para una tarea concreta. Cuando le pedís algo, el sistema elige al agente que mejor lo resuelve y responde. Si uno está ocupado, otro toma la posta sin que lo notes.
 
-> Sin importar la hora ni la carga, Luna **siempre va a responder**.
+- **🎵 Agente de música y descargas** — resuelve YouTube, TikTok, Instagram, letras y audio.
+- **🧠 Agente de inteligencia** — conversa, responde, analiza imágenes y transcribe notas de voz.
+- **🛰️ Agente de control** — coordina todo desde la torre de control: orden, estado y supervisión.
+
+> Sin importar la hora ni la carga, Luna **siempre tiene un agente listo para responderte**.
 
 ---
 
@@ -704,7 +701,7 @@ Luna tiene **dos capas de caché persistente** que sobreviven a reinicios del se
 - Sistema bancario y apuestas
 
 ### 🤖 Funciones Inteligentes
-- IA integrada para conversaciones naturales
+- Agentes de Luna para conversaciones, descargas y control
 - Respuestas automáticas personalizables
 - Sistema AFK (Away From Keyboard)
 - Mensajes de bienvenida y despedida configurables
@@ -715,6 +712,8 @@ Luna tiene **dos capas de caché persistente** que sobreviven a reinicios del se
 <div align="center">
 
 ## 🎮 Juegos Disponibles
+
+<img src="https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/src/assets/images/lm/lm_dance.webp" width="160"/>
 
 </div>
 
@@ -1125,7 +1124,7 @@ Luna-Botv6-Project/
 
 - [x] Sistema multi-idioma (ES/EN/PT)
 - [x] Personalización de menú (imagen/GIF/video)
-- [x] Fallback automático entre motores de IA
+- [x] Agentes de Luna especializados
 - [ ] Panel web de administración para grupos
 - [ ] Nuevos juegos multijugador
 - [ ] Más idiomas soportados
@@ -1203,9 +1202,9 @@ Licenciado bajo la [Licencia MIT](LICENSE).
 
 ---
 
-## 🗑️ Registro de Limpieza de Archivos Obsoletos (10 Elementos)
+## 🗑️ Registro de Limpieza de Archivos Obsoletos (9 Archivos)
 
-En la última auditoría y refactorización se removieron archivos y directorios obsoletos, duplicados o en desuso que no contaban con referencias ni importaciones activas en el código:
+En la última auditoría y refactorización se removieron 9 archivos obsoletos, duplicados o en desuso que no contaban con referencias ni importaciones activas en el código:
 
 1. **`pipdeps.js`** *(Raíz)*: Script para instalar `yt-dlp` vía pip en el arranque. Quedó obsoleto tras la eliminación de los descargadores de YouTube antiguos.
 2. **`lib/downloader-playlist.js`**: Archivo de comando duplicado ubicado por error en `lib/` (el plugin activo está en `plugins/downloader-playlist.js`).
@@ -1216,7 +1215,6 @@ En la última auditoría y refactorización se removieron archivos y directorios
 7. **`lib/tictactoe-db.js`**: Módulo de base de datos de tres en raya no referenciado por ningún plugin.
 8. **`lib/funcion/earlyFilter.js`**: Filtro preliminar de mensajes desusado y sin importaciones.
 9. **`lib/funcion/usersDB.js`**: Gestor de usuarios antiguo que guardaba en un JSON monolítico (`./database/users.json`), en lugar del sistema actual con Proxy por JID de `userManager.js` (`./database/users/{jid}.json`).
-10. **`subbot-commands/`** *(Carpeta y 6 comandos de ejemplo)*: Directorio heredado con comandos estáticos (`s.js`, `play.js`, `menu.js`, `love.js`, `invocar.js`, `facebook.js`). Los SubBots ejecutan de forma nativa todo el catálogo de comandos desde `./plugins/`.
 
 ---
 
