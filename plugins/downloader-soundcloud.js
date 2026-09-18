@@ -28,14 +28,17 @@ const handler = async (m, { conn, text }) => {
   const tradutor = _translate.plugins.downloader_soundcloud
   if (!text) throw `${tradutor.texto1}`
   try {
-    const searchRes = await ft(`${SERVER_URL}/api/soundcloud/search?q=${encodeURIComponent(text.trim())}&n=1`, { headers: DL_HEADERS })
+    const searchRes = await ft(`${SERVER_URL}/api/soundcloud/search?q=${encodeURIComponent(text.trim())}&n=5`, { headers: DL_HEADERS })
     const sj = await searchRes.json()
     if (!sj.status || !sj.data?.length) throw new Error('Sin resultados')
-    const track = sj.data[0]
-    const dlRes = await ft(`${SERVER_URL}/api/soundcloud/download?url=${encodeURIComponent(track.url)}`, { headers: DL_HEADERS })
-    const dj = await dlRes.json()
-    if (!dj.status || !dj.data?.url) throw new Error('Sin stream disponible')
-    const d = dj.data
+    let envia = null
+    for (const track of sj.data) {
+      const dlRes = await ft(`${SERVER_URL}/api/soundcloud/download?url=${encodeURIComponent(track.url)}`, { headers: DL_HEADERS })
+      const dj = await dlRes.json()
+      if (dj.status && dj.data?.url) { envia = { track, d: dj.data }; break }
+    }
+    if (!envia) throw new Error('Sin stream disponible')
+    const { track, d } = envia
     const soundcloudt = `*亗 S O U N D C L O U D*\n\n*› Titulo :* ${d.title || '-'}\n*› Artista:* ${d.author || '-'}\n*› Likes :* ${track.likes || '-'}\n*› Url :* ${ocultar(track.url) || '-'}`
     if (d.image) {
       await conn.sendFile(m.chat, d.image, '', soundcloudt, m)
