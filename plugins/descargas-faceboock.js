@@ -11,9 +11,10 @@ try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion f
 const SERVER_URL = obtenerMenuIuman()
 const API_KEY = cargarOGenerarAPIKey()
 const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
-const TIMEOUT = 60000
+const TIMEOUT = 120000
 
 const BOT = () => global.BotName || 'LUNA'
+const ocultar = (m) => String(m || '').replace(/https?:\/\/\S+/g, '[enlace oculto]').replace(/key=\w+/gi, 'key=[oculta]')
 
 const safeEdit = async (conn, jid, text, key) => {
   try { if (key && jid) await conn.sendMessage(jid, { text, edit: key }) } catch {}
@@ -64,7 +65,11 @@ async function descargar(conn, msg, tipo, url) {
       const data = await res.json()
       if (!data.status || !data.video) throw new Error(data.error || 'Sin video')
       await safeEdit(conn, jid, card(tipo, 'listo', { titulo: data.titulo, hd: !!data.hd }), editKey)
-      await conn.sendMessage(msg.chat, { video: { url: data.video }, mimetype: 'video/mp4', caption: `🎬 ${data.titulo || ''}` }, { quoted: msg })
+      const mediaRes = await ft(data.video, DL_HEADERS)
+      if (!mediaRes.ok) throw new Error('Error descargando el video')
+      const mediaBuffer = Buffer.from(await mediaRes.arrayBuffer())
+      if (mediaBuffer.length < 10000) throw new Error('Video inválido desde el servidor')
+      await conn.sendMessage(msg.chat, { video: mediaBuffer, mimetype: 'video/mp4', caption: `🎬 ${data.titulo || ''}` }, { quoted: msg })
     } else {
       const res = await ft(SERVER_URL + '/api/social/audio?url=' + encodeURIComponent(url) + '&plataforma=facebook', DL_HEADERS)
       if (!res.ok) throw new Error('Error del servidor')
@@ -75,7 +80,7 @@ async function descargar(conn, msg, tipo, url) {
       await conn.sendMessage(msg.chat, { audio: buffer, mimetype: 'audio/mpeg', fileName: titulo + '.mp3', ptt: false }, { quoted: msg })
     }
   } catch (e) {
-    await safeEdit(conn, jid, card(tipo, 'error', { error: e.message }), editKey)
+    await safeEdit(conn, jid, card(tipo, 'error', { error: ocultar(e.message) }), editKey)
   }
 }
 

@@ -1,49 +1,58 @@
-import axios from 'axios';
-import fs from 'fs';
+import fs from 'fs'
+import fetch from 'node-fetch'
+import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js'
+import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
 
-const handler = async (m, { conn, text }) => {
-  const datas = global;
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
-  const tradutor = _translate.plugins.downloader_tiktokstalk;
+const configContent = fs.readFileSync('./config.js', 'utf-8')
+if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado')
+try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
 
-  if (!text) return conn.reply(m.chat, tradutor.texto1, m);  
+const SERVER_URL = obtenerMenuIuman()
+const API_KEY = cargarOGenerarAPIKey()
+const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
+const TIMEOUT = 45000
+
+const ocultar = (m) => String(m || '').replace(/https?:\/\/\S+/g, '[enlace oculto]').replace(/key=\w+/gi, 'key=[oculta]')
+
+const ft = async (url, headers = {}) => {
+  const c = new AbortController()
+  const t = setTimeout(() => c.abort(), TIMEOUT)
+  try { const r = await fetch(url, { signal: c.signal, headers }); clearTimeout(t); return r }
+  catch (e) { clearTimeout(t); throw e }
+}
+
+const handler = async (m, { conn, text, usedPrefix, command }) => {
+  const datas = global
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const tradutor = _translate.plugins.downloader_tiktokstalk
+
+  const user = String(text || '').trim().replace(/^@/, '')
+  if (!user) return conn.reply(m.chat, tradutor.texto1 + ' ' + `${usedPrefix + command} luisitocomunica`, m)
 
   try {
-    const response = await axios.get('https://delirius-apiofc.vercel.app/tools/tiktokstalk', {
-      params: { q: text }
-    });
+    const res = await ft(SERVER_URL + '/api/social/pptiktok?user=' + encodeURIComponent(user), DL_HEADERS)
+    if (!res.ok) throw new Error('Error del servidor')
+    const data = await res.json()
+    if (!data.status) throw new Error(data.error || 'No se pudo obtener la información')
 
-    const data = response.data;
+    const info = `
+${tradutor.texto2[0]} ${data.usuario || 'Sin Información'}
+${tradutor.texto2[1]} ${data.nombre || 'Sin Información'}
+${tradutor.texto2[2]} ${data.stats?.seguidores || 'Sin Información'}
+${tradutor.texto2[3]} ${data.stats?.siguientes || 'Sin Información'}
+${tradutor.texto2[4]} ${data.stats?.likes || 'Sin Información'}
+${tradutor.texto2[5]} ${data.stats?.videos || 'Sin Información'}
+${tradutor.texto2[6]} ${data.firma || 'Sin Información'}
+`.trim()
 
-    if (data.status && data.result) {
-      const user = data.result.users;
-      const stats = data.result.stats;
-
-      const Mystic = `
-${tradutor.texto2[0]} ${user.username || 'Sin Información'}   
-${tradutor.texto2[1]} ${user.nickname || 'Sin Información'}   
-${tradutor.texto2[2]} ${stats.followerCount || 'Sin Información'}    
-${tradutor.texto2[3]} ${stats.followingCount || 'Sin Información'}   
-${tradutor.texto2[4]} ${stats.likeCount || 'Sin Información'}    
-${tradutor.texto2[5]} ${stats.videoCount || 'Sin Información'}
-${tradutor.texto2[6]} ${user.signature || 'Sin Información'}   
-`.trim();
-
-      const imageUrl = user.avatarLarger;
-      const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-      const imageBuffer = Buffer.from(imageResponse.data, 'binary');
-
-      await conn.sendFile(m.chat, imageBuffer, 'profile.jpg', Mystic, m);
-    } else {
-      throw tradutor.texto3; 
-    }
+    await conn.sendFile(m.chat, data.avatar, 'profile.jpg', info, m)
   } catch (e) {
-    throw tradutor.texto3;  
+    throw tradutor.texto3 + '\n' + ocultar(e.message || e)
   }
-};
+}
 
-handler.help = ['tiktokstalk'].map((v) => v + ' <username>');
-handler.tags = ['stalk'];
-handler.command = /^(tiktokstalk|ttstalk)$/i;
-export default handler;
+handler.help = ['tiktokstalk'].map((v) => v + ' <username>')
+handler.tags = ['stalk']
+handler.command = /^(tiktokstalk|ttstalk)$/i
+export default handler

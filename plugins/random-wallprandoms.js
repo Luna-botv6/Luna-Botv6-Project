@@ -1,7 +1,6 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 const handler = async (m, {command, conn}) => {
-  const apikey = global.keysxxx;
   const who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender;
   const name = await conn.getName[who];
   const fgif = m;
@@ -111,36 +110,38 @@ const handler = async (m, {command, conn}) => {
   }
 
   if (command == 'randomprofile') {
-    const haha = await conn.getFile(`https://api.zahwazein.xyz/randomimage/profil?apikey=${apikey}`);
+    const anu = await wallpaper('profile picture');
+    const result = anu[Math.floor(Math.random() * anu.length)];
+    const haha = result.image[0];
     await conn.reply(m.chat, global.wait, m);
-    conn.sendMessage(m.chat, {image: {url: haha.data}, caption: `_${command}_`.trim()}, {quoted: m});
-  }
-
-  if (command == 'wpaesthetic2') {
-    const haha = await conn.getFile(`https://api.zahwazein.xyz/randomimage/aesthetic?apikey=${apikey}`);
-    await conn.reply(m.chat, global.wait, m);
-    conn.sendMessage(m.chat, {image: {url: haha.data}, caption: `_${command}_`.trim()}, {quoted: m});
+    conn.sendMessage(m.chat, {image: {url: haha}, caption: `_${command}_`.trim()}, {quoted: m});
   }
 
   if (command == 'wpvehiculo') {
-    const haha = await conn.getFile(`https://api.zahwazein.xyz/randomimage/mobil?apikey=${apikey}`);
+    const anu = await wallpaper('car');
+    const result = anu[Math.floor(Math.random() * anu.length)];
+    const haha = result.image[0];
     await conn.reply(m.chat, global.wait, m);
-    conn.sendMessage(m.chat, {image: {url: haha.data}, caption: `_${command}_`.trim()}, {quoted: m});
+    conn.sendMessage(m.chat, {image: {url: haha}, caption: `_${command}_`.trim()}, {quoted: m});
   }
 
   if (command == 'wallhp') {
-    const haha = await conn.getFile(`https://api.zahwazein.xyz/randomimage/wallhp?apikey=${apikey}`);
+    const anu = await wallpaper('mobile wallpaper');
+    const result = anu[Math.floor(Math.random() * anu.length)];
+    const haha = result.image[0];
     await conn.reply(m.chat, global.wait, m);
-    conn.sendMessage(m.chat, {image: {url: haha.data}, caption: `_${command}_`.trim()}, {quoted: m});
+    conn.sendMessage(m.chat, {image: {url: haha}, caption: `_${command}_`.trim()}, {quoted: m});
   }
 
   if (command == 'wpmoto') {
-    const haha = await conn.getFile(`https://api.zahwazein.xyz/randomimage/motor?apikey=${apikey}`);
+    const anu = await wallpaper('motorcycle');
+    const result = anu[Math.floor(Math.random() * anu.length)];
+    const haha = result.image[0];
     await conn.reply(m.chat, global.wait, m);
-    conn.sendMessage(m.chat, {image: {url: haha.data}, caption: `_${command}_`.trim()}, {quoted: m});
+    conn.sendMessage(m.chat, {image: {url: haha}, caption: `_${command}_`.trim()}, {quoted: m});
   }
 };
-handler.command = ['wpmontaña', 'pubg', 'wpgaming', 'wpaesthetic', 'wprandom', 'coffee', 'pentol', 'caricatura', 'ciberespacio', 'technology', 'doraemon', 'hacker', 'planeta', 'randomprofile', 'wpaesthetic2', 'wpvehiculo', 'wallhp', 'wpmoto'];
+handler.command = ['wpmontaña', 'pubg', 'wpgaming', 'wpaesthetic', 'wprandom', 'coffee', 'pentol', 'caricatura', 'ciberespacio', 'technology', 'doraemon', 'hacker', 'planeta', 'randomprofile', 'wpvehiculo', 'wallhp', 'wpmoto'];
 export default handler;
 
 async function wallpaper(title, page = '1') {
