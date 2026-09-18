@@ -2,10 +2,19 @@ import fetch from 'node-fetch';
 import {FormData, Blob} from 'formdata-node';
 import {fileTypeFromBuffer} from 'file-type';
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
 export default async (buffer) => {
+  if (!buffer || buffer.length > MAX_FILE_SIZE) {
+    throw new Error('[uploadImage] Archivo inválido o excede el tamaño máximo permitido (10MB)');
+  }
   const type = await fileTypeFromBuffer(buffer);
   if (!type) throw new Error('[uploadImage] No se pudo detectar el tipo de archivo');
   const {ext, mime} = type;
+  if (!ALLOWED_MIME_TYPES.includes(mime)) {
+    throw new Error('[uploadImage] Tipo de archivo no permitido: ' + mime);
+  }
   const uint8 = new Uint8Array(buffer);
 
   const quax = async () => {
