@@ -2,10 +2,19 @@ import fetch from 'node-fetch';
 import {FormData, Blob} from 'formdata-node';
 import {fileTypeFromBuffer} from 'file-type';
 
+const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+
 export default async (buffer) => {
+  if (!buffer || buffer.length > MAX_SIZE_BYTES) {
+    throw new Error('[uploadImage] Archivo demasiado grande o inválido');
+  }
   const type = await fileTypeFromBuffer(buffer);
   if (!type) throw new Error('[uploadImage] No se pudo detectar el tipo de archivo');
   const {ext, mime} = type;
+  if (!ALLOWED_MIMES.includes(mime)) {
+    throw new Error('[uploadImage] Tipo de archivo no permitido: ' + mime);
+  }
   const uint8 = new Uint8Array(buffer);
 
   const quax = async () => {
