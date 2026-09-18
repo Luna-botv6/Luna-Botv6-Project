@@ -1,25 +1,53 @@
-import uploadImage from '../src/libraries/uploadImage.js';
-import {sticker} from '../src/libraries/sticker.js';
+import fs from 'fs'
+import fetch from 'node-fetch'
+import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js'
+import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
+import { sticker } from '../src/libraries/sticker.js'
 
+const configContent = fs.readFileSync('./config.js', 'utf-8')
+if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado')
+try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
 
-const handler = async (m, {conn, text}) => {
-  const datas = global;
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
-  const tradutor = _translate.plugins.sticker_scircle;
+const SERVER_URL = obtenerMenuIuman()
+const API_KEY = cargarOGenerarAPIKey()
+const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY, 'Content-Type': 'application/json' }
+const TIMEOUT = 30000
+
+const ocultar = (m) => String(m || '').replace(/https?:\/\/\S+/g, '[enlace oculto]').replace(/key=\w+/gi, 'key=[oculta]')
+
+const ft = async (url, options = {}) => {
+  const c = new AbortController()
+  const t = setTimeout(() => c.abort(), TIMEOUT)
+  try { const r = await fetch(url, { ...options, signal: c.signal }); clearTimeout(t); return r }
+  catch (e) { clearTimeout(t); throw e }
+}
+
+const handler = async (m, {conn}) => {
+  const datas = global
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const tradutor = _translate.plugins.sticker_scircle
 
   try {
-    const q = m.quoted ? m.quoted : m;
-    const mime = (q.msg || q).mimetype || '';
-    const img = await q.download();
-    const url = await uploadImage(img);
-    const scircle = global.API('dzx', '/api/canvas/circle', {url});
-    const stiker = await sticker(null, scircle, global.packname, global.author);
-    conn.sendFile(m.chat, stiker, 'sticker.webp', '', m, {asSticker: true});
+    const q = m.quoted ? m.quoted : m
+    const mime = (q.msg || q).mimetype || ''
+    if (!/^image\//i.test(mime)) throw tradutor.texto1
+    const img = await q.download?.()
+    if (!img) throw tradutor.texto1
+
+    const res = await ft(SERVER_URL + '/api/utils/circle', {
+      method: 'POST',
+      headers: DL_HEADERS,
+      body: JSON.stringify({ image: img.toString('base64') })
+    })
+    if (!res.ok) throw new Error('Error del servidor')
+    const data = await res.json()
+    if (!data.status || !data.image) throw new Error(data.error || 'No se pudo procesar la imagen')
+    const stiker = await sticker(Buffer.from(data.image, 'base64'), null, global.packname, global.author)
+    conn.sendFile(m.chat, stiker, 'sticker.webp', '', m, {asSticker: true})
   } catch (e) {
-    m.reply(tradutor.texto1);
+    m.reply(tradutor.texto1 + '\n' + ocultar(e.message || e))
   }
-};
-handler.command = /^scircle|circle$/i;
-export default handler;
-/* `https://api.dhamzxploit.my.id/api/canvas/circle?url=${url}` */
+}
+handler.command = /^scircle|circle$/i
+export default handler

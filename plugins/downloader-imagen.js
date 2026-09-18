@@ -1,4 +1,5 @@
 import fs from 'fs';
+import axios from 'axios';
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   const idioma = global.db.data.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
