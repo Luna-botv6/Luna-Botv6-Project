@@ -2712,6 +2712,7 @@
     },
     "owner_mi_server": {
       "tunel_no_listo": "⚠️ The tunnel is not ready yet. Try again in a few seconds.",
+      "tunel_temporal": "\n\n🕐 *This link closes automatically in 1 minute.* If it expires, use .miserver again to open a new one.",
       "solo_owner": "This command is only for the Owner.",
       "solo_privado": "🔒 This command only works in private chat.",
       "bienvenida": "👋 *Welcome to the Luna-BotV6 panel*\n\nIt's your first time here. First choose a username:\n*.reg YourUser*\n\n_Example: .reg Lunabot_",

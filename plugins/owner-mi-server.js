@@ -1,15 +1,25 @@
 import { isRegistered, saveCredentials, resetCredentials } from '../lib/funcion/panel-auth.js';
-import { getPanelTunnelUrl } from '../lib/funcion/cloudflare-tunnel.js';
+import { getPanelTunnelUrl, openCloudflareTunnel, scheduleAutoClose } from '../lib/funcion/cloudflare-tunnel.js';
 
 const pendingUsernames = new Map();
 const AUTODELETE_MS = 120000;
+const TUNNEL_LIVE_MS = 60000;
 
 async function buildLinksText(t) {
-  const tunnelUrl = getPanelTunnelUrl();
-  if (!tunnelUrl) {
+  const port = global.panelPort || process.env.PORT || 3000;
+  let url = getPanelTunnelUrl();
+  if (!url) {
+    try {
+      url = await openCloudflareTunnel(port);
+    } catch {
+      url = null;
+    }
+  }
+  if (!url) {
     return t?.tunel_no_listo || '⚠️ El túnel todavía no está listo. Probá de nuevo en unos segundos.';
   }
-  return tunnelUrl + '/panel';
+  scheduleAutoClose(TUNNEL_LIVE_MS);
+  return url + '/panel' + (t?.tunel_temporal || '\n\n🕐 Este enlace se cierra automáticamente en 1 minuto.');
 }
 
 async function responder(conn, m, texto) {
