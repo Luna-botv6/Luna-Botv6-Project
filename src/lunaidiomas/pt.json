@@ -2714,6 +2714,7 @@
     },
     "owner_mi_server": {
       "tunel_no_listo": "⚠️ O túnel ainda não está pronto. Tente novamente em alguns segundos.",
+      "tunel_temporal": "\n\n🕐 *Este link fecha sozinho em 1 minuto.* Se expirar, use .miserver de novo para abrir um novo.",
       "solo_owner": "Este comando é apenas para o Owner.",
       "solo_privado": "🔒 Este comando só funciona no chat privado.",
       "bienvenida": "👋 *Bem-vindo ao painel do Luna-BotV6*\n\nÉ a primeira vez aqui. Primeiro escolha um usuário:\n*.reg SeuUsuario*\n\n_Exemplo: .reg Lunabot_",
