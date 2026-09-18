@@ -1,5 +1,4 @@
 import translate from '@vitalets/google-translate-api';
-import fetch from 'node-fetch';
 
 
 const handler = async (m, {args, usedPrefix, command}) => {
@@ -22,14 +21,7 @@ const handler = async (m, {args, usedPrefix, command}) => {
     const result = await translate(`${text}`, {to: lang, autoCorrect: true});
     await m.reply(tradutor.texto3 + result.text);
   } catch {
-    try {
-      const lol = await fetch(`https://api.lolhuman.xyz/api/translate/auto/${lang}?apikey=${lolkeysapi}&text=${text}`);
-      const loll = await lol.json();
-      const result2 = loll.result.translated;
-      await m.reply(`${tradutor.texto3 }` + result2);
-    } catch {
-      await m.reply(tradutor.texto2);
-    }
+    await m.reply(tradutor.texto2);
   }
 };
 handler.command = /^(translate|traducir|trad)$/i;

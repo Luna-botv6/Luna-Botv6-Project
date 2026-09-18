@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import axios from 'axios';
 
 const handler = async (m, {conn, groupMetadata, usedPrefix, text, args, command}) => {
   const datas = global;

@@ -1,25 +1,44 @@
-import { Sticker } from 'wa-sticker-formatter';
-import axios from 'axios';
-import fs from 'fs';
+import { Sticker } from 'wa-sticker-formatter'
+import fetch from 'node-fetch'
+import fs from 'fs'
+
+const urlDe = (cp) => `https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/72x72/${cp}.png`
+
+const conseguirUrl = async (emoji) => {
+  const full = [...emoji].map(c => c.codePointAt(0).toString(16)).join('-')
+  const candidatas = [full, full.replace(/-fe0f/g, '')]
+  for (const cp of candidatas) {
+    const url = urlDe(cp)
+    try {
+      const c = new AbortController()
+      const t = setTimeout(() => c.abort(), 8000)
+      try {
+        const r = await fetch(url, { method: 'HEAD', signal: c.signal })
+        if (r.ok) return url
+      } finally { clearTimeout(t) }
+    } catch {}
+  }
+  return null
+}
 
 const handler = async (m, { usedPrefix, conn, args, text, command }) => {
 
-  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
-  let _t = {};
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es'
+  let _t = {}
   try {
-    const _lang = idioma || global.defaultLenguaje || 'es';
-    _t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${_lang}.json`, 'utf8'));
+    const _lang = idioma || global.defaultLenguaje || 'es'
+    _t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${_lang}.json`, 'utf8'))
   } catch {
-    try { _t = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')); } catch {}
+    try { _t = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')) } catch {}
   }
-  const tradutor = _t.plugins.sticker_semoji;
+  const tradutor = _t.plugins.sticker_semoji
 
-  let [tipe, emoji] = text.includes('|') ? text.split('|') : args;
-  const defaultType = 'apple';
+  let [tipe, emoji] = text.includes('|') ? text.split('|') : args
+  const defaultType = 'apple'
 
   if (tipe && !emoji) {
-    emoji = '😎';
-    tipe = defaultType;
+    emoji = '😎'
+    tipe = defaultType
   }
 
   const err = `${tradutor.texto1[0]}
@@ -42,9 +61,9 @@ ${tradutor.texto1[12]}
 ${tradutor.texto1[13]}
 ${tradutor.texto1[14]}
 
-${tradutor.texto1[0]}`;
+${tradutor.texto1[0]}`
 
-  if (!emoji) throw err;
+  if (!emoji) throw err
 
   const typess = {
     mo: 'mozilla',
@@ -58,20 +77,16 @@ ${tradutor.texto1[0]}`;
     mi: 'microsoft',
     ht: 'htc',
     tw: 'twitter',
-  };
+  }
 
-  tipe = tipe && typess[tipe] ? typess[tipe] : defaultType;
+  tipe = tipe && typess[tipe] ? typess[tipe] : defaultType
 
   try {
-    emoji = emoji.trim();
-    tipe = tipe.trim().toLowerCase();
+    emoji = emoji.trim()
+    tipe = tipe.trim().toLowerCase()
 
-    const response = await axios.get('https://deliriusapi-official.vercel.app/tools/emoji', {
-      params: { text: emoji }
-    });
-
-    const json = response.data;
-    let chosenURL = json.data[tipe] || json.data['apple'];
+    const chosenURL = await conseguirUrl(emoji)
+    if (!chosenURL) throw new Error('Sin fuente para el emoji')
 
     const stiker = await createSticker(
       false,
@@ -79,21 +94,22 @@ ${tradutor.texto1[0]}`;
       global.packname,
       global.author,
       20
-    );
+    )
 
-    m.reply(stiker);
+    const stickerBuffer = Buffer.isBuffer(stiker) ? stiker : Buffer.from(stiker)
+    await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m })
 
   } catch (e) {
-    console.log(new Error(e).message);
-    throw tradutor.texto2;
+    console.log(new Error(e).message)
+    throw tradutor.texto2
   }
-};
+}
 
-handler.help = ['emoji <tipo> <emoji>'];
-handler.tags = ['sticker'];
-handler.command = ['emoji', 'smoji', 'semoji'];
+handler.help = ['emoji <tipo> <emoji>']
+handler.tags = ['sticker']
+handler.command = ['emoji', 'smoji', 'semoji']
 
-export default handler;
+export default handler
 
 async function createSticker(img, url, packName, authorName, quality) {
   const stickerMetadata = {
@@ -101,6 +117,6 @@ async function createSticker(img, url, packName, authorName, quality) {
     pack: packName,
     author: authorName,
     quality,
-  };
-  return new Sticker(img ? img : url, stickerMetadata).toBuffer();
+  }
+  return new Sticker(img ? img : url, stickerMetadata).toBuffer()
 }

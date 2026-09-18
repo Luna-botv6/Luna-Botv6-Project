@@ -11,10 +11,11 @@ try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion f
 const SERVER_URL = obtenerMenuIuman()
 const API_KEY = cargarOGenerarAPIKey()
 const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
-const TIMEOUT = 60000
+const TIMEOUT = 120000
 
 const BOT = () => global.BotName || 'LUNA'
 const sleep = ms => new Promise(r => setTimeout(r, ms))
+const ocultar = (m) => String(m || '').replace(/https?:\/\/\S+/g, '[enlace oculto]').replace(/key=\w+/gi, 'key=[oculta]')
 
 const safeEdit = async (conn, jid, text, key) => {
   try { if (key && jid) await conn.sendMessage(jid, { text, edit: key }) } catch {}
@@ -82,15 +83,20 @@ async function descargar(conn, msg, tipo, url) {
       const isVideo = itemUrl?.includes('.mp4') || !!item.thumbnail
       const caption = `📸 ${data.titulo || ''}${items.length > 1 ? ` (${i + 1}/${items.length})` : ''}`
 
+      const mediaRes = await ft(itemUrl, DL_HEADERS)
+      if (!mediaRes.ok) throw new Error(isVideo ? 'Error descargando el video' : 'Error descargando la imagen')
+      const mediaBuffer = Buffer.from(await mediaRes.arrayBuffer())
+
       if (isVideo) {
-        await conn.sendMessage(msg.chat, { video: { url: itemUrl }, mimetype: 'video/mp4', caption }, { quoted: msg })
+        if (mediaBuffer.length < 10000) throw new Error('Video inválido desde el servidor')
+        await conn.sendMessage(msg.chat, { video: mediaBuffer, mimetype: 'video/mp4', caption }, { quoted: msg })
       } else {
-        await conn.sendMessage(msg.chat, { image: { url: itemUrl }, caption }, { quoted: msg })
+        await conn.sendMessage(msg.chat, { image: mediaBuffer, caption }, { quoted: msg })
       }
       if (i < items.length - 1) await sleep(1500)
     }
   } catch (e) {
-    await safeEdit(conn, jid, card(tipo, 'error', { error: e.message }), editKey)
+    await safeEdit(conn, jid, card(tipo, 'error', { error: ocultar(e.message) }), editKey)
   }
 }
 
