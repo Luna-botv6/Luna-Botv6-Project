@@ -30,9 +30,7 @@ export const advancedUtils = {
     if (buffer) {
       try {
         (type = await conn.getFile(buffer), buffer = type.data);
-      } catch {
-        buffer = buffer;
-      }
+      } catch {}
     }
     if (buffer && !Buffer.isBuffer(buffer) && (typeof buffer === 'string' || Array.isArray(buffer))) (options = quoted, quoted = buttons, buttons = callText, callText = call, call = urlText, urlText = url, url = buffer, buffer = null);
     if (!options) options = {};
@@ -104,9 +102,7 @@ export const advancedUtils = {
     if (buffer) {
       try {
         (type = await conn.getFile(buffer), buffer = type.data);
-      } catch {
-        buffer = buffer;
-      }
+      } catch {}
     }
     if (buffer && !Buffer.isBuffer(buffer) && (typeof buffer === 'string' || Array.isArray(buffer))) (options = quoted, quoted = buttons, buttons = urlText2, urlText2 = url2, url2 = urlText, urlText = url, url = buffer, buffer = null);
     if (!options) options = {};
