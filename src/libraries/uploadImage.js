@@ -2,7 +2,11 @@ import fetch from 'node-fetch';
 import {FormData, Blob} from 'formdata-node';
 import {fileTypeFromBuffer} from 'file-type';
 
+const MAX_SIZE = 25 * 1024 * 1024;
+
 export default async (buffer) => {
+  if (!buffer || !buffer.length) throw new Error('[uploadImage] Buffer inválido');
+  if (buffer.length > MAX_SIZE) throw new Error('[uploadImage] Archivo demasiado grande (máximo 25MB)');
   const type = await fileTypeFromBuffer(buffer);
   if (!type) throw new Error('[uploadImage] No se pudo detectar el tipo de archivo');
   const {ext, mime} = type;
