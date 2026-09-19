@@ -15,6 +15,11 @@ import fetch from 'node-fetch'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const tmp = path.join(__dirname, '../tmp')
 
+const MAX_STICKER_SIZE = 50 * 1024 * 1024;
+const assertSize = (buf) => {
+  if (buf && buf.length > MAX_STICKER_SIZE) throw new Error('[sticker] Media demasiado grande (máximo 50MB)')
+};
+
 function sticker2(img, url) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -22,6 +27,7 @@ function sticker2(img, url) {
         const res = await fetch(url)
         if (res.status !== 200) throw await res.text()
         img = await res.buffer()
+        assertSize(img)
       }
       const inp = path.join(tmp, +new Date() + '.jpeg')
       await fs.promises.writeFile(inp, img)
@@ -66,6 +72,7 @@ async function sticker4(img, url) {
     const res = await fetch(url)
     if (res.status !== 200) throw await res.text()
     img = await res.buffer()
+    assertSize(img)
   }
   return await ffmpeg(img, [
     '-vf', 'scale=512:512:flags=lanczos:force_original_aspect_ratio=increase,crop=512:512,format=rgba,setsar=1'
@@ -90,6 +97,7 @@ function sticker6(img, url) {
       const res = await fetch(url)
       if (res.status !== 200) throw await res.text()
       img = await res.buffer()
+      assertSize(img)
     }
     const type = await fileTypeFromBuffer(img) || {
       mime: 'application/octet-stream',
@@ -148,6 +156,7 @@ async function addExif(webpSticker, packname, author, categories = [''], metadat
 }
 
 async function sticker(img, url, ...args) {
+  assertSize(img)
   let lastError, stiker
   for (const func of [
     sticker3, global.support.ffmpeg && sticker6, sticker5,
