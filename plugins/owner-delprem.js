@@ -12,7 +12,7 @@ const handler = async (m, {conn, text, usedPrefix, command}) => {
   const user = global.db.data.users[who];
   if (!who) throw tradutor.texto1;
   if (!user) throw tradutor.texto2;
-  if (user.premiumTime = 0) throw tradutor.texto3;
+  if (!user.premiumTime) throw tradutor.texto3;
   const txt = text.replace('@' + who.split`@`[0], '').trim();
 
   user.premiumTime = 0;

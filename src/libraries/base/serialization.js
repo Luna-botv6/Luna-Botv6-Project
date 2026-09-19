@@ -304,7 +304,7 @@ export function serialize() {
         )) || '';
       },
       set(str) {
-        return this._text = str;
+        this._text = str;
       },
       enumerable: true,
     },
