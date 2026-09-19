@@ -52,19 +52,19 @@
 
 </div>
 
-**Luna Bot V6** es un bot de WhatsApp avanzado, **open source** (MIT) y gratuito, construido con **Baileys**, pensado para que los grupos tengan herramientas reales, diversión y una **IA que entiende el español rioplatense de forma natural**.
+**Luna Bot V6** es un bot de WhatsApp avanzado, **100% open source (MIT)** y gratuito. Está construido sobre **Baileys** y cuenta con un **motor de IA y NLP desarrollado por su autor**, pensado para que los grupos tengan herramientas reales, diversión y una **IA que entiende el español rioplatense de forma natural**.
 
 | | 💎 Detalle |
 |:---|:---|
-| **Qué es** | Bot de WhatsApp con **290+ plugins** (400+ comandos reales) organizados por categoría |
-| **IA** | Conversación natural **sin prefijos** (`@Luna` + lo que necesites) · agentes especializados: inteligencia, música/descargas y control |
-| **Idiomas** | 🇪🇸 Español · 🇧🇷 Português · 🇺🇸 English — multi-idioma **por usuario** |
-| **Contenido** | Descargas YT/TikTok/IG/Spotify · juegos · RPG y economía · moderación · herramientas |
-| **Estabilidad** | Anti-ban real: delays humanos, rate limits y detección de baneos con logs |
-| **Privacidad** | No comparte datos de usuarios · todo corre desde la propia cuenta del bot |
-| **Stack** | Node.js v18+ (ESM) · Baileys · LowDB · FFmpeg · ImageMagick |
-| **Autor** | Germán Miño (Argentina) · mantenido activamente |
-| **Repositorio** | [github.com/Luna-botv6/Luna-Botv6-Project](https://github.com/Luna-botv6/Luna-Botv6-Project) · Licencia **MIT** |
+| 🤖 **Qué es** | Bot de WhatsApp con **290+ plugins** (400+ comandos reales) organizados por categoría |
+| 🧠 **IA propia** | Conversación natural **sin prefijos** (`@Luna` + lo que necesites) · agentes especializados: inteligencia, música/descargas y control |
+| 🌍 **Idiomas** | 🇪🇸 Español · 🇧🇷 Português · 🇺🇸 English — multi-idioma **por usuario** |
+| 📥 **Contenido** | Descargas YT/TikTok/IG/Spotify · juegos · RPG y economía · moderación · herramientas |
+| 🛡️ **Estabilidad** | Anti-ban real: delays humanos, rate limits y detección de baneos con logs |
+| 🔒 **Privacidad** | No comparte datos de usuarios · todo corre desde la propia cuenta del bot |
+| ⚙️ **Stack** | Node.js v18+ (ESM) · Baileys · LowDB · FFmpeg · ImageMagick |
+| 👨‍💻 **Autor** | Germán Miño (Argentina) · mantenido activamente |
+| 📦 **Repositorio** | [github.com/Luna-botv6/Luna-Botv6-Project](https://github.com/Luna-botv6/Luna-Botv6-Project) · Licencia **MIT** |
 
 <div align="center">
 
@@ -72,6 +72,7 @@
 
 </div>
 
+- **Motor de IA y NLP propio**: el sistema de lenguaje natural y personalidad es desarrollo original del proyecto, con mantenimiento constante.
 - **Una IA que se entiende a todo**: se le habla como a una persona (sin comandos raros) y entiende el español de la calle — clima, recetas, letras, divisas, matemática, traducción y hasta *ejecutar comandos del grupo* por lenguaje natural.
 - **De los más completos en WhatsApp**: juegos, descargas, RPG con minería y tienda, economía, moderación de grupos y bienvenidas/despedidas configurables.
 - **Multi-idioma por usuario** y **compatibilidad total con LID** (los números nuevos que usa WhatsApp).
@@ -1277,9 +1278,9 @@ Al volver a iniciar, Luna te pregunta si querés que se **auto-actualice sola** 
 
 ---
 
-## 🙏 Reconocimientos
+## 🛠️ Tecnologías
 
-Basado en el excelente trabajo de **[Mystic-Bot-MD](https://github.com/BrunoSobrino/TheMystic-Bot-MD)** por [Bruno Sobrino](https://github.com/BrunoSobrino).
+Luna usa librerías open source de la comunidad: [Baileys](https://github.com/Whiskeysockets/Baileys) (con un **fork propio**), [LowDB](https://github.com/typicode/lowdb), [FFmpeg](https://ffmpeg.org) e [ImageMagick](https://imagemagick.org).
 
 ---
 
