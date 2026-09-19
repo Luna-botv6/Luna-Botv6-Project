@@ -1,14 +1,18 @@
 import axios from 'axios'
-import cheerio from 'cheerio'
-import fs from 'fs'
+
+const ITUNES_API = 'https://itunes.apple.com/search'
 
 const handler = async (m, { text, conn }) => {
-  const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
-  const t = _tr?.plugins?.buscador_peliculas || {};
+  const _tr = await global.loadTranslation((global.getIdioma?.(m)) || 'es')
+  const t = _tr?.plugins?.buscador_peliculas || {}
   try {
     if (!text) throw (t.nombre_pelicula || '*Escribe el nombre de la película*')
 
-    const results = await searchCuevana(text)
+    const pais = ((global.getIdioma?.(m)) || 'es').toLowerCase() === 'pt' ? 'BR' : 'MX'
+    const url = `${ITUNES_API}?term=${encodeURIComponent(text)}&entity=movie&limit=10&country=${pais}`
+
+    const { data } = await axios.get(url, { timeout: 20000 })
+    const results = (data?.results || []).filter(v => v.trackName || v.trackCensoredName)
 
     if (!results || results.length === 0) {
       return conn.sendMessage(m.chat, {
@@ -19,14 +23,23 @@ const handler = async (m, { text, conn }) => {
     const random = results[Math.floor(Math.random() * results.length)]
 
     const list = results.slice(0, 10).map((v, i) =>
-      `*${i + 1}.* ${v.title}\n${v.link}`
+      `*${i + 1}.* ${v.trackName || v.trackCensoredName}${v.releaseDate ? ` (${v.releaseDate.slice(0, 4)})` : ''}`
     ).join('\n\n')
 
-    const img = random.image || 'https://i.imgur.com/7Q9G4aJ.png'
+    const img = (random.artworkUrl100 && random.artworkUrl100.replace('100x100', '600x600')) || 'https://i.imgur.com/7Q9G4aJ.png'
+
+    const sinopsis = (random.longDescription || random.shortDescription || t.sin_sinopsis || '*Sin sinopsis disponible.*').slice(0, 500)
+
+    const caption =
+      (t.resultados?.replace('{text}', text) || `🎬 *Resultados de:* ${text}`) +
+      '\n\n' + list +
+      '\n\n━━━━━━━━━━━━━\n' +
+      `📽️ *${random.trackName || random.trackCensoredName}*${random.releaseDate ? ` (${random.releaseDate.slice(0, 4)})` : ''}\n\n` +
+      sinopsis
 
     await conn.sendMessage(m.chat, {
       image: { url: img },
-      caption: (t.resultados?.replace('{text}', text) + '\n\n' + list) || `🎬 *Resultados de:* ${text}\n\n${list}`
+      caption
     }, { quoted: m })
 
   } catch (err) {
@@ -37,36 +50,5 @@ const handler = async (m, { text, conn }) => {
   }
 }
 
-handler.command = ['cuevana']
+handler.command = ['pelicula', 'peliculas', 'cine', 'buscarpelicula']
 export default handler
-
-
-// 🔎 SCRAPER SIMPLE
-async function searchCuevana(query) {
-  const url = `https://cuevana3.cl/?s=${encodeURIComponent(query)}`
-
-  const { data } = await axios.get(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0'
-    }
-  })
-
-  const $ = cheerio.load(data)
-  const results = []
-
-  $('.result-item, .TPostMv, article').each((_, el) => {
-    const title =
-      $(el).find('a').attr('title') ||
-      $(el).find('img').attr('alt') ||
-      $(el).text().trim()
-
-    const link = $(el).find('a').attr('href')
-    const image = $(el).find('img').attr('src')
-
-    if (title && link) {
-      results.push({ title, link, image })
-    }
-  })
-
-  return results
-}

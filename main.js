@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1';
 
 const _origConsoleInfo = console.info.bind(console);
@@ -25,6 +25,10 @@ import yargs from 'yargs';
 import fs from 'fs';
 import { readdir, unlink, stat } from 'fs/promises';
 import { spawn, fork } from 'child_process';
+import * as childProcessMod from 'child_process';
+import * as os from 'os';
+import * as util from 'util';
+import * as crypto from 'crypto';
 import lodash from 'lodash';
 import chalk from 'chalk';
 import syntaxerror from 'syntax-error';
@@ -66,13 +70,13 @@ serialize();
 
 const msgRetryCounterMap = new Map();
 
-// --- Historial de reinicios limpios (sobrevive a process.exit, a diferencia de los contadores en memoria) ---
-// Si hay demasiados reinicios limpios en poco tiempo, es señal de un problema de fondo
-// (ban real, red inestable) y no tiene sentido seguir reintentando en ciclos cortos.
+
+
+
 const RESTART_HISTORY_PATH = './database/reconnect-restart-history.json';
-const RESTART_WINDOW_MS = 3600000; // 1 hora
-const RESTART_THRESHOLD = 3; // reinicios limpios en esa ventana antes de forzar una espera larga
-const RESTART_COOLDOWN_MS = 1800000; // 30 minutos de espera extra si se supera el umbral
+const RESTART_WINDOW_MS = 3600000; 
+const RESTART_THRESHOLD = 3; 
+const RESTART_COOLDOWN_MS = 1800000; 
 
 function getRestartHistory() {
   try {
@@ -110,9 +114,41 @@ global.__dirname = function dirname(pathURL) {
   return path.dirname(global.__filename(pathURL, true));
 };
 
+const _rfOrig = fs.readFileSync.bind(fs)
+const _langCache = new Map()
+fs.readFileSync = (p, o, ...rest) => {
+  const ps = String(p).replace(/\\/g, '/')
+  const isLang = /\/(?:src\/)(?:languages|lunaidiomas|lunaidiomas)\//.test(ps)
+  if (isLang) {
+    const utf8 = !o || o === 'utf8' || o === 'utf-8' || (o && o.encoding === 'utf8')
+    if (utf8) {
+      let e = _langCache.get(ps)
+      let m = 0
+      try { m = fs.statSync(p).mtimeMs } catch {}
+      if (e && e.m === m) return e.d
+      const d = _rfOrig(p, o, ...rest)
+      _langCache.set(ps, { m, d })
+      return d
+    }
+  }
+  return _rfOrig(p, o, ...rest)
+}
 global.__require = function require(dir = import.meta.url) {
   return createRequire(dir);
 };
+
+function setGlobalSafe(name, value) {
+  try {
+    global[name] = value;
+  } catch (e) {
+    console.log(chalk.yellow(`[ ⚠ ] No se pudo asignar global.${name} (ya existe como propiedad no reasignable): ${e.message}`));
+  }
+}
+setGlobalSafe('fs', fs);
+setGlobalSafe('path', path);
+setGlobalSafe('os', os);
+setGlobalSafe('util', util);
+setGlobalSafe('child_process', childProcessMod);
 
 global.API = (name, path = '/', query = {}, apikeyqueryname) => (name in global.APIs ? global.APIs[name] : name) + path + (query || apikeyqueryname ? '?' + new URLSearchParams(Object.entries({...query, ...(apikeyqueryname ? {[apikeyqueryname]: global.APIKeys[name in global.APIs ? global.APIs[name] : name]} : {})})) : '');
 
@@ -491,10 +527,10 @@ if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
 
           if (codigo) {
             codigo = codigo?.match(/.{1,4}/g)?.join("-") || codigo;
-            console.log(chalk.green('┌─────────────────────────────────────────────┐'));
+            console.log(chalk.green('┌────────────────────────────────────────────-+'));
             console.log(chalk.green.bold('📱 CÓDIGO DE EMPAREJAMIENTO:'));
             console.log(chalk.yellow.bold('   ' + codigo));
-            console.log(chalk.green('└─────────────────────────────────────────────┘'));
+            console.log(chalk.green('└────────────────────────────────────────────-+'));
             console.log(chalk.cyan('[ ℹ️ ] Pasos para vincular:'));
             console.log(chalk.cyan('1. Abre WhatsApp en tu teléfono'));
             console.log(chalk.cyan('2. Ve a Configuración > Dispositivos vinculados'));
@@ -502,7 +538,7 @@ if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
             console.log(chalk.cyan('4. Selecciona "Vincular con número de teléfono"'));
             console.log(chalk.cyan('5. Ingresa el código de arriba'));
             console.log(chalk.red.bold(`6. IMPORTANTE: Tienes ${Math.floor((PAIRING_TIMEOUT_DURATION - (Date.now() - pairingStartTime)) / 1000)} segundos restantes`));
-            console.log(chalk.green('└─────────────────────────────────────────────┘'));
+            console.log(chalk.green('└────────────────────────────────────────────-+'));
             break;
           }
         } catch (error) {
@@ -552,11 +588,11 @@ if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
             console.log(chalk.yellow(`[ ℹ️ ] Renovando código... (${tiempoRestante}s restantes)`));
             const nuevoCodigo = await global.conn.requestPairingCode(numeroTelefono, 'LUNABOT6');
             const codigoFormateado = nuevoCodigo?.match(/.{1,4}/g)?.join("-") || nuevoCodigo;
-            console.log(chalk.green('┌─────────────────────────────────────────────┐'));
+            console.log(chalk.green('┌────────────────────────────────────────────-+'));
             console.log(chalk.green.bold('📱 NUEVO CÓDIGO DE EMPAREJAMIENTO:'));
             console.log(chalk.yellow.bold('   ' + codigoFormateado));
             console.log(chalk.red.bold(`⏰ Tiempo restante: ${tiempoRestante} segundos`));
-            console.log(chalk.green('└─────────────────────────────────────────────┘'));
+            console.log(chalk.green('└────────────────────────────────────────────-+'));
             codigoRenovado = true;
           } catch (error) {
             console.log(chalk.red('[ ● ] Error al renovar código:', error.message));
@@ -878,9 +914,9 @@ async function connectionUpdate(update) {
 
     } else if (reason === DisconnectReason.forbidden) {
       global._reconnect403Count = (global._reconnect403Count || 0) + 1;
-      console.log(chalk.red('┌─────────────────────────────────────────────┐'));
+      console.log(chalk.red('┌────────────────────────────────────────────-+'));
       console.log(chalk.red.bold(`🚫 403 FORBIDDEN — posible baneo real (intento ${global._reconnect403Count}/3)`));
-      console.log(chalk.red('└─────────────────────────────────────────────┘'));
+      console.log(chalk.red('└────────────────────────────────────────────-+'));
 
       if (global._reconnect403Count >= 3) {
         reportBan(`403 forbidden persistente — ${global._reconnect403Count} intentos seguidos`, {
@@ -921,11 +957,11 @@ async function connectionUpdate(update) {
 
       if (isRealLogout && !global._loggedOutHandled) {
         global._loggedOutHandled = true;
-        console.log(chalk.red('┌─────────────────────────────────────────────┐'));
+        console.log(chalk.red('┌────────────────────────────────────────────-+'));
         console.log(chalk.red.bold('🚫 BOT DESVINCULADO / BANEADO DETECTADO'));
         console.log(chalk.red(`  Código: ${reason} (loggedOut)`));
         console.log(chalk.red(`  Mensaje: ${lastDisconnect?.error?.message || 'sin mensaje'}`));
-        console.log(chalk.red('└─────────────────────────────────────────────┘'));
+        console.log(chalk.red('└────────────────────────────────────────────-+'));
 
         reportBan(`loggedOut real — código ${reason}: ${lastDisconnect?.error?.message || 'sin mensaje'}`, {
           disconnectCode: reason,
@@ -1111,16 +1147,23 @@ const pluginFolder = global.__dirname(join(__dirname, './plugins/index'));
 const pluginFilter = (filename) => /\.js$/.test(filename);
 global.plugins = {};
 async function filesInit() {
-  for (const filename of readdirSync(pluginFolder).filter(pluginFilter)) {
-    try {
-      const file = global.__filename(join(pluginFolder, filename));
-      const module = await import(file);
-      global.plugins[filename] = module.default || module;
-    } catch (e) {
-      conn.logger.error(e);
-      delete global.plugins[filename];
-    }
+  const _files = readdirSync(pluginFolder).filter(pluginFilter);
+  const _CONC = 20;
+  const _pool = [];
+  for (const filename of _files) {
+    _pool.push((async () => {
+      try {
+        const file = global.__filename(join(pluginFolder, filename));
+        const module = await import(file);
+        global.plugins[filename] = module.default || module;
+      } catch (e) {
+        conn.logger.error(e);
+        delete global.plugins[filename];
+      }
+    })());
+    if (_pool.length >= _CONC) { await Promise.allSettled(_pool); _pool.length = 0; }
   }
+  await Promise.allSettled(_pool);
 }
 filesInit().then((_) => Object.keys(global.plugins)).catch(console.error);
 
