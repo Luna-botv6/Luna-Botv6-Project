@@ -59,7 +59,7 @@ export const messagingUtils = {
         try {
           m = await conn.sendMessage(jid, {...message, [mtype]: file}, {...opt, ...options});
         } catch (e2) {
-          if (e2?.data === 403 || e2?.output?.statusCode === 403) { file = null; return null; }
+          if (e2?.data === 403 || e2?.output?.statusCode === 403) file = null;
           m = null;
         }
       }

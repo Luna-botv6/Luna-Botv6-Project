@@ -1,116 +1,91 @@
-/*//////////////////////////////////////////////
+import fs from 'fs'
+import fetch from 'node-fetch'
+import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js'
+import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
+import { mp3BufferToOggOpus } from '../lib/funcion/ttsHelper.js'
 
-        [ ❗ ] CREDITOS - NO MODIFICAR [ ❗ ]
+const configContent = fs.readFileSync('./config.js', 'utf-8')
+if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado')
+try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion o clave faltante') }
 
-           Codigo hecho por @BrunoSobrino
-       Github: https://github.com/BrunoSobrino
-       
-       Nota: Solo hay disponibles efectos en
-       ingles, por lo que el texto en otros
-       idiomas puede sonar raro.
-       
-//////////////////////////////////////////////*/
+const SERVER_URL = obtenerMenuIuman()
+const API_KEY = cargarOGenerarAPIKey()
+const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
+const TIMEOUT = 45000
 
-import axios from 'axios';
-import fetch from 'node-fetch';
+const VOCES = [
+  { id: 'es-AR-TomasNeural', alias: ['tomas', 'tomi', 'arg'], nombre: 'Tomás 🇦🇷' },
+  { id: 'es-AR-ElenaNeural', alias: ['elena', 'argentina'], nombre: 'Elena 🇦🇷' },
+  { id: 'es-MX-JorgeNeural', alias: ['jorge', 'mex'], nombre: 'Jorge 🇲🇽' },
+  { id: 'es-MX-DaliaNeural', alias: ['dalia', 'mexico'], nombre: 'Dalia 🇲🇽' },
+  { id: 'es-ES-AlvaroNeural', alias: ['alvaro', 'esp'], nombre: 'Álvaro 🇪🇸' },
+  { id: 'es-ES-ElviraNeural', alias: ['elvira', 'espana'], nombre: 'Elvira 🇪🇸' },
+  { id: 'es-CO-SalomeNeural', alias: ['salome', 'col'], nombre: 'Salomé 🇨🇴' },
+  { id: 'es-CL-CatalinaNeural', alias: ['catalina', 'chile'], nombre: 'Catalina 🇨🇱' },
+  { id: 'en-US-AriaNeural', alias: ['aria', 'ingles'], nombre: 'Aria 🇺🇸' },
+  { id: 'en-US-GuyNeural', alias: ['guy', 'english'], nombre: 'Guy 🇺🇸' },
+  { id: 'pt-BR-FranciscaNeural', alias: ['francisca', 'brasil'], nombre: 'Francisca 🇧🇷' },
+  { id: 'pt-BR-AntonioNeural', alias: ['antonio', 'portugues'], nombre: 'Antonio 🇧🇷' },
+]
+const VOZ_DEFECTO = 'es-AR-TomasNeural'
 
-const handler = async (m, { conn, usedPrefix, command, text, args }) => {
-  const datas = global;
-  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
-  const tradutor = _translate.plugins.convertidor_tts2;
-
-
-  const [efecto, ...textoArray] = text.split(' ');
-  const texto = textoArray.join('');
-
-  if (!efecto) {
-    let voiceList = await getVoiceList();
-    let responseText = `*${tradutor.texto1}*\n`;
-
-    for (let i = 0, count = 0; count < 100 && i < voiceList.resultado.length; i++) {
-      const entry = voiceList.resultado[i];
-      if (entry.ID.length <= 20) {
-        responseText += `*◉ ${usedPrefix + command} ${entry.ID} ${tradutor.texto2}*\n`;
-        count++;
-      }
-    }
-
-    return conn.sendMessage(m.chat, { text: responseText.trim() }, { quoted: m });
-  }
-
-  let efectoValido = false;
-  let voiceList = await getVoiceList();
-  for (const entry of voiceList.resultado) {
-    if (entry.ID === efecto) {
-      efectoValido = true;
-      break;
-    }
-  }
-
-  if (!efectoValido) return conn.sendMessage(m.chat, { text: `*${tradutor.texto3[0]} ${usedPrefix + command} ${tradutor.texto3[1]}*` }, { quoted: m });
-
-  if (!texto) return conn.sendMessage(m.chat, {text: `*${tradutor.texto4[0]}*\n*◉ ${usedPrefix + command} ${efecto} ${tradutor.texto4[1]}*`}, {quoted: m});
-
-  let masivo = await makeTTSRequest(texto, efecto);
-  conn.sendMessage(m.chat, {audio: {url: masivo.resultado}, fileName: 'error.mp3', mimetype: 'audio/mpeg', ptt: true}, {quoted: m});
-};
-
-handler.command = /^(g?tts2)$/i;
-export default handler;
-
-const secretKey = 'fe2ee40099494579af0ecf871b5af266';
-const userId = 'SrgwcKcLzSY63IdsAxd1PzscFjL2';
-
-async function getVoiceList() {
-  const url = 'https://play.ht/api/v2/voices';
-  const options = {
-    method: 'GET',
-    headers: {
-      accept: 'application/json',
-      AUTHORIZATION: `Bearer ${secretKey}`,
-      'X-USER-ID': userId
-    }
-  };
-  try {
-    const response = await fetch(url, options);
-    const responseData = await response.json(); 
-    const uniqueData = responseData.reduce((acc, current) => {
-      if (!acc.some(item => item.id === current.id)) {
-        acc.push(current);
-      }
-      return acc;
-    }, []);
-    const simplifiedList = uniqueData.map(entry => ({
-      ID: entry.id,
-      name: entry.name,
-      lenguaje: entry.language  
-    }));
-    return { resultado: simplifiedList ? simplifiedList : `${tradutor.texto5}` };
-  } catch (error) {
-    console.error('Error:', error);
-    return { resultado: `${tradutor.texto6}` };
-    throw error;
-  }
+const ft = async (url, headers = {}) => {
+  const c = new AbortController()
+  const timer = setTimeout(() => c.abort(), TIMEOUT)
+  try { const r = await fetch(url, { signal: c.signal, headers }); clearTimeout(timer); return r }
+  catch (e) { clearTimeout(timer); throw e }
 }
 
-async function makeTTSRequest(texto, efecto) {
-  const requestData = {text: texto, voice: efecto};
-  const headers = {
-    'Authorization': `Bearer ${secretKey}`,
-    'X-User-Id': userId,
-    'accept': 'text/event-stream',
-    'content-type': 'application/json'
-  };
+const handler = async (m, { conn, usedPrefix, command, text }) => {
+  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
+  let t = {}
   try {
-    const response = await axios.post('https://play.ht/api/v2/tts', requestData, { headers });
-    const events = response.data.split('\r\n\r\n');
-    const eventData = events.find(event => event.includes('"stage":"complete"'));
-    const urlMatch = eventData.match(/"url":"([^"]+)"/);
-    const url = urlMatch ? urlMatch[1] : null;
-    return { resultado: url ? url : `${tradutor.texto7}` };
-  } catch (error) {
-    console.error('Error:', error);
-    return { resultado: '[❗] Error, no se obtuvo respuesta de la API.' };
+    const _tr = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+    t = _tr.plugins?.convertidor_tts2 || {}
+  } catch {}
+
+  const entrada = (text || m.quoted?.text || '').trim()
+  const lista = VOCES.map(v => `◉ *${v.alias[0]}* — ${v.nombre}`).join('\n')
+
+  if (!entrada) {
+    return conn.sendMessage(m.chat, {
+      text: `${t.titulo || '🎙️ *Texto a voz (Luna)*'}\n\n${t.uso || '*Uso:*'} *${usedPrefix + command} <voz> | <texto>*\n${t.ejemplo || '*Ejemplo:*'} *${usedPrefix + command} elena | ¡Hola, soy Luna!*\n\n${t.voces || '*Voces disponibles:*'}\n${lista}`
+    }, { quoted: m })
   }
+
+  let voz = VOZ_DEFECTO
+  let contenido = entrada
+  const partes = entrada.split('|')
+  if (partes.length >= 2) {
+    const clave = partes[0].trim().toLowerCase()
+    const enc = VOCES.find(v => v.alias.includes(clave) || v.id.toLowerCase() === clave)
+    if (enc) {
+      voz = enc.id
+      contenido = partes.slice(1).join('|').trim()
+    }
+  }
+
+  if (!contenido) {
+    return conn.sendMessage(m.chat, { text: t.faltaTexto || '❌ Falta el texto a convertir.' }, { quoted: m })
+  }
+
+  let buffer
+  try {
+    const res = await ft(`${SERVER_URL}/api/tts?text=${encodeURIComponent(contenido)}&voice=${encodeURIComponent(voz)}`, DL_HEADERS)
+    if (!res.ok) throw new Error('HTTP ' + res.status)
+    const tipo = res.headers.get('content-type') || ''
+    if (!/audio|mpeg|octet-stream/i.test(tipo)) throw new Error('Respuesta invalida')
+    buffer = Buffer.from(await res.arrayBuffer())
+    if (buffer.length < 1000) throw new Error('Audio vacio')
+    buffer = await mp3BufferToOggOpus(buffer)
+  } catch {
+    throw (t.error || '❌ No se pudo generar el audio. Intenta de nuevo en un momento.')
+  }
+
+  await conn.sendMessage(m.chat, { audio: buffer, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: m })
 }
+
+handler.help = ['tts2 <voz> | <texto>', 'tts2', 'tts', 'gtts', 'voz', 'tts3', 'ttsc']
+handler.tags = ['tools']
+handler.command = /^(g?tts2?|voz|tts3|ttsc)$/i
+export default handler
