@@ -15,8 +15,7 @@ Gracias por usar *LunaBot V6*.
 • *Principal (PayPal)*: gercoto17@gmail.com
   https://www.paypal.com/donate?business=gercoto17%40gmail.com
 
-• *Bruno Sobrino* (apoyo alternativo):
-  https://www.paypal.me/BrunoSob
+• *Mercado Pago*: german.elias.23
 
 Toda ayuda es bienvenida y permite mantener el bot activo y mejorar funciones. ❤️
 

@@ -3,9 +3,13 @@ import { getUserStats, addExp, addMoney, setUserStats, getPlayerState, isCapture
 import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js';
 import { checkMerchantTrigger, checkGambler, checkUndeadTrigger, checkVagrantTrigger } from '../lib/npcSystem.js';
 
+const _trabajosEnCurso = new Set();
+
 const handler = async (m, { conn }) => {
-  if (handler.enviando) return;
-  handler.enviando = true;
+  const _userId = m.sender;
+  if (_trabajosEnCurso.has(_userId)) return;
+  _trabajosEnCurso.add(_userId);
+  try {
 
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
   let _t = {};
@@ -85,7 +89,9 @@ ${pickRandom(mensajesTrabajo)}
     }, 3000)
   }
 
-  handler.enviando = false;
+  } finally {
+    _trabajosEnCurso.delete(_userId);
+  }
 };
 
 handler.help = ['work'];
