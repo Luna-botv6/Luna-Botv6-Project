@@ -1905,6 +1905,15 @@
       "labelVencimiento": "validade:",
       "error": "❌ Erro: {error}"
     },
+    "maker_logos": {
+      "texto1": "Falta o efeito",
+      "texto2": [
+        "Efeito inválido",
+        "não existe"
+      ],
+      "texto3": "Erro do gerador",
+      "texto5": "Logo gerado com"
+    },
     "numeroia": {
       "soloOwner": "⚠️ Somente o *dono* pode usar este comando.",
       "usoComando": "⚠️ Use o comando assim: `/iadd 1234567890`",
@@ -1979,6 +1988,14 @@
       "corregido": "✅ LID corrigido: agora você aparecerá como {nombre} ({id})",
       "no_encontrado": "⚠️ Não foi possível encontrar seu número real no grupo.",
       "error": "❌ Ocorreu um erro ao tentar corrigir o LID."
+    },
+    "herramientas_hd": {
+      "texto1": "Envie ou responda com uma imagem",
+      "texto2": [
+        "Somente imagens"
+      ],
+      "texto3": "🔍 Melhorando imagem com IA, aguarde um momento...",
+      "texto4": "❌ Erro ao processar a imagem"
     },
     "herramientas_readviewonce": {
       "no_admin": "🚫 *Somente um admin ou o owner pode usar este comando*",
@@ -2301,6 +2318,14 @@
       "preparando": "Preparando álbum...",
       "sin_descripcion": "Sem descrição",
       "error": "❌ Erro:\n{msg}"
+    },
+    "buscador_wikipedia": {
+      "texto1": [
+        "Digite um termo",
+        "Estrelas"
+      ],
+      "texto2": "Resultado",
+      "texto3": "Nenhum resultado encontrado"
     },
     "info_creador": {
       "sin_nombre": "Sem nome",
@@ -2683,6 +2708,12 @@
       "caption": "*✅ DOWNLOAD COMPLETO - MEDIAFIRE*\n\n📄 *Nome:* {nombre}\n📦 *Tamanho:* {tamano}\n🗓️ *Data:* {fecha}\n🧬 *Tipo:* {mime}",
       "enviado": "✅ *{nombre}* enviado com sucesso.\n{barra}",
       "error": "❌ *Não foi possível processar o link do MediaFire.*\n\n🧾 *Detalhe:* {error}"
+    },
+    "downloader_ringtone": {
+      "texto1": "Digite um nome de toque"
+    },
+    "downloader_tiktok_img": {
+      "texto1": "⚠️ Envie o link do TikTok"
     },
     "owner_actualizacion": {
       "buscando": "🔍 Procurando atualizações no repositório...\n⏳ Isso pode levar alguns segundos.",
