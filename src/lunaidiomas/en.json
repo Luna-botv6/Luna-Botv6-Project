@@ -1903,6 +1903,15 @@
       "labelVencimiento": "expiry:",
       "error": "❌ Error: {error}"
     },
+    "maker_logos": {
+      "texto1": "Missing the effect",
+      "texto2": [
+        "Invalid effect",
+        "does not exist"
+      ],
+      "texto3": "Generator error",
+      "texto5": "Logo generated with"
+    },
     "numeroia": {
       "soloOwner": "⚠️ Only the *owner* can use this command.",
       "usoComando": "⚠️ Use the command like this: `/iadd 1234567890`",
@@ -1977,6 +1986,14 @@
       "corregido": "✅ LID fixed: now you'll appear as {nombre} ({id})",
       "no_encontrado": "⚠️ I couldn't find your real number in the group.",
       "error": "❌ An error occurred while trying to fix the LID."
+    },
+    "herramientas_hd": {
+      "texto1": "Send or reply with an image",
+      "texto2": [
+        "Images only"
+      ],
+      "texto3": "🔍 Enhancing image with AI, wait a moment...",
+      "texto4": "❌ Error processing the image"
     },
     "herramientas_readviewonce": {
       "no_admin": "🚫 *Only an admin or the owner can use this command*",
@@ -2299,6 +2316,14 @@
       "preparando": "Preparing album...",
       "sin_descripcion": "No description",
       "error": "❌ Error:\n{msg}"
+    },
+    "buscador_wikipedia": {
+      "texto1": [
+        "Enter a term",
+        "Stars"
+      ],
+      "texto2": "Result",
+      "texto3": "No result found"
     },
     "info_creador": {
       "sin_nombre": "No name",
@@ -2681,6 +2706,12 @@
       "caption": "*✅ DOWNLOAD COMPLETE - MEDIAFIRE*\n\n📄 *Name:* {nombre}\n📦 *Size:* {tamano}\n🗓️ *Date:* {fecha}\n🧬 *Type:* {mime}",
       "enviado": "✅ *{nombre}* sent successfully.\n{barra}",
       "error": "❌ *Could not process the MediaFire link.*\n\n🧾 *Detail:* {error}"
+    },
+    "downloader_ringtone": {
+      "texto1": "Enter a ringtone name"
+    },
+    "downloader_tiktok_img": {
+      "texto1": "⚠️ Enter the TikTok link"
     },
     "owner_actualizacion": {
       "buscando": "🔍 Checking for updates in the repository...\n⏳ This may take a few seconds.",

@@ -1905,6 +1905,15 @@
       "labelVencimiento": "vencimiento:",
       "error": "❌ Error: {error}"
     },
+    "maker_logos": {
+      "texto1": "Falta el efecto",
+      "texto2": [
+        "Efecto no válido",
+        "no existe"
+      ],
+      "texto3": "Error del generador",
+      "texto5": "Logo generado con"
+    },
     "numeroia": {
       "soloOwner": "⚠️ Solo el *owner* puede usar este comando.",
       "usoComando": "⚠️ Usa el comando así: `/iadd 1234567890`",
@@ -1979,6 +1988,14 @@
       "corregido": "✅ LID corregido: ahora aparecerás como {nombre} ({id})",
       "no_encontrado": "⚠️ No se pudo encontrar tu número real en el grupo.",
       "error": "❌ Ocurrió un error al intentar corregir el LID."
+    },
+    "herramientas_hd": {
+      "texto1": "Enviá o respondé una imagen",
+      "texto2": [
+        "Solo imágenes"
+      ],
+      "texto3": "🔍 Mejorando imagen con IA, esperá un momento...",
+      "texto4": "❌ Error al procesar la imagen"
     },
     "herramientas_readviewonce": {
       "no_admin": "🚫 *Solo un admin o el owner puede usar este comando*",
@@ -2301,6 +2318,14 @@
       "preparando": "Preparando álbum...",
       "sin_descripcion": "Sin descripción",
       "error": "❌ Error:\n{msg}"
+    },
+    "buscador_wikipedia": {
+      "texto1": [
+        "Ingresá un término",
+        "Estrellas"
+      ],
+      "texto2": "Resultado",
+      "texto3": "No se encontró resultado"
     },
     "info_creador": {
       "sin_nombre": "Sin nombre",
@@ -2683,6 +2708,12 @@
       "caption": "*✅ DESCARGA COMPLETA - MEDIAFIRE*\n\n📄 *Nombre:* {nombre}\n📦 *Tamaño:* {tamano}\n🗓️ *Fecha:* {fecha}\n🧬 *Tipo:* {mime}",
       "enviado": "✅ *{nombre}* enviado correctamente.\n{barra}",
       "error": "❌ *No se pudo procesar el enlace de MediaFire.*\n\n🧾 *Detalle:* {error}"
+    },
+    "downloader_ringtone": {
+      "texto1": "Ingresá un nombre de tono"
+    },
+    "downloader_tiktok_img": {
+      "texto1": "⚠️ Ingresá el enlace de TikTok"
     },
     "owner_actualizacion": {
       "buscando": "🔍 Buscando actualizaciones en el repositorio...\n⏳ Esto puede tomar unos segundos.",
