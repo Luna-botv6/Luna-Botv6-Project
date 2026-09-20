@@ -21,16 +21,15 @@
     "chalk": "^5.3.0",
     "cheerio": "1.0.0-rc.12",
     "express": "^4.17.3",
-    "file-type": "^17.1.1",
+    "file-type": "^21.3.4",
     "fluent-ffmpeg": "^2.1.2",
     "formdata-node": "^4.3.2",
     "hispamemes": "^1.0.7",
-    "imagemaker.js": "^2.0.4",
     "jimp": "^1.6.1",
     "jsdom": "^19.0.0",
     "lodash": "^4.17.21",
     "lowdb": "^3.0.0",
-    "mathjs": "^13.0.0",
+    "mathjs": "^15.2.0",
     "moment-timezone": "^0.5.34",
     "mumaker": "^2.0.0",
     "node-cache": "^5.1.2",
@@ -56,6 +55,15 @@
   "overrides": {
     "@types/node": "20.19.22",
     "typescript": "5.8.3",
-    "sharp": "0.34.5"
+    "got": "^11.8.5",
+    "image-size": "^2.0.4",
+    "sharp": "0.35.4",
+    "wa-sticker-formatter": {
+      "axios": "^1.20.0"
+    }
+  },
+  "allowScripts": {
+    "@lunabotv6/luna-baileys": true,
+    "protobufjs": true
   }
 }
