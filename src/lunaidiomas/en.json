@@ -3060,6 +3060,21 @@
       "cazador_tarde": "⏰ *You took too long to answer.*\n*{{name}}* [Level {{nivel}}] took advantage of your carelessness and caught you.\n\n{{perdida}}🛡️ Your armor was destroyed • ❤️ -{{dano}} HP\n\n⛓️ Only another player can rescue you.\n📣 Use: *rescate pedir*",
       "recurso_diamantes": "diamonds",
       "recurso_exp": "EXP"
+    },
+    "herramientas_fakereply": {
+      "texto1": [
+        "*[❗𝐈𝐍𝐅𝐎❗] FAKE REPLY USAGE*",
+        "hello"
+      ]
+    },
+    "herramientas__translate": {
+      "texto1": [
+        "*[❗] Correct command usage*",
+        "(language) (text)*\n*EXAMPLE:",
+        "en Hello*\n\n*Supported languages :"
+      ],
+      "texto2": "*[❗𝐈𝐍𝐅𝐎❗] ERROR, TRY AGAIN*",
+      "texto3": "*Translation:*"
     }
   },
   "functions": {

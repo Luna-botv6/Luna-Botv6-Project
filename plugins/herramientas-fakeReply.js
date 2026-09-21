@@ -1,5 +1,7 @@
 
 
+import { getLidMapping } from '../lib/stats.js';
+
 const handler = async (m, {conn, text, usedPrefix, command}) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
@@ -13,11 +15,13 @@ const handler = async (m, {conn, text, usedPrefix, command}) => {
   else if (m.isGroup) who = cm.participant = m.mentionedJid[0];
   else who = m.chat;
   if (!who) return m.reply(`${tradutor.texto1[0]}\n\n*${usedPrefix + command}* ${tradutor.texto1[1]} @${m.sender.split`@`[0]} a`, null, {mentions: [m.sender]});
+  let fakeJid = who;
+  if (who.includes('@lid')) fakeJid = getLidMapping(who) || who.replace('@lid', '@s.whatsapp.net');
   cm.key.fromMe = false;
   cm.message[m.mtype] = copy(m.msg);
   const sp = '@' + who.split`@`[0];
   const [fake, ...real] = text.split(sp);
-  conn.fakeReply(m.chat, real.join(sp).trimStart(), who, fake.trimEnd(), m.isGroup ? m.chat : false, {
+  conn.fakeReply(m.chat, real.join(sp).trimStart(), fakeJid, fake.trimEnd(), m.isGroup ? m.chat : false, {
     contextInfo: {
       mentionedJid: conn.parseMention(real.join(sp).trim()),
     },

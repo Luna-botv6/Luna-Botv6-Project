@@ -3113,6 +3113,21 @@
       "cazador_tarde": "⏰ *Você demorou demais para responder.*\n*{{name}}* [Nível {{nivel}}] aproveitou seu descuido e te capturou.\n\n{{perdida}}🛡️ Sua armadura foi destruída • ❤️ -{{dano}} HP\n\n⛓️ Apenas outro jogador pode te resgatar.\n📣 Use: *rescate pedir*",
       "recurso_diamantes": "diamantes",
       "recurso_exp": "EXP"
+    },
+    "herramientas_fakereply": {
+      "texto1": [
+        "*[❗𝐈𝐍𝐅𝐎❗] USO DE FALSO REPLY*",
+        "olá"
+      ]
+    },
+    "herramientas__translate": {
+      "texto1": [
+        "*[❗] Uso correto do comando*",
+        "(idioma) (texto)*\n*EXEMPLO:",
+        "pt Olá*\n\n*Idiomas suportados :"
+      ],
+      "texto2": "*[❗𝐈𝐍𝐅𝐎❗] ERRO, TENTE NOVAMENTE*",
+      "texto3": "*Tradução:*"
     }
   },
   "functions": {
