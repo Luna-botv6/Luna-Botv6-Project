@@ -34,7 +34,6 @@ import chalk from 'chalk';
 import syntaxerror from 'syntax-error';
 import { format } from 'util';
 import Pino from 'pino';
-import { Boom } from '@hapi/boom';
 import { isJidBroadcast } from '@whiskeysockets/baileys';
 import { makeWASocket, protoType, serialize } from './src/libraries/simple.js';
 import { invalidateGroupCount } from './src/libraries/print.js';
@@ -114,6 +113,13 @@ global.__dirname = function dirname(pathURL) {
   return path.dirname(global.__filename(pathURL, true));
 };
 
+
+
+
+
+
+
+
 const _rfOrig = fs.readFileSync.bind(fs)
 const _langCache = new Map()
 fs.readFileSync = (p, o, ...rest) => {
@@ -136,6 +142,16 @@ fs.readFileSync = (p, o, ...rest) => {
 global.__require = function require(dir = import.meta.url) {
   return createRequire(dir);
 };
+
+
+
+
+
+
+
+
+
+
 
 function setGlobalSafe(name, value) {
   try {
@@ -458,8 +474,6 @@ function applyPrintWrapper(conn) {
 
 applyPrintWrapper(global.conn);
 
-let _presenceFailCount = 0;
-
 const ownerConfig = getOwnerFunction();
 if (ownerConfig.modopublico) global.conn.public = true;
 if (ownerConfig.auread) global.opts['autoread'] = true;
@@ -756,6 +770,7 @@ const REASON_LABELS = {
   515: 'connectionLost — pérdida de conexión',
   440: 'connectionReplaced — sesión reemplazada',
   405: 'error de protocolo (405)',
+  429: 'rateLimit — demasiadas peticiones',
 };
 
 async function connectionUpdate(update) {
@@ -784,10 +799,10 @@ async function connectionUpdate(update) {
     global._reconnectLost = 0;
     global._reconnect405Count = 0;
     global._reconnect403Count = 0;
+    global._reconnect429Count = 0;
     global._restartRequiredCount = 0;
     global._manualWsClose = false;
     global._loggedOutHandled = false;
-    _presenceFailCount = 0;
     stopped = 'open';
     if (!global._connectedLogged) {
       global._connectedLogged = true;
@@ -826,13 +841,13 @@ async function connectionUpdate(update) {
 
   } else if (connection === 'close') {
     global._connectedLogged = false;
-    const _closeReason = new Boom(lastDisconnect?.error)?.output?.statusCode;
+    const _closeReason = lastDisconnect?.error?.output?.statusCode;
     if (_closeReason !== DisconnectReason.restartRequired) {
       console.log(chalk.red('[ ✖ ] Conexión cerrada'));
     }
   }
 
-  let reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
+  let reason = lastDisconnect?.error?.output?.statusCode;
 
   if (connection === 'close') {
     const rawError = lastDisconnect?.error;
@@ -857,6 +872,20 @@ async function connectionUpdate(update) {
     }
     console.log(chalk.yellow('[ ⚠ ] Reconectando (405)...'));
     setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 5000);
+    return;
+  }
+
+  if (reason === 429) {
+    global._reconnect429Count = (global._reconnect429Count || 0) + 1;
+    if (global._reconnect429Count >= 3) {
+      console.log(chalk.red('[ ✖ ] Límite de peticiones (429) persistente. Esperando 30 minutos antes de reintentar...'));
+      global._reconnect429Count = 0;
+      setTimeout(() => process.exit(0), 30 * 60 * 1000);
+      return;
+    }
+    const delay = 10 * 60 * 1000 * global._reconnect429Count + Math.floor(Math.random() * 60000);
+    console.log(chalk.yellow(`[ ⏳ ] Rate-limit (429). Reintento ${global._reconnect429Count}/3 en ${Math.round(delay / 60000)} min...`));
+    setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
     return;
   }
 
