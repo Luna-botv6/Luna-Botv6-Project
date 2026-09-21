@@ -1,5 +1,8 @@
-import translate from '@vitalets/google-translate-api';
+import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
 
+const SERVER_URL = 'https://apl.boxmine.xyz';
+const API_KEY = cargarOGenerarAPIKey();
+const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY };
 
 const handler = async (m, {args, usedPrefix, command}) => {
   const datas = global;
@@ -17,9 +20,12 @@ const handler = async (m, {args, usedPrefix, command}) => {
     text = args.join(' ');
   }
   if (!text && m.quoted && m.quoted.text) text = m.quoted.text;
+  if (!text) return m.reply(msg);
   try {
-    const result = await translate(`${text}`, {to: lang, autoCorrect: true});
-    await m.reply(tradutor.texto3 + result.text);
+    const res = await fetch(`${SERVER_URL}/api/translate?q=${encodeURIComponent(text)}&lang=${encodeURIComponent(lang)}`, { headers: DL_HEADERS });
+    const data = await res.json();
+    if (!data?.status) throw new Error(data?.error || 'Error');
+    await m.reply(tradutor.texto3 + data.texto);
   } catch {
     await m.reply(tradutor.texto2);
   }
