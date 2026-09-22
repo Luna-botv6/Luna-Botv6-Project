@@ -1,6 +1,6 @@
 import { Jimp, loadFont } from 'jimp';
 import { SANS_64_WHITE } from 'jimp/fonts';
-import { Sticker } from 'wa-sticker-formatter';
+import { stickerServer } from '../src/libraries/sticker.js';
 
 const handler = async (m, { conn, args }) => {
   const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
@@ -59,18 +59,11 @@ const handler = async (m, { conn, args }) => {
   const buffer = await image.getBuffer('image/png');
   image = null;
 
-  let sticker = new Sticker(buffer, {
-    pack: global.packname || 'Luna Bot',
-    author: global.author || 'Crack',
-    type: 'full',
-    quality: 50
-  });
+  let stickerBuffer = await stickerServer(buffer, false, global.packname || 'Luna Bot', global.author || 'Crack', [], {});
+  stickerBuffer = Buffer.isBuffer(stickerBuffer) ? stickerBuffer : Buffer.from(stickerBuffer);
 
-  const stickerBuffer = await sticker.toBuffer();
-  sticker = null;
-
-  if (stickerBuffer.length > 100 * 1024) {
-    throw (t.sticker_pesado || '⚠️ El sticker supera los 100 KB, intenta con menos texto');
+  if (stickerBuffer.length > 1000 * 1024) {
+    throw (t.sticker_pesado || '⚠️ El sticker supera 1 MB, intenta con menos texto');
   }
 
   await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m });

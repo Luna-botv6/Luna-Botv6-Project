@@ -2,7 +2,7 @@ import fs from 'fs'
 import fetch from 'node-fetch'
 import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js'
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
-import { Sticker } from 'wa-sticker-formatter'
+import { stickerServer } from '../src/libraries/sticker.js'
 
 const configContent = fs.readFileSync('./config.js', 'utf-8')
 if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado')
@@ -43,9 +43,7 @@ const handler = async (m, {conn}) => {
     if (!res.ok) throw new Error('Error del servidor')
     const data = await res.json()
     if (!data.status || !data.image) throw new Error(data.error || 'No se pudo procesar la imagen')
-    const stiker = await new Sticker(Buffer.from(data.image, 'base64'), {
-      type: 'full', pack: global.packname, author: global.author, quality: 60
-    }).toBuffer()
+    const stiker = await stickerServer(Buffer.from(data.image, 'base64'), false, global.packname, global.author, [], {})
     const stickerBuffer = Buffer.isBuffer(stiker) ? stiker : Buffer.from(stiker)
     await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m })
   } catch (e) {
