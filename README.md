@@ -62,7 +62,7 @@
 | 📥 **Contenido** | Descargas YT/TikTok/IG/Spotify · juegos · RPG y economía · moderación · herramientas |
 | 🛡️ **Estabilidad** | Anti-ban real: delays humanos, rate limits y detección de baneos con logs |
 | 🔒 **Privacidad** | No comparte datos de usuarios · todo corre desde la propia cuenta del bot |
-| ⚙️ **Stack** | Node.js v18+ (ESM) · Baileys · LowDB · FFmpeg · ImageMagick |
+| ⚙️ **Stack** | Node.js v18+ (ESM) · Baileys · LowDB · FFmpeg |
 | 👨‍💻 **Autor** | Germán Miño (Argentina) · mantenido activamente |
 | 📦 **Repositorio** | [github.com/Luna-botv6/Luna-Botv6-Project](https://github.com/Luna-botv6/Luna-Botv6-Project) · Licencia **MIT** |
 
@@ -935,7 +935,7 @@ choco -v
 **Paso 5 — Instalar dependencias**
 
 ```bash
-choco install python3 ffmpeg imagemagick -y
+choco install python3 ffmpeg -y
 ```
 
 **Paso 6 — Clonar el proyecto**
@@ -1013,9 +1013,9 @@ Escaneá el código QR que aparece en la terminal.
 pkg update && pkg upgrade -y
 ```
 
-**Paso 2 — Instalar Node.js, Git y herramientas:**
+**Paso 2 — Instalar Node.js, Git y Python:**
 ```bash
-pkg install nodejs git python make clang pkg-config -y
+pkg install nodejs git python -y
 ```
 
 **Paso 3 — Clonar el repositorio:**
@@ -1029,26 +1029,30 @@ cd Luna-Botv6-Project
 npm install
 ```
 
-**Paso 5 — Instalar herramientas multimedia:**
+> [!NOTE]
+> En Termux (`android-arm64`) `sharp` usa su runtime **WASM**, ya declarado como dependencia opcional en el `package.json` — `npm install` lo baja solo. `imagemagick`, `libvips` y las herramientas de compilación (`make`, `clang`, `pkg-config`) ya no hacen falta.
+
+**Paso 5 — Instalar FFmpeg:**
 ```bash
-pkg install libvips ffmpeg imagemagick -y
+pkg install ffmpeg -y
 ```
 
-**Paso 6 — Instalar dependencias extra:**
-```bash
-npm install fs-extra && npm install wa-sticker-formatter --force --legacy-peer-deps
-```
-
-**Paso 7 — Editar la configuración:**
+**Paso 6 — Editar la configuración:**
 ```bash
 nano config.js
 ```
 
 Para guardar en nano: `Volumen Abajo + O` → Enter → `Volumen Abajo + X`
 
-**Paso 8 — Iniciar el bot:**
+**Paso 7 — Iniciar el bot:**
 ```bash
 npm start
+```
+
+**Actualizar el bot (si ya lo tenés instalado):**
+```bash
+git pull
+npm install
 ```
 
 </details>
@@ -1062,7 +1066,7 @@ npm start
 ```bash
 git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
 cd Luna-Botv6-Project
-sudo apt update && sudo apt install nodejs npm python3 ffmpeg imagemagick -y
+sudo apt update && sudo apt install nodejs npm python3 ffmpeg -y
 npm install
 cp config.example.js config.js
 nano config.js
@@ -1073,7 +1077,7 @@ npm start
 ```bash
 git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
 cd Luna-Botv6-Project
-brew install node python3 ffmpeg imagemagick
+brew install node python3 ffmpeg
 npm install
 cp config.example.js config.js
 nano config.js
@@ -1121,7 +1125,7 @@ global.wm       = 'Luna Bot V6 - Created by Germán Miño'
 | **NPM** | v8+ | Gestor de paquetes |
 | **Python** | v3.8+ | Para módulos específicos |
 | **FFmpeg** | Latest | Procesamiento multimedia |
-| **ImageMagick** | Latest | Manipulación de imágenes |
+
 | **RAM** | 500MB mín. | 700MB+ recomendado |
 | **Almacenamiento** | 1.5GB | Espacio libre |
 
@@ -1280,7 +1284,7 @@ Al volver a iniciar, Luna te pregunta si querés que se **auto-actualice sola** 
 
 ## 🛠️ Tecnologías
 
-Luna usa librerías open source de la comunidad: [Baileys](https://github.com/Whiskeysockets/Baileys) (con un **fork propio**), [LowDB](https://github.com/typicode/lowdb), [FFmpeg](https://ffmpeg.org) e [ImageMagick](https://imagemagick.org).
+Luna usa librerías open source de la comunidad: [Baileys](https://github.com/Whiskeysockets/Baileys) (con un **fork propio**), [LowDB](https://github.com/typicode/lowdb), [FFmpeg](https://ffmpeg.org).
 
 ---
 
