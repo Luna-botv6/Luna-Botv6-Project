@@ -4,7 +4,12 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { tmpdir } from 'os';
 import { randomBytes } from 'crypto';
-import sharp from 'sharp';
+
+let _sharp = null
+const getSharp = async () => {
+  if (!_sharp) _sharp = (await import('sharp')).default
+  return _sharp
+}
 
 const run = promisify(exec);
 const uid = () => path.join(tmpdir(), randomBytes(6).toString('hex'));
@@ -13,6 +18,7 @@ const WP_ARGS = '-vcodec libwebp -lossless 0 -q:v 70 -loop 0 -an';
 const WP_STATIC = '-vcodec libwebp -lossless 0 -q:v 80 -vframes 1';
 
 const getFrames = async (buffer) => {
+  const sharp = await getSharp()
   const isAnimated = buffer.slice(0, 100).includes(Buffer.from('ANIM'));
   const meta = await sharp(buffer, { animated: true }).metadata();
   const pages = isAnimated ? (meta.pages || meta.pageHeight || 1) : 1;
@@ -124,6 +130,7 @@ const vibrarFrames = async (frames) => {
 };
 
 const pulsarFrames = async (frames) => {
+  const sharp = await getSharp()
   const base = uid();
   const pngs = [];
   for (let i = 0; i < frames.length; i++) {
