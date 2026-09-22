@@ -2835,6 +2835,7 @@
         "Uhmm... sendo você quem modera o grupo, isso fica meio estranho né? 😤 não apago nada, mas fique esperto"
       ],
       "contenido_eliminado": "🔞 *Conteúdo +18 detectado*\n\n@{tag} sua mensagem foi apagada, este grupo não permite conteúdo adulto.\n📌 Advertência {warns}/{max}",
+      "link_eliminado": "🔞 *Link +18 detectado*\n\n@{tag} o link que você enviou foi apagado, este grupo não permite conteúdo adulto.\n📌 Advertência {warns}/{max}",
       "expulsado": "🚫 @{tag} foi removido do grupo por acumular {max} advertências de conteúdo +18."
     },
     "analizar": {
