@@ -16,6 +16,7 @@ const CACHE_PATH = './database/anti18-cache.json';
 const CACHE_TTL_MS = 15 * 60 * 1000;
 const CACHE_SAVE_DEBOUNCE_MS = 3000;
 const MAX_CONCURRENT_CLASSIFY = 2;
+const CACHE_VERSION = 2;
 
 const FRASES_OWNER = [
   'Uhmm... enviaste algo que no está permitido pero sos mi creador/a 😳 no te lo voy a borrar pero por favor dá el ejemplo 💢',
@@ -66,7 +67,7 @@ function loadCache() {
     const now = Date.now();
 
     for (const [hash, entry] of Object.entries(data)) {
-      if (entry && typeof entry.ts === 'number' && (now - entry.ts) < CACHE_TTL_MS) {
+      if (entry && entry.v === CACHE_VERSION && typeof entry.ts === 'number' && (now - entry.ts) < CACHE_TTL_MS) {
         _cache.set(hash, entry);
       }
     }
@@ -89,7 +90,7 @@ function persistCache() {
     const now = Date.now();
     const obj = {};
     for (const [hash, entry] of _cache.entries()) {
-      if ((now - entry.ts) < CACHE_TTL_MS) obj[hash] = entry;
+      if (entry?.v === CACHE_VERSION && (now - entry.ts) < CACHE_TTL_MS) obj[hash] = { flagged: entry.flagged, ts: entry.ts, v: CACHE_VERSION };
     }
     fs.writeFileSync(CACHE_PATH, JSON.stringify(obj, null, 2));
   } catch (e) {
@@ -114,7 +115,7 @@ function getCachedResult(hash) {
 
 function setCachedResult(hash, flagged) {
   loadCache();
-  _cache.set(hash, { flagged, ts: Date.now() });
+  _cache.set(hash, { flagged, ts: Date.now(), v: CACHE_VERSION });
   scheduleSaveCache();
 }
 
@@ -212,7 +213,9 @@ async function getStickerFrames(webpBuffer) {
 async function esContenido18(buffer) {
   const hash = hashBuffer(buffer);
   const cached = getCachedResult(hash);
-  if (cached !== null) return cached;
+  if (cached !== null) {
+    return cached;
+  }
 
   await acquireSlot();
   let flagged = false;
@@ -243,6 +246,43 @@ async function esContenido18(buffer) {
 
   if (success) setCachedResult(hash, flagged);
   return flagged;
+}
+
+async function esStickerFrames18(frames) {
+  if (!frames.length) return false;
+  const batchHash = hashBuffer(Buffer.concat(frames));
+  const cached = getCachedResult(batchHash);
+  if (cached !== null) {
+    return cached;
+  }
+
+  await acquireSlot();
+  try {
+    const res = await fetchWithTimeout(SERVER_URL + '/classify-nsfw-batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
+      body: JSON.stringify({ images: frames.map(f => f.toString('base64')) })
+    }, 45000);
+
+    if (res && res.ok) {
+      const data = await res.json();
+      if (data?.status) {
+        setCachedResult(batchHash, !!data.flagged);
+        return !!data.flagged;
+      }
+    }
+    console.error('[anti18] server sin endpoint batch, se procesa frame por frame');
+  } catch (e) {
+    console.error('[anti18] error consultando batch:', e.message);
+  } finally {
+    releaseSlot();
+  }
+
+  for (const frameBuf of frames) {
+    const flagged = await esContenido18(frameBuf);
+    if (flagged) return true;
+  }
+  return false;
 }
 
 function esOwner(sender, conn) {
@@ -415,10 +455,7 @@ handler.before = async function (m, { conn }) {
 
       if (tipo === 'stickerMessage') {
         const frames = await getStickerFrames(raw);
-        for (const frameBuf of frames) {
-          flagged = await esContenido18(frameBuf);
-          if (flagged) break;
-        }
+        flagged = await esStickerFrames18(frames);
       } else {
         flagged = await esContenido18(raw);
       }
