@@ -54,6 +54,7 @@ import { startBirthdayChecker } from './plugins/cumple.js';
 import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
 import { manejarCanalRelay } from './lib/funcion/canal-relay.js';
 import { manejarPhraseTriggers } from './lib/funcion/phrase-triggers.js';
+import { esBotIgnorado, agregarBotIgnorado, MARCA_LUNA } from './lib/funcion/botsIgnorados.js';
 import { installUsersProxy } from './lib/funcion/databaseManager.js';
 import { updateConnectionState, reportBan } from './logBans.js';
 
@@ -451,6 +452,11 @@ function applyPrintWrapper(conn) {
     const msgText = content?.text ?? content?.caption ?? content?.conversation ?? null;
     if (msgText !== null && typeof msgText === 'string' && msgText.trim() === '') {
       return null;
+    }
+    if (typeof msgText === 'string' && !msgText.includes(MARCA_LUNA)) {
+      if (typeof content?.text === 'string') content.text += MARCA_LUNA;
+      else if (typeof content?.caption === 'string') content.caption += MARCA_LUNA;
+      else if (typeof content?.conversation === 'string') content.conversation += MARCA_LUNA;
     }
     const result = await originalSendMessage(jid, content, options);
     try {
@@ -1119,6 +1125,15 @@ global.reloadHandler = async function(restatConn) {
 
   conn.ev.on('messages.upsert', async (msg) => {
     try {
+      if (msg.messages?.[0]?.key?.fromMe) return;
+      const ignoreSender = msg.messages?.[0]?.key?.participant || msg.messages?.[0]?.key?.remoteJid;
+      const primerMensaje = msg.messages?.[0]?.message || {};
+      const textoEntrante = primerMensaje.conversation || primerMensaje.extendedTextMessage?.text || primerMensaje.imageMessage?.caption || primerMensaje.videoMessage?.caption || primerMensaje.documentMessage?.caption || '';
+      if (typeof textoEntrante === 'string' && textoEntrante.includes(MARCA_LUNA)) {
+        if (ignoreSender) agregarBotIgnorado(ignoreSender);
+        return;
+      }
+      if (esBotIgnorado(ignoreSender)) return;
       await conn.handler(msg);
     } catch (err) {
       console.error('ERROR en handler de mensajes:', err.message);
