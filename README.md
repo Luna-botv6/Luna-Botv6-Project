@@ -1049,11 +1049,57 @@ Para guardar en nano: `Volumen Abajo + O` → Enter → `Volumen Abajo + X`
 npm start
 ```
 
-**Actualizar el bot (si ya lo tenés instalado):**
+> Con el `npm start` el bot ya queda corriendo y funcionando. Lo que sigue son tips y recomendaciones de mantenimiento.
+
+**💡 Tips y recomendaciones**
+
+**Actualizar el bot desde Termux**
+
+Si querés actualizar tu bot, asegurate de estar en la carpeta del proyecto:
+
+```bash
+cd Luna-Botv6-Project
+```
+
 ```bash
 git pull
+```
+
+Después de actualizar, si notás que se modificó el `package.json`, instalá las dependencias nuevas:
+
+```bash
 npm install
 ```
+
+Y así iniciás (o reiniciás) el bot:
+
+```bash
+npm start
+```
+
+**Arreglar conflictos de instalación**
+
+Si el `npm install` falla o da conflicto —sea porque cambió una versión o se borró una dependencia— borrá la carpeta `node_modules` y el `package-lock.json`, volvé a instalar y una vez que termine, arrancá el bot:
+
+```bash
+cd Luna-Botv6-Project
+rm -rf node_modules package-lock.json
+npm install
+npm start
+```
+
+**Escanear el QR nuevamente**
+
+Si perdés la sesión o querés vincular el bot de nuevo, borrá la carpeta de sesión `MysticSession` y reiniciá con `npm start` — el bot te va a volver a mostrar el QR:
+
+```bash
+cd Luna-Botv6-Project
+rm -rf MysticSession
+npm start
+```
+
+> [!NOTE]
+> Si acabás de instalar el bot (recién clonaste el repositorio con `git`), no hace falta hacer `git pull`: ya tenés la última versión descargada. Estas guías son solo para el mantenimiento diario.
 
 </details>
 
