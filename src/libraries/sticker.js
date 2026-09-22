@@ -103,11 +103,13 @@ function sticker6(img, url) {
       mime: 'application/octet-stream',
       ext: 'bin'
     }
-    if (type.ext == 'bin') reject(img)
-    const tmp = path.join(__dirname, `../tmp/${+ new Date()}.${type.ext}`)
-    const out = path.join(tmp + '.webp')
+    if (type.ext == 'bin' || !/^[a-zA-Z0-9]+$/.test(type.ext)) return reject(img)
+    const safeExt = path.basename(type.ext)
+    const filename = path.basename(`${+ new Date()}.${safeExt}`)
+    const tmp = path.join(__dirname, '../tmp') + '/' + filename
+    const out = `${tmp}.webp`
     await fs.promises.writeFile(tmp, img)
-    const Fffmpeg = /video/i.test(type.mime) ? fluent_ffmpeg(tmp).inputFormat(type.ext) : fluent_ffmpeg(tmp).input(tmp)
+    const Fffmpeg = /video/i.test(type.mime) ? fluent_ffmpeg(tmp).inputFormat(safeExt) : fluent_ffmpeg(tmp).input(tmp)
     Fffmpeg
       .on('error', function (err) {
         console.error(err)
