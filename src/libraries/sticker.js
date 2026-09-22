@@ -2,15 +2,13 @@ import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as crypto from 'crypto'
 import { ffmpeg } from './converter.js'
 import fluent_ffmpeg from 'fluent-ffmpeg'
 import { spawn } from 'child_process'
-import uploadFile from './uploadFile.js'
-import uploadImage from './uploadImage.js'
 import { fileTypeFromBuffer } from 'file-type'
-import webp from 'node-webpmux'
 import fetch from 'node-fetch'
+import { obtenerMenuIuman } from '../assets/images/menu/languages/es/menu-img.js'
+import { cargarOGenerarAPIKey } from './api/apiKeyManager.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const tmp = path.join(__dirname, '../tmp')
@@ -19,6 +17,20 @@ const MAX_STICKER_SIZE = 50 * 1024 * 1024;
 const assertSize = (buf) => {
   if (buf && buf.length > MAX_STICKER_SIZE) throw new Error('[sticker] Media demasiado grande (máximo 50MB)')
 };
+
+const SERVER_URL = obtenerMenuIuman()
+const API_KEY = cargarOGenerarAPIKey()
+const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY, 'Content-Type': 'application/json' }
+const TIMEOUT = 30000
+
+const ocultar = (m) => String(m || '').replace(/https?:\/\/\S+/g, '[enlace oculto]').replace(/key=\w+/gi, 'key=[oculta]')
+
+const ft = async (url, options = {}, timeout = TIMEOUT) => {
+  const c = new AbortController()
+  const t = setTimeout(() => c.abort(), timeout)
+  try { const r = await fetch(url, { ...options, signal: c.signal }); clearTimeout(t); return r }
+  catch (e) { clearTimeout(t); throw e }
+}
 
 function sticker2(img, url) {
   return new Promise(async (resolve, reject) => {
@@ -57,16 +69,6 @@ function sticker2(img, url) {
   })
 }
 
-async function sticker3(img, url, packname, author) {
-  url = url ? url : await uploadFile(img)
-  const res = await fetch('https://api.xteam.xyz/sticker/wm?' + new URLSearchParams(Object.entries({
-    url,
-    packname,
-    author
-  })))
-  return await res.buffer()
-}
-
 async function sticker4(img, url) {
   if (url) {
     const res = await fetch(url)
@@ -77,18 +79,6 @@ async function sticker4(img, url) {
   return await ffmpeg(img, [
     '-vf', 'scale=512:512:flags=lanczos:force_original_aspect_ratio=increase,crop=512:512,format=rgba,setsar=1'
   ], 'jpeg', 'webp')
-}
-
-async function sticker5(img, url, packname, author, categories = [''], extra = {}) {
-  const { Sticker } = await import('wa-sticker-formatter')
-  const stickerMetadata = {
-    type: 'default',
-    pack: packname,
-    author,
-    categories,
-    ...extra
-  }
-  return (new Sticker(img ? img : url, stickerMetadata)).toBuffer()
 }
 
 function sticker6(img, url) {
@@ -103,11 +93,13 @@ function sticker6(img, url) {
       mime: 'application/octet-stream',
       ext: 'bin'
     }
-    if (type.ext == 'bin') reject(img)
-    const tmp = path.join(__dirname, `../tmp/${+ new Date()}.${type.ext}`)
-    const out = path.join(tmp + '.webp')
+    if (type.ext == 'bin' || !/^[a-zA-Z0-9]+$/.test(type.ext)) return reject(img)
+    const safeExt = path.basename(type.ext)
+    const filename = path.basename(`${+ new Date()}.${safeExt}`)
+    const tmp = path.join(__dirname, '../tmp', filename)
+    const out = `${tmp}.webp`
     await fs.promises.writeFile(tmp, img)
-    const Fffmpeg = /video/i.test(type.mime) ? fluent_ffmpeg(tmp).inputFormat(type.ext) : fluent_ffmpeg(tmp).input(tmp)
+    const Fffmpeg = /video/i.test(type.mime) ? fluent_ffmpeg(tmp).inputFormat(safeExt) : fluent_ffmpeg(tmp).input(tmp)
     Fffmpeg
       .on('error', function (err) {
         console.error(err)
@@ -127,46 +119,79 @@ function sticker6(img, url) {
   })
 }
 
-async function addExif(webpSticker, packname, author, categories = [''], metadata = {}) {
-  const img = new webp.Image()
-  const stickerPackId = 'MYSTIC' + crypto.randomBytes(12).toString('hex').toUpperCase()
-
-  const json = {
-    "sticker-pack-id": metadata.packId ? metadata.packId : `${stickerPackId}`,
-    "sticker-pack-name": packname ? packname : undefined,
-    "sticker-pack-publisher": author ? author : undefined,
-    "android-app-store-link": metadata.androidAppStoreLink ? metadata.androidAppStoreLink : undefined,
-    "ios-app-store-link": metadata.iosAppStoreLink ? metadata.iosAppStoreLink : undefined,
-    "is-ai-sticker": metadata.isAiSticker ? 1 : undefined,
-    "is-first-party-sticker": metadata.isFirstPartySticker ? 1 : undefined,
-    "accessibility-text": metadata.accessibilityText ? metadata.accessibilityText : undefined,
-    "avatar-sticker-template-id": metadata.templateId ? metadata.templateId : undefined,
-    "is-avatar-sticker": metadata.isAvatarSticker ? 1 : undefined,
-    "sticker-maker-source-type": metadata.stickerMakerSourceType ? metadata.stickerMakerSourceType : undefined,
-    "emojis": categories ? categories : undefined
+async function stickerServer(img, url, packname, author, categories = [''], extra = {}) {
+  if (url) {
+    const res = await ft(url)
+    if (res.status !== 200) throw await res.text()
+    img = await res.buffer()
+    assertSize(img)
   }
+  const tipo = await fileTypeFromBuffer(img) || { mime: 'application/octet-stream', ext: 'bin' }
+  const mime = tipo.mime || ''
+  let kind = 'image'
+  if (tipo.ext === 'gif') kind = 'gif'
+  else if (/video/i.test(mime)) kind = 'video'
+  else if (tipo.ext === 'webp') kind = 'webp'
+  const res = await ft(SERVER_URL + '/api/sticker/convert', {
+    method: 'POST',
+    headers: DL_HEADERS,
+    body: JSON.stringify({
+      image: img.toString('base64'),
+      kind,
+      pack: packname,
+      author,
+      categories,
+      metadata: (extra && typeof extra === 'object') ? extra : {}
+    })
+  }, 15000)
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '')
+    throw new Error(txt || `Servidor respondio ${res.status}`)
+  }
+  const buf = Buffer.from(await res.arrayBuffer())
+  if (!buf.length) throw new Error('Respuesta vacia del servidor')
+  return buf
+}
 
-  const exifAttr = Buffer.from([0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00])
-  const jsonBuffer = Buffer.from(JSON.stringify(json), 'utf8')
-  const exif = Buffer.concat([exifAttr, jsonBuffer])
-  exif.writeUIntLE(jsonBuffer.length, 14, 4)
-  await img.load(webpSticker)
-  img.exif = exif
-  return await img.save(null)
+async function addExif(webpSticker, packname, author, categories = [''], metadata = {}) {
+  if (!webpSticker || !Buffer.isBuffer(webpSticker) || webpSticker.length < 20) return webpSticker
+  if (webpSticker.toString('ascii', 0, 4) !== 'RIFF' || webpSticker.toString('ascii', 8, 12) !== 'WEBP') return webpSticker
+  try {
+    const res = await ft(SERVER_URL + '/api/sticker/wm', {
+      method: 'POST',
+      headers: DL_HEADERS,
+      body: JSON.stringify({
+        image: webpSticker.toString('base64'),
+        pack: packname,
+        author,
+        categories,
+        metadata: (metadata && typeof metadata === 'object') ? metadata : {}
+      })
+    })
+    if (!res.ok) throw new Error(`Servidor respondio ${res.status}`)
+    const buf = Buffer.from(await res.arrayBuffer())
+    if (!buf.length) throw new Error('Respuesta vacia del servidor')
+    return buf
+  } catch (e) {
+    console.error('[sticker] addExif fallback local:', ocultar(e.message || e))
+    return webpSticker
+  }
 }
 
 async function sticker(img, url, ...args) {
   assertSize(img)
   let lastError, stiker
   for (const func of [
-    sticker3, global.support.ffmpeg && sticker6, sticker5,
+    stickerServer, global.support.ffmpeg && sticker6,
     global.support.ffmpeg && global.support.ffmpegWebp && sticker4,
     global.support.ffmpeg && (global.support.convert || global.support.magick || global.support.gm) && sticker2,
   ].filter(f => f)) {
     try {
       stiker = await func(img, url, ...args)
+      if (!Buffer.isBuffer(stiker) || !stiker.length) continue
       if (stiker.includes('html')) continue
       if (stiker.includes('WEBP')) {
+        if (func === stickerServer) return stiker
         try {
           return await addExif(stiker, ...args)
         } catch (e) {
@@ -197,9 +222,9 @@ const support = {
 export {
   sticker,
   sticker2,
-  sticker3,
   sticker4,
   sticker6,
+  stickerServer,
   addExif,
   support
 }
