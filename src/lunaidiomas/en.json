@@ -2833,6 +2833,7 @@
         "Uhmm... you're the one moderating the group, so this looks kind of odd, doesn't it? 😤 I won't delete anything, but heads up"
       ],
       "contenido_eliminado": "🔞 *Adult content detected*\n\n@{tag} your message was deleted, this group doesn't allow adult content.\n📌 Warning {warns}/{max}",
+      "link_eliminado": "🔞 *Adult link detected*\n\n@{tag} the link you sent was deleted, this group doesn't allow adult content.\n📌 Warning {warns}/{max}",
       "expulsado": "🚫 @{tag} was removed from the group for accumulating {max} warnings for adult content."
     },
     "analizar": {
