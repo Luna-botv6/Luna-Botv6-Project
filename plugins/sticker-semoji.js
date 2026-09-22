@@ -1,4 +1,4 @@
-import { Sticker } from 'wa-sticker-formatter'
+import { stickerServer } from '../src/libraries/sticker.js'
 import fetch from 'node-fetch'
 import fs from 'fs'
 
@@ -88,13 +88,11 @@ ${tradutor.texto1[0]}`
     const chosenURL = await conseguirUrl(emoji)
     if (!chosenURL) throw new Error('Sin fuente para el emoji')
 
-    const stiker = await createSticker(
-      false,
-      chosenURL,
-      global.packname,
-      global.author,
-      20
-    )
+    const res = await fetch(chosenURL)
+    if (res.status !== 200) throw new Error('No se pudo descargar el emoji')
+    const emojiBuffer = await res.buffer()
+
+    const stiker = await stickerServer(emojiBuffer, false, global.packname, global.author, [], {})
 
     const stickerBuffer = Buffer.isBuffer(stiker) ? stiker : Buffer.from(stiker)
     await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m })
@@ -110,13 +108,3 @@ handler.tags = ['sticker']
 handler.command = ['emoji', 'smoji', 'semoji']
 
 export default handler
-
-async function createSticker(img, url, packName, authorName, quality) {
-  const stickerMetadata = {
-    type: 'full',
-    pack: packName,
-    author: authorName,
-    quality,
-  }
-  return new Sticker(img ? img : url, stickerMetadata).toBuffer()
-}

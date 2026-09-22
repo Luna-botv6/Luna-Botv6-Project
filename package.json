@@ -33,15 +33,12 @@
     "mumaker": "^2.0.0",
     "node-cache": "^5.1.2",
     "node-fetch": "^3.2.0",
-    "node-webpmux": "^3.1.1",
     "qrcode": "^1.5.0",
     "qrcode-terminal": "^0.12.0",
+    "sharp": "0.35.4",
     "similarity": "^1.2.1",
     "syntax-error": "^1.4.0",
     "yargs": "^18.1.0"
-  },
-  "optionalDependencies": {
-    "wa-sticker-formatter": "^4.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
@@ -56,10 +53,7 @@
     "typescript": "5.8.3",
     "got": "^11.8.5",
     "image-size": "^2.0.4",
-    "sharp": "0.35.4",
-    "wa-sticker-formatter": {
-      "axios": "^1.20.0"
-    }
+    "sharp": "0.35.4"
   },
   "allowScripts": {
     "@lunabotv6/luna-baileys": true,
