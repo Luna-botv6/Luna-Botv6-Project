@@ -3,9 +3,14 @@ import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHel
 import { addWarning, resetWarnings } from '../lib/advertencias.js';
 import { createHash } from 'crypto';
 import fs from 'fs';
-import sharp from 'sharp';
 import fetch from 'node-fetch';
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
+
+let _sharp = null
+const getSharp = async () => {
+  if (!_sharp) _sharp = (await import('sharp')).default
+  return _sharp
+}
 
 const SERVER_URL = 'https://project-via.boxmine.xyz';
 const API_KEY = cargarOGenerarAPIKey();
@@ -175,11 +180,13 @@ async function fetchWithTimeout(url, options = {}, timeout = 20000) {
 const MAX_FRAMES_ANIMADO = 3;
 
 async function stickerAPng(webpBuffer) {
+  const sharp = await getSharp()
   return sharp(webpBuffer, { animated: false }).png().toBuffer();
 }
 
 async function getStickerFrames(webpBuffer) {
   try {
+    const sharp = await getSharp()
     const meta = await sharp(webpBuffer, { animated: true }).metadata();
     const pageCount = meta.pages || 1;
 
