@@ -1139,7 +1139,7 @@ global.reloadHandler = async function(restatConn) {
         await manejarMarcaLuna(conn, msg);
         return;
       }
-      if (esBotIgnorado(ignoreSender)) {
+      if (esBotIgnorado(ignoreSender, msg.messages?.[0]?.key?.remoteJid)) {
         const ignChat = String(msg.messages?.[0]?.key?.remoteJid || '').replace(/[^0-9]/g, '');
         console.log(chalk.cyan(`[Ignorado] usuario posible bot ${String(ignoreSender).replace(/[^0-9]/g, '')}${ignChat ? ` en chat ${ignChat}` : ''}`));
         return;
