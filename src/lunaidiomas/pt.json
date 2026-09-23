@@ -1,4 +1,11 @@
 {
+  "verificacion_bots": {
+    "desafio": "Olá {usuario} 👀 vi que você encaminhou uma mensagem minha e confundi você com um bot 😅. Toque no botão abaixo para confirmar que é humano e não vou te ignorar 🙏",
+    "confirmado": "Confirmado! {usuario} é humano de verdade, não corre mais risco de ser ignorado 🎉😊",
+    "otro": "ei {usuario} não perguntei pra você jaja 🙊😅",
+    "boton": "NO SOY BOT",
+    "footer": "Verificação da Luna 🔐"
+  },
   "handler": {
     "handler": {
       "texto1": [

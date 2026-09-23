@@ -1,3 +1,4 @@
+import { getLidMapping } from '../lib/stats.js';
 import {
   esBotIgnorado,
   agregarBotIgnorado,
@@ -30,7 +31,12 @@ let handler = async (m, { conn, command, usedPrefix, args }) => {
   if (sub === 'list' || sub === 'lista' || sub === 'l') {
     const lista = listarBotsIgnorados();
     if (!lista.length) return m.reply('📭 No hay ningún bot en la lista de ignorados.');
-    return m.reply(`🤖 *Bots ignorados (${lista.length}):*\n\n${lista.map((j, i) => `${i + 1}. ${j}`).join('\n')}`);
+    const lineas = lista.map((j, i) => {
+      const realJid = getLidMapping(j + '@lid');
+      const pn = realJid ? realJid.split('@')[0] : null;
+      return pn && pn !== j ? `${i + 1}. ${j} -> ${pn}` : `${i + 1}. ${j}`;
+    });
+    return m.reply(`🤖 *Bots ignorados (${lista.length}):*\n\n${lineas.join('\n')}`);
   }
 
   return m.reply(
