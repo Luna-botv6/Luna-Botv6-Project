@@ -54,7 +54,8 @@ import { startBirthdayChecker } from './plugins/cumple.js';
 import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
 import { manejarCanalRelay } from './lib/funcion/canal-relay.js';
 import { manejarPhraseTriggers } from './lib/funcion/phrase-triggers.js';
-import { esBotIgnorado, agregarBotIgnorado, MARCA_LUNA } from './lib/funcion/botsIgnorados.js';
+import { esBotIgnorado, MARCA_LUNA } from './lib/funcion/botsIgnorados.js';
+import { manejarMarcaLuna, manejarRespuestaBoton, obtenerBotonId, BOTON_VERIFICAR } from './lib/funcion/verificacionBots.js';
 import { installUsersProxy } from './lib/funcion/databaseManager.js';
 import { updateConnectionState, reportBan } from './logBans.js';
 
@@ -1128,12 +1129,21 @@ global.reloadHandler = async function(restatConn) {
       if (msg.messages?.[0]?.key?.fromMe) return;
       const ignoreSender = msg.messages?.[0]?.key?.participant || msg.messages?.[0]?.key?.remoteJid;
       const primerMensaje = msg.messages?.[0]?.message || {};
-      const textoEntrante = primerMensaje.conversation || primerMensaje.extendedTextMessage?.text || primerMensaje.imageMessage?.caption || primerMensaje.videoMessage?.caption || primerMensaje.documentMessage?.caption || '';
-      if (typeof textoEntrante === 'string' && textoEntrante.includes(MARCA_LUNA)) {
-        if (ignoreSender) agregarBotIgnorado(ignoreSender);
+      const botonId = obtenerBotonId(primerMensaje);
+      if (botonId && String(botonId).startsWith(BOTON_VERIFICAR)) {
+        await manejarRespuestaBoton(conn, msg);
         return;
       }
-      if (esBotIgnorado(ignoreSender)) return;
+      const textoEntrante = primerMensaje.conversation || primerMensaje.extendedTextMessage?.text || primerMensaje.imageMessage?.caption || primerMensaje.videoMessage?.caption || primerMensaje.documentMessage?.caption || '';
+      if (typeof textoEntrante === 'string' && textoEntrante.includes(MARCA_LUNA)) {
+        await manejarMarcaLuna(conn, msg);
+        return;
+      }
+      if (esBotIgnorado(ignoreSender)) {
+        const ignChat = String(msg.messages?.[0]?.key?.remoteJid || '').replace(/[^0-9]/g, '');
+        console.log(chalk.cyan(`[Ignorado] usuario posible bot ${String(ignoreSender).replace(/[^0-9]/g, '')}${ignChat ? ` en chat ${ignChat}` : ''}`));
+        return;
+      }
       await conn.handler(msg);
     } catch (err) {
       console.error('ERROR en handler de mensajes:', err.message);
