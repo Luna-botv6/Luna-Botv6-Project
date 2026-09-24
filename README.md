@@ -317,9 +317,42 @@ Todo el sistema de Luna se programó con la seguridad como base. No hay procesos
 
 ## 🆕 Últimas Actualizaciones
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=20&pause=1000&color=00FFF7&center=true&vCenter=true&width=700&lines=🆕+Actualizaciones+Recientes;✨+Sistema+Multi-Idioma+Integrado;🖼️+Personalizá+el+Menú+del+Bot;✏️+Cambiá+el+Nombre+del+Bot" alt="Updates" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=20&pause=1000&color=00FFF7&center=true&vCenter=true&width=700&lines=🆕+Actualizaciones+Recientes;🛡️+Anti-Bot%3A+Captcha+NO+SOY+BOT+%2B+Ignorados+por+Grupo;✨+Sistema+Multi-Idioma+Integrado;🖼️+Personalizá+el+Menú+del+Bot" alt="Updates" />
 
 </div>
+
+<details open>
+<summary><b>🛡️ 23/09/2026 — Anti-Bot Definitivo: Captcha + Ignorados por Grupo + Panel 🗼</b></summary>
+
+<br>
+
+<p>
+  <img src="https://img.shields.io/badge/✅%20Captcha-NO%20SOY%20BOT%20nativo-00fff7?style=for-the-badge&labelColor=0d0d0d"/>
+  <img src="https://img.shields.io/badge/👥%20Ignorados-Por%20grupo-8B5CF6?style=for-the-badge&labelColor=5B21B6"/>
+  <img src="https://img.shields.io/badge/🗼%20Panel-Bots%20ignorados%20con%20Quitar-EC4899?style=for-the-badge&labelColor=9F1239"/>
+</p>
+
+**🧠 Captcha "NO SOY BOT" — nunca más se ignora a un humano por error**
+
+- Los mensajes de Luna llevan una **firma invisible** al ser reenviados; si se detecta ese reenvío, Luna le muestra al autor un botón **"NO SOY BOT"** dentro del propio chat.
+- Toca el botón → queda **verificado para siempre** (global, por número).
+- No lo toca y vuelve a reenviar → se ignora **solo en ese grupo**, no en todos.
+
+**👥 Ignorados por grupo (`.ignorarbot`)**
+
+- `add` / `remove` / `list` ahora operan **por grupo**: cada chat maneja su propia lista.
+- El `bots-ignorados.json` pasó a formato **versionado v2**: el formato viejo (que quedaba "roto" listando usuarios de más) se **limpia una sola vez** automáticamente y arranca de cero.
+- **Anti re-pregunta persistente**: un bot recibe el botón **una sola vez**; la 2ª vez que reenvía se ignora directo, aunque pasen horas, días o Luna reinicie.
+
+**🗼 Torre de control**
+
+- Sección nueva **"Bots ignorados"**: cada número muestra el **nombre del grupo** donde está ignorado (o "Global (todos los chats)"), el origen (a mano / no confirmó el botón / legado) y filtro en vivo.
+- Botón **"Quitar"** por fila para des-ignorar directo desde el panel.
+
+> [!NOTE]
+> **¿Se le puede hablar a Luna desde su propio WhatsApp?** No. Todo mensaje que sale **del número de Luna** lleva la marca `fromMe` y el bot lo ignora apenas entra (`main.js`: `if (msg.messages?.[0]?.key?.fromMe) return;`). Es intencional — así Luna no reacciona a sus propios mensajes ni broadcasts (protección anti-bucle). Si escribís un comando desde el WhatsApp del bot **no lo va a responder**: comandeala desde tu número (owner/rowner) en otro chat, o mencionala con `@Luna` en un grupo.
+
+</details>
 
 <details open>
 <summary><b>🌍 28/05/2026 — Sistema Multi-Idioma Global 🌐</b></summary>
