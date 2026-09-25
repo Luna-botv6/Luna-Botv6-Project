@@ -13,6 +13,7 @@ import configPlugin from '../plugins/lunaia/config-plugin.js';
 import downloadPlugin from '../plugins/lunaia/download-plugin.js';
 import conversationPlugin from '../plugins/lunaia/conversation-plugin.js';
 import mathPlugin from '../plugins/lunaia/math-plugin.js';
+import footballPlugin from '../plugins/lunaia/football-plugin.js';
 import veoveoPlugin from '../plugins/lunaia/veoveo-plugin.js';
 import ahorcadoPlugin from '../plugins/lunaia/ahorcado-plugin.js';
 import mutePlugin from '../plugins/lunaia/mute-plugin.js';
@@ -87,6 +88,8 @@ export async function dispatchToPlugins(cleanText, context) {
     await grupoPlugin.handle(cleanText, context);
   } else if (mathPlugin.canHandle(cleanText)) {
     await mathPlugin.handle(cleanText, context);
+  } else if (footballPlugin.canHandle(cleanText)) {
+    await footballPlugin.handle(cleanText, context);
   } else {
     await conversationPlugin.handle(cleanText, context);
   }

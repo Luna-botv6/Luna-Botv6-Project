@@ -1856,6 +1856,14 @@
       "success": "🗑️ Message deleted successfully.",
       "error": "❌ Could not delete the message."
     },
+    "gc_admins": {
+      "texto1": [
+        "「 ADMINISTRATORS CALL 」",
+        "*ADMINISTRATORS:*",
+        "[ ⚠️] The user handles their account alone unless it is necessary!!",
+        "*MESSAGE:*"
+      ]
+    },
     "gc_config_time": {
       "no_admin": "❌ Only admins can use this command.",
       "no_bot_admin": "❌ I need to be admin to change group settings.",
