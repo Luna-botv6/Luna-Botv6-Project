@@ -1,3 +1,4 @@
+import fs from 'fs';
 import uploadImage from '../src/libraries/uploadImage.js';
 import fetch from 'node-fetch';
 

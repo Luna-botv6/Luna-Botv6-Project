@@ -1,3 +1,4 @@
+import fs from 'fs';
 import fetch from 'node-fetch';
 
 // Para configurar o idioma, na raiz do projeto altere o arquivo config.json

@@ -1,3 +1,4 @@
+import fs from 'fs';
 
 
 const handler = async (m, {conn, usedPrefix, command}) => {

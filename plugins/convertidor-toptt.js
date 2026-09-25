@@ -1,3 +1,4 @@
+import fs from 'fs';
 import {toPTT} from '../src/libraries/converter.js';
 
 

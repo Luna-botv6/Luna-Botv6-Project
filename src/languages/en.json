@@ -195,7 +195,14 @@
   },
   "plugins": {
     "anonymous_chat": {
-      "no_chat": "*[❗] You are not in a chat, please wait until you are in one.*"
+      "no_chat": "*[❗] You are not in a chat, please wait until you are in one.*",
+      "texto1": "*[❗INFORMATION❗]* YOU ARE NOT IN AN ANONYMOUS CHAT\n\nDO YOU WANT TO START AN ANONYMOUS CHAT?\nWRITE",
+      "texto2": "*[ ✔ ]* YOU LEFT THE ANONYMOUS CHAT SUCCESSFULLY",
+      "texto3": "*[❗INFORMATION❗]* THE OTHER USER LEFT THE ANONYMOUS CHAT\n\nDO YOU WANT TO LEAVE THE ANONYMOUS CHAT?\nWRITE",
+      "texto4": "*[❗INFORMATION❗]* ALL USERS ARE IN AN ANONYMOUS CHAT, WAITING FOR ANOTHER USER TO JOIN TO START THE CHAT\n\nDO YOU WANT TO LEAVE THE ANONYMOUS CHAT?\nWRITE",
+      "texto5": "*[ ✔ ]* YOU JOINED THE ANONYMOUS CHAT SUCCESSFULLY, THE REQUEST WAS SENT TO THE OTHER USER",
+      "texto6": "*[ ✔ ]* YOU JOINED THE ANONYMOUS CHAT SUCCESSFULLY, THE REQUEST WAS SENT TO THE OTHER USER\n\nA NEW CHAT WAS CREATED",
+      "texto7": "*[❗INFORMATION❗]* YOU ARE WAITING FOR THE OTHER USER TO START THE ANONYMOUS CHAT\n\nDO YOU WANT TO LEAVE THE ANONYMOUS CHAT?*\nWRITE"
     },
     "game_dinamicayo": {
       "llena": "⚠️ The dynamic is already full.",
@@ -336,9 +343,10 @@
     "afk__afk": {
       "texto1": [
         "⚠️ This user is in AFK mode",
-        "Reason:",
-        "No reason specified",
-        "Absent for:"
+        "The tagged user is inactive (AFK)",
+        "Reason: ",
+        "Reason: the user did not specify a reason",
+        "Absent for: "
       ],
       "texto2": [
         "✅ Welcome back, you are no longer in AFK mode",
@@ -479,7 +487,12 @@
         "┃ 🔋 Cooldown: 2 minutes",
         "┃ ⚠️ Too much activity attracts the Hunter.",
         "╰━━━━━━━━━━━━━━━━━━━━⬣"
-      ]
+      ],
+      "texto3": "Mining completed!",
+      "texto4": "LunaCoins earned:",
+      "texto5": "EXP earned:",
+      "texto6": "Total LunaCoins:",
+      "texto7": "💥 The rock collapsed, you found nothing this time... Try again in a while."
     },
     "stats": {
       "texto1": "Statistics",
@@ -1872,7 +1885,14 @@
       "abierto": "Group opened",
       "durante": "for",
       "reabrir": "✅ Time is up. The group has been reopened!",
-      "recruzar": "✅ Time is up. The group has been closed again!"
+      "recruzar": "✅ Time is up. The group has been closed again!",
+      "texto1": [
+        "*• Example:*",
+        "📌 *_Example of usage:_*",
+        "*_🌿 So the group stays closed for one hour._*"
+      ],
+      "texto2": "*The group has been closed, now only the admins can send messages!*",
+      "texto3": "*The group has been opened, now all members can send messages!*"
     },
     "setnamebot": {
       "uso": "⚙️ *Usage:* _.setnamebot <name>_\n\n_Example: .setnamebot MyBot_\n\n📝 The name will replace the bot brand in all messages.",
@@ -3090,6 +3110,746 @@
       ],
       "texto2": "*[❗𝐈𝐍𝐅𝐎❗] ERROR, TRY AGAIN*",
       "texto3": "*Translation:*"
+    },
+    "buscador_githubsearch": {
+      "texto1": [
+        "*🔗 URL:*",
+        "*📅 Created:*",
+        "*🔄 Updated:*",
+        "*📥 Clone: $ git clone*",
+        "*Description:*"
+      ]
+    },
+    "cmd_list": {
+      "texto1": "< LIST OF COMMANDS / TEXTS />"
+    },
+    "convertidor_togifaud": {
+      "texto1": "[❗𝐈𝐍𝐅𝐎❗] REPLY TO THE VIDEO YOU WANT TO CONVERT TO A GIF WITH AUDIO",
+      "texto2": [
+        "[❗] FILE TYPE",
+        "IS NOT ACCEPTED, REPLY TO THE VIDEO YOU WANT TO CONVERT WITH AUDIO"
+      ],
+      "texto3": "HERE IS YOUR GIF WITH AUDIO, IT WILL PLAY WITH SOUND WHEN YOU OPEN IT"
+    },
+    "convertidor_toimg": {
+      "texto1": "[❗𝐈𝐍𝐅𝐎❗] REPLY TO THE STICKER OR IMAGE YOU WANT TO CONVERT TO AN IMAGE",
+      "texto2": "[❗] The image could not be converted, try another image."
+    },
+    "convertidor_tomp3": {
+      "texto1": "[❗️INFORMATION❗️] REPLY TO THE VIDEO OR AUDIO YOU WANT TO CONVERT TO AUDIO/MP3",
+      "texto2": "[❗️INFORMATION❗️] SORRY, AN ERROR OCCURRED WHILE DOWNLOADING YOUR VIDEO, PLEASE TRY AGAIN",
+      "texto3": "[❗️INFORMATION❗️] SORRY, AN ERROR OCCURRED WHILE CONVERTING YOUR VIDEO TO AUDIO/MP3, PLEASE TRY AGAIN"
+    },
+    "convertidor_toptt": {
+      "texto1": "[❗️INFORMATION❗️] REPLY TO THE VIDEO OR AUDIO YOU WANT TO CONVERT TO AUDIO/VOICE NOTE",
+      "texto2": "[❗️INFORMATION❗️] SORRY, AN ERROR OCCURRED WHILE SAVING YOUR VIDEO, PLEASE TRY AGAIN",
+      "texto3": "[❗️INFORMATION❗️] SORRY, AN ERROR OCCURRED WHILE CONVERTING YOUR VIDEO TO AUDIO/VOICE NOTE, PLEASE TRY AGAIN",
+      "texto4": "[❗️INFORMATION❗️] SORRY, AN ERROR OCCURRED WHILE CONVERTING YOUR AUDIO TO AUDIO/VOICE NOTE, PLEASE TRY AGAIN",
+      "texto5": "[❗️INFORMATION❗️] SORRY, AN ERROR OCCURRED WHILE CONVERTING YOUR AUDIO TO AUDIO/VOICE NOTE, PLEASE TRY AGAIN"
+    },
+    "convertidorTourl": {
+      "texto1": "[❗] REPLY TO AN IMAGE, VIDEO OR AUDIO",
+      "texto2": "[✅] LINK:"
+    },
+    "convertidor_tovideo": {
+      "texto1": "[❗️INFORMATION❗️] REPLY TO AN IMAGE OR GIF YOU WANT TO CONVERT TO A VIDEO WITH COMMAND EFFECT",
+      "texto2": "[❗️INFORMATION❗️] REPLY TO A STICKER YOU WANT TO CONVERT TO A VIDEO WITH COMMAND EFFECT"
+    },
+    "descargas_gitclone": {
+      "texto1": "_*< DOWNLOADS - GITCLONE />*_\n\n*[ ℹ️ ] ENTER A GITHUB LINK.*\n\n*[ 💡 ] EXAMPLE:*",
+      "texto2": "_*< DOWNLOADS - GITCLONE />*_\n\n*[ ℹ️ ] THE LINK YOU ENTERED IS NOT CORRECT.*",
+      "texto3": "_*< DOWNLOADS - GITCLONE />*_\n\n*[ ℹ️ ] THE FILE IS BEING SENT. PLEASE WAIT...*\n\n*[ ℹ️ ] IF IT IS NOT SENT, IT MAY BE BECAUSE IT EXCEEDS THE SIZE LIMIT.*"
+    },
+    "downloader_stickerpack": {
+      "texto1": "[❗️] ENTER THE NAME OF THE STICKER PACK YOU WANT TO DOWNLOAD",
+      "texto2": "[❗️] ERROR, PLEASE CHECK THE STICKER PACK NAME AND TRY AGAIN"
+    },
+    "frase_piropos": {
+      "texto1": [
+        "I wish I were wrapping paper so I could wrap this candy.",
+        "You're like wifi with no password, everyone connects to you.",
+        "I wish I were a bus so I could drive along all the curves of your heart.",
+        "I want to fly with no wings, leave this universe, get inside you and love you silently.",
+        "I wish I were butter so I could melt in your hot chocolate.",
+        "If beauty were a sin, you would already be burning me in hell.",
+        "I wish I were a cat so I could spend seven lives next to you.",
+        "Stealing is wrong, but I would steal a kiss from your lips.",
+        "The sky looks beautiful when it is clear, but love is more beautiful when I am with you.",
+        "Beautiful, walk in the shade, the sun melts the chocolate.",
+        "If I were an email, you would be my password.",
+        "I wish you were a mountain so I could chop you with an axe.",
+        "I lost my phone number, would you give me yours?",
+        "What is your name so I can ask Santa for you next Christmas?",
+        "There are millions of stars in the sky, but the brightest one on earth is you.",
+        "Did the sun just rise or is that the smile you gave me today?",
+        "It is not the rum nor the beer, you are the one who took my head.",
+        "If we talk about math, you are the sum of all my wishes.",
+        "You are like Google, because you have everything I look for.",
+        "My favorite coffee is your eyes.",
+        "I would like to be Photoshop to retouch your whole body.",
+        "I wish I were cereal so I could gather you every morning."
+      ]
+    },
+    "fun_verdad": {
+      "texto3": [
+        "Have you ever liked someone? For how long?",
+        "If possible, who would you befriend in a group chat?",
+        "What is your biggest fear?",
+        "Has anyone ever liked you while you also liked that person back?",
+        "What is the name of your best friend ex that you had a crush on?",
+        "Have you ever stolen money from your mom or dad? Why?",
+        "What makes you happy when you are sad?",
+        "Have you ever had unrequited love? With whom? How did you feel?",
+        "Have you ever been in a relationship with someone?",
+        "What is the thing you are most afraid of?",
+        "Who is the person that influences you the most in life?",
+        "What are you proud of this year?",
+        "Who can make you have a good time?",
+        "Who can make you fall in love?",
+        "(For Muslims) Have you ever skipped prayers all day?",
+        "Which of your friends is closest to your ideal partner?",
+        "Who do you like playing with?",
+        "Have you ever turned someone down? Why?",
+        "Tell me something that hurt you and that you still remember.",
+        "What achievements did you get this year?",
+        "What is your worst habit at school?",
+        "Which TV show do you hate the most? Why?",
+        "What is the worst gossip you told about a friend?",
+        "What is the most embarrassing thing for you?",
+        "What is the first thing you look at when you see someone of the opposite sex?",
+        "What do you think when you look at yourself in the mirror?",
+        "What is the dumbest thing you have ever done in your life?",
+        "What was your worst nightmare?",
+        "Which trait of yours would you like to change?",
+        "Which trait of your friend would you like to change?",
+        "What do you think about before falling asleep?",
+        "What is your secret skill?",
+        "What is the best quality your best friend has and does not know about?",
+        "What kind of person would you like to marry someday?",
+        "Who would you like to swap places with for a day?",
+        "Do you prefer male or female friends? Why?",
+        "Which quote do you remember and like the most?",
+        "What are the secrets you never told your friends?",
+        "Who is your real idol?",
+        "Which of your friends seems the most mature?",
+        "What is your worst flaw?",
+        "What is the bravest thing you have done?",
+        "Have you ever lied?",
+        "Have you ever stolen something?",
+        "Do you have a nickname?",
+        "Do you look in the mirror before washing your face?",
+        "What is your favorite song?",
+        "If you moved to a deserted island, who would you take from here?",
+        "What are you most afraid of?",
+        "Where do you shave?",
+        "When was the last time you cried and why?",
+        "What is the most embarrassing thing that happened to you on a date?",
+        "Have you ever used substances?",
+        "Have you ever cheated on an exam?",
+        "Do you snore when you sleep?",
+        "What would you like to be tomorrow?",
+        "Tell me a secret from your childhood.",
+        "What was your biggest mistake?",
+        "What would you never do even if you knew you only had 12 hours left?",
+        "Who do you care about the most?",
+        "Have you ever fallen in love with someone in this group?",
+        "Have you ever downloaded something you should not have?",
+        "What is your happiest memory?",
+        "What would you do if you had superpowers?",
+        "Who would you marry tomorrow?",
+        "What is your biggest goal?"
+      ]
+    },
+    "herramientas_acortar": {
+      "texto1": "*[❗𝐈𝐍𝐅𝐎❗] THE LINK OR URL YOU ENTERED IS INVALID OR NOT ACCESSIBLE*",
+      "texto2": "*[❗] ERROR, PLEASE CHECK THAT THE TEXT YOU ENTERED IS A VALID URL TEXT*",
+      "texto3": [
+        "*BE CAREFUL WITH THE CUT!!*\n\n*PREVIOUS LINK:*",
+        "*CURRENT LINK:*"
+      ]
+    },
+    "herramientas_ajustar_tamano": {
+      "texto1": "⚠️️ REPLY TO AN IMAGE OR A VIDEO.",
+      "texto2": "⚠️️ ENTER THE NEW SIZE OF THE IMAGE/VIDEO.",
+      "texto3": "🔢 NUMBERS ONLY",
+      "texto4": "⚠️️ UNSUPPORTED FORMAT",
+      "texto5": "HERE YOU GO"
+    },
+    "herramientas_calc": {
+      "texto1": "*[❗𝐈𝐍𝐅𝐎❗] ENTER THE MATH OPERATION YOU WANT TO CALCULATE*",
+      "texto2": "Well, that is cheating",
+      "texto3": "*[❗𝐈𝐍𝐅𝐎❗] UNSUPPORTED FORMAT, ONLY NUMBERS AND THE FOLLOWING SYMBOLS ARE ACCEPTED: +, -, *, /, ×, ÷, π, e, (, )*"
+    },
+    "herramientas_clima": {
+      "texto1": "*[❗] ENTER THE NAME OF YOUR COUNTRY OR CITY*",
+      "texto2": [
+        "「 📍 」Location:",
+        "「 🗺️ 」Country:",
+        "「 🌤️ 」Weather:",
+        "「 🌡️ 」Temperature:",
+        "「 💠 」Minimum temperature:",
+        "「 📛 」Maximum temperature:",
+        "「 💦 」Humidity:",
+        "「 🌬️ 」Wind:"
+      ],
+      "texto3": "*[❗] NO MATCHING RESULTS, PLEASE CHECK IF YOU ENTERED YOUR COUNTRY OR CITY CORRECTLY*"
+    },
+    "herramientas_dropmail": {
+      "texto1": [
+        "*Example:*\n",
+        "create\n\n*Select an existing type*\n"
+      ],
+      "texto2": [
+        "*EMAIL:*\n",
+        "'",
+        "\n\n*ID:*\n",
+        "\n\n*Expires:*\n",
+        "\n\n_Example *",
+        "message* to check the inbox_"
+      ],
+      "texto3": [
+        "No messages, create an email first\nExample *",
+        " create*"
+      ],
+      "texto4": [
+        "EMAIL",
+        "*From* :",
+        "*To* :",
+        "*Message* :",
+        "*Size* :",
+        "*Header* :",
+        "*Download* :"
+      ],
+      "texto5": [
+        "*EMPTY*' + '\n\n_Example *",
+        "delete* to delete the emails_"
+      ],
+      "texto6": "No valid emails",
+      "texto7": "Email deleted successfully"
+    },
+    "herramientas_encuesta": {
+      "texto1": [
+        "*[❗𝐈𝐍𝐅𝐎❗] USAGE FORMAT*",
+        "Question? |Option1|Option2...*"
+      ],
+      "texto2": [
+        "*Poll made by:*",
+        "*Question:*"
+      ]
+    },
+    "herramientas_inspect": {
+      "texto1": "*[❗] ENTER THE LINK OF A WHATSAPP GROUP.*",
+      "texto2": [
+        "*⫹⫺ ID:*",
+        "*⫹⫺ Name:*",
+        "*⫹⫺ Creator:*",
+        "*⫹⫺ Description:*",
+        "*⫹⫺ Participants:*"
+      ]
+    },
+    "herramientas_nowa": {
+      "texto1": "⚠️ MISSING NUMBER.",
+      "texto2": "*Example of usage:*",
+      "texto3": [
+        "Saved\n\n",
+        "• Nro :",
+        "*• Bio :*",
+        "No description",
+        "*• Date :*",
+        "\n\n*Not saved*\n\n"
+      ]
+    },
+    "herramientas_qrcode": {
+      "texto1": "*[❗] ERROR: PLEASE TYPE THE TEXT YOU WANT TO CONVERT TO A QR CODE*"
+    },
+    "info_tyc": {
+      "texto1": "📖 Please read carefully the terms and conditions of use of *LunaBotV6*."
+    },
+    "info_covid": {
+      "texto1": "*[❗] INFORMATION ABOUT THE NUMBER OF CASES IN THE COUNTRY, EXAMPLE:*",
+      "texto2": [
+        "🌏 Country:",
+        "✅ Confirmed:",
+        "📉 Recovered:",
+        "☠️ Deaths:",
+        "💌 Information updated:"
+      ]
+    },
+    "info_host": {
+      "texto1": [
+        "*🚀 -----[ Cafirexos]------- 🚀*",
+        "*Hello everyone 👋🏻 We are happy to announce our new collaboration with Cafirexos 🤖 Now you can have your own THE-MYSTIC-BOT-MD bot on your online platform, keeping your bot online 24/7. 💻*",
+        "_The installation of these versions has been approved and is already fully operational. Besides, *the servers are fully compatible, so you can choose how to start the bot according to your needs.* Get ready for a smooth and exciting experience!_ ",
+        "*Official page:*",
+        "https://www.cafirexos.com/",
+        "*Dashboard:*",
+        "https://dash.cafirexos.com",
+        "*Panel:*",
+        "https://panel.cafirexos.com",
+        "*WhatsApp*",
+        "https://wa.me/50497150165",
+        "*E-mail*",
+        "contacto@cafirexos.com",
+        "*WhatsApp channel*",
+        "https://whatsapp.com/channel/0029VaFVSkRCMY0KFmCMDX2q",
+        "*Questions? (ONLY ABOUT HOSTING):*",
+        "https://chat.whatsapp.com/FBtyc8Q5w2iJXVl5zGJdFJ"
+      ],
+      "texto2": "The best hosting 🚀"
+    },
+    "info_instalarbot": {
+      "texto1": "*—◉ MAIN BOT INSTALLATION*\n> Tutorial: https://youtu.be/eC9TfKICpcY\n> Official page: https://boxmineworld.com\n> Dashboard: https://dash.boxmineworld.com/home\n> Panel: https://panel.boxmineworld.com\n> Support: https://discord.gg/84qsr4v \n\n------------------------------------\n—◉ SECONDARY BOT INSTALLATION\n> Tutorial: https://youtu.be/yRS4m36Zwkw\n\n------------------------------------\n\n*—◉ INSTALLATION COMMANDS*\n> Commands:\n- cd && termux-setup-storage\n- apt-get update -y && apt-get upgrade -y\n- pkg install -y git nodejs ffmpeg imagemagick && pkg install yarn \n- git clone https://github.com/BrunoSobrino/TheMystic-Bot-MD.git && cd TheMystic-Bot-MD\n- yarn install\n- npm install\n- npm update\n- npm start\n\n------------------------------------\n\n—◉ ✔️ ACTIVATION IF IT STOPS ON TERMUX ✔️\nTYPE THE FOLLOWING COMMANDS ONE BY ONE:\n> cd TheMystic-Bot-MD\n> npm start\n\n------------------------------------\n\n—◉ 👽 GET ANOTHER QR CODE ON TERMUX 👽\nTYPE THE FOLLOWING COMMANDS ONE BY ONE:\n> cd TheMystic-Bot-MD\n> rm -rf MysticSession\n> npm start",
+      "texto2": "The best WhatsApp bot"
+    },
+    "info_listprem": {
+      "texto1": [
+        "*「 USER INFORMATION 」*",
+        "—◉ User:",
+        "*◉ Time left:*\n",
+        "*◉ Time left:*\n- You are an unlimited premium user`",
+        "- This user is not premium ❌",
+        "*「 PREMIUM USERS 」*",
+        "—◉ User:",
+        "*◉ Time left:*\n",
+        "- This user is not premium ❌"
+      ],
+      "texto2": [
+        "*「 USER INFORMATION 」*\n\n—◉ User:",
+        "*◉ Time left:*\n",
+        "- You are not a premium user ❌",
+        "*「 PREMIUM USERS 」*\n\n- There are no premium users ❌"
+      ],
+      "texto3": [
+        "- Year(s):",
+        "- Month(s):",
+        "- Week(s): ",
+        "- Day(s): ",
+        "- Hour(s):",
+        "- Minute(s): ",
+        "- Second(s):"
+      ]
+    },
+    "info_repositorio": {
+      "texto1": [
+        "_*< INFORMATION - REPOSITORY />*_",
+        "▢ *Name:*",
+        "TheMystic-Bot-MD",
+        "▢ *Visitors:*",
+        "▢ *Size:*",
+        "▢ *Last update:*",
+        "▢ *URL:*",
+        "https://github.com/BrunoSobrino/TheMystic-Bot-MD",
+        "Forks ·",
+        "Stars ·",
+        "Issues\n\n",
+        "*[ ℹ️ ] You can download this repository by sending the command:*"
+      ]
+    },
+    "juegos_matemicas": {
+      "texto1": "*🧮 MATHEMATICS*",
+      "texto2": "Choose the difficulty:",
+      "texto3": "⚠️ There is already an operation in progress in this chat, finish that one first.",
+      "texto4": [
+        "🧮 Solve:",
+        "⏱️ You have",
+        "🎁 Reward:"
+      ],
+      "texto5": "✅ The correct answer is"
+    },
+    "maker_blur": {
+      "texto1": "*[ ✔ ] EFFECT APPLIED*"
+    },
+    "maker_gay": {
+      "texto1": "*🏳️‍🌈 BECOME GAY 🏳️‍🌈*"
+    },
+    "maker_horncard": {
+      "texto1": "*YOU ARE HOT 🥵🔥*"
+    },
+    "maker_pixel": {
+      "texto1": "*PIXELATE YOUR IMAGE!!*"
+    },
+    "maker_simpcard": {
+      "texto1": "*YOU TURNED SIMP AGAIN!!*"
+    },
+    "maker_ytcomment": {
+      "texto1": "*THANKS FOR YOUR COMMENT!!*"
+    },
+    "maker_lolice": {
+      "texto1": "*🚔🚨 THE POLICE CAUGHT YOU NEXT TO THE TRUCK 🚨🚔*"
+    },
+    "menu_anime": {
+      "texto1": [
+        "MENU-ANIME",
+        "*Hello*",
+        "*[❗ℹ️] THE MENU HAD AN ERROR AND COULD NOT BE SENT, PLEASE INFORM THE BOT OWNER*",
+        "*[❗ℹ️] THE MENU HAD AN ERROR AND COULD NOT BE SENT, PLEASE INFORM THE BOT OWNER*"
+      ]
+    },
+    "menu_caja_fuerte": {
+      "texto1": [
+        "SAFE",
+        "*🗳️<SAFE/>🔐*",
+        "- HERE YOU CAN STORE THE MESSAGES YOU WANT TO KEEP FOR LATER",
+        "*<SAVE LIST/>*",
+        "*<LIST OF COMMANDS/>*",
+        "*<VIEW TEXT OR FILES/>*",
+        "*<DELETE/>*",
+        "*<EXIT/>*"
+      ],
+      "texto2": [
+        "*<text/command/keyword>* (reply to a message)_",
+        "*<text/command/keyword>* (reply to an audio)_",
+        "*<text/command/keyword>* (reply to a video)_",
+        "*<text/command/keyword>* (reply to an audio)_",
+        "*<text/command/keyword>* (reply to an image)_",
+        "*<text/command/keyword>* (reply to a sticker)_"
+      ],
+      "texto3": [
+        "*<text/command/keyword>*_",
+        "*<text/command/keyword>*_",
+        "*<text/command/keyword>*_",
+        "*<text/command/keyword>*_",
+        "*<text/command/keyword>*_",
+        "*<text/command/keyword>*_"
+      ],
+      "texto4": [
+        "*<text/command/keyword>*_",
+        "*<text/command/keyword>*_",
+        "*<text/command/keyword>*_",
+        "*<text/command/keyword>*_",
+        "*<text/command/keyword>*_",
+        "*<text/command/keyword>*_"
+      ]
+    },
+    "menu_audio": {
+      "texto1": [
+        "AUDIO EFFECTS",
+        "Hello",
+        "",
+        "There was an error while loading the menu"
+      ]
+    },
+    "owner_addmsg": {
+      "texto1": "*[❗️ℹ️❗️] REPLY TO A TEXT MESSAGE, IMAGE, ETC. AND ADD A TEXT FOR THE KEYWORD*",
+      "texto2": [
+        "*[❗️ℹ️❗️] USE",
+        "until to see the list of messages"
+      ],
+      "texto3": " was saved in the list of messages",
+      "texto4": [
+        "*[❗️ℹ️❗️] MESSAGE ADDED SUCCESSFULLY TO THE MESSAGE LIST*",
+        "*\n*USE IT WITH"
+      ]
+    },
+    "owner_addprem": {
+      "texto1": [
+        "*[❗️ℹ️❗️] REPLY TO THE @tag OF THE PERSON YOU WANT TO GIVE PERMISSION TO REPLY TO ALL MEMBERS OF A GROUP\n\n*—◉ EXAMPLE:*\n*◉",
+        "<reply to a message>"
+      ],
+      "texto2": [
+        "*[❗] THE USER",
+        "IS NOT IN MY DATABASE*"
+      ],
+      "texto3": [
+        "*🎟️ NEW PREMIUM USER!!!*\n\n*✨ USER:",
+        "*\n*🕐 TIME:"
+      ],
+      "texto4": [
+        "hour(s)*\n*📉 LEFT:",
+        "day(s)*\n*📉 LEFT:",
+        "week(s)*\n*📉 LEFT:",
+        "month(s)*\n*📉 LEFT:"
+      ],
+      "texto5": [
+        "second(s)*",
+        "hour(s)*"
+      ]
+    },
+    "owner_blocklist": {
+      "texto1": "*≡ Blocked list*\n\n*Total:*",
+      "texto2": "No blocked numbers"
+    },
+    "owner_broadcast": {
+      "texto1": "*[❗] IMPORTANT NOTICE: PLEASE READ:*\\n*—◉",
+      "texto2": [
+        "*[❗] NOTICE SENT TO ALL CHATS*\\n\\n*NOTE: THIS IS A MESSAGE TO MANAGE THE CHATS, IT IS NOT SENT TO THE CHATS, IT IS ONLY AVAILABLE FOR THE MOMENT*",
+        "*[❗] NOTICE SENT TO ALL GROUP CHATS*\\n\\n*NOTE: THIS IS A MESSAGE TO MANAGE THE CHATS, IT IS NOT SENT TO THE CHATS, IT IS ONLY AVAILABLE FOR THE MOMENT*"
+      ],
+      "texto3": [
+        "*╔══❰ NOTICE ❱══╗*\\n\\n",
+        "*╔══❰ NOTICE ❱══╗*\\n\\n"
+      ],
+      "texto4": [
+        "MESSAGE SENT TO:",
+        "PRIVATE CHAT >>",
+        "GROUPS >>",
+        "GROUP CHATS >>",
+        "*TOTAL MESSAGES SENT",
+        "\n*NOTE: THIS IS A COMMAND TO MANAGE MESSAGE STATISTICS IN GROUPS, IT IS NOT SENT TO THE CHATS, IT IS ONLY AVAILABLE FOR THE MOMENT*"
+      ]
+    },
+    "owner_chetar": {
+      "texto1": "now your resources are unlimited."
+    },
+    "owner_delmsg": {
+      "texto1": [
+        "*[❗𝐈𝐍𝐅𝐎❗] USE",
+        "TO SEE THE LIST*"
+      ],
+      "texto2": [
+        "*[❗𝐈𝐍𝐅𝐎❗]",
+        "IS NOT SAVED IN THE MESSAGE LIST*"
+      ],
+      "texto3": "*[❗𝐈𝐍𝐅𝐎❗] DELETE ALL MESSAGES | DELETE BY NAME*"
+    },
+    "owner_delprem": {
+      "texto1": "*[❗] WARNING: @tag IS NO LONGER THE OWNER OF SOMEONE WHO WANTS TO DELETE PREMIUM USERS*",
+      "texto2": "*[❗] THE USER IS NOT IN THE DATABASE*",
+      "texto3": "*[❗] THE ENTERED USER IS NOT A PREMIUM USER*",
+      "texto4": "IT NO LONGER BELONGS TO THE PREMIUM USERS"
+    },
+    "owner_fetch_get": {
+      "texto1": "Start the URL with http:// or https://"
+    },
+    "owner_getmsg": {
+      "texto1": [
+        "*[❗𝐈𝐍𝐅𝐎❗] USE",
+        "to see the list of messages"
+      ],
+      "texto2": "IS NOT SAVED IN THE MESSAGE LIST"
+    },
+    "owner_leavegc": {
+      "texto1": "Bye everyone, the bot is leaving! (≧ω≦)ゞ"
+    },
+    "owner_listmsg": {
+      "texto1": [
+        "🔰 LIST OF SAVED TEXTS/MESSAGES/KEYWORDS 🔰",
+        "✳️ MESSAGES ✳️"
+      ]
+    },
+    "owner_resetprefix": {
+      "texto1": "[❗𝐈𝐍𝐅𝐎❗] PREFIX RESET SUCCESSFULLY"
+    },
+    "owner_setprefix": {
+      "texto1": "*[❗] NO PREFIX FOUND, PLEASE ENTER THE PREFIX YOU WANT TO SET. EXAMPLE:*",
+      "texto2": "*[❗] THE CURRENT PREFIX OF THE BOT HAS BEEN SET TO"
+    },
+    "owner_viewimage": {
+      "texto1": "Enter the name and the folder of the image you want to view.",
+      "texto2": "The image does not exist in the root folder."
+    },
+    "random_kpop": {
+      "texto1": [
+        "Usage",
+        "Please write:",
+        "[search]\nExample:",
+        "bts\n\nAvailable searches:",
+        "blackpink, exo, bts"
+      ],
+      "texto2": "An error occurred, please try again. If the problem persists, please tell my creator.",
+      "texto3": [
+        "Sorry, that search is not available. Please write",
+        "to see the list of available searches"
+      ]
+    },
+    "random_loli": {
+      "texto1": "random loli - she is cute 🥺"
+    },
+    "random_lolivid": {
+      "texto1": "*the loli is cute 🥺*"
+    },
+    "random_navidad": {
+      "texto1": "_Christmas 🧑‍🎄_"
+    },
+    "random_neko": {
+      "texto1": "Nyaww~ 🐾💗"
+    },
+    "random_waifu": {
+      "texto1": "ARA ARA SEMPAI~~"
+    },
+    "sticker_pat": {
+      "texto1": [
+        "patted",
+        "someone"
+      ]
+    },
+    "sticker_slap": {
+      "texto1": "*[❗] MENTION IS MANDATORY*\n\n*—◉ EXAMPLE:*",
+      "texto2": "*[❗] ERROR, PLEASE MENTION A PARTICIPANT*"
+    },
+    "sticker_stickerfilter": {
+      "texto1": [
+        "*_✳️ CORRECT USE OF THE COMMAND ✳️_*",
+        "*👉 USE:*",
+        "(effect)",
+        "- And reply to an image",
+        "*✅ EXAMPLE:*",
+        "*List of effects:*"
+      ],
+      "texto2": "*_🔰 NO IMAGE FOUND_*\n\n*_✅ REPLY TO AN IMAGE_*",
+      "texto3": "*_⚠️ UNSUPPORTED FORMAT_*\n\n*_👉🏻 REPLY TO AN IMAGE_*",
+      "texto4": "*_⚠️ AN ERROR OCCURRED WHILE CONVERTING TO STICKER_*\n\n*_✳️ SENDING THE IMAGE INSTEAD..._*"
+    },
+    "sticker_stickermarker": {
+      "texto1": [
+        "*_✳️ CORRECT USE OF THE COMMAND ✳️_*",
+        "*👉 USE:*",
+        "(effect)",
+        "- And reply to an image",
+        "*✅ EXAMPLE:*",
+        "*List of effects:*"
+      ],
+      "texto2": "*_🔰 NO IMAGE FOUND_*\n\n*_✅ REPLY TO AN IMAGE_*",
+      "texto3": "*_⚠️ UNSUPPORTED FORMAT_*\n\n*_👉🏻 REPLY TO AN IMAGE_*",
+      "texto4": "*_⚠️ AN ERROR OCCURRED WHILE CONVERTING TO STICKER_*\n\n*_✳️ SENDING THE IMAGE INSTEAD..._*"
+    },
+    "downloader_imagen": {
+      "texto1": "*[❗️INFORMATION❗️] EXAMPLE OF USE OF THE COMMAND*",
+      "texto2": [
+        "🔎 *Result of:*",
+        "🔗 *Link*",
+        "🌎 *Search engine:* Google"
+      ]
+    },
+    "downloader_pptiktok": {
+      "texto1": "*[❗️] Enter the TikTok username you want to download*",
+      "texto2": "*[✔️] Here is the profile picture of*"
+    },
+    "downloader_soundcloud": {
+      "texto1": "[❗️] Enter the name of the song or album you want to search for",
+      "texto2": [
+        "❒═══❬ 𝐒𝐎𝐔𝐍𝐃𝐂𝐋𝐎𝐔𝐃 ❭═══╾❒\n┬\n├‣✨ *TITLE:*",
+        "├‣💚 *DIRECT LINK:*",
+        "*- Waiting for the song...*"
+      ],
+      "texto3": "[❗️] Error, no song has been found yet, please check if the song was found and try again later"
+    },
+    "downloader_tiktokstalk": {
+      "texto1": "[❗️] Enter the TikTok username you want to look up.",
+      "texto2": [
+        "*USER:*",
+        "*NAME:*",
+        "*FOLLOWERS:*",
+        "*FOLLOWING:*",
+        "*LIKES:*",
+        "*VIDEOS:*",
+        "*BIO:*"
+      ],
+      "texto3": "[❗️] Error, the indicated user was not found."
+    },
+    "gc_listanum_kicknum": {
+      "texto1": "[❗] Profile information of some countries to search for numbers that are in this group profile list, example:",
+      "texto2": "[❗] Profile information of some countries to search for numbers that are in this group profile list, example:",
+      "texto3": "[❗] Nobody from the group is in the profile list, please check the phone number you asked to remove*",
+      "texto4": [
+        "*List of numbers with participant profile*",
+        "that are in this group:"
+      ],
+      "texto5": [
+        "[❗INFORMATION❗] The bot profile is not accepted, the last person cannot be removed",
+        "(bot profile protected)"
+      ],
+      "texto6": "[❗INFORMATION❗] The bot is not an administrator, it cannot perform the permissions",
+      "texto7": [
+        "[❗] Information of number removal with participant profile",
+        "every 10 seconds it will be sent to one user"
+      ],
+      "texto8": "You have been removed or you left the group*",
+      "texto9": "[❗] Error*"
+    },
+    "gc_revoke": {
+      "texto1": "🔹️ *_The group link has been successfully restored._*\n♾ • New link:"
+    },
+    "gc_setdesc": {
+      "admin": "[❗] Only group administrators can use this command",
+      "botadmin": "[❗] The bot must be a group administrator to use this command",
+      "texto1": "✅ *The group description has been successfully changed*",
+      "texto2": "[❗] Write the new group description"
+    },
+    "herramientas_readqrcode": {
+      "texto1": "*[❗] Reply / write an image*",
+      "texto2": "*The QR code text is:*"
+    },
+    "herramientas_ssweb": {
+      "texto1": "*[ 🔎 ] Send the command with the full URL of the site.*"
+    },
+    "herramientas_topdf": {
+      "texto1": "*[❗] Reply / tag an image to convert it to PDF*"
+    },
+    "menu_audios": {
+      "texto1": "WRITE THE WORD OR PHRASE SEQUENCES WITHOUT PREFIX (#, /, *, .)",
+      "texto2": "`*[❗ℹ️] The menu has an error and could not be sent, please report it to the bot owner*"
+    },
+    "owner_cleartmp": {
+      "texto1": "*[ ✔ ] TMP FOLDER FILES DELETED SUCCESSFULLY!!*"
+    },
+    "owner_getplugin": {
+      "texto1": [
+        "[❗] Enter the name of an existing plugin (file)\n\n*—◉ Example*\n◉",
+        "—◉ List of existing plugins (files):\n◉*"
+      ],
+      "texto2": [
+        "[❗] No plugin (file) found with that name",
+        "Enter an existing one\n\n*==================================\n\n—◉ List of existing plugins (files):\n◉*"
+      ]
+    },
+    "owner_grouplist": {
+      "texto1": [
+        "👤 Participant",
+        "❌ Former participant"
+      ],
+      "texto2": [
+        "◉ Group: ",
+        "➤ Name:",
+        "➤ ID:",
+        "➤ Admin:",
+        "➤ Status:",
+        "➤ Total participants:",
+        "➤ Link:"
+      ],
+      "texto3": "List of bot groups 🤖\n\n—◉ Total groups:"
+    },
+    "owner_quitarmoney": {
+      "soloOwner": "[❗] This command is only for the bot owners",
+      "texto1": "[❗] You must mention the user whose money you want to remove",
+      "texto2": "[❗] You must specify the amount of money you want to remove",
+      "texto3": "[❗] The amount must be a number",
+      "texto4": "[❗] The amount must be greater than 0",
+      "titulo": "💸 *Money removed*",
+      "para": "👤 To:",
+      "por": "👮 By:",
+      "quitados": "*➖ Money removed:*",
+      "antes": "💰 *Before:*",
+      "actual": "💰 *Now:*",
+      "insuficiente": "[⚠️] *You took all the money they had, they did not have that amount.*",
+      "footer": "> Luna-Bot 🐾",
+      "error": "[❗] An error occurred while removing the money, try again later."
+    },
+    "owner_quitarlimit": {
+      "soloOwner": "[❗] This command is only for the bot owners",
+      "texto1": "[❗] You must mention the user whose limits you want to remove",
+      "texto2": "[❗] You must specify the amount of limits you want to remove",
+      "texto3": "[❗] The amount must be a number",
+      "texto4": "[❗] The amount must be greater than 0",
+      "titulo": "🚫 *Limits removed*",
+      "para": "👤 To:",
+      "por": "👮 By:",
+      "quitados": "*➖ Limits removed:*",
+      "antes": "🚫 *Before:*",
+      "actual": "🚫 *Now:*",
+      "insuficiente": "[⚠️] *You removed all the limits they had, they did not have that amount.*",
+      "footer": "> Luna-Bot 🐾",
+      "error": "[❗] An error occurred while removing the limits, try again later."
+    },
+    "owner_saveimage": {
+      "texto1": "Enter a name for your image file and the desired extension (for example, name.png, name.jpg, etc.)",
+      "texto2": "Reply with the image you want to save.."
+    },
+    "sticker_emojimix": {
+      "texto1": "*[❗𝐈𝐍𝐅𝐎❗] The use of this command must be #emojimix <emoji 1>&<emoji 2>*\n*Example:*\n*#emojimix 🤨&😣*"
+    },
+    "sticker_scircle": {
+      "texto1": "*[❗️INFORMATION❗️] The following error occurred: please check the intervention, do not forget to reply to a local image to put it in a circular sticker*"
     }
   },
   "functions": {

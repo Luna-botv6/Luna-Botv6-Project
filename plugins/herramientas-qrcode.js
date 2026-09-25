@@ -1,3 +1,4 @@
+import fs from 'fs';
 import {toDataURL} from 'qrcode';
 
 

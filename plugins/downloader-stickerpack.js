@@ -1,4 +1,5 @@
 /* By https://github.com/ALBERTO9883/NyanCatBot-MD */
+import fs from 'fs';
 import fetch from 'node-fetch';
 import {sticker} from '../src/libraries/sticker.js';
 

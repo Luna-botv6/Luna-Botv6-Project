@@ -37,7 +37,7 @@ const handler = async (m, { conn }) => {
   if (Math.random() < 0.1) {
     cooldowns[id] = now;
     fs.writeFileSync(COOLDOWN_FILE, JSON.stringify(cooldowns, null, 2));
-    return m.reply(`💥 ${tradutor.texto2}`);
+    return m.reply(`💥 ${tradutor.texto7}`);
   }
 
   const lunaCoinsGanadas = Math.floor(Math.random() * 11) + 5;

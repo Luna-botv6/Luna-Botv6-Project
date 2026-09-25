@@ -1,3 +1,4 @@
+import fs from 'fs';
 import {webp2mp4} from '../src/libraries/webp2mp4.js';
 import {ffmpeg} from '../src/libraries/converter.js';
 
