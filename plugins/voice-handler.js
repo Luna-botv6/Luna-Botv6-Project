@@ -1,1 +1,116 @@
-const _0x1b90b7=_0x4a1b;(function(_0x869de3,_0xeb9162){const _0x2f0517=_0x4a1b,_0x135a3c=_0x869de3();while(!![]){try{const _0x12047f=parseInt(_0x2f0517(0x15e))/0x1*(parseInt(_0x2f0517(0x168))/0x2)+parseInt(_0x2f0517(0x15d))/0x3*(parseInt(_0x2f0517(0x16e))/0x4)+parseInt(_0x2f0517(0x16b))/0x5+-parseInt(_0x2f0517(0x180))/0x6+parseInt(_0x2f0517(0x165))/0x7+parseInt(_0x2f0517(0x172))/0x8+parseInt(_0x2f0517(0x176))/0x9*(-parseInt(_0x2f0517(0x181))/0xa);if(_0x12047f===_0xeb9162)break;else _0x135a3c['push'](_0x135a3c['shift']());}catch(_0x42ce6c){_0x135a3c['push'](_0x135a3c['shift']());}}}(_0x3c3f,0x23df4));import{downloadMediaMessage}from'@whiskeysockets/baileys';import{getGroupDataForPlugin}from'../lib/funcion/pluginHelper.js';import{dispatchToPlugins}from'./pluginDispatch.js';import{cargarOGenerarAPIKey}from'../src/libraries/api/apiKeyManager.js';const SERVER_URL=_0x1b90b7(0x163),API_KEY=cargarOGenerarAPIKey();function getAudioMessage(_0x5288a5){const _0x1d7d62=_0x1b90b7;return _0x5288a5?.[_0x1d7d62(0x179)]?.['audioMessage']||null;}export function isVoiceMessage(_0x15b2fb){return!!getAudioMessage(_0x15b2fb);}async function transcribir(_0x324656,_0x44d8e2){const _0x2efb4f=_0x1b90b7;try{const _0x347db9=await fetch(SERVER_URL+'/transcribe',{'method':_0x2efb4f(0x162),'headers':{'Content-Type':_0x2efb4f(0x17e),'X-API-Key':API_KEY},'body':JSON[_0x2efb4f(0x173)]({'audioBase64':_0x324656,'mimeType':_0x44d8e2}),'signal':AbortSignal[_0x2efb4f(0x166)](0x7530)});if(!_0x347db9['ok'])return null;const _0x2ad0db=await _0x347db9['json']();return _0x2ad0db?.[_0x2efb4f(0x161)]||null;}catch{return null;}}function _0x4a1b(_0x1256fa,_0x3d9b39){_0x1256fa=_0x1256fa-0x15d;const _0x3c3f23=_0x3c3f();let _0x4a1b27=_0x3c3f23[_0x1256fa];return _0x4a1b27;}function _0x3c3f(){const _0x369b72=['🎵\x20La\x20canción\x20es\x20*','3477SmJahi','4593voObnQ','🎧\x20No\x20logré\x20entender\x20bien\x20ese\x20audio,\x20¿me\x20lo\x20escribís\x20o\x20lo\x20repetís\x20más\x20clarito?','composing','text','POST','https://project-via.boxmine.xyz','youtube','486941BetvJj','timeout','buffer','84UCAzlE','length','base64','745415UXCfuw','data','😅\x20Tuve\x20un\x20problema\x20procesando\x20ese\x20audio,\x20probá\x20de\x20nuevo.','692DJDcJj','match','[VOICE-HANDLER]\x20Error:','participant','1606448GbAUzC','stringify','sendMessage','\x0a\x0a▶️\x20Escuchala\x20acá:\x20','1926atpnIB','audio/ogg','artist','message','mimetype','toString','\x20de\x20*','😅\x20No\x20pude\x20descargar\x20ese\x20audio,\x20¿podés\x20mandarlo\x20de\x20nuevo?','application/json','remoteJid','1392930InzBRj','20270vJMaFi','audioIAEnabled','trim','json','key'];_0x3c3f=function(){return _0x369b72;};return _0x3c3f();}async function reconocerCancion(_0x41e566,_0x1e1fe2){const _0x2e55e9=_0x1b90b7;try{const _0x50b41a=await fetch(SERVER_URL+'/recognize-song',{'method':_0x2e55e9(0x162),'headers':{'Content-Type':_0x2e55e9(0x17e),'X-API-Key':API_KEY},'body':JSON[_0x2e55e9(0x173)]({'audioBase64':_0x41e566,'mimeType':_0x1e1fe2}),'signal':AbortSignal[_0x2e55e9(0x166)](0x9c40)});if(!_0x50b41a['ok'])return null;const _0x1eb2ee=await _0x50b41a[_0x2e55e9(0x184)]();if(!_0x1eb2ee?.[_0x2e55e9(0x16f)])return null;return _0x1eb2ee;}catch{return null;}}const SONG_ASK_RE=/(?:como\s+se\s+llama\s*(?:esta|esa|la)?|que\s+(?:cancion|musica|tema|rola)\s+(?:es|esta|esa|esta\s+sonando|suena)|cual\s+es\s+(?:la\s+)?(?:cancion|musica|tema|rola)|nombre\s+de\s+(?:esta\s+|la\s+)?(?:cancion|musica|tema)|reconoc(e|es)\s+(?:esta\s+)?(?:cancion|musica|tema)|identifica\s+(?:esta\s+)?(?:cancion|musica|tema)|de\s+quien\s+es\s+(?:esta\s+)?(?:cancion|musica|tema))/i;export async function handleVoiceMessage(_0x7a4cee,_0x3380c8,_0x503f81,_0x273e40){const _0x506fab=_0x1b90b7;try{const _0x41927e=getAudioMessage(_0x3380c8);if(!_0x41927e)return;const _0x5630d4=!!global['db']?.[_0x506fab(0x16c)]?.['chats']?.[_0x503f81]?.[_0x506fab(0x182)];if(!_0x5630d4)return;const _0x1badcf=await downloadMediaMessage(_0x3380c8,_0x506fab(0x167),{});if(!_0x1badcf||!_0x1badcf[_0x506fab(0x169)]){await _0x7a4cee[_0x506fab(0x174)](_0x503f81,{'text':_0x506fab(0x17d)},{'quoted':_0x3380c8});return;}const _0x1494c6=_0x41927e[_0x506fab(0x17a)]||_0x506fab(0x177),_0x11c013=_0x1badcf[_0x506fab(0x17b)](_0x506fab(0x16a)),_0x18317c={'base64':_0x11c013,'mimeType':_0x1494c6};await _0x7a4cee['sendPresenceUpdate']?.(_0x506fab(0x160),_0x503f81);const _0x54288f=await transcribir(_0x11c013,_0x1494c6),_0x165beb=!_0x54288f||!_0x54288f[_0x506fab(0x183)]();if(_0x165beb){const _0x266788=await reconocerCancion(_0x11c013,_0x1494c6);if(_0x266788){const _0x3dd85b=_0x266788['artist']?_0x506fab(0x17c)+_0x266788[_0x506fab(0x178)]+'*':'',_0x367adc=_0x266788['youtube']?_0x506fab(0x175)+_0x266788[_0x506fab(0x164)]:'';await _0x7a4cee[_0x506fab(0x174)](_0x503f81,{'text':_0x506fab(0x186)+_0x266788['title']+'*'+_0x3dd85b+'.'+_0x367adc},{'quoted':_0x3380c8});return;}await _0x7a4cee[_0x506fab(0x174)](_0x503f81,{'text':_0x506fab(0x15f)},{'quoted':_0x3380c8});return;}const _0x31afe5=_0x3380c8[_0x506fab(0x185)][_0x506fab(0x171)]||_0x3380c8[_0x506fab(0x185)][_0x506fab(0x17f)],_0x1b120d=await getGroupDataForPlugin(_0x7a4cee,_0x503f81,_0x31afe5),_0xe77d17={'conn':_0x7a4cee,'msg':_0x3380c8,'jid':_0x503f81,'isGroup':!![],'isPrivate':![],'groupData':_0x1b120d,'mentionedJids':[],'mentionedNames':{},'botNumber':null,'voiceAudio':_0x18317c,'forceVoiceReply':!![]};await dispatchToPlugins(_0x54288f,_0xe77d17);}catch(_0x482c45){console['error'](_0x506fab(0x170),_0x482c45[_0x506fab(0x179)]);try{await _0x7a4cee['sendMessage'](_0x503f81,{'text':_0x506fab(0x16d)},{'quoted':_0x3380c8});}catch{}}}
+import { downloadMediaMessage } from '@whiskeysockets/baileys'
+
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
+import { dispatchToPlugins } from './pluginDispatch.js'
+import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
+import { obtenerMenuChat, verificarMenuChat } from '../src/assets/images/menu/languages/es/menu-img.js'
+
+try { verificarMenuChat() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
+
+const SERVER_URL = obtenerMenuChat()
+const API_KEY = cargarOGenerarAPIKey()
+
+function getAudioMessage(msg) {
+  return msg?.message?.audioMessage || null
+}
+
+export function isVoiceMessage(msg) {
+  return !!getAudioMessage(msg)
+}
+
+async function transcribir(base64, mimeType) {
+  try {
+    const res = await fetch(SERVER_URL + '/transcribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
+      body: JSON.stringify({ audioBase64: base64, mimeType }),
+      signal: AbortSignal.timeout(30000)
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data?.text || null
+  } catch {
+    return null
+  }
+}
+
+async function reconocerCancion(base64, mimeType) {
+  try {
+    const res = await fetch(SERVER_URL + '/recognize-song', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
+      body: JSON.stringify({ audioBase64: base64, mimeType }),
+      signal: AbortSignal.timeout(40000)
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!data?.match) return null
+    return data
+  } catch {
+    return null
+  }
+}
+
+const SONG_ASK_RE = /(?:como\s+se\s+llama\s*(?:esta|esa|la)?|que\s+(?:cancion|musica|tema|rola)\s+(?:es|esta|esa|esta\s+sonando|suena)|cual\s+es\s+(?:la\s+)?(?:cancion|musica|tema|rola)|nombre\s+de\s+(?:esta\s+|la\s+)?(?:cancion|musica|tema)|reconoc(e|es)\s+(?:esta\s+)?(?:cancion|musica|tema)|identifica\s+(?:esta\s+)?(?:cancion|musica|tema)|de\s+quien\s+es\s+(?:esta\s+)?(?:cancion|musica|tema))/i
+
+export async function handleVoiceMessage(conn, msg, chatId, recentMsgs) {
+  try {
+    const audioMsg = getAudioMessage(msg)
+    if (!audioMsg) return
+
+   
+    const audioIAEnabled = !!global.db?.data?.chats?.[chatId]?.audioIAEnabled
+    if (!audioIAEnabled) return
+
+    const buffer = await downloadMediaMessage(msg, 'buffer', {})
+    if (!buffer || !buffer.length) {
+      await conn.sendMessage(chatId, { text: '😅 No pude descargar ese audio, ¿podés mandarlo de nuevo?' }, { quoted: msg })
+      return
+    }
+
+    const mimeType = audioMsg.mimetype || 'audio/ogg'
+    const base64 = buffer.toString('base64')
+    const voiceAudio = { base64, mimeType }
+
+    await conn.sendPresenceUpdate?.('composing', chatId)
+    const texto = await transcribir(base64, mimeType)
+
+    const esInaudible = !texto || !texto.trim()
+
+    if (esInaudible) {
+      const song = await reconocerCancion(base64, mimeType)
+      if (song) {
+        const artistLine = song.artist ? ` de *${song.artist}*` : ''
+        const ytLine     = song.youtube ? `\n\n▶️ Escuchala acá: ${song.youtube}` : ''
+        await conn.sendMessage(chatId, { text: `🎵 La canción es *${song.title}*${artistLine}.${ytLine}` }, { quoted: msg })
+        return
+      }
+      await conn.sendMessage(chatId, { text: '🎧 No logré entender bien ese audio, ¿me lo escribís o lo repetís más clarito?' }, { quoted: msg })
+      return
+    }
+
+    const senderId = msg.key.participant || msg.key.remoteJid
+    const groupData = await getGroupDataForPlugin(conn, chatId, senderId)
+
+    const context = {
+      conn,
+      msg,
+      jid: chatId,
+      isGroup: true,
+      isPrivate: false,
+      groupData,
+      mentionedJids: [],
+      mentionedNames: {},
+      botNumber: null,
+      voiceAudio,
+      forceVoiceReply: true
+    }
+
+    await dispatchToPlugins(texto, context)
+  } catch (e) {
+    console.error('[VOICE-HANDLER] Error:', e.message)
+    try {
+      await conn.sendMessage(chatId, { text: '😅 Tuve un problema procesando ese audio, probá de nuevo.' }, { quoted: msg })
+    } catch {}
+  }
+}
