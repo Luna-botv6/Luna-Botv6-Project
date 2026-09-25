@@ -1,3 +1,4 @@
+import fs from 'fs';
 import {sticker} from '../src/libraries/sticker.js';
 import fetch from 'node-fetch';
 

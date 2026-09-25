@@ -1,4 +1,5 @@
 /* 𝐂𝐑𝐄𝐀𝐃𝐎 𝐏𝐎𝐑 https://github.com/BrunoSobrino */
+import fs from 'fs';
 
 
 const handler = async (m, {conn, usedPrefix, command}) => {

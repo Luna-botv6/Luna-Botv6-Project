@@ -1,4 +1,5 @@
 /* By https://github.com/DIEGO-OFC/DORRAT-BOT-MD */
+import fs from 'fs';
 
 
 const handler = async (m, {conn, text}) => {

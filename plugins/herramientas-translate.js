@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
 import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js';
 

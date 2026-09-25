@@ -1,3 +1,4 @@
+import fs from 'fs';
 import fetch from 'node-fetch';
 
 const regex = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i;
