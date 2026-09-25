@@ -1,3 +1,4 @@
+import fs from 'fs';
 import {randomBytes} from 'crypto';
 
 const handler = async (m, {conn, command, participants, usedPrefix, text}) => {

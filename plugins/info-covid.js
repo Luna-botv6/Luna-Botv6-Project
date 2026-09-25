@@ -1,3 +1,4 @@
+import fs from 'fs';
 import fetch from 'node-fetch';
 
 const handler = async (m, {text, usedPrefix, command}) => {

@@ -1,3 +1,4 @@
+import fs from 'fs';
 import uploadFile from '../src/libraries/uploadFile.js';
 import uploadImage from '../src/libraries/uploadImage.js';
 

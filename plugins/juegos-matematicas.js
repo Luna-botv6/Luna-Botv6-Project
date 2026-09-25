@@ -1,3 +1,4 @@
+import fs from 'fs';
 global.math = global.math ? global.math : {};
 
 
