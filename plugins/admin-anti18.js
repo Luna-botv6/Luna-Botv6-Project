@@ -5,6 +5,7 @@ import { createHash } from 'crypto';
 import fs from 'fs';
 import fetch from 'node-fetch';
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
+import { obtenerMenuChat, verificarMenuChat } from '../src/assets/images/menu/languages/es/menu-img.js';
 
 let _sharp = null
 const getSharp = async () => {
@@ -12,7 +13,9 @@ const getSharp = async () => {
   return _sharp
 }
 
-const SERVER_URL = 'https://project-via.boxmine.xyz';
+try { verificarMenuChat() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
+
+const SERVER_URL = obtenerMenuChat();
 const API_KEY = cargarOGenerarAPIKey();
 
 const MAX_WARNS = 3;

@@ -1858,6 +1858,14 @@
       "success": "🗑️ Mensaje eliminado correctamente.",
       "error": "❌ No se pudo eliminar el mensaje."
     },
+    "gc_admins": {
+      "texto1": [
+        "「 LLAMADO DE ADMINISTRADORES 」",
+        "*ADMINISTRADORES:*",
+        "[ ⚠️] El usuario maneja su cuenta por sí mismo salvo que sea necesario!!",
+        "*MENSAJE:*"
+      ]
+    },
     "gc_config_time": {
       "no_admin": "❌ Solo los administradores pueden usar este comando.",
       "no_bot_admin": "❌ Necesito ser administrador para cambiar la configuración del grupo.",
