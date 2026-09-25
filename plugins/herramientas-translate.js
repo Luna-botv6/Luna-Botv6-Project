@@ -1,6 +1,9 @@
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
+import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js';
 
-const SERVER_URL = 'https://apl.boxmine.xyz';
+try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
+
+const SERVER_URL = obtenerMenuIuman();
 const API_KEY = cargarOGenerarAPIKey();
 const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY };
 
