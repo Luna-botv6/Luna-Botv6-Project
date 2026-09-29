@@ -462,7 +462,8 @@
         "modopublico": "Allows *any user* to use the bot commands.",
         "vierwimage": "Enables automatic profile picture preview.",
         "modogrupos": "Restricts bot usage to groups only."
-      }
+      },
+      "solo_rowner_subbot": "🔒 Only the real owner of the main bot can change this. A SubBot cannot touch the global configuration."
     },
     "audio_efectos": {
       "texto1": "⚠️ Reply to an audio using the command",
@@ -1851,6 +1852,7 @@
     },
     "menu_media": {
       "no_owner": "👑 *Only the owner can change the menu media.*",
+      "solo_rowner": "👑 *Only the real bot owner can change the menu media.*",
       "img_guardada": "✅ *Menu image updated successfully.*\n_Reopen the menu to see it._",
       "img_eliminada": "🗑️ *Custom image removed.*\n_The menu will return to the original video._",
       "img_no_existe": "⚠️ *No custom image is currently configured.*",
@@ -1897,7 +1899,10 @@
     "setnamebot": {
       "uso": "⚙️ *Usage:* _.setnamebot <name>_\n\n_Example: .setnamebot MyBot_\n\n📝 The name will replace the bot brand in all messages.",
       "ok": "✅ Bot name updated to *{nombre}*\n\n_All messages will now use your brand._",
-      "muy_largo": "❌ The name is too long. Maximum 40 characters."
+      "muy_largo": "❌ The name is too long. Maximum 40 characters.",
+      "solo_rowner": "👑 *Only the real bot owner can change the name.*",
+      "subbot_renombrado": "✅ *SubBot* renamed to *{nombre}*.\n\n_Only its brand changed; the main bot was not touched._",
+      "error": "❌ *Could not save the name. Try again.*"
     },
     "canalid": {
       "uso": "Use: *{prefix} <invite_code>*\n\nExample:\n{prefix} 0029VbANyNuLo4hedEWlvJ3Y\n\nYou'll find the code at the end of the channel link:\nhttps://www.whatsapp.com/channel/*<code>*",

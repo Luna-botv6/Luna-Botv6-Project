@@ -415,13 +415,16 @@ const connectionOptions = {
   emitOwnEvents: false,
   version,
   getMessage: async (key) => {
-    const connectionTime = Math.min(global.timestamp?.connect?.getTime() || Date.now(), Date.now());
-    const msgTimestamp = (key.messageTimestamp || 0) * 1000;
-    if (msgTimestamp < connectionTime - 30000) return null;
     try {
-      let jid = jidNormalizedUser(key.remoteJid);
-      let msg = await store.loadMessage(jid, key.id);
-      return msg?.message || "";
+      const jid = jidNormalizedUser(key.remoteJid);
+      const msg = await store.loadMessage(jid, key.id);
+      if (!msg) return null;
+      const ts = typeof msg.messageTimestamp === 'number' ? msg.messageTimestamp * 1000 : 0;
+      if (ts > 0) {
+        const connectionTime = Math.min(global.timestamp?.connect?.getTime() || Date.now(), Date.now());
+        if (ts < connectionTime - 30000) return null;
+      }
+      return msg.message || "";
     } catch (e) {
       return '';
     }
@@ -446,6 +449,16 @@ const connectionOptions = {
 
 global.conn = await makeWASocket(connectionOptions);
 import printMessage from './src/libraries/print.js';
+
+function attachConnectionListener() {
+  const sock = global.conn;
+  if (!sock || !sock.ev) return;
+  if (sock.__connUpdAttached) return;
+  sock.__connUpdAttached = true;
+  sock.ev.on('connection.update', connectionUpdate.bind(sock));
+}
+
+attachConnectionListener();
 
 function applyPrintWrapper(conn) {
   const originalSendMessage = conn.sendMessage.bind(conn);
@@ -816,7 +829,11 @@ async function connectionUpdate(update) {
       console.log(chalk.green('[ ✅ ] Conectado correctamente a WhatsApp'));
     }
 
-    if (!global._reloadHandlerPending) {
+    const sockAbierto = global.conn;
+    const primeraAperturaDelSocket = sockAbierto ? !sockAbierto.__openInicialProcesado : true;
+    if (sockAbierto) sockAbierto.__openInicialProcesado = true;
+
+    if (!primeraAperturaDelSocket && !global._reloadHandlerPending) {
       global._reloadHandlerPending = true;
       setTimeout(async () => {
         global._reloadHandlerPending = false;
@@ -927,21 +944,35 @@ async function connectionUpdate(update) {
         setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
       }
 
-    } else if (reason === DisconnectReason.connectionLost) {
-      conn.logger.warn(`[ ⚠ ] Conexión perdida, reconectando...`);
-      global._reconnectLost = (global._reconnectLost || 0) + 1;
-      if (global._hasBeenConnected && global._reconnectLost >= 10) {
-        const recentRestarts = recordRestartEvent();
-        const cooldownExtra = getReconnectCooldownExtra();
-        if (cooldownExtra > 0) {
-          console.log(chalk.red(`[ ⚠ ] ${recentRestarts} reinicios limpios en la última hora. Esperando ${Math.round(cooldownExtra / 60000)} minutos extra antes de reintentar...`));
+    } else if (reason === DisconnectReason.timedOut || reason === DisconnectReason.connectionLost) {
+      const esTimeout = reason === DisconnectReason.timedOut;
+      if (esTimeout) {
+        conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando...`);
+        global._softReconnectCount = (global._softReconnectCount || 0) + 1;
+        if (global._softReconnectCount >= 6) {
+          console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
+          setTimeout(() => process.exit(0), 60000);
+        } else {
+          const delay = Math.min(300000, 4000 * Math.pow(2, global._softReconnectCount - 1)) + Math.floor(Math.random() * 1000);
+          console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/6 en ${Math.round(delay / 1000)}s...`);
+          setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
         }
-        console.log('[ ♻ ] Reinicio limpio para liberar memoria...');
-        setTimeout(() => process.exit(0), 60000 + cooldownExtra);
       } else {
-        const delay = Math.min(300000, 3000 * Math.pow(2, global._reconnectLost - 1)) + Math.floor(Math.random() * 1000);
-        console.log(`[ ⏳ ] Reintento ${global._reconnectLost}/10 en ${Math.round(delay / 1000)}s...`);
-        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
+        conn.logger.warn(`[ ⚠ ] Conexión perdida, reconectando...`);
+        global._reconnectLost = (global._reconnectLost || 0) + 1;
+        if (global._hasBeenConnected && global._reconnectLost >= 10) {
+          const recentRestarts = recordRestartEvent();
+          const cooldownExtra = getReconnectCooldownExtra();
+          if (cooldownExtra > 0) {
+            console.log(chalk.red(`[ ⚠ ] ${recentRestarts} reinicios limpios en la última hora. Esperando ${Math.round(cooldownExtra / 60000)} minutos extra antes de reintentar...`));
+          }
+          console.log('[ ♻ ] Reinicio limpio para liberar memoria...');
+          setTimeout(() => process.exit(0), 60000 + cooldownExtra);
+        } else {
+          const delay = Math.min(300000, 3000 * Math.pow(2, global._reconnectLost - 1)) + Math.floor(Math.random() * 1000);
+          console.log(`[ ⏳ ] Reintento ${global._reconnectLost}/10 en ${Math.round(delay / 1000)}s...`);
+          setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
+        }
       }
 
     } else if (reason === DisconnectReason.connectionReplaced) {
@@ -1055,18 +1086,6 @@ async function connectionUpdate(update) {
         }
       }
 
-    } else if (reason === DisconnectReason.timedOut) {
-      conn.logger.warn(`[ ⚠ ] Tiempo de conexión agotado, reconectando...`);
-      global._softReconnectCount = (global._softReconnectCount || 0) + 1;
-      if (global._softReconnectCount >= 6) {
-        console.log('[ ♻ ] Reinicio limpio de proceso para liberar memoria...');
-        setTimeout(() => process.exit(0), 60000);
-      } else {
-        const delay = Math.min(300000, 4000 * Math.pow(2, global._softReconnectCount - 1)) + Math.floor(Math.random() * 1000);
-        console.log(`[ ⏳ ] Reintento ${global._softReconnectCount}/6 en ${Math.round(delay / 1000)}s...`);
-        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, delay);
-      }
-
     } else {
       conn.logger.warn(`[ ⚠ ] Razón de desconexión desconocida. ${reason || ''}: ${connection || ''}`);
       global._softReconnectCount = (global._softReconnectCount || 0) + 1;
@@ -1103,6 +1122,7 @@ global.reloadHandler = async function(restatConn) {
     global.conn = await makeWASocket(connectionOptions, {chats: oldChats});
     global.timestamp.connect = new Date();
     applyPrintWrapper(global.conn);
+    attachConnectionListener();
     isInit = true;
   }
 
@@ -1111,10 +1131,10 @@ global.reloadHandler = async function(restatConn) {
     conn.ev.removeAllListeners('group-participants.update');
     conn.ev.removeAllListeners('messages.delete');
     conn.ev.removeAllListeners('call');
-    conn.ev.removeAllListeners('connection.update');
     conn.ev.removeAllListeners('creds.update');
     conn.ev.removeAllListeners('groups.update');
     global.mentionListenerInitialized = false;
+    try { store.bind(conn); } catch (e) { console.error('[store] no se pudo re-enganchar:', e.message); }
   }
 
   conn.handler = handler.handler.bind(global.conn);
@@ -1155,7 +1175,7 @@ global.reloadHandler = async function(restatConn) {
   conn.ev.on('group-participants.update', conn.participantsUpdate);
   conn.ev.on('messages.delete', conn.onDelete);
   conn.ev.on('call', conn.onCall);
-  conn.ev.on('connection.update', conn.connectionUpdate);
+  attachConnectionListener();
   conn.ev.on('creds.update', conn.credsUpdate);
   conn.ev.on('groups.update', async ([event]) => {
     try {

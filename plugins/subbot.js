@@ -27,6 +27,27 @@ const SUBBOT_CONFIG = {
 const rtxQR = () => `🤖 *${BOT()} Sub Bot*\n\n📱 *Escanea el código QR*\n\n*Pasos:*\n1 » Tres puntos superiores derecha\n2 » Dispositivos vinculados\n3 » Escanea el QR\n\n⚠️ *Expira en 45 segundos*`;
 const rtxCode = () => `🤖 *${BOT()} Sub Bot*\n\n✨ Usa este código para vincular\n\n↱ Tres Puntitos → Dispositivos Vinculados → Vincular con número\n\n⚠️ No uses tu cuenta principal`;
 
+async function manejarParticipantesSubbot(sock, userId, { id, participants, action }) {
+  try {
+    const { handleParticipantsUpdate } = await import('../lib/funcion/groupMetadata.js');
+    const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
+    const _translate = global.loadTranslation ? await global.loadTranslation(idioma) : {};
+    const tradutor = _translate?.handler?.participantsUpdate ?? {};
+    await handleParticipantsUpdate(
+      sock, id, participants, action,
+      global.loadDatabase,
+      getConfig,
+      global.db,
+      idioma,
+      tradutor,
+      global.opts || {},
+      global.groupCache
+    );
+  } catch (e) {
+    console.error('[SubBot participants.update]', e.message);
+  }
+}
+
 function msToTime(ms) {
   const s = Math.floor((ms / 1000) % 60).toString().padStart(2, '0');
   const m = Math.floor((ms / 60000) % 60).toString().padStart(2, '0');
@@ -81,7 +102,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     );
     const resolvedId = participant?.id || who;
     const cleanId = resolvedId.split('@')[0];
-    userId = cleanId.includes('@lid') || /^[0-9]{15,}$/.test(cleanId)
+    userId = resolvedId.includes('@lid') || /^[0-9]{15,}$/.test(cleanId)
       ? (getLidMapping(resolvedId) || '').replace('@s.whatsapp.net', '') || cleanId
       : cleanId;
   } else if (!phoneArg) {
@@ -359,6 +380,8 @@ export async function initializeSubBot({ subbotPath, m, conn, args = [], userId 
 
           const t = setTimeout(async () => {
             try {
+              try { connectionManager.getSocket(userId)?.ws?.close(); } catch {}
+              try { connectionManager.getSocket(userId)?.ev?.removeAllListeners(); } catch {}
               const newSock = await makeWASocket(connectionOptions, { noStore: true });
               newSock.isSubBot = true;
               newSock.userId = userId;
@@ -366,6 +389,7 @@ export async function initializeSubBot({ subbotPath, m, conn, args = [], userId 
               connectionManager.setSocket(userId, newSock);
               newSock.ev.on('connection.update', connectionUpdate);
               newSock.ev.on('creds.update', saveCreds);
+              newSock.ev.on('group-participants.update', (msg) => manejarParticipantesSubbot(newSock, userId, msg));
               await reloadHandler(newSock);
             } catch (e) {
               console.error(chalk.red(`❌ Error reconectando ${userId}:`), e.message);
@@ -401,26 +425,7 @@ export async function initializeSubBot({ subbotPath, m, conn, args = [], userId 
     sock.ev.on('connection.update', connectionUpdate);
     sock.ev.on('creds.update', saveCreds);
     await reloadHandler(sock);
-    sock.ev.on('group-participants.update', async ({ id, participants, action }) => {
-      try {
-        const { handleParticipantsUpdate } = await import('../lib/funcion/groupMetadata.js');
-        const idioma = global?.db?.data?.chats[id]?.language || global.defaultLenguaje;
-        const _translate = global.loadTranslation ? await global.loadTranslation(idioma) : {};
-        const tradutor = _translate?.handler?.participantsUpdate ?? {};
-        await handleParticipantsUpdate(
-          sock, id, participants, action,
-          global.loadDatabase,
-          getConfig,
-          global.db,
-          idioma,
-          tradutor,
-          global.opts || {},
-          global.groupCache
-        );
-      } catch (e) {
-        console.error('[SubBot participants.update]', e.message);
-      }
-    });
+    sock.ev.on('group-participants.update', (msg) => manejarParticipantesSubbot(sock, userId, msg));
 
   } catch (err) {
     console.error(chalk.red(`💥 Error iniciando SubBot ${userId}:`), err.message);

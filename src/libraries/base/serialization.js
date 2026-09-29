@@ -17,7 +17,7 @@ export function smsg(conn, m, hasParent) {
   if (m.message) {
     if (m.mtype == 'protocolMessage' && m.msg.key) {
       protocolMessageKey = m.msg.key;
-      if (protocolMessageKey == 'status@broadcast') protocolMessageKey.remoteJid = m.chat;
+      if (protocolMessageKey.remoteJid == 'status@broadcast') protocolMessageKey.remoteJid = m.chat;
       if (!protocolMessageKey.participant || protocolMessageKey.participant == 'status_me') protocolMessageKey.participant = m.sender;
       protocolMessageKey.fromMe = conn.decodeJid(protocolMessageKey.participant) === conn.decodeJid(conn.user.id);
       if (!protocolMessageKey.fromMe && protocolMessageKey.remoteJid === conn.decodeJid(conn.user.id)) protocolMessageKey.remoteJid = m.sender;
@@ -241,7 +241,9 @@ export function serialize() {
           download: {
             value(saveToFile = false) {
               const mtype = this.mediaType;
-              return self.conn?.downloadM(this.mediaMessage[mtype], mtype.replace(/message/i, ''), saveToFile);
+              const media = mtype && this.mediaMessage?.[mtype];
+              if (!media) return null;
+              return self.conn?.downloadM(media, mtype.replace(/message/i, ''), saveToFile);
             },
             enumerable: true,
             configurable: true,
@@ -316,14 +318,19 @@ export function serialize() {
     },
     name: {
       get() {
-        return !nullish(this.pushName) && this.pushName || this.conn?.getName(this.sender);
+        if (!nullish(this.pushName) && this.pushName) return this.pushName;
+        if (this._cachedName !== undefined) return this._cachedName;
+        this._cachedName = this.conn?.getName(this.sender);
+        return this._cachedName;
       },
       enumerable: true,
     },
     download: {
       value(saveToFile = false) {
         const mtype = this.mediaType;
-        return this.conn?.downloadM(this.mediaMessage[mtype], mtype.replace(/message/i, ''), saveToFile);
+        const media = mtype && this.mediaMessage?.[mtype];
+        if (!media) return null;
+        return this.conn?.downloadM(media, mtype.replace(/message/i, ''), saveToFile);
       },
       enumerable: true,
       configurable: true,
@@ -363,7 +370,9 @@ export function serialize() {
     getQuotedObj: {
       value() {
         if (!this.quoted.id) return null;
-        const q = proto.WebMessageInfo.fromObject(this.conn?.loadMessage(this.quoted.id) || this.quoted.vM);
+        const found = this.conn?.loadMessage(this.quoted.id) || this.quoted.vM;
+        if (!found) return null;
+        const q = proto.WebMessageInfo.fromObject(found);
         return smsg(this.conn, q);
       },
       enumerable: true,
@@ -425,7 +434,10 @@ export async function pushMessage(conn, m) {
           if (!qChats.messages) qChats.messages = {};
           if (!qChats.messages[context.stanzaId] && !qM.key.fromMe) qChats.messages[context.stanzaId] = qM;
           let qChatsMessages;
-          if ((qChatsMessages = Object.entries(qChats.messages)).length > 40) qChats.messages = Object.fromEntries(qChatsMessages.slice(30, qChatsMessages.length));
+          if ((qChatsMessages = Object.entries(qChats.messages)).length > 40) {
+            const sobrantes = qChatsMessages.length - 30;
+            for (const [k] of qChatsMessages.slice(0, sobrantes)) delete qChats.messages[k];
+          }
         }
       }
       if (!chat || chat === 'status@broadcast') continue;
@@ -457,9 +469,12 @@ export async function pushMessage(conn, m) {
       if (!['protocolMessage'].includes(mtype) && !fromMe && message.messageStubType != WAMessageStubType.CIPHERTEXT && message.message) {
         delete message.message.messageContextInfo;
         delete message.message.senderKeyDistributionMessage;
-        chats.messages[message.key.id] = JSON.parse(JSON.stringify(message, null, 2));
+        chats.messages[message.key.id] = JSON.parse(JSON.stringify(message));
         let chatsMessages;
-        if ((chatsMessages = Object.entries(chats.messages)).length > 40) chats.messages = Object.fromEntries(chatsMessages.slice(30, chatsMessages.length));
+        if ((chatsMessages = Object.entries(chats.messages)).length > 40) {
+          const sobrantes = chatsMessages.length - 30;
+          for (const [k] of chatsMessages.slice(0, sobrantes)) delete chats.messages[k];
+        }
       }
     } catch (e) {
       console.error(e);

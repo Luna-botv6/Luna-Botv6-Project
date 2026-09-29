@@ -1,31 +1,10 @@
-import { writeFile, mkdir, unlink, access } from 'fs/promises';
+import { writeFile, unlink } from 'fs/promises';
 import { getUserStats, getRoleByLevel, getArmorStats, hasArmor, isCapturedByHunter } from '../lib/stats.js';
 import { getHunterStatus } from '../lib/hunterSystem.js';
 import { extractCommands, buildDestacados } from '../lib/funcion/menuGenerator.js';
+import { menuPathsFor, ensureMenuDir, resolveMenuMedia, fileExists } from '../lib/funcion/menu-media.js';
 
-
-const MENU_DIR = './database/WELCOME';
-const CUSTOM_IMG = `${MENU_DIR}/menu_image.jpg`;
-const CUSTOM_VID = `${MENU_DIR}/menu_video.mp4`;
-
-
-
-async function fileExists(path) {
-  try {
-    await access(path);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function ensureDir() {
-  try {
-    await mkdir(MENU_DIR, { recursive: true });
-  } catch {}
-}
-
-const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
+const handler = async (m, { conn, usedPrefix, isPrems, isROwner }) => {
   const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
   const _translate = await global.loadTranslation(idioma);
   const t = _translate?.menu || {};
@@ -36,19 +15,20 @@ const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
   if (usedPrefix == 'a' || usedPrefix == 'A') return;
 
   if (/^(imgmenu|delimgmenu|vidmenu|delvidmenu)$/i.test(cmd)) {
-    if (!isOwner && !isROwner) return m.reply(tm.solo_owner || '❌ Solo el owner puede usar este comando.');
+    if (!isROwner) return m.reply(tm.solo_rowner || '❌ Solo el owner real del bot puede usar este comando.');
 
-    await ensureDir();
+    const { img, vid } = menuPathsFor(conn);
+    await ensureMenuDir(conn);
 
     if (/^delimgmenu$/i.test(cmd)) {
-      if (!(await fileExists(CUSTOM_IMG))) return m.reply(tm.img_no_existe);
-      await unlink(CUSTOM_IMG);
+      if (!(await fileExists(img))) return m.reply(tm.img_no_existe);
+      await unlink(img);
       return m.reply(tm.img_eliminada);
     }
 
     if (/^delvidmenu$/i.test(cmd)) {
-      if (!(await fileExists(CUSTOM_VID))) return m.reply(tm.vid_no_existe);
-      await unlink(CUSTOM_VID);
+      if (!(await fileExists(vid))) return m.reply(tm.vid_no_existe);
+      await unlink(vid);
       return m.reply(tm.vid_eliminado);
     }
 
@@ -61,8 +41,8 @@ const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
       }
       if (!imgBuffer) return m.reply(tm.no_media_img);
       try {
-        await writeFile(CUSTOM_IMG, imgBuffer);
-        if (await fileExists(CUSTOM_VID)) await unlink(CUSTOM_VID);
+        await writeFile(img, imgBuffer);
+        if (await fileExists(vid)) await unlink(vid);
         return m.reply(tm.img_guardada);
       } catch {
         return m.reply(tm.error);
@@ -78,8 +58,8 @@ const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
       }
       if (!vidBuffer) return m.reply(tm.no_media_vid);
       try {
-        await writeFile(CUSTOM_VID, vidBuffer);
-        if (await fileExists(CUSTOM_IMG)) await unlink(CUSTOM_IMG);
+        await writeFile(vid, vidBuffer);
+        if (await fileExists(img)) await unlink(img);
         return m.reply(tm.vid_guardado);
       } catch {
         return m.reply(tm.error);
@@ -90,23 +70,7 @@ const handler = async (m, { conn, usedPrefix, isPrems, isOwner, isROwner }) => {
   }
 
   try {
-    let mediaPath = null;
-    let mediaType = 'video';
-
-    if (await fileExists(CUSTOM_VID)) {
-      mediaPath = CUSTOM_VID;
-      mediaType = 'video';
-    } else if (await fileExists(CUSTOM_IMG)) {
-      mediaPath = CUSTOM_IMG;
-      mediaType = 'image';
-    } else {
-      mediaPath = `./src/assets/images/menu/languages/${idioma}/VID-20250527-WA0006.mp4`;
-      const fallbackExists = await fileExists(mediaPath);
-      if (!fallbackExists) {
-        mediaPath = './src/assets/images/menu/languages/es/VID-20250527-WA0006.mp4';
-      }
-      mediaType = 'video';
-    }
+    const { path: mediaPath, type: mediaType } = await resolveMenuMedia(conn, idioma, 'video');
 
     const stats = getUserStats(m.sender);
     const currentRole = getRoleByLevel(stats.level);

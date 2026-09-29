@@ -20,7 +20,7 @@ class Database {
     this._interval = setInterval(async () => {
       if (!this._state && this._queue && this._queue[0]) {
         this._state = true;
-        await this[this._queue.shift()]().catch(this.logger.error);
+        await Promise.resolve(this[this._queue.shift()]()).catch(this.logger.error);
         this._state = false;
       }
     }, 1000);

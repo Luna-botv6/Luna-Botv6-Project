@@ -2,9 +2,17 @@ import fs from 'fs';
 import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 import { addWarning, resetWarnings } from '../lib/advertencias.js';
 
+function getT(idioma) {
+  try {
+    return JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma || global.defaultLenguaje || 'es'}.json`)).plugins.gc_warn || {};
+  } catch {
+    return {};
+  }
+}
+
 const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
   const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje;
-  const t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.gc_warn;
+  const t = getT(idioma);
 
   if (!m.isGroup) return m.reply(t.solo_grupos);
 

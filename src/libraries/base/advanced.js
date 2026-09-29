@@ -63,7 +63,7 @@ export const advancedUtils = {
           })) || []
       ));
     }
-    if (buttons.length) {
+    if (Array.isArray(buttons) && buttons.length) {
       if (!Array.isArray(buttons[0])) buttons = [buttons];
       templateButtons.push(...(
         buttons.map(([text, id], index) => ({
@@ -135,7 +135,7 @@ export const advancedUtils = {
           })) || []
       ));
     }
-    if (buttons.length) {
+    if (Array.isArray(buttons) && buttons.length) {
       if (!Array.isArray(buttons[0])) buttons = [buttons];
       templateButtons.push(...(
         buttons.map(([text, id], index) => ({
@@ -282,6 +282,14 @@ export const advancedUtils = {
     jid = conn.decodeJid(jid);
     withoutContact = conn.withoutContact || withoutContact;
     let v;
+    const intlOf = (rawJid) => {
+      try {
+        const rawNum = String(rawJid || '').replace(/[^0-9]/g, '');
+        return rawNum ? PhoneNumber('+' + rawNum).getNumber('international') : '';
+      } catch {
+        return '';
+      }
+    };
     if (jid.endsWith('@g.us')) {
       return new Promise(async (resolve) => {
         v = conn.chats[jid] || {};
@@ -289,7 +297,7 @@ export const advancedUtils = {
           const _cached = global.groupCache?.get(jid);
           v = _cached?.data?.groupMetadata || await conn.groupMetadata(jid) || {};
         }
-        resolve(v.name || v.subject || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international'));
+        resolve(v.name || v.subject || intlOf(jid));
       });
     } else {
       v = jid === '0@s.whatsapp.net' ? {
@@ -299,7 +307,7 @@ export const advancedUtils = {
         conn.user :
         (conn.chats[jid] || {});
     }
-    return (withoutContact ? '' : v.name) || v.subject || v.vname || v.notify || v.verifiedName || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international');
+    return (withoutContact ? '' : v.name) || v.subject || v.vname || v.notify || v.verifiedName || intlOf(jid);
   },
 
   loadMessage(conn, messageID) {

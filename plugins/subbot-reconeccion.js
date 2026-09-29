@@ -102,8 +102,9 @@ export async function autoreconnectSubbots(mainConn) {
   console.log(chalk.blue(`📋 Restaurando ${validSessions.length} sesión(es)...`));
 
   for (const { userId, sessionPath } of validSessions) {
-    if (!isRamAvailable()) {
-      const { used, total, pct } = getRamStatus();
+    if (!await isRamAvailable()) {
+      const { heapUsedMB: used, heapTotalMB: total } = await getRamStatus();
+      const pct = total > 0 ? Math.round((used / total) * 100) : 0;
       console.log(chalk.yellow(`⚠️ RAM al límite (${pct}% — ${used}MB/${total}MB) — deteniendo restauración`));
       break;
     }

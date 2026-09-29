@@ -3,11 +3,13 @@ import PhoneNumber from 'awesome-phonenumber';
 import { downloadContentFromMessage, generateMessageID } from '@whiskeysockets/baileys';
 import fs from 'fs';
 
+const is403 = (e) => !!(e && (e.output?.statusCode === 403 || e.statusCode === 403));
+
 export const messagingUtils = {
   async sendFile(conn, jid, path, filename = '', caption = '', quoted, ptt = false, options = {}) {
     const type = await conn.getFile(path, true);
     let {res, data: file, filename: pathFile} = type;
-    if (res && res.status !== 200 || file.length <= 65536) {
+    if (res && !res.ok) {
       try {
         throw {json: JSON.parse(file.toString())};
       } catch (e) {
@@ -17,7 +19,6 @@ export const messagingUtils = {
 
     const opt = {};
     if (quoted) opt.quoted = quoted;
-    if (!type) options.asDocument = true;
     let mtype = ''; let mimetype = options.mimetype || type.mime; let convert;
     if (/webp/.test(type.mime) || (/image/.test(type.mime) && options.asSticker)) mtype = 'sticker';
     else if (/image/.test(type.mime) || (/webp/.test(type.mime) && options.asImage)) mtype = 'image';
@@ -52,14 +53,14 @@ export const messagingUtils = {
     try {
       m = await conn.sendMessage(jid, message, {...opt, ...options});
     } catch (e) {
-      if (e?.data === 403 || e?.output?.statusCode === 403) { file = null; aborted = true; return null; }
+      if (is403(e)) { file = null; aborted = true; return null; }
       m = null;
     } finally {
       if (!m && !aborted) {
         try {
           m = await conn.sendMessage(jid, {...message, [mtype]: file}, {...opt, ...options});
         } catch (e2) {
-          if (e2?.data === 403 || e2?.output?.statusCode === 403) file = null;
+          if (is403(e2)) file = null;
           m = null;
         }
       }
@@ -69,21 +70,32 @@ export const messagingUtils = {
   },
 
   async sendContact(conn, jid, data, quoted, options) {
-    if (!Array.isArray(data[0]) && typeof data[0] === 'string') data = [data];
+    let items = data;
+    if (Array.isArray(items?.[0])) {
+      items = items.map((pair) => {
+        if (typeof pair[0] === 'object' && pair[0] !== null) return [pair[0].number ?? pair[0].id ?? '', pair[1] ?? pair[0].name ?? ''];
+        return [pair[0], pair[1]];
+      });
+    } else if (typeof items?.[0] === 'string') {
+      items = [items];
+    } else if (items?.[0] && typeof items[0] === 'object') {
+      items = items.map((x) => [x.number ?? x.id ?? '', x.name ?? x.displayName ?? '']);
+    }
     const contacts = [];
     if (!global._bizProfileCache) global._bizProfileCache = new Map();
-    for (let [number, name] of data) {
-      number = number.replace(/[^0-9]/g, '');
+    for (let [number, name] of items) {
+      number = String(number || '').replace(/[^0-9]/g, '');
       const njid = number + '@s.whatsapp.net';
       const _bizCached = global._bizProfileCache.get(njid);
       const biz = _bizCached !== undefined ? _bizCached : await conn.getBusinessProfile(njid).catch((_) => null) || {};
       if (_bizCached === undefined) global._bizProfileCache.set(njid, biz);
+      const intl = PhoneNumber('+' + number).getNumber('international') || number;
       const vcard = `
 BEGIN:VCARD
 VERSION:3.0
 N:;${name.replace(/\n/g, '\\n')};;;
 FN:${name.replace(/\n/g, '\\n')}
-TEL;type=CELL;type=VOICE;waid=${number}:${PhoneNumber('+' + number).getNumber('international')}${biz.description ? `
+TEL;type=CELL;type=VOICE;waid=${number}:${intl}${biz.description ? `
 X-WA-BIZ-NAME:${(conn.chats[njid]?.vname || conn.getName(njid) || name).replace(/\n/, '\\n')}
 X-WA-BIZ-DESCRIPTION:${biz.description.replace(/\n/g, '\\n')}
 `.trim() : ''}
@@ -95,7 +107,7 @@ END:VCARD
       ...options,
       contacts: {
         ...options,
-        displayName: (contacts.length >= 2 ? `${contacts.length} kontak` : contacts[0].displayName) || null,
+        displayName: (contacts.length >= 2 ? `${contacts.length} kontak` : (contacts[0]?.displayName || '')) || null,
         contacts,
       },
     }, {quoted, ...options});

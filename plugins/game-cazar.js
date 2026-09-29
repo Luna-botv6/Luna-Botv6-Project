@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 import { addExp, addMoney, removeExp, removeMoney, getUserStats } from '../lib/stats.js';
 
 const COOLDOWN_FILE = './database/cazarcooldown.json';
@@ -7,12 +6,46 @@ const COOLDOWN_BASE = 5 * 60 * 1000;
 
 let cooldowns = {};
 if (fs.existsSync(COOLDOWN_FILE)) {
-  cooldowns = JSON.parse(fs.readFileSync(COOLDOWN_FILE));
+  try {
+    cooldowns = JSON.parse(fs.readFileSync(COOLDOWN_FILE));
+  } catch {
+    cooldowns = {};
+  }
 }
 
-function saveCooldowns() {
-  fs.writeFileSync(COOLDOWN_FILE, JSON.stringify(cooldowns, null, 2));
+function podarCooldowns() {
+  const now = Date.now();
+  for (const key of Object.keys(cooldowns)) {
+    const c = cooldowns[key];
+    if (!c || now - c.tiempo >= c.duracion) delete cooldowns[key];
+  }
 }
+
+podarCooldowns();
+
+let _cooldownTimer = null;
+
+function saveCooldowns() {
+  if (_cooldownTimer) return;
+  _cooldownTimer = setTimeout(() => {
+    _cooldownTimer = null;
+    try {
+      fs.writeFileSync(COOLDOWN_FILE, JSON.stringify(cooldowns, null, 2));
+    } catch {}
+  }, 2000);
+}
+
+setInterval(podarCooldowns, 5 * 60 * 1000).unref?.();
+
+setInterval(() => {
+  if (_cooldownTimer) {
+    clearTimeout(_cooldownTimer);
+    _cooldownTimer = null;
+    try {
+      fs.writeFileSync(COOLDOWN_FILE, JSON.stringify(cooldowns, null, 2));
+    } catch {}
+  }
+}, 60000).unref?.();
 
 function rand(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -23,9 +56,11 @@ function pick(arr) {
 }
 
 function calcularPerdida(stats, porcentaje) {
-  const exp = Math.floor((stats.exp || 0) * porcentaje);
-  const money = Math.floor((stats.money || 0) * porcentaje);
-  return { exp: Math.max(exp, 200), money: Math.max(money, 80) };
+  const expBase = stats.exp || 0;
+  const moneyBase = stats.money || 0;
+  const exp = expBase > 200 ? Math.max(Math.floor(expBase * porcentaje), 200) : Math.floor(expBase * porcentaje);
+  const money = moneyBase > 80 ? Math.max(Math.floor(moneyBase * porcentaje), 80) : Math.floor(moneyBase * porcentaje);
+  return { exp, money };
 }
 
 const mundos = [

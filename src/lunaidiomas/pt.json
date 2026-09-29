@@ -455,7 +455,8 @@
         "modopublico": "Permite que *qualquer usuário* use os comandos do bot.",
         "vierwimage": "Ativa a visualização automática de fotos de perfil.",
         "modogrupos": "Restringe o uso do bot apenas a grupos."
-      }
+      },
+      "solo_rowner_subbot": "🔒 Somente o dono real do bot principal pode mudar isto. Um SubBot não pode alterar a configuração global."
     },
     "audio_efectos": {
       "texto1": "⚠️ Responda a um áudio usando o comando",
@@ -1852,6 +1853,7 @@
     },
     "menu_media": {
       "no_owner": "👑 *Apenas o owner pode alterar a mídia do menu.*",
+      "solo_rowner": "👑 *Somente o owner real do bot pode alterar a mídia do menu.*",
       "img_guardada": "✅ *Imagem do menu atualizada com sucesso.*\n_Reabra o menu para visualizá-la._",
       "img_eliminada": "🗑️ *Imagem personalizada removida.*\n_O menu voltará ao vídeo original._",
       "img_no_existe": "⚠️ *Nenhuma imagem personalizada configurada no momento.*",
@@ -1898,7 +1900,10 @@
     "setnamebot": {
       "uso": "⚙️ *Uso:* _.setnamebot <nome>_\n\n_Exemplo: .setnamebot MeuBot_\n\n📝 O nome substituirá a marca do bot em todas as mensagens.",
       "ok": "✅ Nome do bot atualizado para *{nombre}*\n\n_Todas as mensagens agora usarão sua marca._",
-      "muy_largo": "❌ O nome é muito longo. Máximo 40 caracteres."
+      "muy_largo": "❌ O nome é muito longo. Máximo 40 caracteres.",
+      "solo_rowner": "👑 *Somente o owner real do bot pode mudar o nome.*",
+      "subbot_renombrado": "✅ *SubBot* renomeado para *{nombre}*.\n\n_Só a marca dele mudou; a do bot principal não foi tocada._",
+      "error": "❌ *Não foi possível salvar o nome. Tente novamente.*"
     },
     "canalid": {
       "uso": "Use: *{prefix} <invite_code>*\n\nExemplo:\n{prefix} 0029VbANyNuLo4hedEWlvJ3Y\n\nVocê encontra o código no final do link do canal:\nhttps://www.whatsapp.com/channel/*<código>*",
