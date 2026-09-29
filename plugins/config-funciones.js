@@ -1,6 +1,7 @@
 import { setConfig, getConfig } from '../lib/funcConfig.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { setOwnerFunction } from '../lib/owner-funciones.js';
+import { resolveMenuMedia } from '../lib/funcion/menu-media.js';
 import fs from 'fs';
 
 const configLocks = new Map();
@@ -87,10 +88,11 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   if (!t) return m.reply('❌ Error cargando configuración de idioma.');
   if (!conn?.user?.jid) return m.reply(t.sin_sesion || '❌ Sin sesión activa.');
 
-  const realNum = m.sender.replace(/[^0-9]/g, '');
-  const ownerNumbers = await getOwnerNumbers(conn);
-  const isROwner = ownerNumbers.includes(realNum);
-  const isOwner = isROwner || m.sender === conn?.user?.jid;
+    const realNum = m.sender.replace(/[^0-9]/g, '');
+    const ownerNumbers = await getOwnerNumbers(conn);
+    const isROwner = ownerNumbers.includes(realNum);
+    const esSubBot = !!conn?.isSubBot;
+    const isOwner = isROwner || (!esSubBot && m.sender === conn?.user?.jid);
   const isAdmin = m.isGroup ? (await getGroupDataForPlugin(conn, m.chat, m.sender)).isAdmin : false;
 
   const isEnable = /true|enable|(turn)?on|1/i.test(command);
@@ -98,24 +100,9 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 
   if (!CONFIG_MAP[type]) {
     if (!/[01]/.test(command)) {
-      const { access: fsAccess } = await import('fs/promises');
-
-      const MENU_DIR = './database/WELCOME';
-      const CUSTOM_IMG = `${MENU_DIR}/menu_image.jpg`;
-      const CUSTOM_VID = `${MENU_DIR}/menu_video.mp4`;
       const idioma2 = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
 
-      async function fileExists(p) {
-        try { await fsAccess(p); return true; } catch { return false; }
-      }
-
-      async function getMenuMedia() {
-        if (await fileExists(CUSTOM_IMG)) return { path: CUSTOM_IMG, type: 'image' };
-        if (await fileExists(CUSTOM_VID)) return { path: CUSTOM_VID, type: 'video' };
-        const lang_path = `./src/assets/images/menu/languages/${idioma2}/VID-20250527-WA0006.mp4`;
-        const path = await fileExists(lang_path) ? lang_path : './src/assets/images/menu/languages/es/VID-20250527-WA0006.mp4';
-        return { path, type: 'video' };
-      }
+      const getMenuMedia = () => resolveMenuMedia(conn, idioma2, 'imagen');
 
       const BOT_NAME = global.BotName || '✨ Luna';
 
@@ -242,8 +229,12 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   const config = CONFIG_MAP[type];
 
   if (config.group && !m.isGroup) return m.reply(t.solo_grupos);
-  if (config.admin && !isAdmin && !isOwner) return m.reply(t.solo_admins);
-  if (config.owner && !isOwner && !isROwner) return m.reply(t.solo_owner);
+    if (esSubBot && !isROwner) {
+      return m.reply(t.solo_rowner_subbot || '🔒 Solo el owner real del bot principal puede cambiar esto. Un SubBot no puede tocar la configuración global.');
+    }
+
+    if (config.admin && !isAdmin && !isOwner) return m.reply(t.solo_admins);
+    if (config.owner && !isOwner && !isROwner) return m.reply(t.solo_owner);
 
   if (config.file) {
     const saved = setOwnerFunction(type, isEnable);

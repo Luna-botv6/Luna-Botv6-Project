@@ -4,21 +4,36 @@ import {spawn} from 'child_process';
 
 function ffmpeg(buffer, args = [], ext = '', ext2 = '') {
   return new Promise(async (resolve, reject) => {
+    let tmp; let out; let proc; let timedOut = false; let tmpOut;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      try { proc?.kill('SIGKILL'); setTimeout(() => { try { promises.unlink(tmpOut).catch(() => {}); } catch {} }, 500); } catch {}
+      reject(new Error('ffmpeg timeout'));
+    }, 120000);
     try {
-      const tmp = join(global.__dirname(import.meta.url), '../tmp', + new Date + '.' + ext);
-      const out = tmp + '.' + ext2;
+      tmp = join(global.__dirname(import.meta.url), '../tmp', Date.now() + '.' + Math.random().toString(36).slice(2, 8) + '.' + ext);
+      out = tmp + '.' + ext2;
+      tmpOut = out;
       await promises.writeFile(tmp, buffer);
-      spawn('ffmpeg', [
+      proc = spawn('ffmpeg', [
         '-y',
         '-i', tmp,
         ...args,
         out,
       ])
-          .on('error', reject)
+          .on('error', (e) => {
+            clearTimeout(timer);
+            reject(e);
+          })
           .on('close', async (code) => {
             try {
-              await promises.unlink(tmp);
-              if (code !== 0) return reject(new Error(`ffmpeg exited with code ${code}`));
+              clearTimeout(timer);
+              await promises.unlink(tmp).catch(() => {});
+              if (timedOut) return;
+              if (code !== 0) {
+                await promises.unlink(out).catch(() => {});
+                return reject(new Error(`ffmpeg exited with code ${code}`));
+              }
               resolve({
                 data: await promises.readFile(out),
                 filename: out,
@@ -31,6 +46,7 @@ function ffmpeg(buffer, args = [], ext = '', ext2 = '') {
             }
           });
     } catch (e) {
+      clearTimeout(timer);
       reject(e);
     }
   });

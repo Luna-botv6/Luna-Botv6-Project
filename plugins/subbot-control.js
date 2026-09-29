@@ -1,4 +1,4 @@
-import { connectionManager } from '../lib/funcion/connection-manager.js';
+import { connectionManager, getRamStatus } from '../lib/funcion/connection-manager.js';
 
 if (global.subbotEnabled === undefined) global.subbotEnabled = true;
 
@@ -12,7 +12,8 @@ const handler = async (m, { conn, command }) => {
   global.subbotEnabled = isOn;
 
   const active = connectionManager.getActiveConnectionCount();
-  const { used, total, pct } = connectionManager.getRamStatus();
+  const { heapUsedMB: used, heapTotalMB: total } = await getRamStatus();
+  const pct = total > 0 ? Math.round((used / total) * 100) : 0;
 
   const estado = isOn
     ? (t.activado || `✅ *Sistema de SubBots activado*`)

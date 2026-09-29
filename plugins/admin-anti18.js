@@ -100,11 +100,26 @@ function persistCache() {
     for (const [hash, entry] of _cache.entries()) {
       if (entry?.v === CACHE_VERSION && (now - entry.ts) < CACHE_TTL_MS) obj[hash] = { flagged: entry.flagged, ts: entry.ts, v: CACHE_VERSION };
     }
-    fs.writeFileSync(CACHE_PATH, JSON.stringify(obj, null, 2));
+    fs.promises.writeFile(CACHE_PATH, JSON.stringify(obj, null, 2)).catch((e) => {
+      console.error('[anti18] error guardando cache:', e.message);
+    });
   } catch (e) {
     console.error('[anti18] error guardando cache:', e.message);
   }
 }
+
+process.on('exit', () => {
+  try {
+    if (_cache.size) {
+      const now = Date.now();
+      const obj = {};
+      for (const [hash, entry] of _cache.entries()) {
+        if (entry?.v === CACHE_VERSION && (now - entry.ts) < CACHE_TTL_MS) obj[hash] = { flagged: entry.flagged, ts: entry.ts, v: CACHE_VERSION };
+      }
+      fs.writeFileSync(CACHE_PATH, JSON.stringify(obj, null, 2));
+    }
+  } catch {}
+});
 
 function hashBuffer(buffer) {
   return createHash('sha256').update(buffer).digest('hex');
@@ -149,20 +164,35 @@ function marcarProcesado(id) {
 
 let _activeSlots = 0;
 const _waitQueue = [];
+const MAX_WAIT_QUEUE = 200;
+const SLOT_TIMEOUT_MS = 8000;
 
 function acquireSlot() {
   return new Promise((resolve) => {
     if (_activeSlots < MAX_CONCURRENT_CLASSIFY) {
       _activeSlots++;
-      resolve();
-    } else {
-      _waitQueue.push(resolve);
+      resolve(true);
+      return;
     }
+    if (_waitQueue.length >= MAX_WAIT_QUEUE) {
+      resolve(false);
+      return;
+    }
+    const resolver = () => {
+      clearTimeout(timer);
+      resolve(true);
+    };
+    const timer = setTimeout(() => {
+      const i = _waitQueue.indexOf(resolver);
+      if (i !== -1) _waitQueue.splice(i, 1);
+      resolve(false);
+    }, SLOT_TIMEOUT_MS);
+    _waitQueue.push(resolver);
   });
 }
 
 function releaseSlot() {
-  _activeSlots--;
+  if (_activeSlots > 0) _activeSlots--;
   const next = _waitQueue.shift();
   if (next) {
     _activeSlots++;
@@ -210,7 +240,6 @@ async function getStickerFrames(webpBuffer) {
         const frameBuf = await sharp(webpBuffer, { animated: false, page: idx }).png().toBuffer();
         frames.push(frameBuf);
       } catch {
-        // si un frame puntual falla, seguimos con los demás
       }
     }
 
@@ -227,7 +256,11 @@ async function esContenido18(buffer) {
     return cached;
   }
 
-  await acquireSlot();
+  const slotOk = await acquireSlot();
+  if (!slotOk) {
+    console.error('[anti18] cola de clasificación saturada, se deja pasar sin bloquear');
+    return false;
+  }
   let flagged = false;
   let success = false;
 
@@ -266,7 +299,11 @@ async function esStickerFrames18(frames) {
     return cached;
   }
 
-  await acquireSlot();
+  const slotOk = await acquireSlot();
+  if (!slotOk) {
+    console.error('[anti18] cola de clasificación saturada, se deja pasar sin bloquear');
+    return false;
+  }
   try {
     const res = await fetchWithTimeout(SERVER_URL + '/classify-nsfw-batch', {
       method: 'POST',
@@ -357,7 +394,11 @@ async function esLinkContenido18(texto) {
       continue;
     }
 
-    await acquireSlot();
+    const slotOk = await acquireSlot();
+    if (!slotOk) {
+      console.error('[anti18] cola de clasificación saturada, se deja pasar el link');
+      continue;
+    }
     let flagged = false;
     let success = false;
 
@@ -445,8 +486,6 @@ handler.before = async function (m, { conn }) {
   const groupData = await getGroupDataForPlugin(conn, m.chat, m.sender);
   if (!groupData.isBotAdmin) return;
 
-  marcarProcesado(m.key?.id);
-
   const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
   const t = _tr?.plugins?.admin_anti18 || {};
 
@@ -456,6 +495,8 @@ handler.before = async function (m, { conn }) {
   const tipo = m.mtype;
 
   if (tipo === 'imageMessage' || tipo === 'stickerMessage') {
+    if (!m.mtype) return;
+    marcarProcesado(m.key?.id);
     try {
       const media = m.message[tipo];
       const raw = await conn.downloadM(media, tipo === 'stickerMessage' ? 'sticker' : 'image');
@@ -487,6 +528,7 @@ handler.before = async function (m, { conn }) {
   }
 
   if (typeof m.text === 'string' && m.text.length && extraerLinks(m.text).length) {
+    marcarProcesado(m.key?.id);
     try {
       const flagged = await esLinkContenido18(m.text);
       if (!flagged) return;

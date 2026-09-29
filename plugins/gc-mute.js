@@ -74,11 +74,16 @@ function formatDuration(minutes, t) {
   return str;
 }
 
-function scheduleUnmute(muteKey, minutes, conn, chat, user, t) {
+const _unmuteTimers = new Map();
+
+function scheduleUnmute(muteKey, minutes, conn, chat, user, t, entryAt) {
   if (!minutes) return;
-  setTimeout(async () => {
+  const prev = _unmuteTimers.get(muteKey);
+  if (prev) clearTimeout(prev);
+  const timer = setTimeout(async () => {
+    _unmuteTimers.delete(muteKey);
     const db = getMutesDB();
-    if (db[muteKey]) {
+    if (db[muteKey] && db[muteKey].mutedAt === entryAt) {
       delete db[muteKey];
       await conn.sendMessage(chat, {
         text: `🔊 @${user.split('@')[0]} ${t?.auto_unmute || 'ya puede volver a escribir 😊'}`,
@@ -86,6 +91,7 @@ function scheduleUnmute(muteKey, minutes, conn, chat, user, t) {
       });
     }
   }, minutes * 60 * 1000);
+  _unmuteTimers.set(muteKey, timer);
 }
 
 export async function muteUser({ conn, chat, user, mutedBy, minutes, participants, t }) {
@@ -96,7 +102,7 @@ export async function muteUser({ conn, chat, user, mutedBy, minutes, participant
   db[muteKey] = entry;
   const pEntry = (participants || []).find(p => p.id === user);
   if (pEntry?.lid) db[`${chat}_${pEntry.lid}`] = entry;
-  scheduleUnmute(muteKey, minutes, conn, chat, user, t || {});
+  scheduleUnmute(muteKey, minutes, conn, chat, user, t || {}, entry.mutedAt);
   return { muteKey, until, duration: formatDuration(minutes, t) };
 }
 

@@ -35,13 +35,19 @@ const ft = async (url, options = {}, timeout = TIMEOUT) => {
 function sticker2(img, url) {
   return new Promise(async (resolve, reject) => {
     try {
+      const support = global.support || {};
       if (url) {
         const res = await fetch(url)
         if (res.status !== 200) throw await res.text()
         img = await res.buffer()
         assertSize(img)
       }
-      const inp = path.join(tmp, +new Date() + '.jpeg')
+      if (!support.gm && !support.magick) {
+        const buf = await sticker4(img)
+        if (buf && buf.length) return resolve(buf)
+        throw new Error('Conversión a webp falló (sin gm/magick)')
+      }
+      const inp = path.join(tmp, Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.jpeg')
       await fs.promises.writeFile(inp, img)
       const ff = spawn('ffmpeg', [
         '-y',
@@ -55,13 +61,15 @@ function sticker2(img, url) {
         await fs.promises.unlink(inp)
       })
       const bufs = []
-      const [_spawnprocess, ..._spawnargs] = [...(module.exports.support.gm ? ['gm'] : module.exports.magick ? ['magick'] : []), 'convert', 'png:-', 'webp:-']
+      const [_spawnprocess, ..._spawnargs] = [...(support.gm ? ['gm'] : support.magick ? ['magick'] : []), 'convert', 'png:-', 'webp:-']
       const im = spawn(_spawnprocess, _spawnargs)
-      im.on('error', e => console.error(e))
+      im.on('error', reject)
       im.stdout.on('data', chunk => bufs.push(chunk))
       ff.stdout.pipe(im.stdin)
-      im.on('exit', () => {
-        resolve(Buffer.concat(bufs))
+      im.on('exit', (code) => {
+        const buf = Buffer.concat(bufs)
+        if (code !== 0 || !buf.length) return reject(new Error('Conversión a webp falló'))
+        resolve(buf)
       })
     } catch (e) {
       reject(e)
@@ -95,7 +103,7 @@ function sticker6(img, url) {
     }
     if (type.ext == 'bin' || !/^[a-zA-Z0-9]+$/.test(type.ext)) return reject(img)
     const safeExt = path.basename(type.ext)
-    const filename = path.basename(`${+ new Date()}.${safeExt}`)
+    const filename = Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + safeExt
     const tmp = path.join(__dirname, '../tmp', filename)
     const out = `${tmp}.webp`
     await fs.promises.writeFile(tmp, img)
@@ -103,12 +111,16 @@ function sticker6(img, url) {
     Fffmpeg
       .on('error', function (err) {
         console.error(err)
-        fs.promises.unlink(tmp)
+        fs.promises.unlink(tmp).catch(() => {})
+        fs.promises.unlink(out).catch(() => {})
         reject(img)
       })
       .on('end', async function () {
-        fs.promises.unlink(tmp)
-        resolve(await fs.promises.readFile(out))
+        fs.promises.unlink(tmp).catch(() => {})
+        Promise.resolve(await fs.promises.readFile(out).catch(() => null)).then(async (data) => {
+          fs.promises.unlink(out).catch(() => {})
+          resolve(data)
+        })
       })
       .addOutputOptions([
         `-vcodec`, `libwebp`, `-quality`, `50`, `-compression_level`, `6`, `-t`, `10`, `-vf`,
@@ -180,7 +192,7 @@ async function addExif(webpSticker, packname, author, categories = [''], metadat
 
 async function sticker(img, url, ...args) {
   assertSize(img)
-  let lastError, stiker
+  let stiker
   for (const func of [
     stickerServer, global.support.ffmpeg && sticker6,
     global.support.ffmpeg && global.support.ffmpegWebp && sticker4,
@@ -195,18 +207,14 @@ async function sticker(img, url, ...args) {
         try {
           return await addExif(stiker, ...args)
         } catch (e) {
-          console.error(e)
           return stiker
         }
       }
-      throw stiker.toString()
     } catch (err) {
-      lastError = err
       continue
     }
   }
-  console.error(lastError)
-  return lastError
+  return null
 }
 
 const support = {

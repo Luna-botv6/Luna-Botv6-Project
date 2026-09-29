@@ -90,6 +90,4 @@ class TicTacToe {
   }
 }
 
-new TicTacToe().turn;
-
 export default TicTacToe;

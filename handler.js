@@ -42,10 +42,56 @@ const DUPLICATE_TIMEOUT = 8000;
 const MAX_CACHE_SIZE = 200;
 const MAX_VOICE_CACHE = 200;
 
+let mconn;
+let currentConn;
+
+function resolveBotName(conn) {
+  if (conn?.isSubBot) {
+    const jid = conn?.user?.jid;
+    if (jid) {
+      const propio = global.db?.data?.settings?.[jid]?.botName;
+      if (propio) return String(propio);
+    }
+    return 'Luna-Botv6';
+  }
+  return global.db?.data?.config?.botName || 'Luna-Botv6';
+}
+
+function renameStringsDeep(value, apply) {
+  if (typeof value === 'string') {
+    const next = apply(value);
+    return next === value ? value : next;
+  }
+  if (Array.isArray(value)) {
+    let changed = false;
+    const out = new Array(value.length);
+    for (let i = 0; i < value.length; i++) {
+      const item = value[i];
+      const next = renameStringsDeep(item, apply);
+      if (next !== item) changed = true;
+      out[i] = next;
+    }
+    return changed ? out : value;
+  }
+  if (value === null || typeof value !== 'object') return value;
+  const proto = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null) return value;
+  let changed = false;
+  const out = {};
+  for (const key of Object.keys(value)) {
+    const item = value[key];
+    const next = renameStringsDeep(item, apply);
+    if (next !== item) changed = true;
+    out[key] = next;
+  }
+  return changed ? out : value;
+}
+
 global.groupCache = groupCache;
 global.translationsCache = translationsCache;
+global.getBotName = (conn) => resolveBotName(conn || currentConn);
 Object.defineProperty(global, 'BotName', {
-  get: () => global.db?.data?.config?.botName || 'Luna-Botv6',
+  get: () => resolveBotName(currentConn),
   set: (v) => { if (global.db?.data?.config) global.db.data.config.botName = v; },
   configurable: true
 });
@@ -57,18 +103,7 @@ async function loadTranslation(idioma) {
   const cached = translationsCache.get(idioma);
   if (cached) return cached;
   try {
-    const raw = await readFile(`./src/lunaidiomas/${idioma}.json`, 'utf8');
-    const botName = global.BotName || 'Luna-Botv6';
-    let patched = raw;
-    if (botName !== 'Luna-Botv6') {
-      const upper = botName.toUpperCase();
-      patched = raw
-        .replace(/Luna-Botv6-Project/g, botName)
-        .replace(/Luna-Botv6/g, botName)
-        .replace(/LUNA IA/g, `${upper} IA`)
-        .replace(/Luna IA/g, `${botName} IA`);
-    }
-    const parsed = JSON.parse(patched);
+    const parsed = JSON.parse(await readFile(`./src/lunaidiomas/${idioma}.json`, 'utf8'));
     translationsCache.set(idioma, parsed);
     return parsed;
   } catch (e) {
@@ -104,8 +139,20 @@ function logError(e, plugin = 'general') {
   console.log(chalk.red(`📄 ${chalk.white(e?.message || e?.toString() || 'Error desconocido')}`));
 }
 
-let mconn;
-let currentConn;
+function redactarSecrets(texto) {
+  let t = String(texto ?? '');
+  const keys = Object.keys(global.APIKeys || {}).filter(k => typeof k === 'string' && k.length >= 8);
+  for (const key of keys) {
+    try { t = t.split(key).join('#OCULTO#'); } catch {}
+  }
+  t = t.replace(/(sk-[A-Za-z0-9_-]{16,})/g, '#OCULTO#');
+  t = t.replace(/(AIza[0-9A-Za-z_-]{20,})/g, '#OCULTO#');
+  t = t.replace(/(gh[pousr]_[A-Za-z0-9]{20,})/g, '#OCULTO#');
+  t = t.replace(/("?(?:apiKey|apikey|api_key|token|secret|password|apikey)"?\s*[:=]\s*"?)[A-Za-z0-9_\-]{8,}"?/gi, '$1#OCULTO#');
+  t = t.replace(/([A-Za-z]:\\Users\\[^\\\r\n"'<>|]+(?:\\[^\\\r\n"'<>|]*)*)/g, '#RUTA#');
+  t = t.replace(/(\/(?:home|root|var|opt|srv)\/[^\r\n"'<>|]{0,140})/g, '#RUTA#');
+  return t;
+}
 
 const humanDelayCache = new Map();
 
@@ -134,7 +181,7 @@ setInterval(() => {
     limitCache(groupCache, 100);
     limitCache(recentMessages, 200);
     limitCache(recentParticipantEvents, 30);
-    limitCache(translationsCache, 5);
+    limitCache(translationsCache, 12);
     limitCache(humanDelayCache, 500);
     if (processedVoiceMessages.size > MAX_VOICE_CACHE) {
       const toDelete = Array.from(processedVoiceMessages).slice(0, 100);
@@ -147,22 +194,25 @@ setInterval(() => {
 export async function handler(chatUpdate) {
   try {
     if (!this?.user?.jid) return;
+    if (chatUpdate?.messages?.[0]?.key?.fromMe) return;
     currentConn = this;
     if (!this._sendMessagePatched) {
       const _origSend = this.sendMessage.bind(this);
       this.sendMessage = async (jid, content, options) => {
-        const name = global.BotName;
-        if (name && name !== 'Luna-Botv6') {
+        const name = resolveBotName(this) || 'Luna-Botv6';
+        if (name && name !== 'Luna-Botv6' && content && typeof content === 'object') {
+          const upper = name.toUpperCase();
+          const alnum = name.replace(/[^a-zA-Z0-9]/g, '');
           const _applyName = (str) => str
             .replace(/Luna-Botv6-Project/gi, name)
-            .replace(/LUNA BOT MENU/gi, `${name.toUpperCase()} MENU`)
-            .replace(/LUNA BOT/gi, name.toUpperCase())
+            .replace(/LUNA BOT MENU/gi, `${upper} MENU`)
+            .replace(/LUNA BOT/gi, upper)
+            .replace(/Luna IA/g, `${name} IA`)
+            .replace(/LUNA IA/gi, `${upper} IA`)
             .replace(/Luna-Botv6/gi, name)
-            .replace(/LunaBot/gi, name.replace(/[^a-zA-Z0-9]/g, ''));
-          if (typeof content?.text === 'string') content = { ...content, text: _applyName(content.text) };
-          if (typeof content?.caption === 'string') content = { ...content, caption: _applyName(content.caption) };
-          if (typeof content?.buttonText === 'string') content = { ...content, buttonText: _applyName(content.buttonText) };
-          if (Array.isArray(content?.sections)) content = { ...content, sections: JSON.parse(_applyName(JSON.stringify(content.sections))) };
+            .replace(/LunaBot/gi, alnum);
+          const renamed = renameStringsDeep(content, _applyName);
+          if (renamed !== content) content = renamed;
         }
         
         // Rate limiting para mensajes en privado
@@ -376,7 +426,7 @@ export async function handler(chatUpdate) {
       const _translate = await loadTranslation(idioma);
       const tradutor = _translate.handler?.handler || {};
 
-      if (opts['nyimak'] || (!m.fromMe && opts['self']) || (opts['pconly'] && m.chat.endsWith('g.us')) || (opts['gconly'] && !m.chat.endsWith('g.us')) || (opts['swonly'] && m.chat !== 'status@broadcast')) return;
+      if (opts['nyimak'] || (opts['self'] && !m.fromMe && !isProtectedOwner(sender)) || (opts['pconly'] && m.chat.endsWith('g.us')) || (opts['gconly'] && !m.chat.endsWith('g.us')) || (opts['swonly'] && m.chat !== 'status@broadcast')) return;
 
       if (m.message?.buttonsResponseMessage?.selectedButtonId) {
         m.text = m.message.buttonsResponseMessage.selectedButtonId;
@@ -706,10 +756,7 @@ export async function handler(chatUpdate) {
             m.error = e;
             logError(e, m?.plugin || 'handler');
             if (e) {
-              let text = format(e);
-              for (const key of Object.values(global.APIKeys || {})) {
-                text = text.replace(new RegExp(key, 'g'), '#OCULTO#');
-              }
+              let text = redactarSecrets(format(e));
               if (text && text.trim()) await m.reply(text).catch(() => {});
             }
           } finally {
@@ -773,6 +820,7 @@ export async function handler(chatUpdate) {
       } catch (e) {}
 
       m = null;
+      currentConn = null;
     }
   } catch (e) {
     logError(e, 'main_handler');

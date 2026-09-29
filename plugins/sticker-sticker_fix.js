@@ -16,7 +16,7 @@ async function handler(m, { conn, args, usedPrefix, command }) {
 
     let img = await q.download?.();
 
-    if (/webp|image|video/g.test(mime)) {
+    if (/webp|image|video/i.test(mime)) {
       stiker = await stickerServer(img, false, packname || global.packname, author || global.author, [], {});
     } else if (args[0] && isUrl(args[0])) {
       const u = await fetch(args[0]);
@@ -37,9 +37,9 @@ async function handler(m, { conn, args, usedPrefix, command }) {
       let img = await q.download?.();
       let out;
 
-if (/webp/g.test(mime)) out = await webp2png(img);
-      else if (/image/g.test(mime)) out = await uploadImage(img);
-      else if (/video/g.test(mime)) out = await uploadFile(img);
+if (/webp/i.test(mime)) out = await webp2png(img);
+      else if (/image/i.test(mime)) out = await uploadImage(img);
+      else if (/video/i.test(mime)) out = await uploadFile(img);
 
       if (typeof out !== 'string') out = await uploadImage(img);
 

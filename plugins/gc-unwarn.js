@@ -2,9 +2,17 @@ import fs from 'fs';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { removeWarning } from '../lib/advertencias.js';
 
+function getT(idioma) {
+  try {
+    return JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma || global.defaultLenguaje || 'es'}.json`)).plugins.gc_unwarn || {};
+  } catch {
+    return {};
+  }
+}
+
 const handler = async (m, { conn, isOwner, usedPrefix, command }) => {
   const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje;
-  const t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.gc_unwarn;
+  const t = getT(idioma);
 
   const { participants, isAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
 

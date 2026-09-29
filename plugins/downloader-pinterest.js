@@ -10,16 +10,35 @@ try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion f
 const SERVER_URL = obtenerMenuIuman()
 const API_KEY = cargarOGenerarAPIKey()
 const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
-const TIMEOUT = 20000
+const TIMEOUT = 25000
+const TIMEOUT_MEDIA = 60000
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 const ocultar = (m) => String(m || '').replace(/https?:\/\/\S+/g, '[enlace oculto]').replace(/key=\w+/gi, 'key=[oculta]')
 
-const ft = async (url, headers = {}) => {
+const ft = async (url, headers = {}, timeout = TIMEOUT) => {
   const c = new AbortController()
-  const t = setTimeout(() => c.abort(), TIMEOUT)
+  const t = setTimeout(() => c.abort(), timeout)
   try { const r = await fetch(url, { signal: c.signal, headers }); clearTimeout(t); return r }
   catch (e) { clearTimeout(t); throw e }
+}
+
+const esImagen = buf => buf.length > 1000 && (
+  (buf[0] === 0xff && buf[1] === 0xd8) ||
+  (buf[0] === 0x89 && buf[1] === 0x50) ||
+  (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) ||
+  (buf.length > 12 && buf.slice(0, 4).toString('ascii') === 'RIFF' && buf.slice(8, 12).toString('ascii') === 'WEBP')
+)
+
+const esVideo = buf => buf.length > 10000 && buf.slice(4, 8).toString('ascii') === 'ftyp'
+
+const bajarMedia = async (url, tipo) => {
+  const headers = typeof url === 'string' && url.startsWith(SERVER_URL) ? DL_HEADERS : {}
+  const res = await ft(url, headers, TIMEOUT_MEDIA)
+  if (!res.ok) throw new Error('Error descargando la media del servidor')
+  const buffer = Buffer.from(await res.arrayBuffer())
+  if (tipo === 'video' ? !esVideo(buffer) : !esImagen(buffer)) throw new Error('Media invalida desde el servidor')
+  return buffer
 }
 
 const isUrl = (text) => {
@@ -60,9 +79,11 @@ Te mostraré hasta 4 imágenes en un álbum y 1 video si está disponible 🎬`,
         return conn.reply(m.chat, '❌ No pude obtener el contenido de ese pin. Intenta con otro enlace.', m)
       }
       if (data.video) {
-        await conn.sendMessage(m.chat, { video: { url: data.video }, caption: `🎬 ${data.titulo || 'Pinterest'}` }, { quoted: m })
+        const video = await bajarMedia(data.video, 'video')
+        await conn.sendMessage(m.chat, { video, mimetype: 'video/mp4', caption: `🎬 ${data.titulo || 'Pinterest'}` }, { quoted: m })
       } else {
-        await conn.sendMessage(m.chat, { image: { url: data.image }, caption: `📌 ${data.titulo || 'Pinterest'}` }, { quoted: m })
+        const image = await bajarMedia(data.image, 'image')
+        await conn.sendMessage(m.chat, { image, caption: `📌 ${data.titulo || 'Pinterest'}` }, { quoted: m })
       }
       return
     }
@@ -76,34 +97,56 @@ Te mostraré hasta 4 imágenes en un álbum y 1 video si está disponible 🎬`,
     }
 
     const results = [...data.results].sort(() => Math.random() - 0.5)
-    const video = results.find(i => i.video)
-    const images = results.filter(i => i.image && !i.video).slice(0, video ? 3 : 4)
+    const conVideo = results.find(i => i.video)
+    const candidatas = results.filter(i => i.image && !i.video).slice(0, conVideo ? 3 : 4)
 
-    if (!images.length && !video) {
+    const imagenes = []
+    for (const item of candidatas) {
+      try {
+        const buffer = await bajarMedia(item.image, 'image')
+        imagenes.push({ buffer, caption: `📌 ${item.titulo?.trim() || 'Pinterest'}` })
+      } catch (e) {
+        console.error('[pinterest] error bajando imagen:', e.message)
+      }
+    }
+
+    let videoBuf = null
+    let videoCaption = ''
+    if (conVideo) {
+      try {
+        videoBuf = await bajarMedia(conVideo.video, 'video')
+        videoCaption = `🎬 ${conVideo.titulo?.trim() || 'Video - Pinterest'}`
+      } catch (e) {
+        console.error('[pinterest] error bajando video:', e.message)
+      }
+    }
+
+    if (!imagenes.length && !videoBuf) {
       return conn.reply(m.chat, '❌ No pude cargar los resultados. Intenta de nuevo.', m)
     }
 
-    if (images.length) {
-      const album = images.map(item => ({
-        image: { url: item.image },
-        caption: `📌 ${item.titulo?.trim() || 'Pinterest'}`
-      }))
+    if (imagenes.length) {
+      const album = imagenes.map(i => ({ image: i.buffer, caption: i.caption }))
       try {
         await conn.sendMessage(m.chat, { album }, { quoted: m })
       } catch (e) {
-        for (const item of images) {
+        for (const i of imagenes) {
           try {
-            await conn.sendMessage(m.chat, { image: { url: item.image }, caption: `📌 ${item.titulo?.trim() || 'Pinterest'}` }, { quoted: m })
-          } catch (e2) {}
+            await conn.sendMessage(m.chat, { image: i.buffer, caption: i.caption }, { quoted: m })
+          } catch (e2) {
+            console.error('[pinterest] error enviando imagen:', e2.message)
+          }
         }
       }
     }
 
-    if (video) {
+    if (videoBuf) {
       await sleep(2000)
       try {
-        await conn.sendMessage(m.chat, { video: { url: video.video }, caption: `🎬 ${video.titulo?.trim() || 'Video - Pinterest'}` }, { quoted: m })
-      } catch (e) {}
+        await conn.sendMessage(m.chat, { video: videoBuf, mimetype: 'video/mp4', caption: videoCaption }, { quoted: m })
+      } catch (e) {
+        console.error('[pinterest] error enviando video:', e.message)
+      }
     }
   } catch (err) {
     conn.reply(m.chat, '❌ Error: ' + ocultar(err.message || err), m)
