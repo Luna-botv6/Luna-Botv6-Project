@@ -73,9 +73,14 @@ function _wrapInteractive(interactiveMessage) {
 
 export const interactiveUtils = {
   async sendButtonMessages(conn, jid, messages, quoted, options) {
-    messages.length > 1
-      ? await this.sendCarousel(conn, jid, messages, quoted, options)
-      : await this.sendNCarousel(conn, jid, ...messages[0], quoted, options);
+    const first = Array.isArray(messages) ? messages[0] : undefined;
+    if (Array.isArray(first)) {
+      messages.length > 1
+        ? await this.sendCarousel(conn, jid, messages, quoted, options)
+        : await this.sendNCarousel(conn, jid, ...first, quoted, options);
+    } else if (Array.isArray(messages)) {
+      await this.sendNCarousel(conn, jid, ...messages, quoted, options);
+    }
   },
 
   async sendNCarousel(conn, jid, text = '', footer = '', buffer, buttons, copy, urls, list, quoted, options) {

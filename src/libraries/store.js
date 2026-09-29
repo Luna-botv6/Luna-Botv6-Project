@@ -90,24 +90,26 @@ function makeInMemoryStore() {
         }
     }
 
-    setInterval(cleanupStaleData, CLEANUP_INTERVAL);
+    setInterval(cleanupStaleData, CLEANUP_INTERVAL).unref?.();
 
     function bind(conn) {
         if (!conn.chats) conn.chats = {};
 
 conn.ev.on('messages.upsert', ({ messages: newMessages, type }) => {
-            if (['append', 'notify'].includes(type)) {
-                const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
-                
-                for (const msg of newMessages) {
+            if (!Array.isArray(newMessages)) return;
+            if (!['append', 'notify'].includes(type)) return;
+            const connectionTime = global.timestamp?.connect?.getTime() || Date.now();
+
+            for (const msg of newMessages) {
+                try {
                     const jid = msg.key.remoteJid?.decodeJid?.();
                     if (!jid || isJidBroadcast(jid)) continue;
-                    
+
                     const msgTimestamp = (msg.messageTimestamp || 0) * 1000;
                     if (msgTimestamp < connectionTime - 30000) continue;
-                    
+
                     upsertMessage(jid, proto.WebMessageInfo.fromObject(msg), type);
-                }
+                } catch {}
             }
         });
 

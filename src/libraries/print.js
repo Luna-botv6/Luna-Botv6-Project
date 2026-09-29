@@ -2,6 +2,8 @@ import chalk from "chalk";
 
 const CMD_RE = /^[.!#/\\](\w+)/;
 const MEDIA_MAP = new Map([
+  ["viewonce",   "👻 view once" ],
+  ["extendedtext","💬 texto"    ],
   ["image",    "🖼️  imagen"  ],
   ["sticker",  "🧩 sticker"  ],
   ["video",    "🎬 video"    ],
@@ -59,8 +61,10 @@ const isDuplicate = (m, chat, msgType) => {
   if (last && now - last < KEY_TTL) return true;
   _recentKeys.set(key, now);
   if (_recentKeys.size > 300) {
+    const cutoff = now - KEY_TTL;
     for (const [k, t] of _recentKeys)
-      if (now - t > KEY_TTL) _recentKeys.delete(k);
+      if (t < cutoff) _recentKeys.delete(k);
+    while (_recentKeys.size > 300) _recentKeys.delete(_recentKeys.keys().next().value);
   }
   return false;
 };
@@ -71,7 +75,10 @@ const getGroupName = async (conn, chat) => {
     const _gc = global.groupCache?.get(chat);
     const meta = conn.chats?.[chat] || _gc?.data?.groupMetadata || await conn.groupMetadata?.(chat);
     const name = meta?.subject || meta?.name || null;
-    if (name) _groupNames.set(chat, name);
+    if (name) {
+      _groupNames.set(chat, name);
+      if (_groupNames.size > 300) _groupNames.delete(_groupNames.keys().next().value);
+    }
     return name;
   } catch {
     return null;
@@ -153,7 +160,7 @@ export default async function printMessage(m, conn = { user: {} }) {
                         .toLocaleTimeString("es-AR", TZ);
     const botNum    = conn.user?.jid?.split("@")[0] || "Bot";
     const groupId   = isGroup ? chat.split("@")[0] : null;
-    const command   = global._lastCmd ?? CMD_RE.exec(text)?.[1] ?? null;
+    const command   = m._lastCmd ?? global._lastCmd ?? CMD_RE.exec(text)?.[1] ?? null;
     global._lastCmd = null;
     const media     = getMedia(msgType);
     const firstLine = text.split("\n")[0].trim();
@@ -185,10 +192,12 @@ export default async function printMessage(m, conn = { user: {} }) {
     const row = (label, value) =>
       cBorder("│") + "  " + cLbl(label + " ⟩") + "  " + value;
 
+    const botTitle = (global.getBotName ? global.getBotName(conn) : global.BotName) || "LUNA-BOTV6";
+
     const lines = [
       cBorder(TOP),
       cBorder("│") + "  " +
-        cTitle("◈ " + (global.BotName || "LUNA-BOTV6") + (conn.isSubBot ? " [SUB]" : "")) + "  " +
+        cTitle("◈ " + botTitle + (conn.isSubBot ? " [SUB]" : "")) + "  " +
         chalk.hex("#5a5278")("·····") + "  " +
         cSys("GROUP: " + String(groupCount)) + "  " +
         chalk.hex("#5a5278")("·····") + "  " +

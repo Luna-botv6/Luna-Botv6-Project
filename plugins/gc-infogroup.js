@@ -2,10 +2,8 @@ import fs from 'fs';
 import { access } from 'fs/promises';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { getConfig } from '../lib/funcConfig.js';
+import { menuPathsFor } from '../lib/funcion/menu-media.js';
 
-const MENU_DIR = './database/WELCOME';
-const CUSTOM_IMG = `${MENU_DIR}/menu_image.jpg`;
-const CUSTOM_VID = `${MENU_DIR}/menu_video.mp4`;
 const DEFAULT_VID = './src/assets/images/menu/languages/es/VID-20250527-WA0006.mp4';
 const DEFAULT_AVT = './src/avatar_contact.png';
 
@@ -83,13 +81,14 @@ ${listAdmin}
 
   const mentions = [...groupAdmins.map(v => v.id), owner];
 
+  const { img, vid } = menuPathsFor(conn);
   let mediaPath = null;
   let mediaType = 'video';
 
-  if (await fileExists(CUSTOM_VID)) {
-    mediaPath = CUSTOM_VID; mediaType = 'video';
-  } else if (await fileExists(CUSTOM_IMG)) {
-    mediaPath = CUSTOM_IMG; mediaType = 'image';
+  if (await fileExists(vid)) {
+    mediaPath = vid; mediaType = 'video';
+  } else if (await fileExists(img)) {
+    mediaPath = img; mediaType = 'image';
   } else if (await fileExists(DEFAULT_VID)) {
     mediaPath = DEFAULT_VID; mediaType = 'video';
   } else {

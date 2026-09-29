@@ -68,7 +68,7 @@ export const coreUtils = {
       mime: 'application/octet-stream',
       ext: '.bin',
     };
-    if (data && saveToFile && !filename) (filename = path.join(__dirname, '../tmp/' + new Date * 1 + '.' + type.ext), await fs.promises.writeFile(filename, data));
+    if (data && saveToFile && !filename) (filename = path.join(__dirname, '../tmp/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + type.ext), await fs.promises.writeFile(filename, data));
     return {
       res,
       filename,
@@ -85,12 +85,12 @@ export const coreUtils = {
       let tries = 0;
       const on = (...args) => {
         if (++tries > maxTries) {
-        conn.ev.off(eventName, on);
-        reject('Max tries reached');
-      } else if (is()) {
-        conn.ev.off(eventName, on);
-        resolve(...args);
-      }
+          conn.ev.off(eventName, on);
+          reject(new Error('Max tries reached'));
+        } else if (is(...args)) {
+          conn.ev.off(eventName, on);
+          resolve(...args);
+        }
       };
       conn.ev.on(eventName, on);
     });

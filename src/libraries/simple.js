@@ -243,11 +243,22 @@ export async function makeWASocket(connectionOptions, options = {}) {
     ...(typeof conn.chatRead !== 'function' ? {
       chatRead: {
         value(jid, participant = conn.user.jid, messageID) {
-          return conn.sendReadReceipt(jid, participant, [messageID]);
+          if (!messageID) return null;
+          return conn.readMessages([{ id: messageID, remoteJid: jid, participant }]);
         },
         enumerable: true,
       },
     } : {}),
+    prefix: {
+      get() {
+        return global.prefix;
+      },
+      set(v) {
+        global.prefix = v;
+      },
+      enumerable: true,
+      configurable: true,
+    },
     ...(typeof conn.setStatus !== 'function' ? {
       setStatus: {
         value(status) {

@@ -82,7 +82,7 @@ ${textos[2]}`.trim();
 
 handler.help = ['admins <texto>'];
 handler.tags = ['group'];
-handler.customPrefix = /a|@/i;
+handler.customPrefix = /^(a|@)/i;
 handler.command = /^(admins|@admins|dmins)$/i;
 handler.group = true;
 
