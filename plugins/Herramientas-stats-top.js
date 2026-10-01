@@ -38,6 +38,6 @@ const handler = async (m, { conn, isOwner, isROwner, command }) => {
   m.reply(text);
 };
 
-handler.command = /^statsglobal|estadisticas$/i;
+handler.command = /^(statsglobal|estadisticas)$/i;
 handler.rowner = true;
 export default handler;
