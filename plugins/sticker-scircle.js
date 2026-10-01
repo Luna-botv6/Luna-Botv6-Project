@@ -50,5 +50,5 @@ const handler = async (m, {conn}) => {
     m.reply(tradutor.texto1 + '\n' + ocultar(e.message || e))
   }
 }
-handler.command = /^scircle|circle$/i
+handler.command = /^(scircle|circle)$/i
 export default handler

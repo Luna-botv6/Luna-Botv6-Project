@@ -25,7 +25,7 @@ const handler = async (m, { conn, args }) => {
 
 handler.help = ['setdesc <text>'];
 handler.tags = ['group'];
-handler.command = /^setdesk|setdesc$/i;
+handler.command = /^(setdesc|setdesk)$/i;
 handler.group = true;
 
 export default handler;
