@@ -54,6 +54,7 @@ import { startBirthdayChecker } from './plugins/cumple.js';
 import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
 import { manejarCanalRelay } from './lib/funcion/canal-relay.js';
 import { manejarPhraseTriggers } from './lib/funcion/phrase-triggers.js';
+import { buttonActions } from './lib/funcion/button-actions.js';
 import { esBotIgnorado, MARCA_LUNA } from './lib/funcion/botsIgnorados.js';
 import { manejarMarcaLuna, manejarRespuestaBoton, obtenerBotonId, BOTON_VERIFICAR } from './lib/funcion/verificacionBots.js';
 import { installUsersProxy } from './lib/funcion/databaseManager.js';
@@ -1152,6 +1153,10 @@ global.reloadHandler = async function(restatConn) {
       const botonId = obtenerBotonId(primerMensaje);
       if (botonId && String(botonId).startsWith(BOTON_VERIFICAR)) {
         await manejarRespuestaBoton(conn, msg);
+        return;
+      }
+      if (botonId && buttonActions.esBotonAccion(botonId)) {
+        await buttonActions.ejecutarAccion(conn, msg, botonId);
         return;
       }
       const textoEntrante = primerMensaje.conversation || primerMensaje.extendedTextMessage?.text || primerMensaje.imageMessage?.caption || primerMensaje.videoMessage?.caption || primerMensaje.documentMessage?.caption || '';
