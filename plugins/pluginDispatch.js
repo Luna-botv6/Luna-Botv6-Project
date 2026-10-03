@@ -17,6 +17,7 @@ import footballPlugin from '../plugins/lunaia/football-plugin.js';
 import veoveoPlugin from '../plugins/lunaia/veoveo-plugin.js';
 import ahorcadoPlugin from '../plugins/lunaia/ahorcado-plugin.js';
 import mutePlugin from '../plugins/lunaia/mute-plugin.js';
+import musicDirectPlugin from '../plugins/lunaia/music-direct-plugin.js';
 import banchatPlugin from '../plugins/lunaia/banchat-plugin.js';
 import banuserPlugin from '../plugins/lunaia/banuser-plugin.js';
 import { isProtectedOwner, resolveTargetForOwnerCheck } from '../lib/funcion/ownerGuard.js';
@@ -60,6 +61,8 @@ export async function dispatchToPlugins(cleanText, context) {
     await veoveoPlugin.handle(cleanText, context);
   } else if (ahorcadoPlugin.canHandle(cleanText, chatId)) {
     await ahorcadoPlugin.handle(cleanText, context);
+  } else if (musicDirectPlugin.canHandle(cleanText)) {
+    await musicDirectPlugin.handle(cleanText, context);
   } else if (configPlugin.canHandle(cleanText)) {
     await configPlugin.handle(cleanText, context);
   } else if (downloadPlugin.canHandle(cleanText)) {
