@@ -1,5 +1,5 @@
 import { updateLastCommand } from './logBans.js';
-import { generateWAMessageFromContent } from "@whiskeysockets/baileys";
+import { generateWAMessageFromContent, WAMessageStubType } from "@whiskeysockets/baileys";
 import { smsg } from './src/libraries/simple.js';
 import { format } from 'util';
 import { fileURLToPath } from 'url';
@@ -364,15 +364,12 @@ export async function handler(chatUpdate) {
 
     const globalPrefix = this.prefix || global.prefix;
 
-    if (isVoiceMessage(m)) {
+    if (isVoiceMessage(m, this)) {
       const jid = m.key.remoteJid;
-      const settings = global.db?.data?.settings?.[this?.user?.jid];
-      if (settings?.iaLunaActive !== false) {
-        await handleVoiceMessage(this, m, jid, processedVoiceMessages).catch(e =>
-          console.error(`Error en mensaje de voz: ${e.message}`)
-        );
-        return;
-      }
+      await handleVoiceMessage(this, m, jid, processedVoiceMessages).catch(e =>
+        console.error(`Error en mensaje de voz: ${e.message}`)
+      );
+      return;
     }
 
     if (!global.db.data) await global.loadDatabase?.();
@@ -909,31 +906,86 @@ export async function callUpdate(callUpdate) {
   } catch (e) {}
 }
 
+const ANTIDELETE_TTL = 60_000;
+const _antideleteSeen = new Map();
+
+function _antideleteDedupe(id) {
+  if (!id) return false;
+  const now = Date.now();
+  const prev = _antideleteSeen.get(id);
+  if (prev && (now - prev) < ANTIDELETE_TTL) return true;
+  _antideleteSeen.set(id, now);
+  if (_antideleteSeen.size > 500) {
+    const first = _antideleteSeen.keys().next().value;
+    _antideleteSeen.delete(first);
+  }
+  return false;
+}
+
+function _antideleteType(msg) {
+  const m = msg?.message || {};
+  if (m.conversation || m.extendedTextMessage?.text) return { tipo: 'Texto', texto: m.conversation || m.extendedTextMessage.text, media: false };
+  if (m.imageMessage) return { tipo: 'Imagen', texto: m.imageMessage.caption || '(sin caption)', media: true };
+  if (m.videoMessage) return { tipo: 'Video', texto: m.videoMessage.caption || '(sin caption)', media: true };
+  if (m.audioMessage) return { tipo: 'Audio', texto: `(nota de voz, ${(m.audioMessage.seconds || 0)}s)`, media: true };
+  if (m.stickerMessage) return { tipo: 'Sticker', texto: '(sticker)', media: true };
+  if (m.documentMessage) return { tipo: 'Documento', texto: m.documentMessage.fileName || m.documentMessage.title || '(archivo)', media: true };
+  if (m.locationMessage) return { tipo: 'Ubicacion', texto: `${m.locationMessage.degreesLatitude}, ${m.locationMessage.degreesLongitude}`, media: false };
+  if (m.contactMessage || m.contactsArrayMessage) return { tipo: 'Contacto', texto: m.contactMessage?.displayName || '(contacto)', media: false };
+  if (m.pollCreationMessage) return { tipo: 'Encuesta', texto: m.pollCreationMessage.name || '(encuesta)', media: false };
+  return { tipo: 'Otro', texto: '(contenido no textual)', media: false };
+}
+
+async function antideleteOne(conn, key) {
+  try {
+    if (!key?.id) return;
+    if (key.fromMe) return;
+    if (_antideleteDedupe(key.id)) return;
+    const deleter = key.participant || key.remoteJid;
+    try { if (deleter && isProtectedOwner(deleter)) return; } catch {}
+    if (!conn || !global.db) return;
+    let msg = null;
+    try { msg = conn.serializeM(conn.loadMessage(key.id)); } catch {}
+    if (!msg?.chat || !msg?.isGroup) return;
+    let cfg = null;
+    try { cfg = getConfig(msg.chat); } catch {}
+    const chatDb = global.db?.data?.chats?.[msg.chat] || {};
+    const enabled = cfg?.antidelete ?? chatDb?.antidelete;
+    if (!enabled) return;
+    const now = new Date();
+    const hora = now.toLocaleTimeString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', hour: '2-digit', minute: '2-digit', hour12: false });
+    const fecha = now.toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', day: '2-digit', month: '2-digit', year: 'numeric' });
+    const { tipo, texto, media } = _antideleteType(msg);
+    let senderTag = deleter || 'desconocido';
+    try { senderTag = '@' + String(conn.decodeJid(deleter)).split('@')[0]; } catch { try { senderTag = '@' + String(deleter).split('@')[0]; } catch {} }
+    const linea = '━━━━━━━━━━━━━━━━━━━━━━━━';
+    const aviso = `${linea}\n🗑️ El usuario eliminó un mensaje\n${linea}\n👤 Usuario: ${senderTag}\n📅 Fecha: ${fecha}\n⏰ Hora (ARG): ${hora}\n📁 Tipo de mensaje: ${tipo}\n💬 Contenido: ${texto}`;
+    try { await conn.sendMessage(msg.chat, { text: aviso, mentions: [conn.decodeJid(deleter)] }); } catch {}
+    if (media) { try { await conn.copyNForward(msg.chat, msg); } catch {} }
+  } catch {}
+}
+
 export async function deleteUpdate(message) {
   try {
-    const { fromMe, id, participant } = message;
+    const keys = message?.keys || [];
+    if (!keys.length) return;
     const conn = currentConn || mconn?.conn;
-    if (fromMe || !conn || !global.db) return;
+    for (const k of keys) await antideleteOne(conn, k);
+  } catch {}
+}
 
-    const idioma = global.db.data.users[participant]?.language || global.defaultLenguaje || 'es';
-    const _translate = await loadTranslation(idioma);
-    const tradutor = _translate.handler?.deleteUpdate || {};
-
-    let d = new Date(Date.now() + 3600000);
-    let date = d.toLocaleDateString(idioma, { day: 'numeric', month: 'long', year: 'numeric' });
-    let time = d.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true });
-
-    let msg = conn.serializeM(conn.loadMessage(id));
-    if (!msg?.chat || !msg?.isGroup) return;
-
-    let chat = global.db.data.chats[msg.chat] || {};
-    if (!chat?.antidelete) return;
-
-    const antideleteMessage = `${tradutor.texto1?.[0]}\n${tradutor.texto1?.[1]}: @${participant.split('@')[0]}\n${tradutor.texto1?.[2]}: ${time}\n${tradutor.texto1?.[3]}: ${date}`.trim();
-
-    await conn.sendMessage(msg.chat, { text: antideleteMessage, mentions: [conn.decodeJid(participant)] }, { quoted: msg }).catch(() => {});
-    await conn.copyNForward(msg.chat, msg).catch(() => {});
-  } catch (e) {}
+export async function messageUpdateUpdate(updates) {
+  try {
+    const conn = currentConn || mconn?.conn;
+    const list = Array.isArray(updates) ? updates : [updates];
+    for (const u of list) {
+      try {
+        if (u?.update?.message === null && u?.update?.messageStubType === WAMessageStubType.REVOKE) {
+          await antideleteOne(conn, u.key);
+        }
+      } catch {}
+    }
+  } catch {}
 }
 
 global.dfail = async (type, m, conn) => {
