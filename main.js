@@ -1131,6 +1131,7 @@ global.reloadHandler = async function(restatConn) {
     conn.ev.removeAllListeners('messages.upsert');
     conn.ev.removeAllListeners('group-participants.update');
     conn.ev.removeAllListeners('messages.delete');
+    conn.ev.removeAllListeners('messages.update');
     conn.ev.removeAllListeners('call');
     conn.ev.removeAllListeners('creds.update');
     conn.ev.removeAllListeners('groups.update');
@@ -1141,6 +1142,7 @@ global.reloadHandler = async function(restatConn) {
   conn.handler = handler.handler.bind(global.conn);
   conn.participantsUpdate = handler.participantsUpdate.bind(global.conn);
   conn.onDelete = handler.deleteUpdate.bind(global.conn);
+  conn.onMsgUpdate = typeof handler.messageUpdateUpdate === 'function' ? handler.messageUpdateUpdate.bind(global.conn) : null;
   conn.onCall = handler.callUpdate.bind(global.conn);
   conn.connectionUpdate = connectionUpdate.bind(global.conn);
   conn.credsUpdate = saveCreds.bind(global.conn, true);
@@ -1179,6 +1181,7 @@ global.reloadHandler = async function(restatConn) {
   manejarPhraseTriggers(conn);
   conn.ev.on('group-participants.update', conn.participantsUpdate);
   conn.ev.on('messages.delete', conn.onDelete);
+  if (conn.onMsgUpdate) conn.ev.on('messages.update', conn.onMsgUpdate);
   conn.ev.on('call', conn.onCall);
   attachConnectionListener();
   conn.ev.on('creds.update', conn.credsUpdate);
