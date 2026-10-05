@@ -254,7 +254,7 @@ export async function handleVoiceMessage(conn, msg, chatId, recentMsgs) {
       forceVoiceReply: true
     }
 
-    await dispatchToPlugins(texto, context)
+    await dispatchToPlugins(texto, context, { desdeVoz: true })
   } catch (e) {
     console.error('[VOICE-HANDLER] Error:', e.message)
     try {
