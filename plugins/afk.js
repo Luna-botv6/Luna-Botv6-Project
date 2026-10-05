@@ -1,10 +1,9 @@
 import fs from 'fs';
 import { loadAFK, saveAFK } from '../lib/afkDB.js';
+import { isAfkAllowed } from '../lib/funcConfig.js';
 
 const handler = async (m, { conn }) => {
   const chatId = m.chat;
-  const chatData = global.db.data.chats[chatId] || {};
-
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
   let _t = {};
   try {
@@ -15,11 +14,11 @@ const handler = async (m, { conn }) => {
   }
   const tradutor = _t.plugins.afk_afk;
 
-  if (chatData.afkAllowed === false) {
+  if (!isAfkAllowed(m.chat)) {
     return m.reply(tradutor.desactivado);
   }
 
-  const text = m.text?.trim();
+  const text = String(m.text || '').replace(/^\s*[.!/#-]?\s*afk\s*/i, '').trim();
   const afk = loadAFK();
 
   afk[m.sender] = {

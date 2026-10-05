@@ -22,6 +22,7 @@ import banchatPlugin from '../plugins/lunaia/banchat-plugin.js';
 import banuserPlugin from '../plugins/lunaia/banuser-plugin.js';
 import { isProtectedOwner, resolveTargetForOwnerCheck } from '../lib/funcion/ownerGuard.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { esComandoReal } from '../lib/funcion/commandParser.js';
 
 const REMOVAL_INTENT = /\b(un\s?mute|desmutear?|des\s?silencia\w*|desilenci\w*|desilensia\w*|quitale?\s*(el\s*)?mute|quitarle\s*(el\s*)?mute|ya\s*puede\s*hablar|dejalo\s*hablar|un\s?ban|desbane\w*|remover\s*ban|quitar\s*ban)\b/i;
 
@@ -49,8 +50,10 @@ async function blockIfOwnerTarget(context, cleanText, allowRemoval) {
   return true;
 }
 
-export async function dispatchToPlugins(cleanText, context) {
+export async function dispatchToPlugins(cleanText, context, opts) {
   const chatId = context.jid;
+
+  if (!opts?.desdeVoz && esComandoReal(cleanText, global.plugins, global.prefix)) return;
 
   if (banchatPlugin.canHandle(cleanText)) {
     await banchatPlugin.handle(cleanText, context);

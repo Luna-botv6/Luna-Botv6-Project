@@ -1,4 +1,5 @@
 import { loadAFK, saveAFK } from '../lib/afkDB.js';
+import { setConfig } from '../lib/funcConfig.js';
 const handler = async (m, { isAdmin, isOwner, command }) => {
   const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
   const t = _tr?.plugins?.herramienta_afk || {};
@@ -14,6 +15,7 @@ const handler = async (m, { isAdmin, isOwner, command }) => {
         
     chatData.afkAllowed = true;
     global.db.data.chats[chatId] = chatData;
+    try { setConfig(chatId, { afkAllowed: true }); } catch {}
     return m.reply(t.activado || '✅ El estado AFK ha sido activado en este grupo.');
   }
   if (cmd === 'disable') {
@@ -21,6 +23,7 @@ const handler = async (m, { isAdmin, isOwner, command }) => {
       return m.reply(t.usar_disable || 'Usa: /disable afk');
     chatData.afkAllowed = false;
     global.db.data.chats[chatId] = chatData;
+    try { setConfig(chatId, { afkAllowed: false }); } catch {}
     return m.reply(t.desactivado || '❌ El estado AFK ha sido desactivado en este grupo.');
   }
 };
