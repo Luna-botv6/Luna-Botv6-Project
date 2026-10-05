@@ -196,7 +196,7 @@ handler.before = async function (m, { conn }) {
       isGroup: true,
       isPrivate: false,
       groupData,
-      mentionedJids: [],
+      mentionedJids: m.message?.extendedTextMessage?.contextInfo?.mentionedJid || [],
       mentionedNames: {},
       botNumber: botNum || null
     };
