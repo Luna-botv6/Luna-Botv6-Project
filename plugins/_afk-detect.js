@@ -1,13 +1,13 @@
 import fs from 'fs';
 import { loadAFK, saveAFK } from '../lib/afkDB.js';
+import { isAfkAllowed } from '../lib/funcConfig.js';
 
 export function before(m) {
   if (m.fromMe) return true;
 
   const chatId = m.chat;
-  const chatData = global.db.data.chats[chatId] || {};
 
-  if (chatData.afkAllowed === false) return true;
+  if (!isAfkAllowed(chatId)) return true;
 
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
   let _t = {};
