@@ -5,7 +5,6 @@ import { Readable, PassThrough } from 'stream';
 import { downloadContentFromMessage } from '@whiskeysockets/baileys';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { addCustomAudio, getCustomAudios, AUDIOS_DIR, ensureDir } from '../lib/funcion/audiosStore.js';
-import { AUDIOS_CATALOG } from './audios-globales.js';
 
 function slugify(text) {
   return text
@@ -82,9 +81,6 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
   }
 
   const triggerKey = frase.toLowerCase();
-
-  const collideDefault = AUDIOS_CATALOG.some(entry => entry.keywords.includes(triggerKey));
-  if (collideDefault) return m.reply(t.colision_default || '❌ Esa frase ya está usada por un audio del bot, elige otra.');
 
   const customAudios = getCustomAudios();
   if (customAudios[triggerKey]) return m.reply(t.ya_existe || '❌ Ya existe un audio guardado con esa frase, elige otra.');
