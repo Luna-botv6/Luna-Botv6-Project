@@ -34,13 +34,13 @@
     "node-fetch": "^3.2.0",
     "qrcode": "^1.5.0",
     "qrcode-terminal": "^0.12.0",
-    "sharp": "0.35.4",
+    "sharp": "0.35.5",
     "similarity": "^1.2.1",
     "syntax-error": "^1.4.0",
     "yargs": "^18.1.0"
   },
   "optionalDependencies": {
-    "@img/sharp-wasm32": "0.35.4"
+    "@img/sharp-wasm32": "0.35.5"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
@@ -51,7 +51,7 @@
     "@types/node": "20.19.22",
     "got": "^11.8.5",
     "image-size": "^2.0.4",
-    "sharp": "0.35.4"
+    "sharp": "0.35.5"
   },
   "allowScripts": {
     "@lunabotv6/luna-baileys": true,
