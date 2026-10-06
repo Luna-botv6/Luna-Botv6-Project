@@ -1,4 +1,5 @@
 import { isFunctionEnabled } from '../lib/owner-funciones.js';
+import { isProtectedOwner } from '../lib/funcion/ownerGuard.js';
 
 export async function before(m, { conn, isOwner, isROwner }) {
   if (m.fromMe) return false;
@@ -7,12 +8,7 @@ export async function before(m, { conn, isOwner, isROwner }) {
   if (!isFunctionEnabled('antiprivado')) return false;
 
   const sender = m.sender || m.key?.remoteJid || '';
-  const ownerNums = (global.owner || []).map(o => String(Array.isArray(o) ? o[0] : o));
-  const lidOwners = (global.lidOwners || []).map(x => String(x));
-
-  const _isOwner = isOwner || isROwner
-    || ownerNums.some(n => sender.includes(n))
-    || lidOwners.some(n => sender.includes(n));
+  const _isOwner = isOwner || isROwner || isProtectedOwner(sender, null, conn);
 
   if (_isOwner) return false;
 

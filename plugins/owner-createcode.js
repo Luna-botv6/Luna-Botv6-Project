@@ -6,7 +6,7 @@ import path from 'path';
 global.codeCreationSessions = global.codeCreationSessions || {};
 
 const handler = async (m, { text, conn, isOwner, participants, command }) => {
-  const isAuthorized = isOwner || global.lidOwners.includes(m.sender);
+  const isAuthorized = isOwner;
   if (!isAuthorized) return m.reply('⛔ *Solo los propietarios pueden usar este comando.*');
 
   const userId = m.sender;

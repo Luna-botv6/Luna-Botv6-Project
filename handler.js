@@ -217,7 +217,7 @@ export async function handler(chatUpdate) {
         
         // Rate limiting para mensajes en privado
         if (jid && !jid.endsWith('@g.us') && !jid.endsWith('@broadcast')) {
-          const isOwnerJid = isProtectedOwner(jid);
+          const isOwnerJid = isProtectedOwner(jid, null, this);
 
           if (!isOwnerJid) {
             const warmupCheck = checkWarmupLimit(jid);
@@ -305,9 +305,7 @@ export async function handler(chatUpdate) {
       return true;
     });
     if (_muteEntry) {
-      const _ownerNums = (global.owner || []).map(o => String(Array.isArray(o) ? o[0] : o));
-      const _lidOwners = (global.lidOwners || []).map(x => String(x));
-      const _isOwner = _ownerNums.some(n => sender.includes(n)) || _lidOwners.some(n => sender.includes(n));
+      const _isOwner = isProtectedOwner(sender, null, this);
       if (!_isOwner) {
         const _cachedForDel = global.groupCache?.get(chat);
         const _botJid = this.user?.jid ? this.decodeJid(this.user.jid) : '';
@@ -372,23 +370,23 @@ export async function handler(chatUpdate) {
       return;
     }
 
-    if (!global.db.data) await global.loadDatabase?.();
-    if (!global.chatgpt.data) await global.loadChatgptDB?.();
+      if (!global.db.data) await global.loadDatabase?.();
+      if (!global.chatgpt.data) await global.loadChatgptDB?.();
 
-    for (const name in global.plugins) {
-      const plugin = global.plugins[name];
-      if (!plugin?.before || typeof plugin.before !== 'function') continue;
-      try {
-        if (!m?.sender) continue;
-        const { isOwner } = checkUserPermissions(m, this);
-        const stop = await plugin.before.call(this, m, {
-          conn: this,
-          isOwner,
-          isROwner: isOwner,
-          chatUpdate
-        });
-        if (stop) return;
-      } catch (e) {}
+      for (const name in global.plugins) {
+        const plugin = global.plugins[name];
+        if (!plugin?.before || typeof plugin.before !== 'function') continue;
+        try {
+          if (!m?.sender) continue;
+          const { isOwner } = checkUserPermissions(m, this);
+          const stop = await plugin.before.call(this, m, {
+            conn: this,
+            isOwner,
+            isROwner: isOwner,
+            chatUpdate
+          });
+          if (stop) return;
+        } catch (e) {}
     }
 
     try {
@@ -423,7 +421,7 @@ export async function handler(chatUpdate) {
       const _translate = await loadTranslation(idioma);
       const tradutor = _translate.handler?.handler || {};
 
-      if (opts['nyimak'] || (opts['self'] && !m.fromMe && !isProtectedOwner(sender)) || (opts['pconly'] && m.chat.endsWith('g.us')) || (opts['gconly'] && !m.chat.endsWith('g.us')) || (opts['swonly'] && m.chat !== 'status@broadcast')) return;
+      if (opts['nyimak'] || (opts['self'] && !m.fromMe && !isProtectedOwner(sender, null, this)) || (opts['pconly'] && m.chat.endsWith('g.us')) || (opts['gconly'] && !m.chat.endsWith('g.us')) || (opts['swonly'] && m.chat !== 'status@broadcast')) return;
 
       if (m.message?.buttonsResponseMessage?.selectedButtonId) {
         m.text = m.message.buttonsResponseMessage.selectedButtonId;
@@ -478,14 +476,7 @@ export async function handler(chatUpdate) {
         if (!plugin || plugin.disabled) continue;
 
         if (global.__modogruposBlock?.has?.(m.chat)) {
-          const senderNum = (m.sender || '').split('@')[0].replace(/\D/g, '');
-          const owners = (global.owner || []).map(o => {
-            const num = Array.isArray(o) ? o[0] : o;
-            return String(num || '').replace(/\D/g, '');
-          }).filter(Boolean);
-          const lidOwners = (global.lidOwners || []).map(x => String(x || '').replace(/\D/g, '')).filter(Boolean);
-          const allOwnersNum = [...owners, ...lidOwners];
-          if (!allOwnersNum.includes(senderNum)) continue;
+          if (!isProtectedOwner(m.sender, null, this)) continue;
         }
 
         const __filename = name.startsWith('custom-')
@@ -602,6 +593,7 @@ export async function handler(chatUpdate) {
           const botSpam = global.db.data.settings[this.user.jid] || {};
 
           if (chat?.isBanned && !isROwner && !['owner-unbanchat.js', 'info-creator.js'].includes(name)) {
+            if (plugin.rowner || plugin.owner) (plugin.fail || global.dfail)(plugin.rowner ? 'rowner' : 'owner', m, this);
             continue;
           }
 
@@ -686,7 +678,7 @@ export async function handler(chatUpdate) {
                   }
                 }
                 const { jid: _gJid, phoneNumber: _gPhone } = resolveTargetForOwnerCheck(_guardTarget, _guardParticipants);
-                if (isProtectedOwner(_gJid, _gPhone)) {
+                if (isProtectedOwner(_gJid, _gPhone, this)) {
                   m.reply('🛡️ Ese es el owner, no puedo hacer eso 😅');
                   continue;
                 }
@@ -942,7 +934,7 @@ async function antideleteOne(conn, key) {
     if (key.fromMe) return;
     if (_antideleteDedupe(key.id)) return;
     const deleter = key.participant || key.remoteJid;
-    try { if (deleter && isProtectedOwner(deleter)) return; } catch {}
+    try { if (deleter && isProtectedOwner(deleter, null, conn)) return; } catch {}
     if (!conn || !global.db) return;
     let msg = null;
     try { msg = conn.serializeM(conn.loadMessage(key.id)); } catch {}

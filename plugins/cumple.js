@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { isProtectedOwner } from '../lib/funcion/ownerGuard.js';
 
 const DB_PATH = './database/cumples.json';
 const GIF_URL = 'https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/InShot_20260315_144951431.mp4';
@@ -62,9 +63,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   const isGroup    = m.isGroup;
   const t          = getT(sender);
 
-  const ownerNums = (global.owner || []).map(o => String(Array.isArray(o) ? o[0] : o).replace(/\D/g, ''));
-  const lidOwners = (global.lidOwners || []).map(o => String(o).replace(/\D/g, ''));
-  const isOwner   = ownerNums.includes(sender.replace(/\D/g, '')) || lidOwners.includes(sender.replace(/\D/g, ''));
+  const isOwner = isProtectedOwner(sender, null, conn);
   let isAdmin = false;
   let participants = [];
 

@@ -1,1 +1,100 @@
-const _0x5b7d25=_0x563a;(function(_0x43b512,_0x3bd09e){const _0xd39cd3=_0x563a,_0x27bdc5=_0x43b512();while(!![]){try{const _0x5201a7=-parseInt(_0xd39cd3(0xef))/0x1+parseInt(_0xd39cd3(0xf5))/0x2*(parseInt(_0xd39cd3(0xe9))/0x3)+-parseInt(_0xd39cd3(0x103))/0x4+-parseInt(_0xd39cd3(0x10d))/0x5*(-parseInt(_0xd39cd3(0xf1))/0x6)+parseInt(_0xd39cd3(0xfa))/0x7*(parseInt(_0xd39cd3(0x101))/0x8)+parseInt(_0xd39cd3(0xe3))/0x9+-parseInt(_0xd39cd3(0x10e))/0xa*(parseInt(_0xd39cd3(0xea))/0xb);if(_0x5201a7===_0x3bd09e)break;else _0x27bdc5['push'](_0x27bdc5['shift']());}catch(_0x4aa0ae){_0x27bdc5['push'](_0x27bdc5['shift']());}}}(_0x33ba,0x1d5c1));const BOT=()=>global['BotName']||_0x5b7d25(0x10f),STRONG_KEYWORDS=[_0x5b7d25(0x10c),_0x5b7d25(0xf2),'kickea'],WEAK_KEYWORDS=[_0x5b7d25(0xfc),'echa',_0x5b7d25(0xf4),_0x5b7d25(0xfb),'echar',_0x5b7d25(0x10a)],MAX_WORDS_FOR_WEAK_MATCH=0x4;function _0x563a(_0x2195c3,_0x4083de){_0x2195c3=_0x2195c3-0xdb;const _0x33ba7f=_0x33ba();let _0x563ab8=_0x33ba7f[_0x2195c3];return _0x563ab8;}function _0x33ba(){const _0x4109aa=['settings','\x20esa\x20persona\x20no\x20esta\x20en\x20el\x20grupo\x20🤔','sacar','sendMessage','expulsa','38910KFeiLk','10SUJUdx','Luna','sender','some','\x20no\x20puedo\x20expulsar\x20a\x20un\x20admin\x20😅','remoteJid','superadmin','isArray','lidOwners','find','test','623259naBxZF','participant','\x20necesito\x20ser\x20administrador\x20para\x20expulsar\x20usuarios\x20😅','normalize','toLowerCase','\x20fue\x20expulsado\x20del\x20grupo.','5019LrzekL','1955503kSdxKQ','replace','jid','\x20necesito\x20que\x20el\x20owner\x20habilite\x20el\x20modo\x20restrict\x20para\x20usar\x20esta\x20funcion.\x0a\x0a_Usa:\x20enable\x20restrict_','filter','160DxwxiO','No\x20puedo\x20expulsarme\x20a\x20mi\x20mismo\x20🤖','42MnwBDt','expulsar','map','saca','256mwKmtP','\x20ese\x20es\x20el\x20owner,\x20ni\x20lo\x20intentes\x20😂🛡️','length','groupParticipantsUpdate','Expulsa\x20usuarios\x20desde\x20la\x20IA','7IJgfQK','bota','elimina','kick2','remove','includes','key','805496lfZsDG','*\x0a\x0a','561464iKKCLd','\x20no\x20pude\x20expulsarlo,\x20puede\x20que\x20WhatsApp\x20no\x20lo\x20permita\x20en\x20este\x20momento\x20😔','lid','\x20a\x20quien\x20queres\x20expulsar?\x20Mencionald\x20con\x20@\x20😊','admin'];_0x33ba=function(){return _0x4109aa;};return _0x33ba();}function normalize(_0x4c121b){const _0x5909b3=_0x5b7d25;return _0x4c121b[_0x5909b3(0xe7)]()[_0x5909b3(0xe6)]('NFD')['replace'](/[\u0300-\u036f]/g,'')['trim']();}function canHandle(_0x4c9667){const _0x2b1c84=_0x5b7d25,_0x485405=normalize(_0x4c9667);if(STRONG_KEYWORDS[_0x2b1c84(0xdb)](_0x81482=>_0x485405[_0x2b1c84(0xff)](_0x81482)))return!![];const _0x2b585f=_0x485405['split'](/\s+/)[_0x2b1c84(0xee)](Boolean)[_0x2b1c84(0xf7)];if(_0x2b585f>MAX_WORDS_FOR_WEAK_MATCH)return![];return WEAK_KEYWORDS[_0x2b1c84(0xdb)](_0xa34c24=>new RegExp('\x5cb'+_0xa34c24+'(lo|la|los|las)?\x5cb')[_0x2b1c84(0xe2)](_0x485405));}function findParticipant(_0x52242e,_0x11cce0){const _0x4c6c58=_0x5b7d25;if(!_0x11cce0)return null;const _0x2ad544=_0x11cce0[_0x4c6c58(0xeb)](/[^0-9]/g,'');let _0x5730d8=_0x52242e[_0x4c6c58(0xe1)](_0x1ec440=>_0x1ec440['id']===_0x11cce0);if(_0x5730d8)return _0x5730d8;_0x5730d8=_0x52242e['find'](_0x18ddc6=>_0x18ddc6['lid']===_0x11cce0);if(_0x5730d8)return _0x5730d8;return _0x52242e[_0x4c6c58(0xe1)](_0x13761c=>(_0x13761c['id']||'')[_0x4c6c58(0xeb)](/[^0-9]/g,'')===_0x2ad544||(_0x13761c[_0x4c6c58(0x105)]||'')[_0x4c6c58(0xeb)](/[^0-9]/g,'')===_0x2ad544)||null;}async function handle(_0x472dfb,{conn:_0x52e4aa,msg:_0x53ca0b,jid:_0x4f9bbe,mentionedJids:_0x59e9d8,groupData:_0x2acbec}){const _0x520d58=_0x5b7d25,_0xe3d78c=_0x53ca0b[_0x520d58(0x100)][_0x520d58(0xe4)]||_0x53ca0b[_0x520d58(0x100)][_0x520d58(0xdd)],_0x444637='@'+_0xe3d78c['split']('@')[0x0],{participants:_0x47f704,isAdmin:_0x486b73,isBotAdmin:_0x226514,isOwner:_0x5dc9f0}=_0x2acbec,_0x25466c=(_0x57d758,_0x4078b2=[])=>_0x52e4aa[_0x520d58(0x10b)](_0x4f9bbe,{'text':'🌙\x20*'+BOT()+_0x520d58(0x102)+_0x57d758,'mentions':[_0xe3d78c,..._0x4078b2]},{'quoted':_0x53ca0b});if(!_0x226514)return _0x25466c(_0x444637+_0x520d58(0xe5));if(!_0x486b73&&!_0x5dc9f0)return _0x25466c(_0x444637+'\x20solo\x20los\x20admins\x20pueden\x20expulsar\x20usuarios\x20😅');if(!global['db']?.['data']?.[_0x520d58(0x108)]?.[_0x52e4aa['user'][_0x520d58(0xec)]]?.['restrict'])return _0x25466c(_0x444637+_0x520d58(0xed));const _0x459cae=_0x59e9d8?.[0x0]||_0x53ca0b['quoted']?.[_0x520d58(0x110)]||null;if(!_0x459cae)return _0x25466c(_0x444637+_0x520d58(0x106));const _0x224448=findParticipant(_0x47f704,_0x459cae);if(!_0x224448)return _0x25466c(_0x444637+_0x520d58(0x109));const _0x7e0c89=_0x224448['id'],_0x5ba42e=(_0x52e4aa['user'][_0x520d58(0xec)]||'')[_0x520d58(0xeb)](/[^0-9]/g,'');if(_0x7e0c89[_0x520d58(0xeb)](/[^0-9]/g,'')===_0x5ba42e)return _0x25466c(_0x520d58(0xf0));if(_0x224448[_0x520d58(0x107)]==='admin'||_0x224448[_0x520d58(0x107)]===_0x520d58(0xde))return _0x25466c(_0x444637+_0x520d58(0xdc));const _0x1a53eb=(global['owner']||[])['map'](_0x42aa8f=>String(Array[_0x520d58(0xdf)](_0x42aa8f)?_0x42aa8f[0x0]:_0x42aa8f)[_0x520d58(0xeb)](/\D/g,'')),_0x5d6b58=(global[_0x520d58(0xe0)]||[])[_0x520d58(0xf3)](_0x10cd73=>String(_0x10cd73)['replace'](/\D/g,'')),_0x5862d7=_0x7e0c89['replace'](/\D/g,'');if(_0x1a53eb[_0x520d58(0xff)](_0x5862d7)||_0x5d6b58[_0x520d58(0xff)](_0x5862d7))return _0x25466c(_0x444637+_0x520d58(0xf6));try{await _0x52e4aa[_0x520d58(0xf8)](_0x4f9bbe,[_0x7e0c89],_0x520d58(0xfe));const _0x10f5c1='@'+_0x7e0c89['split']('@')[0x0];return _0x25466c('✅\x20'+_0x10f5c1+_0x520d58(0xe8),[_0x7e0c89]);}catch{return _0x25466c(_0x444637+_0x520d58(0x104));}}export default{'canHandle':canHandle,'handle':handle,'name':_0x5b7d25(0xfd),'description':_0x5b7d25(0xf9)};
+// Las keywords de este plugin son bastante genéricas ("elimina", "echa",
+// "saca", "bota"...) y aparecen todo el tiempo en charla que no tiene nada
+// que ver con expulsar a nadie ("sacame una foto", "echale sal", "bota la
+// basura"). Por eso se dividen en dos niveles:
+//
+// - "strong": palabras que casi siempre significan expulsar a alguien
+//   ("expulsa", "expulsar", "kickea"). No tienen límite de palabras.
+// - "weak": verbos sueltos muy comunes ("elimina", "echa", "saca", "bota",
+//   "echar", "sacar"). Solo cuentan si el mensaje es corto (para no
+//   dispararse en medio de una frase larga sin relación), y se buscan con
+//   límite de palabra (\b) para que "echale sal" no dispare por "echa".
+import { isProtectedOwner } from '../../lib/funcion/ownerGuard.js';
+const BOT = () => global.BotName || 'Luna';
+
+const STRONG_KEYWORDS = ['expulsa', 'expulsar', 'kickea'];
+const WEAK_KEYWORDS = ['elimina', 'echa', 'saca', 'bota', 'echar', 'sacar'];
+const MAX_WORDS_FOR_WEAK_MATCH = 4;
+
+function normalize(text) {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+function canHandle(text) {
+  const normalized = normalize(text);
+  if (STRONG_KEYWORDS.some(k => normalized.includes(k))) return true;
+
+  const wordCount = normalized.split(/\s+/).filter(Boolean).length;
+  if (wordCount > MAX_WORDS_FOR_WEAK_MATCH) return false;
+
+  // Los verbos débiles se buscan permitiendo el pronombre pegado
+  // (sacalo, echalo, botalo) que es la forma más natural de decirlo,
+  // pero no cualquier otra terminación (para no matchear "sacame",
+  // "echale", "botando", etc.)
+  return WEAK_KEYWORDS.some(k => new RegExp(`\\b${k}(lo|la|los|las)?\\b`).test(normalized));
+}
+
+function findParticipant(participants, rawId) {
+  if (!rawId) return null;
+  const digits = rawId.replace(/[^0-9]/g, '');
+  let found = participants.find(p => p.id === rawId);
+  if (found) return found;
+  found = participants.find(p => p.lid === rawId);
+  if (found) return found;
+  return participants.find(p =>
+    (p.id || '').replace(/[^0-9]/g, '') === digits ||
+    (p.lid || '').replace(/[^0-9]/g, '') === digits
+  ) || null;
+}
+
+async function handle(text, { conn, msg, jid, mentionedJids, groupData }) {
+  const senderId = msg.key.participant || msg.key.remoteJid;
+  const senderTag = '@' + senderId.split('@')[0];
+  const { participants, isAdmin, isBotAdmin, isOwner } = groupData;
+
+  const reply = (body, extraMentions = []) => conn.sendMessage(jid, {
+    text: `🌙 *${BOT()}*\n\n${body}`,
+    mentions: [senderId, ...extraMentions]
+  }, { quoted: msg });
+
+  if (!isBotAdmin) return reply(`${senderTag} necesito ser administrador para expulsar usuarios 😅`);
+  if (!isAdmin && !isOwner) return reply(`${senderTag} solo los admins pueden expulsar usuarios 😅`);
+
+  if (!global.db?.data?.settings?.[conn.user.jid]?.restrict) {
+    return reply(`${senderTag} necesito que el owner habilite el modo restrict para usar esta funcion.\n\n_Usa: enable restrict_`);
+  }
+
+  const targetRaw = mentionedJids?.[0] || msg.quoted?.sender || null;
+  if (!targetRaw) return reply(`${senderTag} a quien queres expulsar? Mencionald con @ 😊`);
+
+  const target = findParticipant(participants, targetRaw);
+  if (!target) return reply(`${senderTag} esa persona no esta en el grupo 🤔`);
+
+  const targetId = target.id;
+  const botDigits = (conn.user.jid || '').replace(/[^0-9]/g, '');
+  if (targetId.replace(/[^0-9]/g, '') === botDigits) return reply('No puedo expulsarme a mi mismo 🤖');
+
+  if (target.admin === 'admin' || target.admin === 'superadmin') {
+    return reply(`${senderTag} no puedo expulsar a un admin 😅`);
+  }
+
+  const targetDigits = targetId.replace(/\D/g, '');
+  if (isProtectedOwner(targetId, null, conn)) {
+    return reply(`${senderTag} ese es el owner, ni lo intentes 😂🛡️`);
+  }
+
+  try {
+    await conn.groupParticipantsUpdate(jid, [targetId], 'remove');
+    const targetTag = '@' + targetId.split('@')[0];
+    return reply(`✅ ${targetTag} fue expulsado del grupo.`, [targetId]);
+  } catch {
+    return reply(`${senderTag} no pude expulsarlo, puede que WhatsApp no lo permita en este momento 😔`);
+  }
+}
+
+export default {
+  canHandle,
+  handle,
+  name: 'kick2',
+  description: 'Expulsa usuarios desde la IA'
+};

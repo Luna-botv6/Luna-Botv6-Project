@@ -1,9 +1,10 @@
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
+import { isProtectedOwner } from '../lib/funcion/ownerGuard.js'
 const handler = async (m, { conn }) => {
   const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es')
   const t = _tr?.plugins?.herramientas_readviewonce || {}
   const { isAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender)
-  const isOwner = global.owner.includes(m.sender.replace(/[^0-9]/g, ''))
+  const isOwner = isProtectedOwner(m.sender, null, conn)
   if (!isAdmin && !isOwner) throw (t.no_admin || '🚫 *Solo un admin o el owner puede usar este comando*')
   const q = m.quoted ? m.quoted : null
   if (!q) throw (t.no_citado || '👀 *Respondé a una imagen o video de una sola vez para revelarlo*')
