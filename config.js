@@ -8,31 +8,19 @@ global.botnumber = ""
 global.confirmCode = ""
 global.authFile = `MysticSession`;
 
+// Cambiar a true si el Bot responde a sus comandos con otros comandos.
+// Cambiar a false para usar el Bot desde el mismo numero del Bot.
+// Error de m.isBaileys marcado como false fix temporal
 global.isBaileysFail = false
 
 global.defaultLenguaje = 'es';
 
-global.lidOwners = [
-  "128213531545849",
-  "29717298188532"
-];
-
-global.owner = [
-  ['5493483466763', '👑 Ehl villano 👑', true],
-  ['50259727165', 'MOD-DECO', true]
-
-];
-
-global.suittag = ['5493483466763'];
-global.prems = ['5493483466763'];
+global.owner = [];
+global.lidOwners = [];
 
 // API (INTERFAZ DE PROGRAMACIÓN DE APLICACIONES)
 global.BASE_API_DELIRIUS = "https://delirius-apiofc.vercel.app";
 global.BASE_API_SKYNEX = "https://skynex.boxmine.xyz";
-global.neoxr = {
-  url: 'https://api.neoxr.eu/api',  // URL de la API de Neoxr
-  key: 'GataDios',               // Reemplaza 'TU_API_KEY' con tu clave de API de Neoxr
-};
 
 global.packname = 'Sticker';
 global.author = 'Luna-Botv6';
@@ -68,7 +56,6 @@ global.mysticbot = '';
 global.waitt = '*_[ ⏳ ] Cargando..._*';
 global.waittt = '*_[ ⏳ ] Cargando..._*';
 global.waitttt = '*_[ ⏳ ] Cargando..._*';
-global.nomorown = '5493483466763';
 global.pdoc = ['application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/msword', 'application/pdf', 'text/rtf'];
 global.cmenut = '❖––––––『';
 global.cmenub = '┊✦ ';
@@ -97,12 +84,6 @@ global.flaaa = [
 //* ************************
 
 const file = fileURLToPath(import.meta.url);
-// 🔐 Asegura que si el número del owner está como jid LID, se agregue a global.lidOwners
-for (const [num] of global.owner) {
-  if (!global.lidOwners.includes(num)) {
-    global.lidOwners.push(num);
-  }
-}
 
 watchFile(file, () => {
   unwatchFile(file);

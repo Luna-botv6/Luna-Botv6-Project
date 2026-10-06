@@ -1171,28 +1171,43 @@ npm start
 
 ## ⚙️ Configuración
 
-Editá el archivo `config.js` con tus datos:
+### 👑 Owners (sin tocar `config.js`)
+
+Los owners viven en `system-owner.json`, en la raíz del bot. El `config.js` ya no lleva ningún número: podés actualizar por Git sin romper nada.
+
+```json
+{
+  "version": 1,
+  "owners": [
+    { "numero": "5491112223333", "nombre": "Tu nombre" },
+    { "numero": "5492223334444", "nombre": "Otro owner" },
+    { "numero": "", "nombre": "" }
+  ]
+}
+```
+Hay 10 renglones: uno por owner, número al lado del nombre. Dejá vacíos los que no uses.
+
+* En el primer arranque el bot crea el archivo solo, con una `_nota` que explica el formato. Después agregá tu número real (con código de país, sin `+`). Vale el objeto con nombre o el número solo, y podés poner varios.
+* Los cambios se aplican **solos, sin reiniciar** (el bot vigila el archivo).
+* Solo se usa el **número real**: el bot te reconoce igual vengas como JID normal (`@s.whatsapp.net`) o como LID (`@lid`). Ya no hay que pedir ningún LID ni usar `/miid` para configurar nada.
+* También podés gestionar owners desde el chat: `.agregarowner @usuario|número`, `.quitarowner número`, `.listaradmins`. O desde el panel: sección Owners (el panel usa su propia contraseña, así que podés agregar owners aunque la lista esté vacía).
+* `system-owner.json` está en `.gitignore`: nunca se sube a GitHub ni se pisa al actualizar.
+
+> [!WARNING]
+> Asegurate de agregar tu número en `system-owner.json` para evitar ser bloqueado por el antispam.
+
+> [!IMPORTANT]
+> Si subís los archivos al hosting **a mano** (no por `git pull`): el `config.js` nuevo viene limpio y tu `config.js` viejo con los números se pisa. La migración automática solo rescata los números cuando actualizás por `git pull`. En subida manual, antes de reiniciar creá `system-owner.json` con tus números, o agregalos después desde el panel (sección Owners).
+
+### 🎨 Personalización
 
 ```javascript
-global.owner = [
-  ['5493483466763', 'Germán Miño', true],
-]
-global.lidOwners = [
-  "128213666649",
-];
-
-global.mods  = ['5493483466763']
-global.prems = ['5493483466763']
+global.mods  = []
 
 global.packname = 'Luna Bot'
 global.author   = 'Germán Miño'
 global.wm       = 'Luna Bot V6 - Created by Germán Miño'
 ```
-
-> [!WARNING]
-> Asegurate de agregar tu número en `global.owner` para evitar ser bloqueado por el antispam.
-
-**Para obtener tu LID:** enviá `/miid` al bot. Si responde con `@s.whatsapp.net`, creá un grupo temporal con el bot y usá `/miid` hasta que devuelva un ID con `@lid`.
 
 ---
 

@@ -9,6 +9,7 @@ import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
 import { obtenerMenuChat, verificarMenuChat } from '../src/assets/images/menu/languages/es/menu-img.js'
 import { getConfig } from '../lib/funcConfig.js'
 import { checkUserPermissions } from '../lib/funcion/userPermissions.js'
+import { getOwnerNumbers } from '../lib/funcion/system-owners.js'
 
 try { verificarMenuChat() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
 
@@ -170,7 +171,7 @@ function puedeUsarIA(conn, msg, chatId) {
       isOwner = !!perms?.isOwner
       isROwner = !!perms?.isROwner
     } catch {
-      const ownerNums = [...(global.owner || []).map(o => Array.isArray(o) ? o[0] : o), ...(global.lidOwners || [])].map(n => String(n || '').replace(/\D/g, '')).filter(Boolean)
+      const ownerNums = getOwnerNumbers()
       isOwner = !!senderNum && ownerNums.includes(senderNum)
     }
 

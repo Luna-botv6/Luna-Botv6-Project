@@ -2,6 +2,8 @@ import { setConfig, getConfig } from '../lib/funcConfig.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { setOwnerFunction } from '../lib/owner-funciones.js';
 import { resolveMenuMedia } from '../lib/funcion/menu-media.js';
+import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
+import { resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
 import fs from 'fs';
 
 const configLocks = new Map();
@@ -62,24 +64,6 @@ const CONFIG_MAP = {
   modogrupos:   { key: 'modogrupos',   file: true,  owner: true }
 };
 
-async function getOwnerNumbers(conn) {
-  const nums = [];
-  const clean = (n) => n.toString().replace(/[^0-9]/g, '');
-  if (global.owner?.length) {
-    for (const o of global.owner) {
-      const n = clean(Array.isArray(o) ? o[0] : o);
-      if (n && !nums.includes(n)) nums.push(n);
-    }
-  }
-  if (global.lidOwners?.length) {
-    for (const o of global.lidOwners) {
-      const n = clean(o);
-      if (n && !nums.includes(n)) nums.push(n);
-    }
-  }
-  return nums;
-}
-
 const handler = async (m, { conn, usedPrefix, command, args }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
   const _translate = getTranslate(idioma);
@@ -88,8 +72,8 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   if (!t) return m.reply('❌ Error cargando configuración de idioma.');
   if (!conn?.user?.jid) return m.reply(t.sin_sesion || '❌ Sin sesión activa.');
 
-    const realNum = m.sender.replace(/[^0-9]/g, '');
-    const ownerNumbers = await getOwnerNumbers(conn);
+    const realNum = resolveJidToPhone(m.sender, conn) || m.sender.replace(/[^0-9]/g, '');
+    const ownerNumbers = getOwnerNumbers();
     const isROwner = ownerNumbers.includes(realNum);
     const esSubBot = !!conn?.isSubBot;
     const isOwner = isROwner || (!esSubBot && m.sender === conn?.user?.jid);

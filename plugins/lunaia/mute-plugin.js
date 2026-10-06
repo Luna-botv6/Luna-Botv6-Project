@@ -1,1 +1,123 @@
-function _0x2b29(){const _0xf8110c=['toLowerCase','sendMessage','\x20por\x20X\x20minutos/horas\x22_','\x20mencionaste\x20*','entries','silenciar','minutos','mute\x20al','10NgMprB','\x20😭\x20pero\x20no\x20gracias','hace\x20callar','714ujZXpV','dejalo\x20hablar','split','silencia','ambiguous','replace','781320DFCcUz','*\x20pero\x20no\x20dijiste\x20si\x20son\x20minutos\x20u\x20horas\x20🤔\x0a\x0a','length','Silencia\x20o\x20dessilencia\x20usuarios\x20desde\x20la\x20IA\x20🔇','mutear','random','*\x0a\x0a','floor','\x20¿a\x20quién\x20querés\x20','\x20eso\x20no\x20va\x20a\x20pasar\x20💀\x20si\x20seguís\x20insistiendo\x20el\x20próximo\x20muteado\x20sos\x20vos','🌙\x20*','trim','mute\x20a','Luna','?\x20Mencionalo\x20con\x20@\x20😊','minutes',',\x20el\x20owner\x20tiene\x20inmunidad\x20total\x20🛡️\x20pero\x20yo\x20no\x20tengo\x20inmunidad\x20para\x20mutearte\x20a\x20vos\x20👀','match','lidOwners','value','55tkOgdI','ya\x20puede\x20hablar','NFD','desilencia','🔇\x20','Ejemplo:\x0a•\x20_mutea\x20a\x20','mutea','por\x20*','que\x20se\x20calle','map','\x20minutos_\x0a','horas','\x20ya\x20puede\x20volver\x20a\x20escribir\x20😊','889302UyUNXK','5896dmFLgC','sin\x20horario\x20de\x20desmuteo\x20⏳\x0a\x0a_Si\x20querés\x20ponerle\x20tiempo\x20decime:\x0a\x22mutea\x20a\x20','2283945DcTybg','key','BotName','*\x20⏳','\x20necesito\x20ser\x20administrador\x20para\x20silenciar\x20usuarios\x20😅','includes','filter','remoteJid','mute','\x20solo\x20los\x20admins\x20pueden\x20silenciar\x20usuarios\x20😅','mutealo','negativo\x20','owner','3451048ARRZuL','\x20¿en\x20serio?\x20ese\x20es\x20mi\x20jefe,\x20mejor\x20ni\x20lo\x20intentes\x20😅','normalize','\x20por\x20','259SWzCce','callate','dessilencia','9260469huEknO','some'];_0x2b29=function(){return _0xf8110c;};return _0x2b29();}function _0x45f7(_0x5cc69f,_0x41083d){_0x5cc69f=_0x5cc69f-0x196;const _0x2b29ed=_0x2b29();let _0x45f7c6=_0x2b29ed[_0x5cc69f];return _0x45f7c6;}const _0x5d3fed=_0x45f7;(function(_0x21a5b5,_0x2b5fba){const _0x3ad532=_0x45f7,_0x4471ab=_0x21a5b5();while(!![]){try{const _0x256a78=-parseInt(_0x3ad532(0x19c))/0x1+parseInt(_0x3ad532(0x1bd))/0x2+parseInt(_0x3ad532(0x1c0))/0x3+-parseInt(_0x3ad532(0x1cd))/0x4+-parseInt(_0x3ad532(0x1b0))/0x5*(-parseInt(_0x3ad532(0x196))/0x6)+-parseInt(_0x3ad532(0x1d1))/0x7*(-parseInt(_0x3ad532(0x1be))/0x8)+-parseInt(_0x3ad532(0x1d4))/0x9*(-parseInt(_0x3ad532(0x1de))/0xa);if(_0x256a78===_0x2b5fba)break;else _0x4471ab['push'](_0x4471ab['shift']());}catch(_0x3ae03d){_0x4471ab['push'](_0x4471ab['shift']());}}}(_0x2b29,0x9738b));import{muteUser,unmuteUser,isUserMuted}from'../gc-mute.js';const BOT=()=>global[_0x5d3fed(0x1c2)]||_0x5d3fed(0x1a9),NUM_WORDS={'uno':0x1,'una':0x1,'dos':0x2,'tres':0x3,'cuatro':0x4,'cinco':0x5,'seis':0x6,'siete':0x7,'ocho':0x8,'nueve':0x9,'diez':0xa,'once':0xb,'doce':0xc,'quince':0xf,'veinte':0x14,'treinta':0x1e,'cuarenta':0x28,'cincuenta':0x32,'sesenta':0x3c},STRONG_MUTE_TRIGGERS=[_0x5d3fed(0x1b6),_0x5d3fed(0x1a0),_0x5d3fed(0x1dd),_0x5d3fed(0x1a8),_0x5d3fed(0x199),_0x5d3fed(0x1db),'silencialo',_0x5d3fed(0x1ca),_0x5d3fed(0x1b8),_0x5d3fed(0x1e0)],WEAK_MUTE_TRIGGERS=[_0x5d3fed(0x1d2),'callalo'],MAX_WORDS_FOR_WEAK_MATCH=0x4,UNMUTE_TRIGGERS=['desmutea','desmutear','desilensia',_0x5d3fed(0x1d3),'dessilenciar',_0x5d3fed(0x1b3),'unmute',_0x5d3fed(0x1b1),_0x5d3fed(0x197),'quitale\x20el\x20mute','quitarle\x20el\x20mute'];function normalize(_0x14a397){const _0x3f468d=_0x5d3fed;return _0x14a397[_0x3f468d(0x1d6)]()[_0x3f468d(0x1cf)](_0x3f468d(0x1b2))[_0x3f468d(0x19b)](/[\u0300-\u036f]/g,'')[_0x3f468d(0x19b)](/[¿¡?!]/g,'')[_0x3f468d(0x1a7)]();}function parseTime(_0x5e444c){const _0x3ab4fb=_0x5d3fed;let _0xf50000=normalize(_0x5e444c);for(const [_0xe311fc,_0x1f55ab]of Object[_0x3ab4fb(0x1da)](NUM_WORDS)){_0xf50000=_0xf50000[_0x3ab4fb(0x19b)](new RegExp('\x5cb'+_0xe311fc+'\x5cb','g'),String(_0x1f55ab));}const _0x15527d=_0xf50000['match'](/(\d+)\s*h(?:ora)?s?/),_0x33f2f5=_0xf50000['match'](/(\d+)\s*min(?:uto)?s?/),_0x49c95c=_0xf50000[_0x3ab4fb(0x1ad)](/(?:por\s+)(\d+)(?:\s*$)/),_0x293509=_0x15527d?parseInt(_0x15527d[0x1]):null,_0x14cc34=_0x33f2f5?parseInt(_0x33f2f5[0x1]):null;if(_0x293509!==null&&_0x293509<=0x2d0)return{'minutes':_0x293509*0x3c,'unit':_0x3ab4fb(0x1bb),'value':String(_0x293509)};if(_0x14cc34!==null&&_0x14cc34<=0x270f)return{'minutes':_0x14cc34,'unit':_0x3ab4fb(0x1dc),'value':String(_0x14cc34)};if(_0x49c95c&&parseInt(_0x49c95c[0x1])<=0x270f)return{'minutes':null,'ambiguous':!![],'value':_0x49c95c[0x1]};return null;}function canHandle(_0x448b46){const _0x5c5bd2=_0x5d3fed,_0xef15b7=normalize(_0x448b46);if(UNMUTE_TRIGGERS[_0x5c5bd2(0x1d5)](_0x1525f5=>_0xef15b7['includes'](_0x1525f5)))return!![];if(STRONG_MUTE_TRIGGERS[_0x5c5bd2(0x1d5)](_0x99994e=>_0xef15b7[_0x5c5bd2(0x1c5)](_0x99994e)))return!![];const _0x1b7a7f=_0xef15b7[_0x5c5bd2(0x198)](/\s+/)[_0x5c5bd2(0x1c6)](Boolean)[_0x5c5bd2(0x19e)];if(_0x1b7a7f>MAX_WORDS_FOR_WEAK_MATCH)return![];return WEAK_MUTE_TRIGGERS[_0x5c5bd2(0x1d5)](_0x3ba0a6=>_0xef15b7['includes'](_0x3ba0a6));}function isMuteIntent(_0x1afbda){const _0x57af63=_0x5d3fed,_0x1c661e=normalize(_0x1afbda);if(UNMUTE_TRIGGERS[_0x57af63(0x1d5)](_0x515174=>_0x1c661e['includes'](_0x515174)))return![];return STRONG_MUTE_TRIGGERS[_0x57af63(0x1d5)](_0x34a1ee=>_0x1c661e[_0x57af63(0x1c5)](_0x34a1ee))||WEAK_MUTE_TRIGGERS['some'](_0x564c71=>_0x1c661e[_0x57af63(0x1c5)](_0x564c71));}async function handle(_0x4ab31b,{conn:_0x34d920,msg:_0x8705f6,jid:_0x1f2475,mentionedJids:_0x52d27f,groupData:_0x34e680}){const _0x5b9007=_0x5d3fed,_0xc21236=_0x8705f6[_0x5b9007(0x1c1)]['participant']||_0x8705f6['key'][_0x5b9007(0x1c7)],_0x5eae2a='@'+_0xc21236['split']('@')[0x0],{participants:_0x209c22,isAdmin:_0x59196b,isBotAdmin:_0xf7cdce,isOwner:_0x32dcf6}=_0x34e680,_0x3a5786=(_0x367f9d,_0x25a1e0=[])=>_0x34d920[_0x5b9007(0x1d7)](_0x1f2475,{'text':_0x5b9007(0x1a6)+BOT()+_0x5b9007(0x1a2)+_0x367f9d,'mentions':[_0xc21236,..._0x25a1e0]},{'quoted':_0x8705f6});if(!_0xf7cdce)return _0x3a5786(_0x5eae2a+_0x5b9007(0x1c4));if(!_0x59196b&&!_0x32dcf6)return _0x3a5786(_0x5eae2a+_0x5b9007(0x1c9));const _0x140617=_0x52d27f?.[0x0];if(!_0x140617)return _0x3a5786(_0x5eae2a+_0x5b9007(0x1a4)+(isMuteIntent(_0x4ab31b)?_0x5b9007(0x1db):'dessilenciar')+_0x5b9007(0x1aa));const _0x447e60='@'+_0x140617[_0x5b9007(0x198)]('@')[0x0];if(!isMuteIntent(_0x4ab31b)){const _0xd755f4=await unmuteUser({'chat':_0x1f2475,'user':_0x140617,'participants':_0x209c22});if(!_0xd755f4)return _0x3a5786(_0x5eae2a+'\x20'+_0x447e60+'\x20no\x20está\x20silenciado\x20😅',[_0x140617]);return _0x3a5786('🔊\x20Listo,\x20'+_0x447e60+_0x5b9007(0x1bc),[_0x140617]);}const _0x682a34=(global[_0x5b9007(0x1cc)]||[])[_0x5b9007(0x1b9)](_0x58505d=>String(Array['isArray'](_0x58505d)?_0x58505d[0x0]:_0x58505d)),_0x1dfb57=(global[_0x5b9007(0x1ae)]||[])[_0x5b9007(0x1b9)](_0x4da333=>String(_0x4da333)),_0x2767f4=_0x682a34[_0x5b9007(0x1d5)](_0x88370b=>_0x140617[_0x5b9007(0x1c5)](_0x88370b))||_0x1dfb57['some'](_0x30faa9=>_0x140617['includes'](_0x30faa9));if(_0x2767f4){const _0xf47bef=['jajaja\x20ni\x20en\x20sueños,\x20'+_0x5eae2a+'\x20😂\x20ese\x20es\x20mi\x20creador,\x20¿querés\x20que\x20te\x20mute\x20a\x20*vos*?',_0x5eae2a+_0x5b9007(0x1a5),'intentar\x20mutear\x20al\x20owner...\x20muy\x20valiente\x20'+_0x5eae2a+_0x5b9007(0x1df),_0x5eae2a+_0x5b9007(0x1ce),_0x5b9007(0x1cb)+_0x5eae2a+_0x5b9007(0x1ac)];return _0x3a5786(_0xf47bef[Math[_0x5b9007(0x1a3)](Math[_0x5b9007(0x1a1)]()*_0xf47bef[_0x5b9007(0x19e)])],[_0x140617]);}if(isUserMuted(_0x1f2475,_0x140617))return _0x3a5786(_0x5eae2a+'\x20'+_0x447e60+'\x20ya\x20está\x20silenciado\x20😅',[_0x140617]);const _0x1ea0a0=parseTime(_0x4ab31b);if(_0x1ea0a0?.[_0x5b9007(0x19a)])return _0x3a5786(_0x5eae2a+_0x5b9007(0x1d9)+_0x1ea0a0[_0x5b9007(0x1af)]+_0x5b9007(0x19d)+(_0x5b9007(0x1b5)+_0x447e60+'\x20por\x20'+_0x1ea0a0[_0x5b9007(0x1af)]+_0x5b9007(0x1ba))+('•\x20_mutea\x20a\x20'+_0x447e60+_0x5b9007(0x1d0)+_0x1ea0a0[_0x5b9007(0x1af)]+'\x20horas_'));const _0x52f116=await muteUser({'conn':_0x34d920,'chat':_0x1f2475,'user':_0x140617,'mutedBy':_0xc21236,'minutes':_0x1ea0a0?.[_0x5b9007(0x1ab)]||null,'participants':_0x209c22}),_0x4fda8c=_0x1ea0a0?.['minutes']?_0x5b9007(0x1b7)+_0x52f116['duration']+_0x5b9007(0x1c3):_0x5b9007(0x1bf)+_0x447e60+_0x5b9007(0x1d8);return _0x3a5786(_0x5b9007(0x1b4)+_0x5eae2a+'\x20silenció\x20a\x20'+_0x447e60+'\x20'+_0x4fda8c,[_0x140617]);}export default{'canHandle':canHandle,'handle':handle,'name':_0x5d3fed(0x1c8),'description':_0x5d3fed(0x19f)};
+import { muteUser, unmuteUser, isUserMuted } from '../gc-mute.js';
+import { isProtectedOwner } from '../../lib/funcion/ownerGuard.js';
+
+const BOT = () => global.BotName || 'Luna';
+
+const NUM_WORDS = {
+  uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7,
+  ocho: 8, nueve: 9, diez: 10, once: 11, doce: 12, quince: 15, veinte: 20,
+  treinta: 30, cuarenta: 40, cincuenta: 50, sesenta: 60
+};
+
+// "callate"/"callalo" son bastante comunes como insulto directo entre
+// personas discutiendo en el grupo, sin ninguna intención de invocar al
+// bot. El resto de los triggers son específicos de esta acción, así que
+// solo esos dos van a nivel "weak" (mensaje corto).
+const STRONG_MUTE_TRIGGERS = ['mutea', 'mutear', 'mute al', 'mute a', 'silencia', 'silenciar', 'silencialo', 'mutealo', 'que se calle', 'hace callar'];
+const WEAK_MUTE_TRIGGERS = ['callate', 'callalo'];
+const MAX_WORDS_FOR_WEAK_MATCH = 4;
+
+const UNMUTE_TRIGGERS = ['desmutea', 'desmutear', 'desilensia', 'dessilencia', 'dessilenciar', 'desilencia', 'unmute', 'ya puede hablar', 'dejalo hablar', 'quitale el mute', 'quitarle el mute'];
+
+function normalize(text) {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[¿¡?!]/g, '').trim();
+}
+
+function parseTime(text) {
+  let normalized = normalize(text);
+  for (const [word, num] of Object.entries(NUM_WORDS)) {
+    normalized = normalized.replace(new RegExp(`\\b${word}\\b`, 'g'), String(num));
+  }
+
+  const hoursMatch = normalized.match(/(\d+)\s*h(?:ora)?s?/);
+  const minsMatch = normalized.match(/(\d+)\s*min(?:uto)?s?/);
+  const ambiguousMatch = normalized.match(/(?:por\s+)(\d+)(?:\s*$)/);
+
+  const hours = hoursMatch ? parseInt(hoursMatch[1]) : null;
+  const mins = minsMatch ? parseInt(minsMatch[1]) : null;
+
+  if (hours !== null && hours <= 720) return { minutes: hours * 60, unit: 'horas', value: String(hours) };
+  if (mins !== null && mins <= 9999) return { minutes: mins, unit: 'minutos', value: String(mins) };
+  if (ambiguousMatch && parseInt(ambiguousMatch[1]) <= 9999) return { minutes: null, ambiguous: true, value: ambiguousMatch[1] };
+  return null;
+}
+
+function canHandle(text) {
+  const normalized = normalize(text);
+  if (UNMUTE_TRIGGERS.some(k => normalized.includes(k))) return true;
+  if (STRONG_MUTE_TRIGGERS.some(k => normalized.includes(k))) return true;
+
+  const wordCount = normalized.split(/\s+/).filter(Boolean).length;
+  if (wordCount > MAX_WORDS_FOR_WEAK_MATCH) return false;
+  return WEAK_MUTE_TRIGGERS.some(k => normalized.includes(k));
+}
+
+function isMuteIntent(text) {
+  const normalized = normalize(text);
+  if (UNMUTE_TRIGGERS.some(k => normalized.includes(k))) return false;
+  return STRONG_MUTE_TRIGGERS.some(k => normalized.includes(k)) || WEAK_MUTE_TRIGGERS.some(k => normalized.includes(k));
+}
+
+async function handle(text, { conn, msg, jid, mentionedJids, groupData }) {
+  const senderId = msg.key.participant || msg.key.remoteJid;
+  const senderTag = '@' + senderId.split('@')[0];
+  const { participants, isAdmin, isBotAdmin, isOwner } = groupData;
+
+  const reply = (body, extraMentions = []) => conn.sendMessage(jid, {
+    text: `🌙 *${BOT()}*\n\n${body}`,
+    mentions: [senderId, ...extraMentions]
+  }, { quoted: msg });
+
+  if (!isBotAdmin) return reply(`${senderTag} necesito ser administrador para silenciar usuarios 😅`);
+  if (!isAdmin && !isOwner) return reply(`${senderTag} solo los admins pueden silenciar usuarios 😅`);
+
+  const targetRaw = mentionedJids?.[0];
+  if (!targetRaw) {
+    return reply(`${senderTag} ¿a quién querés ${isMuteIntent(text) ? 'silenciar' : 'dessilenciar'}? Mencionalo con @ 😊`);
+  }
+  const targetTag = '@' + targetRaw.split('@')[0];
+
+  if (!isMuteIntent(text)) {
+    const unmuted = await unmuteUser({ chat: jid, user: targetRaw, participants });
+    if (!unmuted) return reply(`${senderTag} ${targetTag} no está silenciado 😅`, [targetRaw]);
+    return reply(`🔊 Listo, ${targetTag} ya puede volver a escribir 😊`, [targetRaw]);
+  }
+
+  const isTargetOwner = isProtectedOwner(targetRaw, null, conn);
+
+  if (isTargetOwner) {
+    const ownerReplies = [
+      `jajaja ni en sueños, ${senderTag} 😂 ese es mi creador, ¿querés que te mute a *vos*?`,
+      `${senderTag} eso no va a pasar 💀 si seguís insistiendo el próximo muteado sos vos`,
+      `intentar mutear al owner... muy valiente ${senderTag} 😭 pero no gracias`,
+      `${senderTag} ¿en serio? ese es mi jefe, mejor ni lo intentes 😅`,
+      `negativo ${senderTag}, el owner tiene inmunidad total 🛡️ pero yo no tengo inmunidad para mutearte a vos 👀`
+    ];
+    return reply(ownerReplies[Math.floor(Math.random() * ownerReplies.length)], [targetRaw]);
+  }
+
+  if (isUserMuted(jid, targetRaw)) return reply(`${senderTag} ${targetTag} ya está silenciado 😅`, [targetRaw]);
+
+  const parsedTime = parseTime(text);
+  if (parsedTime?.ambiguous) {
+    return reply(
+      `${senderTag} mencionaste *${parsedTime.value}* pero no dijiste si son minutos u horas 🤔\n\n` +
+      `Ejemplo:\n• _mutea a ${targetTag} por ${parsedTime.value} minutos_\n` +
+      `• _mutea a ${targetTag} por ${parsedTime.value} horas_`
+    );
+  }
+
+  const muteResult = await muteUser({ conn, chat: jid, user: targetRaw, mutedBy: senderId, minutes: parsedTime?.minutes || null, participants });
+  const durationText = parsedTime?.minutes
+    ? `por *${muteResult.duration}* ⏳`
+    : `sin horario de desmuteo ⏳\n\n_Si querés ponerle tiempo decime:\n"mutea a ${targetTag} por X minutos/horas"_`;
+
+  return reply(`🔇 ${senderTag} silenció a ${targetTag} ${durationText}`, [targetRaw]);
+}
+
+export default {
+  canHandle,
+  handle,
+  name: 'mute',
+  description: 'Silencia o dessilencia usuarios desde la IA 🔇'
+};

@@ -8,8 +8,7 @@ const handler = async (m, { conn, text, isOwner, isROwner }) => {
   const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.owner_quitarmoney;
 
   try {
-    const isLidOwner = global.lidOwners?.includes(m.sender) || false;
-    if (!isOwner && !isROwner && !isLidOwner) throw tradutor.soloOwner;
+    if (!isOwner && !isROwner ) throw tradutor.soloOwner;
 
     let rawJid = m.isGroup ? (m.mentionedJid?.[0] || null) : m.chat;
     if (!rawJid) throw tradutor.texto1;

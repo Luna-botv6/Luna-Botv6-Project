@@ -1,1 +1,69 @@
-const _0x56cf79=_0x5d92;(function(_0x4ac4d3,_0x47b6dc){const _0x87d54e=_0x5d92,_0x1c4ed8=_0x4ac4d3();while(!![]){try{const _0x3ac1ef=parseInt(_0x87d54e(0x1e0))/0x1*(parseInt(_0x87d54e(0x1e4))/0x2)+parseInt(_0x87d54e(0x1e9))/0x3*(parseInt(_0x87d54e(0x1fa))/0x4)+-parseInt(_0x87d54e(0x1f8))/0x5*(parseInt(_0x87d54e(0x1df))/0x6)+parseInt(_0x87d54e(0x1ed))/0x7*(-parseInt(_0x87d54e(0x1d5))/0x8)+parseInt(_0x87d54e(0x1d8))/0x9+parseInt(_0x87d54e(0x1fc))/0xa+parseInt(_0x87d54e(0x1e8))/0xb*(-parseInt(_0x87d54e(0x1da))/0xc);if(_0x3ac1ef===_0x47b6dc)break;else _0x1c4ed8['push'](_0x1c4ed8['shift']());}catch(_0x1f0721){_0x1c4ed8['push'](_0x1c4ed8['shift']());}}}(_0x506a,0xa40ba));import{getConfig,setConfig}from'../../lib/funcConfig.js';const BOT=()=>global[_0x56cf79(0x1dd)]||_0x56cf79(0x1ec);function _0x5d92(_0x259621,_0x3125ca){_0x259621=_0x259621-0x1d0;const _0x506add=_0x506a();let _0x5d9285=_0x506add[_0x259621];return _0x5d9285;}export function isBanned(_0x14e0b5){const _0x4ab69b=_0x56cf79;return getConfig(_0x14e0b5)?.[_0x4ab69b(0x1d7)]===!![];}const BAN_TRIGGERS=['banea\x20este\x20chat',_0x56cf79(0x1db),'banea\x20este\x20grupo',_0x56cf79(0x1e6),_0x56cf79(0x1fb),_0x56cf79(0x1f0)],UNBAN_TRIGGERS=[_0x56cf79(0x1e5),_0x56cf79(0x1de),_0x56cf79(0x1fd),_0x56cf79(0x1e2),'unban\x20chat',_0x56cf79(0x1e3)],QUESTION_PATTERNS=[/\bcomo\b/,/\bdonde\b/,/\bcual es el comando\b/,/\bque comando\b/,/\bde que forma\b/,/\bde que manera\b/];function looksLikeHowToQuestion(_0x16593a){const _0x24187f=_0x56cf79,_0x1dba06=_0x16593a[_0x24187f(0x1ea)]()[_0x24187f(0x1e1)](_0x24187f(0x1d3))['replace'](/[\u0300-\u036f]/g,'');return QUESTION_PATTERNS[_0x24187f(0x1e7)](_0x26d735=>_0x26d735[_0x24187f(0x1f9)](_0x1dba06));}function normalize(_0x201a05){const _0x49fde8=_0x56cf79;return _0x201a05[_0x49fde8(0x1ea)]()[_0x49fde8(0x1e1)](_0x49fde8(0x1d3))[_0x49fde8(0x1f5)](/[\u0300-\u036f]/g,'')['trim']();}function canHandle(_0x2038f3){const _0x64e8cb=_0x56cf79;if(looksLikeHowToQuestion(_0x2038f3))return![];const _0x1f6ef8=normalize(_0x2038f3);return BAN_TRIGGERS['some'](_0x22d599=>_0x1f6ef8['includes'](_0x22d599))||UNBAN_TRIGGERS[_0x64e8cb(0x1e7)](_0x160ff4=>_0x1f6ef8[_0x64e8cb(0x1eb)](_0x160ff4));}function isBanIntent(_0x55491c){const _0x28e04c=_0x56cf79,_0x2cb581=normalize(_0x55491c);if(UNBAN_TRIGGERS['some'](_0x2864a4=>_0x2cb581[_0x28e04c(0x1eb)](_0x2864a4)))return![];return BAN_TRIGGERS[_0x28e04c(0x1e7)](_0x2ce707=>_0x2cb581['includes'](_0x2ce707));}async function handle(_0x56dfe4,{conn:_0x121460,msg:_0x4071a2,jid:_0x361937}){const _0x4cfa15=_0x56cf79,_0x9454b1=_0x4071a2[_0x4cfa15(0x1ee)][_0x4cfa15(0x1f4)]||_0x4071a2['key']['remoteJid'],_0x135edb='@'+_0x9454b1[_0x4cfa15(0x1f7)]('@')[0x0],_0x156f77=_0x72e179=>_0x121460[_0x4cfa15(0x1ef)](_0x361937,{'text':_0x4cfa15(0x1f2)+BOT()+_0x4cfa15(0x1d2)+_0x72e179,'mentions':[_0x9454b1]},{'quoted':_0x4071a2}),_0x8a51a1=(global[_0x4cfa15(0x1f3)]||[])[_0x4cfa15(0x1dc)](_0x2cd1f8=>String(Array[_0x4cfa15(0x1d9)](_0x2cd1f8)?_0x2cd1f8[0x0]:_0x2cd1f8)[_0x4cfa15(0x1f5)](/\D/g,'')),_0x4d01fc=(global[_0x4cfa15(0x1d0)]||[])[_0x4cfa15(0x1dc)](_0x36cfff=>String(_0x36cfff)['replace'](/\D/g,'')),_0x5cc313=_0x9454b1[_0x4cfa15(0x1f5)](/\D/g,''),_0x3b781b=_0x8a51a1[_0x4cfa15(0x1eb)](_0x5cc313)||_0x4d01fc[_0x4cfa15(0x1eb)](_0x5cc313);if(!_0x3b781b)return _0x156f77(_0x135edb+_0x4cfa15(0x1f6));return isBanIntent(_0x56dfe4)?(setConfig(_0x361937,{'isBanned':!![]}),_0x156f77(_0x4cfa15(0x1d6)+BOT()+_0x4cfa15(0x1d1))):(setConfig(_0x361937,{'isBanned':![]}),_0x156f77(_0x4cfa15(0x1d4)));}export default{'canHandle':canHandle,'handle':handle,'name':_0x56cf79(0x1e6),'description':_0x56cf79(0x1f1)};function _0x506a(){const _0xbd85cf=['🚫\x20Chat\x20baneado.\x20El\x20bot\x20ya\x20no\x20va\x20a\x20responder\x20en\x20este\x20grupo.\x0a\x0a_Para\x20desbanearlo:_\x20@','isBanned','1888911aSZetG','isArray','11907240lXiNRg','banea\x20el\x20chat','map','BotName','desbanea\x20el\x20chat','12TVRSAo','1qFsETW','normalize','unbanchat','unban\x20este\x20grupo','1749290mQKkvm','desbanea\x20este\x20chat','banchat','some','11qSQbIo','3378GlyQxL','toLowerCase','includes','Luna','210sTIcXz','key','sendMessage','ban\x20este\x20grupo','Banea\x20o\x20desbanea\x20un\x20chat\x20(solo\x20owner)','🌙\x20*','owner','participant','replace','\x20solo\x20el\x20owner\x20puede\x20banear\x20o\x20desbanear\x20chats\x20🔐','split','2602670bfDume','test','3208jvKFzB','ban\x20chat','12448820MLQOop','desbanea\x20este\x20grupo','lidOwners','\x20desbanea\x20este\x20chat','*\x0a\x0a','NFD','✅\x20Chat\x20desbaneado.\x20El\x20bot\x20vuelve\x20a\x20funcionar\x20normalmente\x20😊','140584jtIKOn'];_0x506a=function(){return _0xbd85cf;};return _0x506a();}
+import { getConfig, setConfig } from '../../lib/funcConfig.js';
+import { isProtectedOwner } from '../../lib/funcion/ownerGuard.js';
+
+const BOT = () => global.BotName || 'Luna';
+
+export function isBanned(chatId) {
+  return getConfig(chatId)?.isBanned === true;
+}
+
+const BAN_TRIGGERS = ['banea este chat', 'banea el chat', 'banea este grupo', 'banchat', 'ban chat', 'ban este grupo'];
+const UNBAN_TRIGGERS = ['desbanea este chat', 'desbanea el chat', 'desbanea este grupo', 'unbanchat', 'unban chat', 'unban este grupo'];
+
+// Mismo filtro que menu-plugin.js y banuser-plugin.js: si la frase tiene
+// pinta de "¿cómo hago X?" en vez de un pedido directo de banear, se deja
+// pasar al sistema de ayuda en vez de disparar el plugin igual.
+const QUESTION_PATTERNS = [
+  /\bcomo\b/, /\bdonde\b/, /\bcual es el comando\b/, /\bque comando\b/,
+  /\bde que forma\b/, /\bde que manera\b/
+];
+
+function looksLikeHowToQuestion(text) {
+  const normalized = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return QUESTION_PATTERNS.some(p => p.test(normalized));
+}
+
+function normalize(text) {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+function canHandle(text) {
+  if (looksLikeHowToQuestion(text)) return false;
+  const normalized = normalize(text);
+  return BAN_TRIGGERS.some(k => normalized.includes(k)) || UNBAN_TRIGGERS.some(k => normalized.includes(k));
+}
+
+function isBanIntent(text) {
+  const normalized = normalize(text);
+  if (UNBAN_TRIGGERS.some(k => normalized.includes(k))) return false;
+  return BAN_TRIGGERS.some(k => normalized.includes(k));
+}
+
+async function handle(text, { conn, msg, jid }) {
+  const senderId = msg.key.participant || msg.key.remoteJid;
+  const senderTag = '@' + senderId.split('@')[0];
+
+  const reply = (body) => conn.sendMessage(jid, {
+    text: `🌙 *${BOT()}*\n\n${body}`,
+    mentions: [senderId]
+  }, { quoted: msg });
+
+  const isOwner = isProtectedOwner(senderId, null, conn);
+
+  if (!isOwner) return reply(`${senderTag} solo el owner puede banear o desbanear chats 🔐`);
+
+  if (isBanIntent(text)) {
+    setConfig(jid, { isBanned: true });
+    return reply(`🚫 Chat baneado. El bot ya no va a responder en este grupo.\n\n_Para desbanearlo:_ @${BOT()} desbanea este chat`);
+  } else {
+    setConfig(jid, { isBanned: false });
+    return reply('✅ Chat desbaneado. El bot vuelve a funcionar normalmente 😊');
+  }
+}
+
+export default {
+  canHandle,
+  handle,
+  name: 'banchat',
+  description: 'Banea o desbanea un chat (solo owner)'
+};

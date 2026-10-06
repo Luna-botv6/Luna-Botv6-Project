@@ -6,6 +6,7 @@ import fs from 'fs';
 import fetch from 'node-fetch';
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
 import { obtenerMenuChat, verificarMenuChat } from '../src/assets/images/menu/languages/es/menu-img.js';
+import { isProtectedOwner } from '../lib/funcion/ownerGuard.js';
 
 let _sharp = null
 const getSharp = async () => {
@@ -333,21 +334,8 @@ async function esStickerFrames18(frames) {
 }
 
 function esOwner(sender, conn) {
-  const realNum = sender.replace(/[^0-9]/g, '');
-  const clean = (n) => n.toString().replace(/[^0-9]/g, '');
-
-  if (global.owner?.length) {
-    for (const o of global.owner) {
-      const n = clean(Array.isArray(o) ? o[0] : o);
-      if (n && n === realNum) return true;
-    }
-  }
-  if (global.lidOwners?.length) {
-    for (const o of global.lidOwners) {
-      if (clean(o) === realNum) return true;
-    }
-  }
-  return sender === conn?.user?.jid;
+  if (sender === conn?.user?.jid) return true;
+  return isProtectedOwner(sender, null, conn);
 }
 
 const URL_RE = /https?:\/\/[^\s<>"']+/gi;
