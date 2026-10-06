@@ -1,7 +1,8 @@
 import fs from 'fs';
 import { getConfig } from '../lib/funcConfig.js';
 import { getSinPrefijo } from '../lib/sinPrefijo.js';
-import { getCustomAudios, getAudioFilePath } from '../lib/funcion/audiosStore.js';
+import { getAudioFilePath } from '../lib/funcion/audiosStore.js';
+import { getAudiosDelGrupo } from '../lib/funcion/audiosGrupos.js';
 
 export const AUDIOS_CATALOG = [];
 
@@ -40,7 +41,7 @@ handler.all = async function (m, { conn }) {
 
     let matchedFile = null;
 
-    const customAudios = getCustomAudios();
+    const customAudios = getAudiosDelGrupo(m.chat);
     for (const [trigger, data] of Object.entries(customAudios)) {
       if (!isAudioEnabled(audiosConfig, trigger)) continue;
       if (lower.includes(trigger)) {

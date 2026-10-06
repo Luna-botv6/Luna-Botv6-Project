@@ -1,45 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import ffmpeg from 'fluent-ffmpeg';
-import { Readable, PassThrough } from 'stream';
 import { downloadContentFromMessage } from '@whiskeysockets/baileys';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getConfig } from '../lib/funcConfig.js';
 import { addCustomAudio, getCustomAudios, AUDIOS_DIR, ensureDir } from '../lib/funcion/audiosStore.js';
-
-function slugify(text) {
-  return text
-    .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .slice(0, 40) || 'audio';
-}
-
-function convertBufferToOggOpus(buffer) {
-  return new Promise((resolve, reject) => {
-    const input = new Readable();
-    input.push(buffer);
-    input.push(null);
-
-    const output = new PassThrough();
-    const chunks = [];
-    output.on('data', chunk => chunks.push(chunk));
-    output.on('end', () => resolve(Buffer.concat(chunks)));
-    output.on('error', reject);
-
-    ffmpeg(input)
-      .noVideo()
-      .audioCodec('libopus')
-      .audioChannels(1)
-      .audioFrequency(48000)
-      .audioBitrate('128k')
-      .outputOptions(['-map', '0:a:0', '-map_metadata', '-1', '-application', 'voip', '-frame_duration', '20', '-packet_loss', '0'])
-      .format('ogg')
-      .on('error', reject)
-      .pipe(output);
-  });
-}
+import { getAudiosDelGrupo, setAudioEnGrupo } from '../lib/funcion/audiosGrupos.js';
+import { slugifyFrase, convertBufferToOggOpus } from '../lib/funcion/audioConverter.js';
 
 async function downloadQuotedAudio(quoted) {
   if (typeof quoted.download === 'function') {
@@ -57,13 +23,23 @@ async function downloadQuotedAudio(quoted) {
   return Buffer.concat(chunks);
 }
 
-const handler = async (m, { conn, args, usedPrefix, command }) => {
+const handler = async (m, { conn, args, usedPrefix, command, isOwner, isROwner }) => {
   const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
   const t = _tr?.plugins?.agregar_audio || {};
   if (!m.isGroup) return m.reply(t.solo_grupos || '❌ Este comando solo funciona en grupos.');
 
-  const groupData = await getGroupDataForPlugin(conn, m.chat, m.sender);
-  if (!groupData.isAdmin && !groupData.isRAdmin) return m.reply(t.solo_admins || '❌ Solo los administradores pueden agregar audios.');
+  const esOwner = !!(isOwner || isROwner);
+  if (!esOwner) {
+    let habilitado = false;
+    try {
+      habilitado = !!getConfig(m.chat)?.agaudios;
+    } catch {
+      habilitado = false;
+    }
+    if (!habilitado) return m.reply(t.solo_owner || '❌ Solo el owner puede agregar audios en este grupo.');
+    const groupData = await getGroupDataForPlugin(conn, m.chat, m.sender);
+    if (!groupData.isAdmin && !groupData.isRAdmin) return m.reply(t.solo_admins || '❌ Solo los administradores pueden agregar audios.');
+  }
 
   const frase = args.join(' ').trim();
   if (!frase) {
@@ -82,6 +58,8 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
 
   const triggerKey = frase.toLowerCase();
 
+  const grupoAudios = getAudiosDelGrupo(m.chat);
+  if (grupoAudios[triggerKey]) return m.reply(t.ya_existe || '❌ Ya existe un audio guardado con esa frase, elige otra.');
   const customAudios = getCustomAudios();
   if (customAudios[triggerKey]) return m.reply(t.ya_existe || '❌ Ya existe un audio guardado con esa frase, elige otra.');
 
@@ -105,7 +83,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
 
   ensureDir();
 
-  const filename = `${slugify(frase)}-${Date.now()}.ogg`;
+  const filename = `${slugifyFrase(frase)}-${Date.now()}.ogg`;
   const filepath = path.join(AUDIOS_DIR, filename);
 
   try {
@@ -121,8 +99,14 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     chat: m.chat,
     date: Date.now()
   });
+  setAudioEnGrupo(m.chat, triggerKey, {
+    file: filename,
+    original: frase,
+    addedBy: m.sender,
+    date: Date.now()
+  });
 
-  await m.reply(t.exito?.replace('{frase}', frase).replace('{frase}', frase).replace('{archivo}', filename) || `✅ *Audio agregado correctamente*\n\n🗣️ *Frase:* _${frase}_\n📁 *Archivo:* ${filename}\n\n_Cuando alguien escriba "${frase}" en cualquier grupo, el bot responderá con este audio._\n_Podés desactivarlo por grupo con el comando de configuración de audios._`);
+  await m.reply(t.exito?.replace('{frase}', frase).replace('{frase}', frase).replace('{archivo}', filename) || `✅ *Audio agregado correctamente*\n\n🗣️ *Frase:* _${frase}_\n📁 *Archivo:* ${filename}\n\n_Cuando alguien escriba "${frase}" en este grupo, el bot responderá con este audio._`);
 };
 
 handler.command = /^agaudios$/i;

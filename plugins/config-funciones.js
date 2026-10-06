@@ -48,7 +48,8 @@ const CONFIG_MAP = {
   antilink2:    { key: 'antiLink2',    group: true, admin: true },
   modoadmin:    { key: 'modoadmin',    group: true, admin: true },
   autosticker:  { key: 'autosticker',  group: true, admin: true },
-  audios:       { key: 'audios',       group: true, admin: true },
+   audios:       { key: 'audios',       group: true, admin: true },
+   agaudios:     { key: 'agaudios',     group: true, owner: true },
   antitoxic:    { key: 'antiToxic',    group: true, admin: true },
   antiviewonce: { key: 'antiviewonce', group: true, admin: true },
   anti18:       { key: 'anti18',       group: true, admin: true },
@@ -106,8 +107,8 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
         {
           emoji: '🔇',
           title: 'Audios',
-          desc: 'Controla los audios en el grupo y a nivel global del bot\n_Grupo: admin · Global: owner_',
-          keys: ['audios', 'audios_bot']
+          desc: 'Respuestas con audio en el grupo y quién puede agregar nuevos\n_Reproducir: admin · Agregar: owner_',
+          keys: ['audios', 'audios_bot', 'agaudios']
         },
         {
           emoji: '🔒',

@@ -444,6 +444,7 @@
         "modoadmin": "Somente *admins* podem executar comandos do bot.",
         "autosticker": "Converte imagens e vídeos em stickers automaticamente.",
         "audios": "Ativa respostas automáticas com áudios no grupo.",
+        "agaudios": "Permite que admins adicionem áudios no grupo. Só o owner ativa.",
         "antitoxic": "Detecta e remove mensagens com palavras ofensivas.",
         "afk": "Permite que membros ativem o modo *AFK* no grupo.",
         "restrict": "Ativa restrições globais do bot (apenas dono).",
@@ -1980,7 +1981,8 @@
     },
     "agregar_audio": {
       "solo_grupos": "❌ Este comando só funciona em grupos.",
-      "solo_admins": "❌ Somente os administradores podem adicionar áudios.",
+      "solo_owner": "❌ Somente o owner pode adicionar áudios neste grupo.",
+      "solo_admins": "❌ Somente os administradores podem adicionar áudios neste grupo.",
       "falta_frase": "❌ Você deve indicar a frase que ativará o áudio.\n\n📌 Exemplo: responda a um áudio com:\n{prefix} Oi pessoal",
       "falta_cita": "❌ Você deve responder a um áudio ou nota de voz com:\n{prefix} {frase}",
       "no_es_audio": "❌ A mensagem que você respondeu não é um áudio nem uma nota de voz.",
@@ -1990,17 +1992,28 @@
       "error_convertir": "❌ Erro ao converter o áudio.",
       "conversion_vacia": "❌ A conversão do áudio não gerou nenhum arquivo válido.",
       "error_guardar": "❌ Não consegui salvar o áudio no servidor.",
-      "exito": "✅ *Áudio adicionado com sucesso*\n\n🗣️ *Frase:* _{frase}_\n📁 *Arquivo:* {archivo}\n\n_Quando alguém escrever \"{frase}\" em qualquer grupo, o bot responderá com este áudio._\n_Você pode desativá-lo por grupo com o comando de configuração de áudios._"
+      "exito": "✅ *Áudio adicionado com sucesso*\n\n🗣️ *Frase:* _{frase}_\n📁 *Arquivo:* {archivo}\n\n_Quando alguém escrever \"{frase}\" neste grupo, o bot responderá com este áudio._"
+    },
+    "importar_audios": {
+      "solo_grupos": "❌ Este comando só funciona em grupos.",
+      "solo_owner": "❌ Somente o owner pode importar áudios.",
+      "sin_audios": "📭 Ainda não há áudios na biblioteca para importar.",
+      "lista_titulo": "📥 *Biblioteca de áudios*\n\n",
+      "numeros_invalidos": "❌ Números inválidos. Use:",
+      "exito_titulo": "✅ *Importação pronta*\n\n"
     },
     "eliminar_audio": {
-      "lista_titulo": "🗑️ *Áudios personalizados salvos*\n\n",
-      "lista_item": "> *{pos}.* {nombre}\n",
-      "lista_footer": "\n_Para excluir um, use:_\n_`.elaudios <frase ou número>`_",
+      "lista_titulo": "🗑️ *Áudios deste grupo*\n\n",
+      "lista_item": "▶️ *{pos}.* {nombre}\n",
+      "lista_footer": "\n_Para excluir um, use:_\n_*.elaudios frase ou número*_",
+      "lista_footer_global": "\n_Para excluir de todos os lugares, use:_\n_*.elaudios global frase ou número*_",
       "solo_grupos": "❌ Este comando só funciona em grupos.",
-      "solo_admins": "❌ Somente os administradores podem excluir áudios.",
-      "sin_audios": "📭 Ainda não há áudios personalizados salvos.",
-      "no_encontrado": "❌ Não encontrei nenhum áudio com essa frase ou número.\n\n{lista}",
-      "exito": "✅ *Áudio excluído*\n\n🗣️ *Frase:* _{frase}_\n📁 *Arquivo:* {archivo}\n\n_Não será mais reproduzido em nenhum grupo._"
+      "solo_owner": "❌ Somente o owner pode excluir áudios neste grupo.",
+      "solo_admins": "❌ Somente os administradores podem excluir áudios neste grupo.",
+      "sin_audios": "📭 Este grupo ainda não tem áudios.",
+      "no_encontrado": "❌ Não encontrei nenhum áudio com essa frase ou número neste grupo.\n\n{lista}",
+      "exito": "✅ *Áudio excluído deste grupo*\n\n🗣️ *Frase:* _{frase}_\n📁 *Arquivo:* {archivo}",
+      "exito_global": "✅ *Áudio excluído de todos os lugares*\n\n🗣️ *Frase:* _{frase}_"
     },
     "audioia": {
       "estado_activado": "ativado ✅",

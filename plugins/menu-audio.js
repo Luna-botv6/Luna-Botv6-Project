@@ -1,5 +1,14 @@
-import { getCustomAudios } from '../lib/funcion/audiosStore.js';
+import { getConfig } from '../lib/funcConfig.js';
+import { getAudiosDelGrupo } from '../lib/funcion/audiosGrupos.js';
 import { resolveMenuMedia } from '../lib/funcion/menu-media.js';
+
+function entradasOrdenadas(audios) {
+  return Object.entries(audios).sort((a, b) => {
+    const na = (a[1] && a[1].original) || a[0];
+    const nb = (b[1] && b[1].original) || b[0];
+    return na.localeCompare(nb);
+  });
+}
 
 const handler = async (m, { conn, usedPrefix }) => {
   const datas = global;
@@ -10,24 +19,40 @@ const handler = async (m, { conn, usedPrefix }) => {
     tradutor = _tr?.plugins?.menu_audios || {};
   } catch {}
 
-  const customAudios = getCustomAudios();
-  const frases = Object.entries(customAudios).map(([, data]) => data.original || '').filter(Boolean);
+  const prefix = usedPrefix || '.';
+  const grupoAudios = getAudiosDelGrupo(m.chat);
+  const entries = entradasOrdenadas(grupoAudios);
 
-  const lineaVacio = tradutor.vacio || 'Todavía no hay audios agregados.';
+  let permisoAbierto = false;
+  try {
+    permisoAbierto = !!getConfig(m.chat)?.agaudios;
+  } catch {
+    permisoAbierto = false;
+  }
+
   const nombreBot = global.BotName || 'LUNA BOT V6';
-  const lineaSub = tradutor.subtitulo || '🎧 _Menú de audios_';
-  const lineaFrases = tradutor.frases || 'Frases disponibles';
+  const lineaSub = tradutor.subtitulo || '🎧 *Menú de audios*';
+  const lineaFrases = tradutor.frases || 'Audios de este grupo';
+  const lineaVacio = tradutor.vacio || 'Este grupo todavía no tiene audios.';
   const lineaEscribi = tradutor.escribi || '✍️ Escribí la frase y listo';
-  const lineaAgregar = (tradutor.agregar || '➕ Agregar: `{prefix}agaudios frase`').replace('{prefix}', usedPrefix || '.');
 
   let str = `🔮 *${nombreBot}*\n${lineaSub}\n\n┏━ *${lineaFrases}* ━┓\n`;
-  if (!frases.length) {
+  if (!entries.length) {
     str += `\n${lineaVacio}\n`;
   } else {
     str += `\n`;
-    for (const frase of frases) str += `› ${frase}\n`;
+    entries.forEach((([trigger, data], i) => {
+      str += `▶️ *${i + 1}.* ${data.original || trigger}\n`;
+    }));
   }
-  str += `\n┗━━━━━━━━━━━━━━┛\n${lineaEscribi}\n\n${lineaAgregar}`;
+  str += `\n┗━━━━━━━━━━━━━━┛\n${lineaEscribi}\n`;
+  str += `\n┏━ *Cómo funciona* ━┓\n`;
+  str += `\n*1.* Cada grupo tiene sus audios: lo que se agrega aquí no suena en otro grupo.`;
+  str += `\n*2.* Solo el owner agrega con *${prefix}agaudios frase* respondiendo a un audio.`;
+  str += `\n*3.* Con *${prefix}enable agaudios* el owner deja que los admins también agreguen en este grupo${permisoAbierto ? ' *(activo aquí)*' : ''}. Con *${prefix}disable agaudios* lo cierra.`;
+  str += `\n*4.* Con *${prefix}importaudios* el owner trae la biblioteca del bot a este grupo: *${prefix}importaudios todo* trae todos, *${prefix}importaudios 1 3 5* solo esos números de la lista.`;
+  str += `\n*5.* Con *${prefix}elaudios frase o número* se borra de este grupo. Solo el owner puede borrar de todos lados con *${prefix}elaudios global frase*.`;
+  str += `\n\n┗━━━━━━━━━━━━━━┛`;
 
   let mediaPath = null;
   let mediaType = null;
