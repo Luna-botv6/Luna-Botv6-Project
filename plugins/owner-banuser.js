@@ -1,10 +1,11 @@
 import fs from 'fs';
+import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
 
 const handler = async (m, { conn, participants, usedPrefix, command, args }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
   const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).functions.banuser;
 
-  const BANtext = `${tradutor.texto1}\n*${usedPrefix + command} @${global.suittag}*`;
+  const BANtext = `${tradutor.texto1}\n*${usedPrefix + command} @${getOwnerNumbers()[0] || ''}*`;
 
   if (!m.mentionedJid[0] && !m.quoted)
     return m.reply(BANtext, m.chat, { mentions: conn.parseMention(BANtext) });

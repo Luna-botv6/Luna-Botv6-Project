@@ -1,5 +1,6 @@
 import { existsSync, rmSync } from 'fs';
 import { join } from 'path';
+import { isProtectedOwner } from '../lib/funcion/ownerGuard.js';
 
 const BACKUP_DIR = join(process.cwd(), 'backup');
 
@@ -7,12 +8,7 @@ const eliminarBackupHandler = async (m, { conn }) => {
   const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
   const t = _tr?.plugins?.owner_delbackup || {};
   try {
-    const lidOwners = global.lidOwners || [];
-    const ownerNumbers = (global.owner || []).map(o => o[0]);
-    const allOwners = [...lidOwners, ...ownerNumbers].map(o => o.replace(/[^0-9]/g, ''));
-    const sender = m.sender.replace(/[^0-9]/g, '');
-
-    if (!allOwners.includes(sender)) {
+    if (!isProtectedOwner(m.sender, null, conn)) {
       await conn.reply(m.chat, (t.sin_permisos || '🚫 No tienes permisos para eliminar la carpeta backup.'), m);
       return;
     }

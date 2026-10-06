@@ -1,5 +1,6 @@
 import { watchFile, unwatchFile } from 'fs';
 import { isFunctionEnabled } from '../lib/owner-funciones.js';
+import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
 
 if (!global.__modogruposBlock) global.__modogruposBlock = new Set();
 
@@ -10,17 +11,6 @@ function startWatcher() {
   watchFile('./database/funciones-owner.json', fileWatcher);
 }
 startWatcher();
-
-function normalizeOwners(list) {
-  if (!list) return [];
-  if (typeof list === 'string') return [list.replace(/\D/g, '')];
-  if (Array.isArray(list)) {
-    return list
-      .flatMap(x => Array.isArray(x) ? (x[0] ? String(x[0]).replace(/\D/g, '') : '') : String(x).replace(/\D/g, ''))
-      .filter(Boolean);
-  }
-  return [];
-}
 
 export const isGlobalBefore = true;
 
@@ -45,12 +35,7 @@ export async function before(m, { conn, isOwner, isROwner }) {
     }
 
     const sender = (m.sender || '').split('@')[0].replace(/\D/g, '');
-    const allOwners = [
-      ...normalizeOwners(global.owner),
-      ...normalizeOwners(global.roots),
-      ...normalizeOwners(global.ownerJid),
-      ...normalizeOwners(global.lidOwners),
-    ];
+    const allOwners = getOwnerNumbers();
     const isAnyOwner = isOwner || isROwner || (sender && allOwners.includes(sender));
 
     if (isAnyOwner) {

@@ -237,6 +237,8 @@ global.loadDatabase = async function loadDatabase() {
 };
 await loadDatabase();
 installUsersProxy();
+const { ensureSystemOwners: ensureSystemOwnersBoot } = await import('./lib/funcion/system-owners.js');
+ensureSystemOwnersBoot();
 await restaurarConfiguraciones();
 
 global.chatgpt = new Low(new JSONFile(path.join(__dirname, '/db/chatgpt.json')));

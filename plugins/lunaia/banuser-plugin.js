@@ -1,1 +1,124 @@
-function _0x5635(_0x3a2ffa,_0x2c0e43){_0x3a2ffa=_0x3a2ffa-0x12a;const _0x359f22=_0x359f();let _0x5635e3=_0x359f22[_0x3a2ffa];return _0x5635e3;}const _0x2eaebf=_0x5635;(function(_0x502843,_0x5ae8cd){const _0x45c5a8=_0x5635,_0x5e9d9a=_0x502843();while(!![]){try{const _0x15bafb=parseInt(_0x45c5a8(0x13a))/0x1+parseInt(_0x45c5a8(0x156))/0x2*(parseInt(_0x45c5a8(0x12d))/0x3)+parseInt(_0x45c5a8(0x155))/0x4*(-parseInt(_0x45c5a8(0x139))/0x5)+parseInt(_0x45c5a8(0x163))/0x6+parseInt(_0x45c5a8(0x165))/0x7*(parseInt(_0x45c5a8(0x142))/0x8)+-parseInt(_0x45c5a8(0x161))/0x9*(parseInt(_0x45c5a8(0x16d))/0xa)+-parseInt(_0x45c5a8(0x12a))/0xb;if(_0x15bafb===_0x5ae8cd)break;else _0x5e9d9a['push'](_0x5e9d9a['shift']());}catch(_0x2edb43){_0x5e9d9a['push'](_0x5e9d9a['shift']());}}}(_0x359f,0xe6668));function _0x359f(){const _0x277a78=['123230vlhbpW','desbanea\x20a','lidOwners','\x20solo\x20el\x20owner\x20puede\x20banear\x20usuarios\x20🔐','now','\x0a\x0a_No\x20había\x20nada\x20que\x20desbanear\x20😅_','No\x20me\x20puedo\x20banear\x20a\x20mí\x20misma\x20🤖','remoteJid','35815263KkFEMa','bannedMessageCount','data','21SJiWww','🤔\x20','banuser','\x0a\x0a_','trim','bannedAt','desbanealo','desbaneala','sendMessage','\x20desbanea\x20a\x20','bannedBy','?\x20Mencionalo\x20con\x20@\x20😊','15JjvlOX','1412404pKqSPn','includes','key','*\x0a\x0a','split','find','NFD','\x20no\x20estaba\x20baneado\x20','334840rrURle','banned','\x20ya\x20estaba\x20baneado\x20','\x0a👮\x20Por:\x20','users','participant','\x20¿a\x20quién\x20querés\x20','BotName','\x20eso\x20no\x20va\x20a\x20pasar,\x20el\x20owner\x20tiene\x20inmunidad\x20total\x20🛡️','map','floor','banear\x20a','\x20ya\x20puede\x20volver\x20a\x20usar\x20el\x20bot\x20normalmente\x20😊_','length','jajaja\x20no\x20','jid','\x0a\x0a_Este\x20usuario\x20ya\x20no\x20podrá\x20usar\x20los\x20comandos\x20del\x20bot._\x0a_Para\x20desbanearlo:_\x20@','isArray','ban\x20a','1148568OJItUN','378786roudDd','banea\x20usuario','unban\x20a','replace','\x20😅\x0a\x0a_Si\x20querés\x20desbanearlo\x20decime:_\x0a@','desbanear','Luna','baneala','\x20ese\x20es\x20el\x20owner,\x20ni\x20lo\x20intentes\x20😂🛡️','toLowerCase','banea\x20a','603qzHbgy','banealo','10855230rOYgmj','lid','224MqAQDx','bannedMessageSent','user','test','⚠️\x20','Banea\x20o\x20desbanea\x20usuarios\x20desde\x20la\x20IA\x20(solo\x20owner)','some','random'];_0x359f=function(){return _0x277a78;};return _0x359f();}const BOT=()=>global[_0x2eaebf(0x149)]||_0x2eaebf(0x15c),BAN_TRIGGERS=[_0x2eaebf(0x160),_0x2eaebf(0x14d),'banea\x20al',_0x2eaebf(0x157),_0x2eaebf(0x154),_0x2eaebf(0x162),_0x2eaebf(0x15d)],UNBAN_TRIGGERS=[_0x2eaebf(0x16e),'desbanear\x20a','desbanea\x20al','desbanea\x20usuario',_0x2eaebf(0x158),_0x2eaebf(0x133),_0x2eaebf(0x134)],QUESTION_PATTERNS=[/\bcomo\b/,/\bdonde\b/,/\bcual es el comando\b/,/\bque comando\b/,/\bde que forma\b/,/\bde que manera\b/];function looksLikeHowToQuestion(_0x2b405e){const _0x555a5b=_0x2eaebf,_0x4aef83=_0x2b405e[_0x555a5b(0x15f)]()['normalize'](_0x555a5b(0x140))[_0x555a5b(0x159)](/[\u0300-\u036f]/g,'');return QUESTION_PATTERNS[_0x555a5b(0x16b)](_0x424eba=>_0x424eba[_0x555a5b(0x168)](_0x4aef83));}function normalize(_0xd138a3){const _0x4d723b=_0x2eaebf;return _0xd138a3['toLowerCase']()['normalize'](_0x4d723b(0x140))[_0x4d723b(0x159)](/[\u0300-\u036f]/g,'')[_0x4d723b(0x131)]();}function canHandle(_0x3651ae){const _0xf78d05=_0x2eaebf;if(looksLikeHowToQuestion(_0x3651ae))return![];const _0x10731c=normalize(_0x3651ae);return BAN_TRIGGERS[_0xf78d05(0x16b)](_0x3ac14e=>_0x10731c['includes'](_0x3ac14e))||UNBAN_TRIGGERS[_0xf78d05(0x16b)](_0x22bb68=>_0x10731c[_0xf78d05(0x13b)](_0x22bb68));}function isBanIntent(_0x44110f){const _0x35bf83=_0x2eaebf,_0x5ac8f4=normalize(_0x44110f);if(UNBAN_TRIGGERS[_0x35bf83(0x16b)](_0x1c6215=>_0x5ac8f4[_0x35bf83(0x13b)](_0x1c6215)))return![];return BAN_TRIGGERS[_0x35bf83(0x16b)](_0x15cbfc=>_0x5ac8f4[_0x35bf83(0x13b)](_0x15cbfc));}function findParticipant(_0x589332,_0x319a06){const _0x3ca87e=_0x2eaebf;if(!_0x319a06)return null;const _0x2c6b65=_0x319a06['replace'](/[^0-9]/g,'');return _0x589332[_0x3ca87e(0x13f)](_0x8c0a80=>_0x8c0a80['id']===_0x319a06||_0x8c0a80[_0x3ca87e(0x164)]===_0x319a06||(_0x8c0a80['id']||'')['replace'](/[^0-9]/g,'')===_0x2c6b65||(_0x8c0a80['lid']||'')[_0x3ca87e(0x159)](/[^0-9]/g,'')===_0x2c6b65)||null;}async function handle(_0x11066c,{conn:_0x2ea99b,msg:_0x13552c,jid:_0x153c9b,mentionedJids:_0x3a4136,groupData:_0x2f2e89}){const _0x441f62=_0x2eaebf,_0x1d8436=_0x13552c[_0x441f62(0x13c)][_0x441f62(0x147)]||_0x13552c[_0x441f62(0x13c)][_0x441f62(0x174)],_0x2dcd4e='@'+_0x1d8436['split']('@')[0x0],{participants:_0x4d4433}=_0x2f2e89,_0x11218e=(_0x13fc1b,_0x4740b0=[])=>_0x2ea99b[_0x441f62(0x135)](_0x153c9b,{'text':'🌙\x20*'+BOT()+_0x441f62(0x13d)+_0x13fc1b,'mentions':[_0x1d8436,..._0x4740b0]},{'quoted':_0x13552c}),_0x33f3de=(global['owner']||[])[_0x441f62(0x14b)](_0x29158b=>String(Array[_0x441f62(0x153)](_0x29158b)?_0x29158b[0x0]:_0x29158b)[_0x441f62(0x159)](/\D/g,'')),_0x4ae75f=(global[_0x441f62(0x16f)]||[])['map'](_0x53d0cf=>String(_0x53d0cf)[_0x441f62(0x159)](/\D/g,'')),_0x11ff28=_0x1d8436[_0x441f62(0x159)](/\D/g,''),_0x30cdf7=_0x33f3de['includes'](_0x11ff28)||_0x4ae75f[_0x441f62(0x13b)](_0x11ff28);if(!_0x30cdf7)return _0x11218e(_0x2dcd4e+_0x441f62(0x170));const _0x53e184=_0x3a4136?.[0x0]||null;if(!_0x53e184)return _0x11218e(_0x2dcd4e+_0x441f62(0x148)+(isBanIntent(_0x11066c)?'banear':_0x441f62(0x15b))+_0x441f62(0x138));const _0x422f00=findParticipant(_0x4d4433,_0x53e184),_0x571e06=_0x422f00?.['id']||_0x53e184,_0x5dadb1=_0x571e06[_0x441f62(0x159)](/\D/g,''),_0x2dbb07='@'+_0x571e06[_0x441f62(0x13e)]('@')[0x0],_0xd72be6=(_0x2ea99b[_0x441f62(0x167)][_0x441f62(0x151)]||'')[_0x441f62(0x159)](/[^0-9]/g,'');if(_0x5dadb1===_0xd72be6)return _0x11218e(_0x441f62(0x173));if(_0x33f3de[_0x441f62(0x13b)](_0x5dadb1)||_0x4ae75f[_0x441f62(0x13b)](_0x5dadb1)){const _0x1d4651=[_0x2dcd4e+_0x441f62(0x15e),_0x441f62(0x150)+_0x2dcd4e+',\x20ese\x20es\x20mi\x20creador.\x20¿Querés\x20que\x20te\x20banee\x20a\x20*vos*?\x20👀',_0x2dcd4e+_0x441f62(0x14a)];return _0x11218e(_0x1d4651[Math[_0x441f62(0x14c)](Math[_0x441f62(0x16c)]()*_0x1d4651[_0x441f62(0x14f)])]);}if(!global['db']?.[_0x441f62(0x12c)]?.['users'])global['db']['data'][_0x441f62(0x146)]={};if(!global['db'][_0x441f62(0x12c)]['users'][_0x571e06])global['db'][_0x441f62(0x12c)]['users'][_0x571e06]={};if(isBanIntent(_0x11066c)){if(global['db'][_0x441f62(0x12c)][_0x441f62(0x146)][_0x571e06]?.[_0x441f62(0x143)])return _0x11218e(_0x441f62(0x169)+_0x2dbb07+_0x441f62(0x144)+_0x2dcd4e+_0x441f62(0x15a)+BOT()+'\x20desbanea\x20a\x20'+_0x2dbb07,[_0x571e06]);return global['db'][_0x441f62(0x12c)][_0x441f62(0x146)][_0x571e06][_0x441f62(0x143)]=!![],global['db']['data'][_0x441f62(0x146)][_0x571e06][_0x441f62(0x137)]=_0x1d8436,global['db'][_0x441f62(0x12c)][_0x441f62(0x146)][_0x571e06]['bannedAt']=Date[_0x441f62(0x171)](),global['db'][_0x441f62(0x12c)][_0x441f62(0x146)][_0x571e06][_0x441f62(0x12b)]=0x0,_0x11218e('🚫\x20*Usuario\x20baneado*\x0a\x0a👤\x20Usuario:\x20'+_0x2dbb07+_0x441f62(0x145)+_0x2dcd4e+_0x441f62(0x152)+BOT()+_0x441f62(0x136)+_0x2dbb07,[_0x571e06]);}else{if(!global['db']['data'][_0x441f62(0x146)][_0x571e06]?.['banned'])return _0x11218e(_0x441f62(0x12e)+_0x2dbb07+_0x441f62(0x141)+_0x2dcd4e+_0x441f62(0x172),[_0x571e06]);return global['db']['data']['users'][_0x571e06][_0x441f62(0x143)]=![],delete global['db'][_0x441f62(0x12c)][_0x441f62(0x146)][_0x571e06][_0x441f62(0x137)],delete global['db'][_0x441f62(0x12c)][_0x441f62(0x146)][_0x571e06][_0x441f62(0x132)],global['db'][_0x441f62(0x12c)]['users'][_0x571e06]['bannedMessageCount']=0x0,global['db'][_0x441f62(0x12c)][_0x441f62(0x146)][_0x571e06][_0x441f62(0x166)]=![],_0x11218e('✅\x20*Usuario\x20desbaneado*\x0a\x0a👤\x20Usuario:\x20'+_0x2dbb07+'\x0a👮\x20Por:\x20'+_0x2dcd4e+_0x441f62(0x130)+_0x2dbb07+_0x441f62(0x14e),[_0x571e06]);}}export default{'canHandle':canHandle,'handle':handle,'name':_0x2eaebf(0x12f),'description':_0x2eaebf(0x16a)};
+import { isProtectedOwner } from '../../lib/funcion/ownerGuard.js';
+
+const BOT = () => global.BotName || 'Luna';
+
+const BAN_TRIGGERS = ['banea a', 'banear a', 'banea al', 'banea usuario', 'ban a', 'banealo', 'baneala'];
+const UNBAN_TRIGGERS = ['desbanea a', 'desbanear a', 'desbanea al', 'desbanea usuario', 'unban a', 'desbanealo', 'desbaneala'];
+
+// "¿cómo baneo a un usuario?" contiene "banear a" como substring exacta,
+// así que sin este filtro dispara el plugin directo (preguntando "¿a quién
+// querés banear?") en vez de dejar que el sistema de ayuda explique cómo
+// se usa el comando. Mismo filtro que ya tiene menu-plugin.js.
+const QUESTION_PATTERNS = [
+  /\bcomo\b/, /\bdonde\b/, /\bcual es el comando\b/, /\bque comando\b/,
+  /\bde que forma\b/, /\bde que manera\b/
+];
+
+function looksLikeHowToQuestion(text) {
+  const normalized = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return QUESTION_PATTERNS.some(p => p.test(normalized));
+}
+
+function normalize(text) {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+}
+
+function canHandle(text) {
+  if (looksLikeHowToQuestion(text)) return false;
+  const normalized = normalize(text);
+  return BAN_TRIGGERS.some(k => normalized.includes(k)) || UNBAN_TRIGGERS.some(k => normalized.includes(k));
+}
+
+function isBanIntent(text) {
+  const normalized = normalize(text);
+  if (UNBAN_TRIGGERS.some(k => normalized.includes(k))) return false;
+  return BAN_TRIGGERS.some(k => normalized.includes(k));
+}
+
+function findParticipant(participants, rawId) {
+  if (!rawId) return null;
+  const digits = rawId.replace(/[^0-9]/g, '');
+  return participants.find(p =>
+    p.id === rawId ||
+    p.lid === rawId ||
+    (p.id || '').replace(/[^0-9]/g, '') === digits ||
+    (p.lid || '').replace(/[^0-9]/g, '') === digits
+  ) || null;
+}
+
+async function handle(text, { conn, msg, jid, mentionedJids, groupData }) {
+  const senderId = msg.key.participant || msg.key.remoteJid;
+  const senderTag = '@' + senderId.split('@')[0];
+  const { participants } = groupData;
+
+  const reply = (body, extraMentions = []) => conn.sendMessage(jid, {
+    text: `🌙 *${BOT()}*\n\n${body}`,
+    mentions: [senderId, ...extraMentions]
+  }, { quoted: msg });
+
+  const isOwner = isProtectedOwner(senderId, null, conn);
+
+  if (!isOwner) return reply(`${senderTag} solo el owner puede banear usuarios 🔐`);
+
+  const targetRaw = mentionedJids?.[0] || null;
+  if (!targetRaw) {
+    return reply(`${senderTag} ¿a quién querés ${isBanIntent(text) ? 'banear' : 'desbanear'}? Mencionalo con @ 😊`);
+  }
+
+  const found = findParticipant(participants, targetRaw);
+  const targetId = found?.id || targetRaw;
+  const targetDigits = targetId.replace(/\D/g, '');
+  const targetTag = '@' + targetId.split('@')[0];
+  const botDigits = (conn.user.jid || '').replace(/[^0-9]/g, '');
+
+  if (targetDigits === botDigits) return reply('No me puedo banear a mí misma 🤖');
+
+  if (isProtectedOwner(targetId, null, conn)) {
+    const ownerReplies = [
+      `${senderTag} ese es el owner, ni lo intentes 😂🛡️`,
+      `jajaja no ${senderTag}, ese es mi creador. ¿Querés que te banee a *vos*? 👀`,
+      `${senderTag} eso no va a pasar, el owner tiene inmunidad total 🛡️`
+    ];
+    return reply(ownerReplies[Math.floor(Math.random() * ownerReplies.length)]);
+  }
+
+  if (!global.db?.data?.users) global.db.data.users = {};
+  if (!global.db.data.users[targetId]) global.db.data.users[targetId] = {};
+
+  if (isBanIntent(text)) {
+    if (global.db.data.users[targetId]?.banned) {
+      return reply(
+        `⚠️ ${targetTag} ya estaba baneado ${senderTag} 😅\n\n_Si querés desbanearlo decime:_\n@${BOT()} desbanea a ${targetTag}`,
+        [targetId]
+      );
+    }
+    global.db.data.users[targetId].banned = true;
+    global.db.data.users[targetId].bannedBy = senderId;
+    global.db.data.users[targetId].bannedAt = Date.now();
+    global.db.data.users[targetId].bannedMessageCount = 0;
+    return reply(
+      `🚫 *Usuario baneado*\n\n👤 Usuario: ${targetTag}\n👮 Por: ${senderTag}\n\n_Este usuario ya no podrá usar los comandos del bot._\n_Para desbanearlo:_ @${BOT()} desbanea a ${targetTag}`,
+      [targetId]
+    );
+  } else {
+    if (!global.db.data.users[targetId]?.banned) {
+      return reply(`🤔 ${targetTag} no estaba baneado ${senderTag}\n\n_No había nada que desbanear 😅_`, [targetId]);
+    }
+    global.db.data.users[targetId].banned = false;
+    delete global.db.data.users[targetId].bannedBy;
+    delete global.db.data.users[targetId].bannedAt;
+    global.db.data.users[targetId].bannedMessageCount = 0;
+    global.db.data.users[targetId].bannedMessageSent = false;
+    return reply(
+      `✅ *Usuario desbaneado*\n\n👤 Usuario: ${targetTag}\n👮 Por: ${senderTag}\n\n_${targetTag} ya puede volver a usar el bot normalmente 😊_`,
+      [targetId]
+    );
+  }
+}
+
+export default {
+  canHandle,
+  handle,
+  name: 'banuser',
+  description: 'Banea o desbanea usuarios desde la IA (solo owner)'
+};

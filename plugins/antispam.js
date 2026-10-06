@@ -1,6 +1,8 @@
 import { loadAntiSpam, saveAntiSpam } from '../lib/antispamDB.js';
 import { logSpamWarning, logSpamBan, logOwnerSpam } from '../lib/antispamLogger.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { isProtectedOwner } from '../lib/funcion/ownerGuard.js';
+import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
 import fs from 'fs';
 
 const SPAM_THRESHOLD = 18;
@@ -36,7 +38,7 @@ export async function before(m, { isCommand, conn }) {
 
   const sender = getRealSender(m.sender, conn);
   const senderNum = sender.split('@')[0];
-  const isOwner = global.owner.some(([num]) => senderNum === num) || global.lidOwners.includes(senderNum);
+  const isOwner = isProtectedOwner(sender, null, conn);
   const now = Date.now();
   const isGroup = m.chat.endsWith('@g.us');
 
@@ -113,15 +115,12 @@ export async function before(m, { isCommand, conn }) {
     data.lastWarnTime = now;
 
     if (data.warns >= warningsLimit) {
-      const [mainOwnerNum] = global.owner[0];
       const users = global.db.data.users;
       if (!users[sender]) users[sender] = {};
       users[sender].banned = true;
 
       try {
-        const ownersToNotify = (global.owner || [])
-          .map(([num]) => String(num).replace(/[^0-9]/g, ''))
-          .filter(num => num.length >= 10);
+        const ownersToNotify = getOwnerNumbers().filter(num => num.length >= 10);
 
         const n = t.notify_owner;
         const ownerMsg =

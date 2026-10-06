@@ -4,9 +4,8 @@ import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const handler = async (m, { conn, args, participants, isOwner, isROwner, command }) => {
   try {
-    const isLidOwner = global.lidOwners?.includes(m.sender) || false;
     
-    if (!isOwner && !isROwner && !isLidOwner) {
+    if (!isOwner && !isROwner ) {
       throw 'Este comando es solo para los *propietarios del bot*.';
     }
     const datas = global || {};

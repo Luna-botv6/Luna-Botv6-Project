@@ -1,22 +1,21 @@
+import { resolveOwnerPhone } from '../lib/funcion/system-owners.js';
+
 async function handler(m, { conn }) {
   const jid = m.sender;
+  const phone = resolveOwnerPhone(jid, conn) || String(jid || '').split('@')[0].replace(/\D/g, '');
 
   let name;
   try {
     name = await conn.getName(jid);
   } catch {
-    name = jid.split('@')[0];
+    name = phone;
   }
-
-  const isLid = jid.endsWith('@lid');
-  const tipo = isLid ? '🆔 *JID LID (ligero)*' : '🆔 *JID estándar (SID)*';
 
   const text = `
 ╭━━━〔 *🔐 Identificador de Usuario* 〕━━⬣
 ┃ *👤 Nombre:* ${name}
-┃ *📱 Número:* wa.me/${jid.split('@')[0]}
-┃ ${tipo}
-┃ 
+┃ *📱 Número:* wa.me/${phone}
+┃
 ┃ *🪪 JID completo:*
 ┃ ${jid}
 ╰━━━━━━━━━━━━━━━━━━━━⬣

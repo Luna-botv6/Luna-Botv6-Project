@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { getGroupDataForPlugin, clearGroupCache, resolveRealJidDeLid, buscarNombreEnParticipantes } from '../lib/funcion/pluginHelper.js';
 import { registrarKickban, listarKickbans, quitarKickban, normalizarNumero, obtenerKickban, contarGrupos } from '../lib/funcion/kickban-store.js';
 import { cinta, cabecera, titulo, pie, campo, fila, mensajeKickban, mensajeLista, mensajeSinRegistro, escapeCinta } from '../lib/funcion/kickban-estilo.js';
+import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
 
 const cooldowns = new Map();
 const COOLDOWN_MS = 45 * 1000;
@@ -28,9 +29,7 @@ function corto(emoji, linea, nota) {
 }
 
 function ownerTags() {
-  const owners = (global.owner || []).map(o => String(Array.isArray(o) ? o[0] : o).replace(/\D/g, ''));
-  const lids = (global.lidOwners || []).map(o => String(o).replace(/\D/g, ''));
-  return [...owners, ...lids].filter(Boolean);
+  return getOwnerNumbers();
 }
 
 function esProtegido(numero) {

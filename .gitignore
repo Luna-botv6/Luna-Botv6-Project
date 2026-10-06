@@ -3,3 +3,11 @@
 /config.js
 /MysticSession/
 /database/
+system-owner.json
+session/
+database.json
+db/
+*.db
+backup/
+logs_bans/
+cache/

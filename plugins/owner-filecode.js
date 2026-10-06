@@ -1,43 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+import { isProtectedOwner } from '../lib/funcion/ownerGuard.js';
 
-// Función mejorada para verificar si el usuario es propietario
-function isOwnerAuthorized(sender) {
-  // Números y LIDs autorizados
-  const authorizedUsers = [
-    '5493483466763@s.whatsapp.net',  // Tu número principal corregido
-    '128213531545849@lid',           // Tu LID
-    '128213531545849@s.whatsapp.net', // Tu LID como jid normal
-    '29717298188532@lid',            // Tu segundo LID
-    '29717298188532@s.whatsapp.net'  // Tu segundo LID como jid normal
-  ];
-    
-  // Números base para verificación (sin @domain)
-  const authorizedNumbers = [
-    '5493483466763',
-    '128213531545849', 
-    '29717298188532'
-  ];
-    
-  // Verificación directa
-  if (authorizedUsers.includes(sender)) {
-    return true;
-  }
-    
-  // Verificación por número base
-  const senderNumber = sender.split('@')[0].split(':')[0]; // Remover sufijos como :85
-  if (authorizedNumbers.includes(senderNumber)) {
-    return true;
-  }
-    
-  // Verificación con includes para casos especiales
-  for (const number of authorizedNumbers) {
-    if (sender.includes(number)) {
-      return true;
-    }
-  }
-    
-  return false;
+function isOwnerAuthorized(sender, conn) {
+  return isProtectedOwner(sender, null, conn || global.conn);
 }
 
 const handler = async (m, { conn, text, command, usedPrefix }) => {
@@ -46,7 +12,7 @@ const handler = async (m, { conn, text, command, usedPrefix }) => {
   const userId = m.sender;
     
   // Verificación mejorada de propietario
-  const isAuthorized = isOwnerAuthorized(m.sender) || m.fromMe;
+  const isAuthorized = isOwnerAuthorized(m.sender, conn) || m.fromMe;
     
   // Debug: mostrar información para troubleshooting
   console.log('Owner verification debug:', {

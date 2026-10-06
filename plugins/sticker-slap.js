@@ -1,6 +1,7 @@
 import fs from 'fs';
 import {sticker} from '../src/libraries/sticker.js';
 import fetch from 'node-fetch';
+import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
 
 
 const handler = async (m, { conn, args, usedPrefix, command }) => {
@@ -15,7 +16,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
   } else { 
     who = m.chat;
   }
-  const textquien = `${tradutor.texto1}\n◉ ${usedPrefix + command} @${global.suittag}`;
+  const textquien = `${tradutor.texto1}\n◉ ${usedPrefix + command} @${getOwnerNumbers()[0] || ''}`;
   if (who === m.chat && m.isGroup || !who && m.isGroup) return m.reply(textquien, m.chat, {mentions: conn.parseMention(textquien)});
   try {
     let name;

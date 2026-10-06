@@ -1,1 +1,151 @@
-const _0x21914d=_0x2b17;function _0x2b17(_0x2d32bf,_0x142323){_0x2d32bf=_0x2d32bf-0xaf;const _0x4c13f0=_0x4c13();let _0x2b177d=_0x4c13f0[_0x2d32bf];return _0x2b177d;}(function(_0x169683,_0x1bdd4f){const _0x54b022=_0x2b17,_0x58fab7=_0x169683();while(!![]){try{const _0x437412=parseInt(_0x54b022(0xdc))/0x1*(parseInt(_0x54b022(0xb1))/0x2)+-parseInt(_0x54b022(0xd7))/0x3+parseInt(_0x54b022(0xdd))/0x4*(-parseInt(_0x54b022(0xea))/0x5)+-parseInt(_0x54b022(0xcf))/0x6+parseInt(_0x54b022(0xeb))/0x7*(-parseInt(_0x54b022(0xdb))/0x8)+-parseInt(_0x54b022(0xf1))/0x9*(parseInt(_0x54b022(0xbb))/0xa)+parseInt(_0x54b022(0xcc))/0xb*(parseInt(_0x54b022(0xe6))/0xc);if(_0x437412===_0x1bdd4f)break;else _0x58fab7['push'](_0x58fab7['shift']());}catch(_0x476dc8){_0x58fab7['push'](_0x58fab7['shift']());}}}(_0x4c13,0x992bf));import _0x50bc33 from'../config-funciones.js';function _0x4c13(){const _0x103977=['Luna','NFD','60WJStyN','restringir','modo\x20publico','autoread','265245HWyHdE','1607459sHnjbp','split','normalize','soloadmin','antiprivado','modo\x20admin','27gaEZOe','entries','toLowerCase','audios_bot','3812UkJkNx','sendMessage','modogrupos','welcome','anticall','test','length','solo\x20admin','*\x0a\x0a*====[\x20Funciones\x20de\x20grupo\x20]====*\x0a🎉\x20*welcome*\x20-\x20bienvenida\x0a🔗\x20*antilink*\x20-\x20anti\x20enlaces\x0a🔗\x20*antilink2*\x20-\x20variante\x20antilink\x0a👑\x20*modoadmin*\x20-\x20solo\x20admins\x20usan\x20el\x20bot\x0a🏷️\x20*autosticker*\x20-\x20sticker\x20automatico\x0a🎵\x20*audios*\x20-\x20mensajes\x20de\x20voz\x0a🗑️\x20*antidelete*\x20-\x20anti\x20eliminar\x0a☢️\x20*antitoxic*\x20-\x20anti\x20toxico\x0a⏰\x20*afk*\x20-\x20modo\x20ausente\x0a🔍\x20*detect\x20/\x20detect2*\x20-\x20deteccion\x0a\x0a*====[\x20Solo\x20owner\x20]====*\x0a🔐\x20*restrict*\x20-\x20modo\x20restringido\x0a📖\x20*autoread*\x20-\x20leer\x20mensajes\x0a📞\x20*anticall*\x20-\x20anti\x20llamadas\x0a🎯\x20*antispam*\x20-\x20anti\x20spam\x0a🚫\x20*antiprivado*\x20-\x20anti\x20privado\x0a🌐\x20*modopublico*\x20-\x20modo\x20publico\x0a📋\x20*modogrupos*\x20-\x20modo\x20grupos\x0a\x0a_Ejemplo:\x20@','antienlace','3070940NmFASk','antienlace2','some','modopublico','autosticker','antitoxic','autoleer','BotName','includes','lidOwners','Configurar\x20opciones\x20desde\x20la\x20IA','map','antispam','antitoxico','key','antidelete','detectar2','8616619oFGtkW','antiprivate','owner','1663620ojDQEJ','filter','endsWith','detect2','participant','🌙\x20*','isArray','autostickers','1266609YQCLoy','error','config','detectar','40pWItuK','228quOHnQ','72hriBQd','bienvenida','enable','[config-plugin]','antilink','modoadmin','replace'];_0x4c13=function(){return _0x103977;};return _0x4c13();}import{getGroupDataForPlugin}from'../../lib/funcion/pluginHelper.js';const BOT=()=>global[_0x21914d(0xc2)]||_0x21914d(0xe4),CONFIG_OPTIONS={'welcome':[_0x21914d(0xde),_0x21914d(0xb4)],'detect':['detect',_0x21914d(0xda)],'detect2':[_0x21914d(0xd2),_0x21914d(0xcb)],'antilink':[_0x21914d(0xe1),_0x21914d(0xba)],'antilink2':['antilink2',_0x21914d(0xbc)],'modoadmin':[_0x21914d(0xe2),_0x21914d(0xf0),_0x21914d(0xb8),_0x21914d(0xee)],'autosticker':[_0x21914d(0xbf),_0x21914d(0xd6)],'audios':['audios'],'antidelete':[_0x21914d(0xca),'antieliminar'],'antitoxic':[_0x21914d(0xc0),_0x21914d(0xc8)],'afk':['afk'],'restrict':['restrict',_0x21914d(0xe7)],'autoread':[_0x21914d(0xe9),_0x21914d(0xc1)],'anticall':[_0x21914d(0xb5),'antillamada'],'audios_bot':[_0x21914d(0xb0),'audiosbot'],'antispam':[_0x21914d(0xc7)],'antiprivado':[_0x21914d(0xef),_0x21914d(0xcd)],'modopublico':[_0x21914d(0xbe),_0x21914d(0xe8)],'modogrupos':[_0x21914d(0xb3),'modo\x20grupos']},ENABLE_SOLO=/\b(activa|activar|enable|habilitar|encender|enciende|prende|prender)\b/,DISABLE_SOLO=/\b(desactiva|desactivar|disable|deshabilitar|apaga|apagar|desactivalo)\b/,MAX_WORDS_FOR_BARE_VERB=0x4;function normalize(_0x8262db){const _0x25faaf=_0x21914d;return _0x8262db[_0x25faaf(0xaf)]()[_0x25faaf(0xed)](_0x25faaf(0xe5))[_0x25faaf(0xe3)](/[\u0300-\u036f]/g,'')['replace'](/[?!]/g,'')['trim']();}function parseCommands(_0x2840bd){const _0x6c6c7f=_0x21914d,_0x483297=normalize(_0x2840bd),_0x1c158e=[],_0x2671e2=/\b(activa|activar|enable|habilitar|encender|enciende|prende|prender|pon|pone|quiero|activalo)\b/,_0x1ef9e4=/\b(desactiva|desactivar|disable|deshabilitar|apaga|apagar|saca|desactivalo)\b/;let _0x592ba4=null;if(_0x2671e2['test'](_0x483297))_0x592ba4=!![];if(_0x1ef9e4[_0x6c6c7f(0xb6)](_0x483297))_0x592ba4=![];if(_0x592ba4===null)return _0x1c158e;for(const [_0x4c2c89,_0x6bebf]of Object[_0x6c6c7f(0xf2)](CONFIG_OPTIONS)){if(_0x6bebf[_0x6c6c7f(0xbd)](_0x25e841=>_0x483297[_0x6c6c7f(0xc3)](_0x25e841)))_0x1c158e['push']({'option':_0x4c2c89,'enable':_0x592ba4});}return _0x1c158e;}function buildMenuGrupo(){const _0x31cb55=_0x21914d;return _0x31cb55(0xd4)+BOT()+_0x31cb55(0xb9)+BOT()+'\x20activa\x20el\x20modoadmin_';}function canHandle(_0x410240){const _0x529071=_0x21914d,_0x3d42e2=normalize(_0x410240);if(parseCommands(_0x410240)[_0x529071(0xb7)]>0x0)return!![];const _0x3fbc4e=ENABLE_SOLO[_0x529071(0xb6)](_0x3d42e2)||DISABLE_SOLO[_0x529071(0xb6)](_0x3d42e2);if(!_0x3fbc4e)return![];const _0x22671a=_0x3d42e2[_0x529071(0xec)](/\s+/)[_0x529071(0xd0)](Boolean)['length'];return _0x22671a<=MAX_WORDS_FOR_BARE_VERB;}async function handle(_0x583196,{conn:_0x334bd2,msg:_0x2b6057,jid:_0x1f948a}){const _0x1cc178=_0x21914d,_0x4ec2fa=_0x2b6057[_0x1cc178(0xc9)][_0x1cc178(0xd3)]||_0x2b6057['key']['remoteJid'],_0x38ff3e=parseCommands(_0x583196),_0x32c537=normalize(_0x583196);if(!_0x38ff3e[_0x1cc178(0xb7)]){(ENABLE_SOLO[_0x1cc178(0xb6)](_0x32c537)||DISABLE_SOLO[_0x1cc178(0xb6)](_0x32c537))&&await _0x334bd2[_0x1cc178(0xb2)](_0x1f948a,{'text':buildMenuGrupo(),'mentions':[_0x4ec2fa]},{'quoted':_0x2b6057});return;}const {isAdmin:_0x4df640,isOwner:_0x2a41d4}=await getGroupDataForPlugin(_0x334bd2,_0x1f948a,_0x4ec2fa),_0x22a6a8=(global[_0x1cc178(0xce)]||[])[_0x1cc178(0xc6)](_0x2dfb65=>String(Array[_0x1cc178(0xd5)](_0x2dfb65)?_0x2dfb65[0x0]:_0x2dfb65)['replace'](/\D/g,'')),_0x188ee8=(global[_0x1cc178(0xc4)]||[])[_0x1cc178(0xc6)](_0x3f428a=>String(_0x3f428a)[_0x1cc178(0xe3)](/\D/g,'')),_0x4e576f=_0x4ec2fa[_0x1cc178(0xe3)](/\D/g,''),_0x193269=_0x22a6a8[_0x1cc178(0xc3)](_0x4e576f)||_0x188ee8[_0x1cc178(0xc3)](_0x4e576f),_0x2a5a47={..._0x2b6057,'chat':_0x1f948a,'sender':_0x4ec2fa,'isGroup':_0x1f948a[_0x1cc178(0xd1)]('@g.us'),'key':_0x2b6057[_0x1cc178(0xc9)],'reply':_0xd62390=>_0x334bd2[_0x1cc178(0xb2)](_0x1f948a,{'text':_0xd62390},{'quoted':_0x2b6057})};for(const {option:_0x2a67af,enable:_0x21ee3a}of _0x38ff3e){try{await _0x50bc33(_0x2a5a47,{'conn':_0x334bd2,'args':[_0x2a67af],'command':_0x21ee3a?_0x1cc178(0xdf):'disable','usedPrefix':'/','isOwner':_0x193269||_0x2a41d4,'isAdmin':_0x4df640,'isROwner':_0x193269});}catch(_0xa0a08d){if(_0xa0a08d!==![])console[_0x1cc178(0xd8)](_0x1cc178(0xe0),_0x2a67af,_0xa0a08d?.['message']||_0xa0a08d);}}}export default{'canHandle':canHandle,'handle':handle,'name':_0x21914d(0xd9),'description':_0x21914d(0xc5)};
+import configFunciones from '../config-funciones.js';
+import { getGroupDataForPlugin } from '../../lib/funcion/pluginHelper.js';
+import { isProtectedOwner } from '../../lib/funcion/ownerGuard.js';
+
+const BOT = () => global.BotName || 'Luna';
+
+const CONFIG_OPTIONS = {
+  welcome: ['bienvenida', 'welcome'],
+  detect: ['detect', 'detectar'],
+  detect2: ['detect2', 'detectar2'],
+  antilink: ['antilink', 'antienlace'],
+  antilink2: ['antilink2', 'antienlace2'],
+  modoadmin: ['modoadmin', 'modo admin', 'solo admin', 'soloadmin'],
+  autosticker: ['autosticker', 'autostickers'],
+  audios: ['audios'],
+  antidelete: ['antidelete', 'antieliminar'],
+  antitoxic: ['antitoxic', 'antitoxico'],
+  afk: ['afk'],
+  restrict: ['restrict', 'restringir'],
+  autoread: ['autoread', 'autoleer'],
+  anticall: ['anticall', 'antillamada'],
+  audios_bot: ['audios_bot', 'audiosbot'],
+  antispam: ['antispam'],
+  antiprivado: ['antiprivado', 'antiprivate'],
+  modopublico: ['modopublico', 'modo publico'],
+  modogrupos: ['modogrupos', 'modo grupos']
+};
+
+// Los verbos activar/desactivar son extremadamente comunes en charla que no
+// tiene nada que ver con la config del bot ("prende la luz", "apaga la
+// tele"). Cuando vienen ACOMPAÑADOS de una opción reconocida (parseCommands)
+// no hay ambigüedad y se procesan sin límite. Cuando vienen SOLOS (sin
+// ninguna opción, solo para mostrar el menú de config) se exige un mensaje
+// corto para reducir falsos positivos.
+const ENABLE_SOLO = /\b(activa|activar|enable|habilitar|encender|enciende|prende|prender)\b/;
+const DISABLE_SOLO = /\b(desactiva|desactivar|disable|deshabilitar|apaga|apagar|desactivalo)\b/;
+const MAX_WORDS_FOR_BARE_VERB = 4;
+
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[?!]/g, '')
+    .trim();
+}
+
+function parseCommands(text) {
+  const normalized = normalize(text);
+  const results = [];
+
+  const enableMatch = /\b(activa|activar|enable|habilitar|encender|enciende|prende|prender|pon|pone|quiero|activalo)\b/;
+  const disableMatch = /\b(desactiva|desactivar|disable|deshabilitar|apaga|apagar|saca|desactivalo)\b/;
+
+  let enable = null;
+  if (enableMatch.test(normalized)) enable = true;
+  if (disableMatch.test(normalized)) enable = false;
+  if (enable === null) return results;
+
+  for (const [option, keywords] of Object.entries(CONFIG_OPTIONS)) {
+    if (keywords.some(k => normalized.includes(k))) results.push({ option, enable });
+  }
+  return results;
+}
+
+function buildMenuGrupo() {
+  return `🌙 *${BOT()}*
+
+*====[ Funciones de grupo ]====*
+🎉 *welcome* - bienvenida
+🔗 *antilink* - anti enlaces
+🔗 *antilink2* - variante antilink
+👑 *modoadmin* - solo admins usan el bot
+🏷️ *autosticker* - sticker automatico
+🎵 *audios* - mensajes de voz
+🗑️ *antidelete* - anti eliminar
+☢️ *antitoxic* - anti toxico
+⏰ *afk* - modo ausente
+🔍 *detect / detect2* - deteccion
+
+*====[ Solo owner ]====*
+🔐 *restrict* - modo restringido
+📖 *autoread* - leer mensajes
+📞 *anticall* - anti llamadas
+🎯 *antispam* - anti spam
+🚫 *antiprivado* - anti privado
+🌐 *modopublico* - modo publico
+📋 *modogrupos* - modo grupos
+
+_Ejemplo: @${BOT()} activa el modoadmin_`;
+}
+
+function canHandle(text) {
+  const normalized = normalize(text);
+  if (parseCommands(text).length > 0) return true;
+
+  const isBareVerb = ENABLE_SOLO.test(normalized) || DISABLE_SOLO.test(normalized);
+  if (!isBareVerb) return false;
+
+  const wordCount = normalized.split(/\s+/).filter(Boolean).length;
+  return wordCount <= MAX_WORDS_FOR_BARE_VERB;
+}
+
+async function handle(text, { conn, msg, jid }) {
+  const senderId = msg.key.participant || msg.key.remoteJid;
+  const commands = parseCommands(text);
+  const normalized = normalize(text);
+
+  if (!commands.length) {
+    if (ENABLE_SOLO.test(normalized) || DISABLE_SOLO.test(normalized)) {
+      await conn.sendMessage(jid, { text: buildMenuGrupo(), mentions: [senderId] }, { quoted: msg });
+    }
+    return;
+  }
+
+  const { isAdmin, isOwner } = await getGroupDataForPlugin(conn, jid, senderId);
+
+  const isRealOwner = isProtectedOwner(senderId, null, conn);
+
+  const fakeMsg = {
+    ...msg,
+    chat: jid,
+    sender: senderId,
+    isGroup: jid.endsWith('@g.us'),
+    key: msg.key,
+    reply: (body) => conn.sendMessage(jid, { text: body }, { quoted: msg })
+  };
+
+  for (const { option, enable } of commands) {
+    try {
+      await configFunciones(fakeMsg, {
+        conn,
+        args: [option],
+        command: enable ? 'enable' : 'disable',
+        usedPrefix: '/',
+        isOwner: isRealOwner || isOwner,
+        isAdmin,
+        isROwner: isRealOwner
+      });
+    } catch (err) {
+      if (err !== false) console.error('[config-plugin]', option, err?.message || err);
+    }
+  }
+}
+
+export default {
+  canHandle,
+  handle,
+  name: 'config',
+  description: 'Configurar opciones desde la IA'
+};
