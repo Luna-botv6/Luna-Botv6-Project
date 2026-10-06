@@ -451,6 +451,7 @@
         "modoadmin": "Only *admins* can run bot commands.",
         "autosticker": "Converts images and videos into stickers automatically.",
         "audios": "Enables automatic audio responses in the group.",
+        "agaudios": "Lets admins add audios in the group. Only the owner enables it.",
         "antitoxic": "Detects and removes messages with offensive words.",
         "afk": "Allows members to activate *AFK* mode in the group.",
         "restrict": "Enables global bot restrictions (owner only).",
@@ -1979,7 +1980,8 @@
     },
     "agregar_audio": {
       "solo_grupos": "❌ This command only works in groups.",
-      "solo_admins": "❌ Only admins can add audios.",
+      "solo_owner": "❌ Only the owner can add audios in this group.",
+      "solo_admins": "❌ Only admins can add audios in this group.",
       "falta_frase": "❌ You must provide the phrase that will trigger the audio.\n\n📌 Example: reply to an audio with:\n{prefix} Hey guys",
       "falta_cita": "❌ You must reply to an audio or voice note with:\n{prefix} {frase}",
       "no_es_audio": "❌ The message you replied to is not an audio or a voice note.",
@@ -1989,17 +1991,28 @@
       "error_convertir": "❌ Error converting the audio.",
       "conversion_vacia": "❌ The audio conversion didn't generate any valid file.",
       "error_guardar": "❌ I couldn't save the audio on the server.",
-      "exito": "✅ *Audio added successfully*\n\n🗣️ *Phrase:* _{frase}_\n📁 *File:* {archivo}\n\n_When someone types \"{frase}\" in any group, the bot will reply with this audio._\n_You can turn it off per group with the audio configuration command._"
+      "exito": "✅ *Audio added successfully*\n\n🗣️ *Phrase:* _{frase}_\n📁 *File:* {archivo}\n\n_When someone types \"{frase}\" in this group, the bot will reply with this audio._"
+    },
+    "importar_audios": {
+      "solo_grupos": "❌ This command only works in groups.",
+      "solo_owner": "❌ Only the owner can import audios.",
+      "sin_audios": "📭 There are no audios in the library to import yet.",
+      "lista_titulo": "📥 *Audio library*\n\n",
+      "numeros_invalidos": "❌ Invalid numbers. Use:",
+      "exito_titulo": "✅ *Import done*\n\n"
     },
     "eliminar_audio": {
-      "lista_titulo": "🗑️ *Saved custom audios*\n\n",
-      "lista_item": "> *{pos}.* {nombre}\n",
-      "lista_footer": "\n_To delete one, use:_\n_`.elaudios <phrase or number>`_",
+      "lista_titulo": "🗑️ *Audios in this group*\n\n",
+      "lista_item": "▶️ *{pos}.* {nombre}\n",
+      "lista_footer": "\n_To delete one, use:_\n_*.elaudios phrase or number*_",
+      "lista_footer_global": "\n_To delete everywhere, use:_\n_*.elaudios global phrase or number*_",
       "solo_grupos": "❌ This command only works in groups.",
-      "solo_admins": "❌ Only admins can delete audios.",
-      "sin_audios": "📭 No custom audios saved yet.",
-      "no_encontrado": "❌ I couldn't find any audio with that phrase or number.\n\n{lista}",
-      "exito": "✅ *Audio deleted*\n\n🗣️ *Phrase:* _{frase}_\n📁 *File:* {archivo}\n\n_It won't be played in any group anymore._"
+      "solo_owner": "❌ Only the owner can delete audios in this group.",
+      "solo_admins": "❌ Only admins can delete audios in this group.",
+      "sin_audios": "📭 This group has no audios yet.",
+      "no_encontrado": "❌ I couldn't find any audio with that phrase or number in this group.\n\n{lista}",
+      "exito": "✅ *Audio deleted from this group*\n\n🗣️ *Phrase:* _{frase}_\n📁 *File:* {archivo}",
+      "exito_global": "✅ *Audio deleted everywhere*\n\n🗣️ *Phrase:* _{frase}_"
     },
     "audioia": {
       "estado_activado": "enabled ✅",
