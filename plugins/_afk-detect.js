@@ -1,8 +1,8 @@
-import fs from 'fs';
 import { loadAFK, saveAFK } from '../lib/afkDB.js';
 import { isAfkAllowed } from '../lib/funcConfig.js';
+import { cargarIdioma } from '../lib/funcion/cargarIdioma.js';
 
-export function before(m) {
+export async function before(m) {
   if (m.fromMe) return true;
 
   const chatId = m.chat;
@@ -10,13 +10,7 @@ export function before(m) {
   if (!isAfkAllowed(chatId)) return true;
 
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
-  let _t = {};
-  try {
-    const _lang = idioma || global.defaultLenguaje || 'es';
-    _t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${_lang}.json`, 'utf8'));
-  } catch {
-    try { _t = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')); } catch {}
-  }
+  const _t = await cargarIdioma(idioma, 'afk__afk');
   const tradutor = _t.plugins.afk__afk;
 
   const afk = loadAFK();
