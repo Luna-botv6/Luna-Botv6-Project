@@ -3,7 +3,7 @@ import { logSpamWarning, logSpamBan, logOwnerSpam } from '../lib/antispamLogger.
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { isProtectedOwner } from '../lib/funcion/ownerGuard.js';
 import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
-import fs from 'fs';
+import { cargarIdioma } from '../lib/funcion/cargarIdioma.js';
 
 const SPAM_THRESHOLD = 18;
 const INTERVAL_MS = 30 * 1000;
@@ -43,13 +43,7 @@ export async function before(m, { isCommand, conn }) {
   const isGroup = m.chat.endsWith('@g.us');
 
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
-  let _t = {};
-  try {
-    const _lang = idioma || global.defaultLenguaje || 'es';
-    _t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${_lang}.json`, 'utf8'));
-  } catch {
-    try { _t = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')); } catch {}
-  }
+  const _t = await cargarIdioma(idioma, 'antispam_before');
   const t = _t.plugins.antispam_before;
 
   const antispam = loadAntiSpam();
@@ -68,7 +62,7 @@ export async function before(m, { isCommand, conn }) {
   const comando = m.text.split(' ')[0];
   if (!data.comandos) data.comandos = [];
   data.comandos.push(`${comando} (${new Date().toLocaleTimeString('es-ES')})`);
-  if (data.comandos.length > 50) data.comandos = data.comandos.slice(-50);
+  if (data.comandos.length > 20) data.comandos = data.comandos.slice(-20);
 
   if (now - data.lastTime < INTERVAL_MS) {
     data.count += 1;

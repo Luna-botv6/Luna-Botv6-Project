@@ -11,3 +11,5 @@ db/
 backup/
 logs_bans/
 cache/
+src/audios/*.ogg
+src/audios/index.json
