@@ -2797,6 +2797,7 @@
     "owner_mi_server": {
       "tunel_no_listo": "⚠️ The tunnel is not ready yet. Try again in a few seconds.",
       "tunel_temporal": "\n\n🕐 *This link closes automatically in 1 minute.* If it expires, use .miserver again to open a new one.",
+      "link_fijo": "🔒 *Your permanent link (only for your APK or your browser)*\n{fijo}\n_It never expires, but it still asks for your username and password. Don't share it._",
       "solo_owner": "This command is only for the Owner.",
       "solo_privado": "🔒 This command only works in private chat.",
       "bienvenida": "👋 *Welcome to the Luna-BotV6 panel*\n\nIt's your first time here. First choose a username:\n*.reg YourUser*\n\n_Example: .reg Lunabot_",
@@ -2817,6 +2818,10 @@
       "advertencia_datos": "\n\n⚠️ Don't share this data with anyone, not even with the bot creator.\n",
       "autodestruccion": "🕑 This message self-destructs in 2 minutes.",
       "reset_ok": "♻️ Your username and password were deleted. Use *.miserver* to set up a new one."
+    },
+    "owner_reparar": {
+      "aviso": "🛠️ *Deep repair*\n\nThis does: backup of your data → full reset from GitHub → deletion of `node_modules` and `package-lock.json` → fresh install → restart.\n\n⏳ _The bot stays offline for several minutes._\n\nIf you're sure, type *{prefix}reparar SI*",
+      "fallo": "❌ *I couldn't complete the repair*\n\n{error}\n\n_The bot keeps what it had._"
     },
     "sticker_ttp_attp": {
       "menu": "🎨 *ANIMATED STICKERS*\n✏️ Write the command + your text.\n\n─────────────────\n🌈 */attp*   — Changes colors\n🏀 */ttp3*   — Bounces with colors\n🔍 */ttp4*   — Pulse zoom\n💥 */ttp5*   — Shake vibration\n🌊 */ttp6*   — Wave of colors\n👻 */ttp7*   — Appears and disappears\n🔥 */ttp8*   — Color glitch\n✍️ */ttp9*   — Letter by letter writing\n💡 */ttp10*  — Blinking neon\n⬇️ */ttp11*  — Falls from above\n📈 */ttp12*  — Increasing scale\n🎨 */ttp13*  — Rainbow per letter\n─────────────────\n📌 *Example:* /ttp9 Hello world",

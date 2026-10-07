@@ -14,6 +14,10 @@ console.warn = (...args) => {
   _origConsoleWarn(...args);
 };
 
+import { instalarGuardiaConfig } from './lib/funcion/git-repair.js';
+
+instalarGuardiaConfig();
+
 import './config.js';
 import './api.js';
 import { createRequire } from 'module';
