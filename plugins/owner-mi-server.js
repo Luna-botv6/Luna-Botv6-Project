@@ -43,6 +43,33 @@ const handler = async (m, {conn, text, command, isROwner}) => {
     );
   }
 
+  if (command === 'milink') {
+    if (!isRegistered()) {
+      return responder(conn, m, t.bienvenida || '👋 *Bienvenido al panel de Luna-BotV6*\n\nEs tu primera vez acá. Primero elegí un usuario:\n*.reg TuUsuario*\n\n_Ejemplo: .reg Lunabot_');
+    }
+    let fijo = null;
+    try {
+      if (typeof global.createPanelPermanentLink === 'function') {
+        fijo = global.createPanelPermanentLink();
+      }
+    } catch {
+      fijo = null;
+    }
+    if (!fijo) {
+      return responder(conn, m, t?.tunel_no_listo || '⚠️ El enlace todavía no está listo. Probá de nuevo en unos segundos.');
+    }
+    const confirmacion = await responder(conn, m,
+      (t.link_fijo || '🔒 *Tu enlace permanente (solo para tu APK o tu navegador)*\n{fijo}\n_Este no vence, pero igual te pide tu usuario y contraseña. No lo compartas._').replace('{fijo}', fijo) +
+      (t.autodestruccion ? '\n\n' + t.autodestruccion : '\n\n🕑 Este mensaje se autodestruye en 2 minutos.')
+    );
+    if (confirmacion?.key) {
+      setTimeout(() => {
+        conn.sendMessage(m.chat, {delete: confirmacion.key}).catch(() => {});
+      }, AUTODELETE_MS);
+    }
+    return;
+  }
+
   if (command === 'reg') {
     if (isRegistered()) {
       return responder(conn, m, t.ya_configurado || '⚠️ Ya tenés un usuario configurado. Si lo olvidaste, usá *.resetserver* para empezar de nuevo.');
@@ -100,9 +127,9 @@ const handler = async (m, {conn, text, command, isROwner}) => {
   }
 };
 
-handler.help = ['miserver', 'reg <usuario>', 'password <contraseña>', 'resetserver'];
+handler.help = ['miserver', 'milink', 'reg <usuario>', 'password <contraseña>', 'resetserver'];
 handler.tags = ['owner'];
-handler.command = ['miserver', 'reg', 'password', 'resetserver'];
+handler.command = ['miserver', 'milink', 'reg', 'password', 'resetserver'];
 handler.rowner = true;
 handler.private = true;
 
