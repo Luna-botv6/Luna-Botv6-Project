@@ -10,8 +10,12 @@ import fs from 'fs/promises';
 import fsSync from 'fs';
 import v8 from 'v8';
 import { ensureConfigSkipWorktree } from './lib/funcion/self-update.js';
+import { ensureCriticalFiles, respaldarConfigLocal, instalarGuardiaConfig } from './lib/funcion/git-repair.js';
 
 ensureConfigSkipWorktree();
+ensureCriticalFiles(['config.js'], (msg) => console.log(chalk.yellow(msg)));
+respaldarConfigLocal('./config.js');
+instalarGuardiaConfig();
 
 await import('./config.js');
 

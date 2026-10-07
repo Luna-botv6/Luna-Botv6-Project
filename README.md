@@ -1313,6 +1313,22 @@ Al volver a iniciar, Luna te pregunta si querés que se **auto-actualice sola** 
 > [!TIP]
 > Recordá que el prefijo puede cambiar según tu configuración — `.` es el predeterminado.
 
+### 🛠️ Sistema de Reparación Inteligente
+
+Luna no solo se actualiza: **se cura sola** cuando algo se rompe.
+
+| Problema | Qué hace Luna solita |
+|:---------|:---------------------|
+| Un archivo local choca con la actualización | Lo aparta a un respaldo, trae lo nuevo y te devuelve lo tuyo intacto |
+| Borran `config.js` (o cualquier archivo) con el bot prendido | Detecta el borrado, trae solo ese archivo y lo recarga sin reiniciar |
+| Faltan dependencias o quedó basura de plugins viejos | `.reparar` hace limpieza profunda: resguarda tus datos, resetea desde GitHub, reinstala todo de cero y reinicia |
+| Hay versión nueva y no te enteraste | El panel (y la APK) te avisa con 📢 *Hay actualización* en la sección Sistema |
+
+**.reparar** (solo owner): escribí `.reparar` para ver el aviso, y `.reparar SI` para ejecutarlo. El bot queda offline unos minutos y vuelve solo. También tenés el botón en el panel, sección Sistema.
+
+> [!NOTE]
+> Tus datos (owners, configuración, sesión y grupos) se resguardan antes de cualquier reparación: nada se pierde.
+
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
 ---
