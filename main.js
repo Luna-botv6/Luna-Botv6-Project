@@ -1162,7 +1162,13 @@ global.reloadHandler = async function(restatConn) {
 
   conn.ev.on('messages.upsert', async (msg) => {
     try {
-      if (msg.messages?.[0]?.key?.fromMe) return;
+      if (msg.messages?.[0]?.key?.fromMe) {
+        const rawPropio = msg.messages[0]?.message || {};
+        const txtPropio = rawPropio.conversation || rawPropio.extendedTextMessage?.text || rawPropio.imageMessage?.caption || rawPropio.videoMessage?.caption || rawPropio.documentMessage?.caption || '';
+        const esBotonPropio = !!obtenerBotonId(rawPropio);
+        const esComandoPropio = typeof txtPropio === 'string' && txtPropio.trim() && global.prefix?.test?.(txtPropio.trim());
+        if (!esBotonPropio && !esComandoPropio) return;
+      }
       const ignoreSender = msg.messages?.[0]?.key?.participant || msg.messages?.[0]?.key?.remoteJid;
       const primerMensaje = msg.messages?.[0]?.message || {};
       const botonId = obtenerBotonId(primerMensaje);
