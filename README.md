@@ -322,6 +322,36 @@ Todo el sistema de Luna se programó con la seguridad como base. No hay procesos
 </div>
 
 <details open>
+<summary><b>📲 08/10/2026 — Comandos desde tu propio número + Panel que se defiende solo 📱</b></summary>
+
+<br>
+
+**📲 Usá el bot desde tu propio WhatsApp**
+
+- Si Luna corre en tu número personal, ahora los comandos con prefijo (`.menu`, `.sticker`, `.miserver`, etc.) **sí responden** aunque salgan de tu propio número.
+- La charla libre, las menciones y los audios se siguen ignorando a propósito (anti-bucle).
+- Los comandos de owner real (`.miserver`, `.reparar`) piden que ese número esté en la lista de owners.
+
+**🛡️ Tu panel ahora se defiende solo**
+
+- Bloqueo automático ante contraseñas erradas.
+- Si tu link se filtra, pedí `.milink nuevo` y todos los viejos mueren al instante.
+- Los avisos del celu muestran menos datos.
+
+**📱 APK 1.6**
+
+- Te avisa sola cuando hay versión nueva.
+- Instalala encima de la anterior y bajala solo de este canal.
+
+**⚠️ Reglas de oro**
+
+- Link y contraseña no se comparten con NADIE.
+- Si algo raro pasa: `.password nueva` + `.milink nuevo`.
+- Solo instalen lo que paso yo por este canal.
+
+</details>
+
+<details open>
 <summary><b>🛡️ 23/09/2026 — Anti-Bot Definitivo: Captcha + Ignorados por Grupo + Panel 🗼</b></summary>
 
 <br>
@@ -350,7 +380,7 @@ Todo el sistema de Luna se programó con la seguridad como base. No hay procesos
 - Botón **"Quitar"** por fila para des-ignorar directo desde el panel.
 
 > [!NOTE]
-> **¿Se le puede hablar a Luna desde su propio WhatsApp?** No. Todo mensaje que sale **del número de Luna** lleva la marca `fromMe` y el bot lo ignora apenas entra (`main.js`: `if (msg.messages?.[0]?.key?.fromMe) return;`). Es intencional — así Luna no reacciona a sus propios mensajes ni broadcasts (protección anti-bucle). Si escribís un comando desde el WhatsApp del bot **no lo va a responder**: comandeala desde tu número (owner/rowner) en otro chat, o mencionala con `@Luna` en un grupo.
+> **¿Se le puede hablar a Luna desde su propio WhatsApp?** Sí, pero solo con comandos. Los mensajes que salen **del número de Luna** llevan la marca `fromMe`: si traen prefijo (`.menu`, `.sticker`, etc.) el bot los ejecuta (ideal si usás tu número personal como bot); la charla libre, las menciones `@Luna` y los audios se siguen ignorando para evitar bucles. Para todo lo demás, comandeala desde tu número (owner/rowner) en otro chat, o mencionala con `@Luna` en un grupo.
 
 </details>
 
