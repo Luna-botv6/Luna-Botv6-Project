@@ -2798,6 +2798,7 @@
     "owner_mi_server": {
       "tunel_no_listo": "⚠️ O túnel ainda não está pronto. Tente novamente em alguns segundos.",
       "tunel_temporal": "\n\n🕐 *Este link fecha sozinho em 1 minuto.* Se expirar, use .miserver de novo para abrir um novo.",
+      "link_rotado": "🔄 *Link rotacionado: os antigos não funcionam mais*\n{fijo}\n_Salve no seu APK e apague o antigo. Ainda pede seu usuário e senha. Não compartilhe._",
       "link_fijo": "🔒 *Seu link permanente (só para seu APK ou seu navegador)*\n{fijo}\n_Ele não expira, mas ainda pede seu usuário e senha. Não compartilhe._",
       "solo_owner": "Este comando é apenas para o Owner.",
       "solo_privado": "🔒 Este comando só funciona no chat privado.",

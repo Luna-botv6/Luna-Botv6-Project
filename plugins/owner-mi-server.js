@@ -47,6 +47,30 @@ const handler = async (m, {conn, text, command, isROwner}) => {
     if (!isRegistered()) {
       return responder(conn, m, t.bienvenida || '👋 *Bienvenido al panel de Luna-BotV6*\n\nEs tu primera vez acá. Primero elegí un usuario:\n*.reg TuUsuario*\n\n_Ejemplo: .reg Lunabot_');
     }
+    const sub = String((text || '').trim().split(/\s+/)[0] || '').toLowerCase();
+    if (sub === 'nuevo') {
+      let rotado = null;
+      try {
+        if (typeof global.rotarEnlacePanel === 'function') {
+          rotado = await global.rotarEnlacePanel();
+        }
+      } catch {
+        rotado = null;
+      }
+      if (!rotado) {
+        return responder(conn, m, t?.tunel_no_listo || '⚠️ El enlace todavía no está listo. Probá de nuevo en unos segundos.');
+      }
+      const confirmacion = await responder(conn, m,
+        (t.link_rotado || '🔄 *Enlace rotado: los anteriores ya no sirven*\n{fijo}\n_Guardalo en tu APK y borrá el viejo. Igual te pide tu usuario y contraseña. No lo compartas._').replace('{fijo}', rotado) +
+        (t.autodestruccion ? '\n\n' + t.autodestruccion : '\n\n🕑 Este mensaje se autodestruye en 2 minutos.')
+      );
+      if (confirmacion?.key) {
+        setTimeout(() => {
+          conn.sendMessage(m.chat, {delete: confirmacion.key}).catch(() => {});
+        }, AUTODELETE_MS);
+      }
+      return;
+    }
     let fijo = null;
     try {
       if (typeof global.createPanelPermanentLink === 'function') {
@@ -127,7 +151,7 @@ const handler = async (m, {conn, text, command, isROwner}) => {
   }
 };
 
-handler.help = ['miserver', 'milink', 'reg <usuario>', 'password <contraseña>', 'resetserver'];
+handler.help = ['miserver', 'milink', 'milink nuevo', 'reg <usuario>', 'password <contraseña>', 'resetserver'];
 handler.tags = ['owner'];
 handler.command = ['miserver', 'milink', 'reg', 'password', 'resetserver'];
 handler.rowner = true;
