@@ -273,6 +273,8 @@ const authFolder = global.authFile;
 let phoneNumber = global.botnumber || process.argv.find(arg => /^\+\d+$/.test(arg));
 
 const methodCodeQR = process.argv.includes("qr");
+const modoPanel = process.argv.includes("panel");
+global.modoPanel = modoPanel;
 const methodCode = !!phoneNumber || process.argv.includes("code");
 const MethodMobile = process.argv.includes("mobile");
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -357,7 +359,10 @@ async function configurarIdiomaGlobalInicial() {
 await configurarIdiomaGlobalInicial();
 
 try {
-  if (methodCodeQR) {
+  if (modoPanel && !fs.existsSync(`./${authFolder}/creds.json`)) {
+    opcion = 'panel';
+    console.log(chalk.yellow('[ ℹ️ ] Modo panel: esperando vinculación desde la Torre de Control'));
+  } else if (methodCodeQR) {
     opcion = '1';
     console.log(chalk.yellow('[ ℹ️ ] Modo QR seleccionado desde argumentos'));
   } else if (methodCode && phoneNumber) {
@@ -1037,11 +1042,13 @@ async function connectionUpdate(update) {
         console.log(chalk.red(`  Mensaje: ${lastDisconnect?.error?.message || 'sin mensaje'}`));
         console.log(chalk.red('└────────────────────────────────────────────-+'));
 
-        reportBan(`loggedOut real — código ${reason}: ${lastDisconnect?.error?.message || 'sin mensaje'}`, {
-          disconnectCode: reason,
-          rawMessage: lastDisconnect?.error?.message || '',
-          softReconnectCount: global._softReconnectCount || 0,
-        });
+        if (!global._logoutVoluntario) {
+          reportBan(`loggedOut real — código ${reason}: ${lastDisconnect?.error?.message || 'sin mensaje'}`, {
+            disconnectCode: reason,
+            rawMessage: lastDisconnect?.error?.message || '',
+            softReconnectCount: global._softReconnectCount || 0,
+          });
+        }
 
         const _carpetas = [global.authFile, 'MysticSession'];
         await Promise.allSettled(

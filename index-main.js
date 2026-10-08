@@ -26,6 +26,9 @@ const require = createRequire(__dirname);
 const { say } = cfonts;
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 let isRunning = false;
+let panelFork = null;
+let panelForkActivo = false;
+let preguntando = false;
 
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver));
 
@@ -209,6 +212,55 @@ function esNumeroValido(numeroTelefono) {
   return Object.keys(PHONENUMBER_MCC).some(codigo => numeroSinSigno.startsWith(codigo));
 }
 
+function arrancarModoPanel(file) {
+  if (panelFork) return;
+  panelForkActivo = true;
+  setupMaster({ exec: join(__dirname, file), args: ['panel'] });
+  const p = fork();
+  panelFork = p;
+  p.on('exit', () => {
+    if (panelFork === p) panelFork = null;
+    if (!panelForkActivo) return;
+    setTimeout(() => {
+      if (!panelForkActivo || panelFork) return;
+      if (verificarCredsJson()) {
+        panelForkActivo = false;
+        arrancarNormal(file);
+      } else {
+        arrancarModoPanel(file);
+      }
+    }, 3000);
+  });
+}
+
+function arrancarNormal(file) {
+  setupMaster({ exec: join(__dirname, file), args: process.argv.slice(2) });
+  const p = fork();
+  p.on('exit', () => {
+    isRunning = false;
+    setTimeout(() => start('main.js'), 3000);
+  });
+}
+
+function detenerModoPanel() {
+  panelForkActivo = false;
+  const p = panelFork;
+  if (!p) return Promise.resolve();
+  return new Promise((resolver) => {
+    const t = setTimeout(resolver, 8000);
+    p.once('exit', () => {
+      clearTimeout(t);
+      resolver();
+    });
+    try {
+      p.process.kill();
+    } catch {
+      clearTimeout(t);
+      resolver();
+    }
+  });
+}
+
 async function start(file) {
   if (isRunning) return;
   isRunning = true;
@@ -226,7 +278,19 @@ async function start(file) {
     return;
   }
 
+  arrancarModoPanel(file);
+  if (preguntando) {
+    isRunning = false;
+    return;
+  }
+  preguntando = true;
   const opcion = await question(chalk.hex('#FFD700').bold('─◉　Seleccione una opción (solo el numero):\n') + chalk.hex('#E0E0E0').bold('1. Con código QR\n2. Con código de texto de 8 dígitos\n─> '));
+  preguntando = false;
+  if (verificarCredsJson()) {
+    isRunning = false;
+    return;
+  }
+  await detenerModoPanel();
 
   let numeroTelefono = '';
   if (opcion === '2') {
