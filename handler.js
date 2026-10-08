@@ -194,7 +194,13 @@ setInterval(() => {
 export async function handler(chatUpdate) {
   try {
     if (!this?.user?.jid) return;
-    if (chatUpdate?.messages?.[0]?.key?.fromMe) return;
+    if (chatUpdate?.messages?.[0]?.key?.fromMe) {
+      const rawPropio = chatUpdate.messages[0]?.message || {};
+      const txtPropio = rawPropio.conversation || rawPropio.extendedTextMessage?.text || rawPropio.imageMessage?.caption || rawPropio.videoMessage?.caption || '';
+      const prefijo = this?.prefix || global.prefix;
+      const esComandoPropio = typeof txtPropio === 'string' && txtPropio.trim() && prefijo?.test?.(txtPropio.trim());
+      if (!esComandoPropio) return;
+    }
     currentConn = this;
     if (!this._sendMessagePatched) {
       const _origSend = this.sendMessage.bind(this);
