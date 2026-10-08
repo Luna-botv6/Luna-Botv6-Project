@@ -2797,6 +2797,7 @@
     "owner_mi_server": {
       "tunel_no_listo": "⚠️ The tunnel is not ready yet. Try again in a few seconds.",
       "tunel_temporal": "\n\n🕐 *This link closes automatically in 1 minute.* If it expires, use .miserver again to open a new one.",
+      "link_rotado": "🔄 *Link rotated: old ones no longer work*\n{fijo}\n_Save it in your APK and delete the old one. It still asks for your username and password. Do not share it._",
       "link_fijo": "🔒 *Your permanent link (only for your APK or your browser)*\n{fijo}\n_It never expires, but it still asks for your username and password. Don't share it._",
       "solo_owner": "This command is only for the Owner.",
       "solo_privado": "🔒 This command only works in private chat.",
