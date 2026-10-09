@@ -53,6 +53,7 @@ const CONFIG_MAP = {
   antitoxic:    { key: 'antiToxic',    group: true, admin: true },
   antiviewonce: { key: 'antiviewonce', group: true, admin: true },
   anti18:       { key: 'anti18',       group: true, admin: true },
+  antitag:      { key: 'antitag',      group: true, admin: true },
   afk:          { key: 'afkAllowed',   group: true, admin: true },
   restrict:     { key: 'restrict',     bot: true,   owner: true },
   audios_bot:   { key: 'audios_bot',   bot: true,   owner: true },
@@ -150,7 +151,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
           emoji: '🔍',
           title: 'Detección',
           desc: 'Detecta y modera contenido en el grupo\n_Requiere ser admin_',
-          keys: ['detect', 'detect2', 'autosticker', 'afk']
+          keys: ['detect', 'detect2', 'autosticker', 'afk', 'antitag']
         },
         {
           emoji: '🌐',

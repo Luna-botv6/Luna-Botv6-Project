@@ -1,5 +1,6 @@
 import { getConfig, setConfig } from '../lib/funcConfig.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { marcarMotivo } from '../lib/funcion/leave-reason.js';
 
 const warnings = new Map();
 const MAX_WARNINGS = 3;
@@ -104,16 +105,13 @@ const handler = async (m, { conn }) => {
 
       if (isBotAdmin) {
         try {
+          marcarMotivo(m.chat, [m.sender], { tipo: 'link' });
           await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
           userBanned = true;
         } catch {}
       }
 
       if (userBanned) {
-        await conn.sendMessage(m.chat, {
-          text: `🚫 *USUARIO ELIMINADO POR SPAM DE ENLACES*\n\n👤 *Usuario:* @${m.sender.split('@')[0]}\n📊 *Advertencias:* ${warningCount}/${MAX_WARNINGS}\n📋 *Motivo:* Envío repetido de enlaces no permitidos\n\n✅ *El usuario ha sido removido exitosamente.*`,
-          mentions: [m.sender]
-        });
         resetWarnings(m.chat, m.sender);
       } else {
         const admins = await getAdmins(conn, m.chat);

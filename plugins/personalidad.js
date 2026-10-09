@@ -1,28 +1,61 @@
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
-const BASE_IMG = 'https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/otros/';
+const BASE_IMG = 'https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/otros/personalidad/';
 
-const GENDER_IMG = {
-  'Hombre': 'hombre.jpeg',
-  'Mujer': 'mujer.jpg',
-  'Homosexual': 'homosexual.jpg',
-  'Bisexual': 'bisexual.jpg',
-  'Pansexual': 'pansexual.jpeg',
-  'Feminista': 'feminista.jpg',
-  'Macho alfa': 'machoalfa.webp',
-  'Marimacha': 'marimacha.jpg',
-  'PlayStationSexual': 'playstationsexual.png',
-  'Sr. Manuela': 'Srmanuela.jpg',
-  'Pollosexual': 'pollosexual.jpeg',
-};
-
-const PORCENTAJES = [
-  '0%','0,4%','1%','2,9%','6%','12%','20%','27%',
-  '35%','41%','49%','54%','60%','66%','73%','78%',
-  '84%','92%','93%','94%','96%','98,3%','99,7%','99,9%'
+const SLUGS = [
+  'hombre', 'mujer', 'homosexual', 'bisexual', 'pansexual', 'feminista',
+  'heterosexual', 'macho-alfa', 'mujerzona', 'marimacha', 'palosexual',
+  'playstationsexual', 'sr-manuela', 'pollosexual', 'gamer', 'otaku',
+  'vago', 'dormilon', 'tacano', 'mentiroso'
 ];
 
+const DEFAULT_GENEROS = {
+  hombre: 'Hombre', mujer: 'Mujer', homosexual: 'Homosexual', bisexual: 'Bisexual',
+  pansexual: 'Pansexual', feminista: 'Feminista', heterosexual: 'Heterosexual',
+  'macho-alfa': 'Macho alfa', mujerzona: 'Mujerzona', marimacha: 'Marimacha',
+  palosexual: 'Palosexual', playstationsexual: 'PlayStationSexual',
+  'sr-manuela': 'Sr. Manuela', pollosexual: 'Pollosexual', gamer: 'Gamer',
+  otaku: 'Otaku', vago: 'Vago', dormilon: 'Dormilón', tacano: 'Tacaño', mentiroso: 'Mentiroso'
+};
+
+const DEFAULT_TRADUCTOR = {
+  titulo: 'PERSONALIDAD',
+  nombre: 'Nombre',
+  genero: 'Género',
+  buena: 'Buena Moral',
+  mala: 'Mala Moral',
+  tipo: 'Tipo de persona',
+  estado: 'Siempre está',
+  inteligencia: 'Inteligencia',
+  morosidad: 'Morosidad',
+  coraje: 'Coraje',
+  miedo: 'Miedo',
+  fama: 'Fama',
+  simpeo: 'Nivel de simpeo',
+  redflags: 'Red flags',
+  frase: 'Frase célebre',
+  generos: DEFAULT_GENEROS,
+  tipos: ['De buen corazón','Arrogante','Tacaño','Generoso','Humilde','Tímido','Cobarde','Entrometido','Cristal','No binarie XD','Pendejo'],
+  estados: ['Pesado','De malas','Distraído','De molestoso','Chismoso','De compras','Viendo anime','Chateando porque está soltero','Acostado bueno para nada','De mujeriego','En el celular'],
+  frases: [
+    'No es una fase, es un estilo de vida',
+    'Lo diagnostiqué yo y le di la razón',
+    'Pide seguirme pero con respeto',
+    'Su única red flag es que existe',
+    'Hoy no, mañana tampoco',
+    'Vine a romperla y me rompí yo',
+    'No soy tóxico, soy exclusivo',
+    'Conmigo o con la tabla de multiplicar'
+  ]
+};
+
 const pick = list => list[Math.floor(Math.random() * list.length)];
+const pct = () => Math.floor(Math.random() * 101);
+const barra = p => {
+  const llenos = Math.round(p / 10);
+  return '█'.repeat(llenos) + '░'.repeat(10 - llenos);
+};
+const linea = (emoji, label, p) => `┃ ${emoji} *${label}* › ${barra(p)} ${p}%`;
 
 const resolveLid = async (jid, conn, m) => {
   if (!jid.includes('@lid') || !m.isGroup) return jid;
@@ -32,26 +65,24 @@ const resolveLid = async (jid, conn, m) => {
 
 var handler = async (m, { conn, text }) => {
 
-  const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
-  const _translate = await global.loadTranslation(idioma);
-  const DEFAULT_TRADUCTOR = {
-    titulo: 'PERSONALIDAD',
-    nombre: 'Nombre',
-    genero: 'Género',
-    buena: 'Buena Moral',
-    mala: 'Mala Moral',
-    tipo: 'Tipo de persona',
-    estado: 'Siempre está',
-    inteligencia: 'Inteligencia',
-    morosidad: 'Morosidad',
-    coraje: 'Coraje',
-    miedo: 'Miedo',
-    fama: 'Fama',
-    generos: ['Hombre','Mujer','Homosexual','Bisexual','Pansexual','Feminista','Heterosexual','Macho alfa','Marimacha','PlayStationSexual','Sr. Manuela','Pollosexual'],
-    tipos: ['De buen corazón','Arrogante','Tacaño','Generoso','Humilde','Tímido','Cobarde','Entrometido','Cristal','No binarie XD','Pendejo'],
-    estados: ['Pesado','De malas','Distraído','De molestoso','Chismoso','De compras','Viendo anime','Chateando porque está soltero','Acostado bueno para nada','De mujeriego','En el celular']
+  const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
+
+  let _translate = {};
+  try {
+    _translate = (await global.loadTranslation(idioma)) || {};
+  } catch {
+    _translate = {};
+  }
+
+  const base = _translate?.plugins?.personalidad;
+  const tradutor = {
+    ...DEFAULT_TRADUCTOR,
+    ...(base && typeof base === 'object' ? base : {}),
+    generos: { ...DEFAULT_GENEROS, ...(base?.generos && typeof base.generos === 'object' ? base.generos : {}) }
   };
-  const tradutor = _translate?.plugins?.personalidad || DEFAULT_TRADUCTOR;
+  if (!Array.isArray(tradutor.tipos) || !tradutor.tipos.length) tradutor.tipos = DEFAULT_TRADUCTOR.tipos;
+  if (!Array.isArray(tradutor.estados) || !tradutor.estados.length) tradutor.estados = DEFAULT_TRADUCTOR.estados;
+  if (!Array.isArray(tradutor.frases) || !tradutor.frases.length) tradutor.frases = DEFAULT_TRADUCTOR.frases;
 
   let nombre = text?.trim();
   let mentions = [];
@@ -68,36 +99,38 @@ var handler = async (m, { conn, text }) => {
     nombre = `@${realSender.split('@')[0]}`;
   }
 
-  const genero = pick(tradutor.generos);
+  const slug = pick(SLUGS);
+  const genero = tradutor.generos[slug] || DEFAULT_GENEROS[slug] || slug;
 
   const resultado =
     `╭━━━「 🎭 *${tradutor.titulo}* 」━━━╮\n` +
     '┃\n' +
     `┃ 👤 *${tradutor.nombre}* › ${nombre}\n` +
-    `┃ 🏳️‍🌈 *${tradutor.genero}* › ${genero}\n` +
-    '┃\n' +
-    `┃ ✅ *${tradutor.buena}* › ${pick(PORCENTAJES)}\n` +
-    `┃ ❌ *${tradutor.mala}* › ${pick(PORCENTAJES)}\n` +
+    `┃ 🌈 *${tradutor.genero}* › ${genero}\n` +
     `┃ 💎 *${tradutor.tipo}* › ${pick(tradutor.tipos)}\n` +
     `┃ ⏰ *${tradutor.estado}* › ${pick(tradutor.estados)}\n` +
     '┃\n' +
-    `┃ 🧠 *${tradutor.inteligencia}* › ${pick(PORCENTAJES)}\n` +
-    `┃ 💤 *${tradutor.morosidad}* › ${pick(PORCENTAJES)}\n` +
-    `┃ 🔥 *${tradutor.coraje}* › ${pick(PORCENTAJES)}\n` +
-    `┃ 😱 *${tradutor.miedo}* › ${pick(PORCENTAJES)}\n` +
-    `┃ 🌟 *${tradutor.fama}* › ${pick(PORCENTAJES)}\n` +
+    `${linea('✅', tradutor.buena, pct())}\n` +
+    `${linea('❌', tradutor.mala, pct())}\n` +
+    `${linea('🧠', tradutor.inteligencia, pct())}\n` +
+    `${linea('💤', tradutor.morosidad, pct())}\n` +
+    `${linea('🔥', tradutor.coraje, pct())}\n` +
+    `${linea('😱', tradutor.miedo, pct())}\n` +
+    `${linea('🌟', tradutor.fama, pct())}\n` +
+    `${linea('😳', tradutor.simpeo, pct())}\n` +
+    `${linea('🚩', tradutor.redflags, pct())}\n` +
+    '┃\n' +
+    `┃ 💬 *${tradutor.frase}* › _${pick(tradutor.frases)}_\n` +
     '┃\n' +
     '╰━━━━━━━━━━━━━━━━━━━━━━━╯';
 
-  const imgFile = GENDER_IMG[genero];
-
-  if (imgFile) {
+  try {
     await conn.sendMessage(
       m.chat,
-      { image: { url: BASE_IMG + imgFile }, caption: resultado, mentions },
+      { image: { url: BASE_IMG + slug + '.png' }, caption: resultado, mentions },
       { quoted: m }
     );
-  } else {
+  } catch {
     await conn.sendMessage(
       m.chat,
       { text: resultado, mentions },

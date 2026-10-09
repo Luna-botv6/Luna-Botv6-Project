@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 import { addWarning, resetWarnings } from '../lib/advertencias.js';
+import { marcarMotivo } from '../lib/funcion/leave-reason.js';
 
 function getT(idioma) {
   try {
@@ -63,9 +64,9 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
 
   if (warns >= 3) {
     await resetWarnings(target);
+    marcarMotivo(m.chat, [target], { tipo: 'warn', motivo: reason, autor: resolvedSender });
     await conn.groupParticipantsUpdate(m.chat, [target], 'remove');
     clearGroupCache(m.chat, conn);
-    await m.reply(t.expulsado.replace('{tag}', tag), null, { mentions: [target] });
   }
 };
 
