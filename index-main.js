@@ -212,12 +212,50 @@ function esNumeroValido(numeroTelefono) {
   return Object.keys(PHONENUMBER_MCC).some(codigo => numeroSinSigno.startsWith(codigo));
 }
 
+let ultimaActividadPanel = 0;
+let panelListo = false;
+let panelListoResolver = null;
+
+function esperarPanelListo() {
+  if (panelListo) return Promise.resolve();
+  return new Promise((resolver) => {
+    panelListoResolver = resolver;
+    setTimeout(() => {
+      if (panelListoResolver === resolver) {
+        panelListoResolver = null;
+        resolver();
+      }
+    }, 30000);
+  });
+}
+
+function marcarPanelListo() {
+  panelListo = true;
+  if (panelListoResolver) {
+    const r = panelListoResolver;
+    panelListoResolver = null;
+    r();
+  }
+}
+
+function panelVinculandoAhora() {
+  return !!panelFork && Date.now() - ultimaActividadPanel < 10 * 60 * 1000;
+}
+
 function arrancarModoPanel(file) {
   if (panelFork) return;
   panelForkActivo = true;
+  panelListo = false;
   setupMaster({ exec: join(__dirname, file), args: ['panel'] });
   const p = fork();
   panelFork = p;
+  p.on('message', (m) => {
+    if (m && m.tipo === 'panel-link') ultimaActividadPanel = Date.now();
+    if (m && m.tipo === 'panel-listo') {
+      panelListo = true;
+      marcarPanelListo();
+    }
+  });
   p.on('exit', () => {
     if (panelFork === p) panelFork = null;
     if (!panelForkActivo) return;
@@ -261,6 +299,15 @@ function detenerModoPanel() {
   });
 }
 
+async function preguntarOpcionConsola() {
+  for (;;) {
+    const opcion = await question(chalk.hex('#FFD700').bold('─◉　Seleccione una opción (solo el numero):\n') + chalk.hex('#E0E0E0').bold('1. Con código QR\n2. Con código de texto de 8 dígitos\n─> '));
+    if (!panelVinculandoAhora()) return opcion;
+    const seguir = String(await question('La APK está vinculando ahora mismo y seguir por consola la corta. ¿Seguir por consola igual? (s/n)\n─> ')).trim().toLowerCase();
+    if (seguir === 's' || seguir === 'si' || seguir === 'sí') return opcion;
+  }
+}
+
 async function start(file) {
   if (isRunning) return;
   isRunning = true;
@@ -284,7 +331,11 @@ async function start(file) {
     return;
   }
   preguntando = true;
-  const opcion = await question(chalk.hex('#FFD700').bold('─◉　Seleccione una opción (solo el numero):\n') + chalk.hex('#E0E0E0').bold('1. Con código QR\n2. Con código de texto de 8 dígitos\n─> '));
+  await esperarPanelListo();
+  console.log(chalk.hex('#FFD700').bold('\n==============================================='));
+  console.log(chalk.hex('#FFD700').bold('  🔗 VINCULACIÓN - elegí cómo conectar'));
+  console.log(chalk.hex('#FFD700').bold('==============================================='));
+  const opcion = await preguntarOpcionConsola();
   preguntando = false;
   if (verificarCredsJson()) {
     isRunning = false;

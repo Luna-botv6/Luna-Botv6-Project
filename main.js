@@ -805,6 +805,24 @@ const REASON_LABELS = {
   429: 'rateLimit — demasiadas peticiones',
 };
 
+function cierrePanelSinSesion(reason) {
+  if (!global.modoPanel || global.conn?.user) return false;
+  return !(reason === DisconnectReason.badSession || reason === DisconnectReason.loggedOut || reason === 500 || reason === 401);
+}
+
+function reintentarPanelSinSesion(reason) {
+  global._panelCierres = (global._panelCierres || 0) + 1;
+  const limitado = reason === DisconnectReason.forbidden || reason === 429 || reason === 'forbidden';
+  const base = Math.min(30000, 3000 * global._panelCierres);
+  const delay = (limitado ? Math.max(60000, base) : base) + Math.floor(Math.random() * 1000);
+  console.log(`[ ⏳ ] Panel sin sesión: conexión cerrada (${reason ?? 'sin código'}), reintento en ${Math.round(delay / 1000)}s. El bot no se apaga.`);
+  if (global._panelReintentoTimer) clearTimeout(global._panelReintentoTimer);
+  global._panelReintentoTimer = setTimeout(async () => {
+    global._panelReintentoTimer = null;
+    await global.reloadHandler(true).catch(console.error);
+  }, delay);
+}
+
 async function connectionUpdate(update) {
   const { connection, lastDisconnect, isNewLogin, qr } = update;
 
@@ -884,6 +902,7 @@ async function connectionUpdate(update) {
   }
 
   let reason = lastDisconnect?.error?.output?.statusCode;
+  if (update?.qr || connection === 'open') global._panelCierres = 0;
 
   if (connection === 'close') {
     const rawError = lastDisconnect?.error;
@@ -926,7 +945,9 @@ async function connectionUpdate(update) {
   }
 
   if (connection === 'close') {
-    if (reason === DisconnectReason.badSession) {
+    if (cierrePanelSinSesion(reason)) {
+      reintentarPanelSinSesion(reason);
+    } else if (reason === DisconnectReason.badSession) {
       console.log(chalk.red('[ ✖ ] Sesión corrupta detectada'));
       console.log(chalk.yellow('[ ⚠ ] Limpiando sesión...'));
       try {
