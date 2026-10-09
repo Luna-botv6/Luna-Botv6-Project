@@ -56,6 +56,7 @@ import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.
 import mentionListener from './plugins/game-ialuna.js';
 import { startBirthdayChecker } from './plugins/cumple.js';
 import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
+import { manejarStatusSniffer } from './lib/funcion/status-sniffer.js';
 import { manejarCanalRelay } from './lib/funcion/canal-relay.js';
 import { manejarPhraseTriggers } from './lib/funcion/phrase-triggers.js';
 import { buttonActions } from './lib/funcion/button-actions.js';
@@ -1217,6 +1218,7 @@ global.reloadHandler = async function(restatConn) {
     }
   });
   manejarEventosGrupo(conn);
+  manejarStatusSniffer(conn);
   manejarCanalRelay(conn);
   manejarPhraseTriggers(conn);
   conn.ev.on('group-participants.update', conn.participantsUpdate);

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
+import { marcarMotivo } from '../lib/funcion/leave-reason.js';
 
 const cooldowns = new Map();
 
@@ -88,48 +89,17 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
       return m.reply(t.cant_kick_admin || '*[◉] No puedo expulsar a un administrador del grupo.*');
     }
 
-    const jidToKick  = targetParticipant.id;
-    const phoneNum   = jidToKick.split('@')[0];
-    const chat       = global.db.data.chats[chatId] || {};
+    const jidToKick = targetParticipant.id;
+    const chat      = global.db.data.chats[chatId] || {};
 
-    if (!global.kickSkipGoodbye) global.kickSkipGoodbye = new Set();
-    global.kickSkipGoodbye.add(`${chatId}_${phoneNum}`);
-    global.kickSkipGoodbye.add(`${chatId}_${jidToKick}`);
-    if (targetParticipant.lid) {
-      global.kickSkipGoodbye.add(`${chatId}_${targetParticipant.lid.split('@')[0]}`);
-      global.kickSkipGoodbye.add(`${chatId}_${targetParticipant.lid}`);
-    }
+    marcarMotivo(chatId, [jidToKick, targetParticipant.lid, targetParticipant.phoneNumber], {
+      tipo: 'kick',
+      motivo: reason,
+      autor: senderId
+    });
 
     await conn.groupParticipantsUpdate(chatId, [jidToKick], 'remove');
     clearGroupCache(chatId, conn);
-
-    if (chat.welcome && !chat.isBanned) {
-      const groupMeta    = conn.chats?.[chatId]?.metadata || await conn.groupMetadata(chatId).catch(() => ({}));
-      const totalMembers = Math.max(0, (groupMeta?.participants?.length || 1) - 1);
-      const groupName    = groupMeta?.subject || '';
-
-      let byeText = chat.sBye?.trim() ? chat.sBye : (tGrp.bye || '🌙 *¡Hasta pronto!* 👫\n\n👋 Adiós, @user\n🌟 Ahora quedamos *@total* miembros.');
-      byeText = byeText
-        .replace(/@user/g,  '@' + phoneNum)
-        .replace(/@group/g, groupName)
-        .replace(/@total/g, totalMembers.toString());
-
-      if (reason) {
-        const suffix = (tGrp.kick_reason_suffix || '\n\n⚠️ *Motivo de expulsión:* {motivo}').replace('{motivo}', reason);
-        byeText += suffix;
-      }
-
-      let pp = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png';
-      try { pp = await conn.profilePictureUrl(jidToKick, 'image'); } catch {}
-      const apii = await conn.getFile(pp).catch(() => ({}));
-
-      if (apii?.data) {
-        await conn.sendFile(chatId, apii.data, 'pp.jpg', byeText, null, false, { mentions: [jidToKick] })
-          .catch(() => conn.sendMessage(chatId, { text: byeText, mentions: [jidToKick] }));
-      } else {
-        await conn.sendMessage(chatId, { text: byeText, mentions: [jidToKick] });
-      }
-    }
   } catch (e) {
     console.error('Error en kick:', e);
     await m.reply('*[◉] No se pudo expulsar al usuario. Puede que sea admin o WhatsApp no lo permita.*');

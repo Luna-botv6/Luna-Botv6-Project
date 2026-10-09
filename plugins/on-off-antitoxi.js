@@ -1,5 +1,6 @@
 import { getConfig } from '../lib/funcConfig.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { marcarMotivo } from '../lib/funcion/leave-reason.js';
 
 const toxicWarnings = new Map();
 const MAX_TOXIC_WARNINGS = 3;
@@ -94,31 +95,14 @@ const handler = async (m, { conn }) => {
     if (warningCount >= MAX_TOXIC_WARNINGS) {
       let userBanned = false;
       try {
+        marcarMotivo(m.chat, [m.sender], { tipo: 'toxic' });
         await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
-        clearGroupCache(m.chat, conn);
         userBanned = true;
       } catch (error) {
         userBanned = false;
       }
       
       if (userBanned) {
-        const banMsg = `🚫 *USUARIO ELIMINADO POR CONTENIDO TÓXICO*
-
-👤 *Usuario:* @${m.sender.split('@')[0]}
-📊 *Total advertencias:* ${warningCount}/${MAX_TOXIC_WARNINGS}
-📋 *Motivo:* Uso repetido de lenguaje ofensivo/tóxico
-🚨 *Contenido detectado:* ${toxicResult.type === 'word' ? 'Palabra ofensiva' : 'Patrón ofensivo'}
-⚡ *Acción:* Eliminación automática del grupo
-
-✅ *El usuario ha sido removido exitosamente.*
-
-🤝 *Mantenemos un ambiente respetuoso para todos.*`;
-
-        await conn.sendMessage(m.chat, {
-          text: banMsg,
-          mentions: [m.sender]
-        });
-        
         resetToxicWarnings(m.chat, m.sender);
         
       } else {
