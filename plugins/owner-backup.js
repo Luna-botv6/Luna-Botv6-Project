@@ -32,7 +32,7 @@ const handler = async (m, { conn, usedPrefix }) => {
     await conn.sendButton(
       m.chat,
       (t.exito || '✅ Backup restaurado con éxito.\nPuedes eliminar la carpeta backup usando el botón:'),
-      'LunaBot V6',
+      global.BotName,
       null,
       [
         [(t.btn_eliminar_backup || '🗑 Eliminar Backup'), `${usedPrefix}eliminarbackup`]

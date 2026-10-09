@@ -210,14 +210,20 @@ export async function handler(chatUpdate) {
         if (name && name !== 'Luna-Botv6' && content && typeof content === 'object') {
           const upper = name.toUpperCase();
           const alnum = name.replace(/[^a-zA-Z0-9]/g, '');
-          const _applyName = (str) => str
-            .replace(/Luna-Botv6-Project/gi, name)
-            .replace(/LUNA BOT MENU/gi, `${upper} MENU`)
-            .replace(/LUNA BOT/gi, upper)
-            .replace(/Luna IA/g, `${name} IA`)
-            .replace(/LUNA IA/gi, `${upper} IA`)
-            .replace(/Luna-Botv6/gi, name)
-            .replace(/LunaBot/gi, alnum);
+          const _applyName = (str) => {
+            const urlRe = /^(https?:\/\/|github\.com\/)[^\s]+/i;
+            return str.split(/(https?:\/\/[^\s]+|github\.com\/[^\s]+)/g).map(part => {
+              if (urlRe.test(part)) return part;
+              return part
+                .replace(/Luna-Botv6-Project/gi, name)
+                .replace(/LUNA BOT MENU/gi, `${upper} MENU`)
+                .replace(/LUNA BOT/gi, upper)
+                .replace(/Luna IA/g, `${name} IA`)
+                .replace(/LUNA IA/gi, `${upper} IA`)
+                .replace(/Luna-Botv6/gi, name)
+                .replace(/LunaBot/gi, alnum);
+            }).join('');
+          };
           const renamed = renameStringsDeep(content, _applyName);
           if (renamed !== content) content = renamed;
         }

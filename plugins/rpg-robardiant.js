@@ -4,10 +4,16 @@ import { addMoney, removeMoney, getMoney, getArmorStats, hasArmor, damageArmor, 
 import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js'
 import { tieneProteccion } from '../lib/usarprote.js'
 import { resolveMention } from '../lib/mentionHelper.js'
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
 
 const cooldownPath = './database/robCooldownMoney.json'
-const cooldownTime = 0
+const cooldownTime = 2 * 60 * 1000
 const maxRob = 3000
+const victimMinMoney = 1000
+const dailyRobLimit = 3
+const failChance = 0.25
+const failPenaltyMin = 500
+const failPenaltyMax = 2500
 
 function ensureCooldownDB() {
   if (!fs.existsSync('./database')) fs.mkdirSync('./database')
@@ -54,17 +60,39 @@ const handler = async (m, { conn, command, args }) => {
     return m.reply(_reason)
   }
 
-  const cooldowns = getCooldowns()
-  const lastTime = cooldowns[userId] || 0
-  const now = Date.now()
-
-  if (now < lastTime + cooldownTime) {
-    const timeLeft = msToTime(lastTime + cooldownTime - now)
-    return m.reply(`⏳ ${tradutor.texto1} ${timeLeft} ${tradutor.texto2}`)
-  }
-
   const who = m.isGroup ? resolveMention(m, args) : m.chat
   if (!who) return m.reply(`💎 ${tradutor.texto3}`)
+  if (who === userId) return m.reply(`🤨 No podés robarte a vos mismo.`)
+
+  if (m.isGroup) {
+    const _g = await getGroupDataForPlugin(conn, m.chat, m.sender)
+    const _miembros = _g.participants || []
+    const _digitos = who.replace(/@[^@]+$/, '').replace(/[^0-9]/g, '')
+    const _esMiembro = _miembros.some(p =>
+      (p.id || '').replace(/@[^@]+$/, '').replace(/[^0-9]/g, '') === _digitos ||
+      (p.lid || '').replace(/@[^@]+$/, '').replace(/[^0-9]/g, '') === _digitos
+    )
+    if (_miembros.length > 0 && !_esMiembro) {
+      return m.reply(`🚫 @${_digitos} no está en este grupo. Solo podés robar diamantes a alguien que esté presente aquí (mención o respuesta a un mensaje suyo).`)
+    }
+  }
+
+  const cooldowns = getCooldowns()
+  const _key = `${userId}:${who}`
+  const now = Date.now()
+  let _rec = cooldowns[_key]
+  if (typeof _rec !== 'object' || !_rec) _rec = { t: 0, c: 0, d: 0 }
+  if (now - _rec.d >= 24 * 60 * 60 * 1000) {
+    _rec.c = 0
+    _rec.d = now
+  }
+  if (now < _rec.t + cooldownTime) {
+    const timeLeft = msToTime(_rec.t + cooldownTime - now)
+    return m.reply(`⏳ ${tradutor.texto1} ${timeLeft} ${tradutor.texto2}`)
+  }
+  if (_rec.c >= dailyRobLimit) {
+    return m.reply(`⏳ Ya le robaste ${dailyRobLimit} veces hoy a @${who.split('@')[0]}. Volvé mañana.`, null, { mentions: [who] })
+  }
 
   const proteccion = tieneProteccion(who)
   if (proteccion.activa) {
@@ -72,6 +100,9 @@ const handler = async (m, { conn, command, args }) => {
   }
 
   const targetDiamonds = getMoney(who)
+  if (targetDiamonds < victimMinMoney) {
+    return m.reply(`😅 @${who.split('@')[0]} tiene menos de *${victimMinMoney} 💎*... muy pobre para robarle.`, null, { mentions: [who] })
+  }
   let toRob = Math.floor(Math.random() * maxRob)
 
   const armor = getArmorStats(who)
@@ -85,11 +116,26 @@ const handler = async (m, { conn, command, args }) => {
     }
   }
 
+  if (Math.random() < failChance) {
+    const _sMoney = getMoney(userId)
+    const _penalty = Math.min(Math.floor(failPenaltyMin + Math.random() * (failPenaltyMax - failPenaltyMin)), _sMoney)
+    removeMoney(userId, _penalty)
+    _rec.t = now
+    _rec.c += 1
+    cooldowns[_key] = _rec
+    setCooldowns(cooldowns)
+    const _huntF = checkHunterTrigger(userId, 0, _penalty + 5000)
+    const _huntMsgF = _huntF ? _huntF.message : ''
+    return m.reply(`😅 Fracasaste el robo a @${who.split('@')[0]} y perdiste *${_penalty} 💎* en el intento.${_huntMsgF}`, null, { mentions: [who] })
+  }
+
   if (targetDiamonds < toRob) {
     if (targetDiamonds === 0) return m.reply(`❌ ${tradutor.texto5}`)
     await addMoney(userId, targetDiamonds)
     await removeMoney(who, targetDiamonds)
-    cooldowns[userId] = now
+    _rec.t = now
+    _rec.c += 1
+    cooldowns[_key] = _rec
     setCooldowns(cooldowns)
     const _huntP = checkHunterTrigger(userId, 0, targetDiamonds + 5000)
     const _huntMsgP = _huntP ? _huntP.message : ''
@@ -98,7 +144,9 @@ const handler = async (m, { conn, command, args }) => {
 
   await addMoney(userId, toRob)
   await removeMoney(who, toRob)
-  cooldowns[userId] = now
+  _rec.t = now
+  _rec.c += 1
+  cooldowns[_key] = _rec
   setCooldowns(cooldowns)
 
   const _hunt = checkHunterTrigger(userId, 0, toRob + 5000)

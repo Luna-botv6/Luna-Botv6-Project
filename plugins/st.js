@@ -67,7 +67,7 @@ async function generarGif(conn, m, estilo, texto) {
     const start = Date.now();
 
     const msg = await safeSend(conn, m.chat, {
-      text: `🌙🤖 *Luna-Botv6*\n${bar(2)}\n⏳ Generando GIF...`
+      text: `🌙🤖 *${global.BotName}*\n${bar(2)}\n⏳ Generando GIF...`
     }, { quoted: m });
 
     if (msg && msg.key) {
@@ -75,7 +75,7 @@ async function generarGif(conn, m, estilo, texto) {
       progressJid = msg.key.remoteJid;
     }
 
-    await safeEdit(conn, progressJid, `🌙🤖 *Luna-Botv6*\n${bar(4)}\n📌 Conectando con servidor...`, progressKey);
+    await safeEdit(conn, progressJid, `🌙🤖 *${global.BotName}*\n${bar(4)}\n📌 Conectando con servidor...`, progressKey);
 
     const endpoint = `${SERVER_URL}/api/textstudio/generate?text=${encodeURIComponent(texto)}&style=${encodeURIComponent(estilo)}`;
 
@@ -109,7 +109,7 @@ async function generarGif(conn, m, estilo, texto) {
     await safeSend(conn, m.chat, {
       video: buffer,
       mimetype: 'video/mp4',
-      caption: `✨ *TextStudio*\n\n"${texto}"\n\n🌙 *Luna-Botv6*`,
+      caption: `✨ *TextStudio*\n\n"${texto}"\n\n🌙 *${global.BotName}*`,
       gifPlayback: true
     }, { quoted: m });
 
@@ -118,7 +118,7 @@ async function generarGif(conn, m, estilo, texto) {
     await safeEdit(
       conn,
       progressJid,
-      `🌙🤖 *Luna-Botv6*\n${bar(10)}\n✅ GIF generado en ${time}s\n✨ Estilo: ${estilo}\n📝 "${texto}"\n🌙 *Luna-Botv6 TextStudio API*`,
+      `🌙🤖 *${global.BotName}*\n${bar(10)}\n✅ GIF generado en ${time}s\n✨ Estilo: ${estilo}\n📝 "${texto}"\n🌙 *Luna-Botv6 TextStudio API*`,
       progressKey
     );
 

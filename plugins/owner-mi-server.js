@@ -32,7 +32,7 @@ const handler = async (m, {conn, text, command, isROwner}) => {
 
   if (command === 'miserver') {
     if (!isRegistered()) {
-      return responder(conn, m, t.bienvenida || '👋 *Bienvenido al panel de Luna-BotV6*\n\nEs tu primera vez acá. Primero elegí un usuario:\n*.reg TuUsuario*\n\n_Ejemplo: .reg Lunabot_');
+      return responder(conn, m, t.bienvenida || '👋 *Bienvenido al panel de ' + global.BotName + '*\n\nEs tu primera vez acá. Primero elegí un usuario:\n*.reg TuUsuario*\n\n_Ejemplo: .reg Lunabot_');
     }
     const linksText = await buildLinksText(t);
     return responder(conn, m,
@@ -45,7 +45,7 @@ const handler = async (m, {conn, text, command, isROwner}) => {
 
   if (command === 'milink') {
     if (!isRegistered()) {
-      return responder(conn, m, t.bienvenida || '👋 *Bienvenido al panel de Luna-BotV6*\n\nEs tu primera vez acá. Primero elegí un usuario:\n*.reg TuUsuario*\n\n_Ejemplo: .reg Lunabot_');
+      return responder(conn, m, t.bienvenida || '👋 *Bienvenido al panel de ' + global.BotName + '*\n\nEs tu primera vez acá. Primero elegí un usuario:\n*.reg TuUsuario*\n\n_Ejemplo: .reg Lunabot_');
     }
     const sub = String((text || '').trim().split(/\s+/)[0] || '').toLowerCase();
     if (sub === 'nuevo') {

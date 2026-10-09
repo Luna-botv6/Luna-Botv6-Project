@@ -4,10 +4,16 @@ import { addExp, removeExp, getExp, getArmorStats, hasArmor, damageArmor, getPla
 import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js'
 import { tieneProteccion } from '../lib/usarprote.js'
 import { resolveMention } from '../lib/mentionHelper.js'
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
 
 const COOLDOWN_FILE = './database/robCooldown.json'
 const MAX_ROB = 3000
-const COOLDOWN = 0
+const ROB_COOLDOWN = 2 * 60 * 1000
+const VICTIM_MIN_EXP = 1000
+const DAILY_ROB_LIMIT = 3
+const FAIL_CHANCE = 0.25
+const FAIL_PENALTY_MIN = 500
+const FAIL_PENALTY_MAX = 2500
 
 function ensureCooldownFile() {
   if (!fs.existsSync('./database')) fs.mkdirSync('./database')
@@ -59,21 +65,45 @@ const handler = async (m, { conn, args }) => {
   if (!target) return m.reply(`❌ ${tradutor.texto1}`)
   if (target === sender) return m.reply(`🤨 ${tradutor.texto2}`)
 
+  if (m.isGroup) {
+    const _g = await getGroupDataForPlugin(conn, m.chat, m.sender)
+    const _miembros = _g.participants || []
+    const _digitos = target.replace(/@[^@]+$/, '').replace(/[^0-9]/g, '')
+    const _esMiembro = _miembros.some(p =>
+      (p.id || '').replace(/@[^@]+$/, '').replace(/[^0-9]/g, '') === _digitos ||
+      (p.lid || '').replace(/@[^@]+$/, '').replace(/[^0-9]/g, '') === _digitos
+    )
+    if (_miembros.length > 0 && !_esMiembro) {
+      return m.reply(`🚫 @${_digitos} no está en este grupo. Solo podés robar exp a alguien que esté presente aquí (mención o respuesta a un mensaje suyo).`)
+    }
+  }
+
   const proteccion = tieneProteccion(target)
   if (proteccion.activa) {
     return m.reply(`❌ ${tradutor.texto3} @${target.split('@')[0]} ${tradutor.texto4}`, null, { mentions: [target] })
   }
 
   const cooldowns = loadCooldowns()
-  const lastRob = cooldowns[sender] || 0
+  const _key = `${sender}:${target}`
   const now = Date.now()
-
-  if (now < lastRob + COOLDOWN) {
-    const timeLeft = msToTime(lastRob + COOLDOWN - now)
+  let _rec = cooldowns[_key]
+  if (typeof _rec !== 'object' || !_rec) _rec = { t: 0, c: 0, d: 0 }
+  if (now - _rec.d >= 24 * 60 * 60 * 1000) {
+    _rec.c = 0
+    _rec.d = now
+  }
+  if (now < _rec.t + ROB_COOLDOWN) {
+    const timeLeft = msToTime(_rec.t + ROB_COOLDOWN - now)
     return m.reply(`⏳ ${tradutor.texto5} ${timeLeft}`)
+  }
+  if (_rec.c >= DAILY_ROB_LIMIT) {
+    return m.reply(`⏳ Ya le robaste ${DAILY_ROB_LIMIT} veces hoy a @${target.split('@')[0]}. Volvé mañana.`, null, { mentions: [target] })
   }
 
   const victimExp = getExp(target)
+  if (victimExp < VICTIM_MIN_EXP) {
+    return m.reply(`😅 @${target.split('@')[0]} tiene menos de *${VICTIM_MIN_EXP} exp*... muy pobre para robarle.`, null, { mentions: [target] })
+  }
   let robAmount = Math.min(Math.floor(Math.random() * MAX_ROB), victimExp)
 
   const armor = getArmorStats(target)
@@ -89,9 +119,24 @@ const handler = async (m, { conn, args }) => {
 
   if (robAmount <= 0) return m.reply(`😢 @${target.split('@')[0]} ${tradutor.texto6}`, null, { mentions: [target] })
 
+  if (Math.random() < FAIL_CHANCE) {
+    const _sExp = getExp(sender)
+    const _penalty = Math.min(Math.floor(FAIL_PENALTY_MIN + Math.random() * (FAIL_PENALTY_MAX - FAIL_PENALTY_MIN)), _sExp)
+    removeExp(sender, _penalty)
+    _rec.t = now
+    _rec.c += 1
+    cooldowns[_key] = _rec
+    saveCooldowns(cooldowns)
+    const _huntF = checkHunterTrigger(sender, 8000, 0)
+    const _huntMsgF = _huntF ? _huntF.message : ''
+    return m.reply(`😅 Fracasaste el robo a @${target.split('@')[0]} y perdiste *${_penalty} exp* en el intento.${_huntMsgF}`, null, { mentions: [target] })
+  }
+
   addExp(sender, robAmount)
   removeExp(target, robAmount)
-  cooldowns[sender] = now
+  _rec.t = now
+  _rec.c += 1
+  cooldowns[_key] = _rec
   saveCooldowns(cooldowns)
 
   const msg = victimExp < MAX_ROB

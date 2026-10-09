@@ -455,7 +455,8 @@
         "antiprivado": "Impede que usuários escrevam para o bot no privado.",
         "modopublico": "Permite que *qualquer usuário* use os comandos do bot.",
         "vierwimage": "Ativa a visualização automática de fotos de perfil.",
-        "modogrupos": "Restringe o uso do bot apenas a grupos."
+        "modogrupos": "Restringe o uso do bot apenas a grupos.",
+        "antitag": "Detecta status do WhatsApp que mencionam o grupo (@luna) e remove o autor."
       },
       "solo_rowner_subbot": "🔒 Somente o dono real do bot principal pode mudar isto. Um SubBot não pode alterar a configuração global."
     },

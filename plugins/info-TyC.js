@@ -15,14 +15,14 @@ ${tradutor.texto1}
 ━━━━━━━━━━━━━━━━━━━━━━━
 🔒 *Privacidad:* Tus datos se procesan localmente. No se comparten, almacenan ni venden a terceros.
 
-📌 *Uso del Bot:* Al interactuar con LunaBotV6, aceptas automáticamente estos términos.
+📌 *Uso del Bot:* Al interactuar con ${global.BotName}, aceptas automáticamente estos términos.
 
 📣 *Canal Oficial de WhatsApp:*
 🔗 https://www.whatsapp.com/channel/0029VbANyNuLo4hedEWlvJ3Y
 
-🤖 *Bot:* LunaBotV6 — un bot multifuncional diseñado para ofrecerte herramientas útiles, entretenimiento y automatización con estilo.
+🤖 *Bot:* ${global.BotName} — un bot multifuncional diseñado para ofrecerte herramientas útiles, entretenimiento y automatización con estilo.
 
-🧙 *Creador Principal:* *Evproject* (Desarrollador de LunaBotV6)
+🧙 *Creador Principal:* *Evproject* (Desarrollador de ${global.BotName})
 
 🧠 *Créditos Especiales:* Agradecimientos a *Bruno Sobrino*, cuyo código base inspiró y dio origen a este proyecto.
 
