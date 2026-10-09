@@ -24,7 +24,7 @@ const handler = async (m, { conn, isOwner, isROwner, command }) => {
 
   const top = stats.slice(0, 10);
 
-  let text = (t.titulo || '╭━━━〔 *TOP 10 EXP - LunaBotV6* 〕━━━╮\n');
+  let text = (t.titulo || '╭━━━〔 *TOP 10 EXP - ' + global.BotName + '* 〕━━━╮\n');
   for (let i = 0; i < top.length; i++) {
     const user = top[i];
     text += (t.item_pos?.replace('{pos}', i + 1).replace('{id}', user.id.split('@')[0]) || `\n${i + 1}. *${user.id.split('@')[0]}*\n`);
