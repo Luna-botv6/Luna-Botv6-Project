@@ -33,7 +33,7 @@ const isFull = (b) => b.flat().every(c => c);
 const tag = (jid) => '@' + jid.split('@')[0];
 
 const HELP = (p) =>
-  '🌙 *Luna-Botv6-Project*\n\n' +
+  '🌙 *' + global.BotName + '*\n\n' +
   '🎮 *Tic Tac Toe*\n\n' +
   '*Iniciar partida:*\n' +
   '_' + p + 'tictactoe @usuario_ — sin apuesta\n' +
@@ -52,7 +52,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
   const id = m.chat;
   const p  = usedPrefix;
 
-  if (!m.isGroup) return m.reply('🌙 *Luna-Botv6-Project*\n\n❌ Este juego solo funciona en grupos.');
+  if (!m.isGroup) return m.reply('🌙 *' + global.BotName + '*\n\n❌ Este juego solo funciona en grupos.');
 
   const { participants } = await getGroupDataForPlugin(conn, id, m.sender);
 
@@ -78,21 +78,21 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
   if (!subCmd || subCmd === 'ayuda') return m.reply(HELP(p));
 
   if (subCmd === 'cancelar') {
-    if (!game) return m.reply('🌙 *Luna-Botv6-Project*\n\n❓ No hay ninguna partida activa.');
+    if (!game) return m.reply('🌙 *' + global.BotName + '*\n\n❓ No hay ninguna partida activa.');
     if (realSender !== game.players[0] && realSender !== game.players[1])
-      return m.reply('🌙 *Luna-Botv6-Project*\n\n❌ Solo los jugadores pueden cancelar.');
+      return m.reply('🌙 *' + global.BotName + '*\n\n❌ Solo los jugadores pueden cancelar.');
     if (game.bet > 0) {
       for (const pl of game.players) addMoney(pl, game.bet);
     }
     delete conn.tictactoe[id];
-    return m.reply('🌙 *Luna-Botv6-Project*\n\n🚫 Partida cancelada. Las apuestas fueron devueltas.');
+    return m.reply('🌙 *' + global.BotName + '*\n\n🚫 Partida cancelada. Las apuestas fueron devueltas.');
   }
 
   if (subCmd.match(/^[abc][1-3]$/)) {
-    if (!game) return m.reply('🌙 *Luna-Botv6-Project*\n\n❓ No hay partida activa. Usá _' + p + 'tictactoe @usuario_');
+    if (!game) return m.reply('🌙 *' + global.BotName + '*\n\n❓ No hay partida activa. Usá _' + p + 'tictactoe @usuario_');
     if (realSender !== game.players[game.turn]) {
       return conn.sendMessage(id, {
-        text: '🌙 *Luna-Botv6-Project*\n\n⏳ Esperá tu turno ' + tag(m.sender) + ' 😅',
+        text: '🌙 *' + global.BotName + '*\n\n⏳ Esperá tu turno ' + tag(m.sender) + ' 😅',
         mentions: [m.sender]
       }, { quoted: m });
     }
@@ -102,7 +102,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (game.board[fila][col]) {
       return conn.sendMessage(id, {
-        text: '🌙 *Luna-Botv6-Project*\n\n❌ Esa casilla ya está ocupada ' + tag(m.sender) + '!\n\n' + renderBoard(game.board),
+        text: '🌙 *' + global.BotName + '*\n\n❌ Esa casilla ya está ocupada ' + tag(m.sender) + '!\n\n' + renderBoard(game.board),
         mentions: [m.sender]
       }, { quoted: m });
     }
@@ -119,7 +119,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
       delete conn.tictactoe[id];
       return conn.sendMessage(id, {
         text:
-          '🌙 *Luna-Botv6-Project*\n\n' +
+          '🌙 *' + global.BotName + '*\n\n' +
           '🏆 *' + tag(ganador) + ' ganó el Tic Tac Toe!*\n\n' +
           renderBoard(game.board) + '\n' +
           (premio > 0 ? '💎 Premio: *' + premio + ' monedas*\n' : '') +
@@ -137,7 +137,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
       delete conn.tictactoe[id];
       return conn.sendMessage(id, {
         text:
-          '🌙 *Luna-Botv6-Project*\n\n' +
+          '🌙 *' + global.BotName + '*\n\n' +
           '🤝 *Empate!*\n\n' +
           renderBoard(game.board) + '\n' +
           '✨ +100 XP para ambos · Las apuestas fueron devueltas',
@@ -151,7 +151,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
 
     return conn.sendMessage(id, {
       text:
-        '🌙 *Luna-Botv6-Project*\n\n' +
+        '🌙 *' + global.BotName + '*\n\n' +
         renderBoard(game.board) + '\n' +
         '🎯 Turno de ' + tag(siguiente) + ' ' + sigSimbolo + '\n' +
         '_Respondé con ' + p + 'ttt a1, b2, c3..._',
@@ -165,15 +165,15 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     const apuesta      = parseInt(args[1]) || 0;
 
     if (!opponent) return m.reply(HELP(p));
-    if (opponent === m.sender) return m.reply('🌙 *Luna-Botv6-Project*\n\n❌ No podés jugar contra vos mismo 😅');
-    if (!resolveParticipant(opponent)) return m.reply('🌙 *Luna-Botv6-Project*\n\n❌ Ese usuario no está en el grupo.');
+    if (opponent === m.sender) return m.reply('🌙 *' + global.BotName + '*\n\n❌ No podés jugar contra vos mismo 😅');
+    if (!resolveParticipant(opponent)) return m.reply('🌙 *' + global.BotName + '*\n\n❌ Ese usuario no está en el grupo.');
 
     if (apuesta > 0) {
       const s1 = getMoney(realSender);
       const s2 = getMoney(realOpponent);
-      if (s1 < apuesta) return m.reply('🌙 *Luna-Botv6-Project*\n\n❌ No tenés suficientes 💎 (tenés ' + s1 + ')');
+      if (s1 < apuesta) return m.reply('🌙 *' + global.BotName + '*\n\n❌ No tenés suficientes 💎 (tenés ' + s1 + ')');
       if (s2 < apuesta) return conn.sendMessage(id, {
-        text: '🌙 *Luna-Botv6-Project*\n\n❌ ' + tag(opponent) + ' no tiene suficientes 💎 para apostar',
+        text: '🌙 *' + global.BotName + '*\n\n❌ ' + tag(opponent) + ' no tiene suficientes 💎 para apostar',
         mentions: [opponent]
       }, { quoted: m });
       removeMoney(realSender,   apuesta);
@@ -189,7 +189,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
 
     return conn.sendMessage(id, {
       text:
-        '🌙 *Luna-Botv6-Project*\n\n' +
+        '🌙 *' + global.BotName + '*\n\n' +
         '🎮 *Tic Tac Toe*\n\n' +
         tag(m.sender) + ' ❌  VS  ⭕ ' + tag(opponent) + '\n' +
         (apuesta > 0 ? '💎 Apuesta: *' + apuesta + ' monedas cada uno*\n' : '') +
@@ -202,7 +202,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
 
   return conn.sendMessage(id, {
     text:
-      '🌙 *Luna-Botv6-Project*\n\n' +
+      '🌙 *' + global.BotName + '*\n\n' +
       '⚠️ Ya hay una partida activa!\n\n' +
       renderBoard(game.board) + '\n' +
       '🎯 Turno de ' + tag(game.players[game.turn]) + ' ' + EMOJIS[game.turn === 0 ? 'X' : 'O'] + '\n' +

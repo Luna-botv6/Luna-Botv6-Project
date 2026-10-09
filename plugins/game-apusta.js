@@ -21,7 +21,7 @@ const handler = async (m, { conn, usedPrefix, args }) => {
     await conn.sendButton(
       m.chat,
       (t.carrera_iniciada?.replace('{carrera}', carrera) || `🏁 ¡Carrera iniciada! Mira los competidores:\n${carrera}\n\n¿Quién ganará? Toca un botón para apostar.`),
-      'LunaBot V6',
+      global.BotName,
       null,
       [
         ['🐢 Tortuga', `${usedPrefix}carrera 🐢`],

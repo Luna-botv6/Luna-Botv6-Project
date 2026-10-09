@@ -462,7 +462,8 @@
         "antiprivado": "Prevents users from messaging the bot privately.",
         "modopublico": "Allows *any user* to use the bot commands.",
         "vierwimage": "Enables automatic profile picture preview.",
-        "modogrupos": "Restricts bot usage to groups only."
+        "modogrupos": "Restricts bot usage to groups only.",
+        "antitag": "Detects WhatsApp statuses that mention the group (@luna) and removes the author."
       },
       "solo_rowner_subbot": "🔒 Only the real owner of the main bot can change this. A SubBot cannot touch the global configuration."
     },

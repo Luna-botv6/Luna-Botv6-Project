@@ -102,7 +102,7 @@ ${usedPrefix}ruleta money verde 100`;
       [(t.btn_exp_blanco || '⚪ Exp Blanco 250'), `${usedPrefix}ruleta exp blanco 250`]
     ];
 
-    await conn.sendButton(m.chat, message, 'LunaBot V6', null, botones, null, null, m);
+    await conn.sendButton(m.chat, message, global.BotName, null, botones, null, null, m);
     return;
   }
 

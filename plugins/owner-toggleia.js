@@ -23,7 +23,7 @@ let handler = async (m, { conn, command }) => {
   const status = settings.iaLunaActive ? (t.estado_activa || '✅ ACTIVADA') : (t.estado_desactivada || '❌ DESACTIVADA');
   const emoji = settings.iaLunaActive ? '🟢' : '🔴';
   
-  await m.reply(`${emoji} ${t.titulo || '*IA de Luna-Bot*'}\n\n${(t.estado?.replace('{estado}', status) || `Estado: ${status}`)}\n\n${settings.iaLunaActive ? (t.activa_desc || '• El bot responderá a menciones y mensajes privados') : (t.desactivada_desc || '• El bot NO responderá automáticamente\n• Los comandos normales siguen funcionando')}`);
+  await m.reply(`${emoji} ${t.titulo || '*IA de ' + global.BotName + '*'}\n\n${(t.estado?.replace('{estado}', status) || `Estado: ${status}`)}\n\n${settings.iaLunaActive ? (t.activa_desc || '• El bot responderá a menciones y mensajes privados') : (t.desactivada_desc || '• El bot NO responderá automáticamente\n• Los comandos normales siguen funcionando')}`);
 };
 
 handler.help = ['toggleia', 'iaon', 'iaoff'];

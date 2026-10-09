@@ -4,11 +4,11 @@ const handler = async (m, { conn }) => {
   const name = await conn.getName(m.sender);
   const donar = (t.texto?.replace('{nombre}', name) || `
 ┏━━━━━━━━━━━━━━━━━┓
-┃ 🌙 *LunaBot V6* ┃
+┃ 🌙 *${global.BotName}* ┃
 ┗━━━━━━━━━━━━━━━━━┛
 
 ¡Hola, *${name}*!  
-Gracias por usar *LunaBot V6*.
+Gracias por usar *${global.BotName}*.
 
 ✨ *Donaciones*
 
@@ -21,7 +21,7 @@ Toda ayuda es bienvenida y permite mantener el bot activo y mejorar funciones. �
 
 ¡Gracias por tu apoyo!
 
-⚙️ *Versión*: LunaBot V6  
+⚙️ *Versión*: ${global.BotName}  
 `).trim();
 
   await conn.sendMessage(m.chat, { text: donar }, { quoted: m });

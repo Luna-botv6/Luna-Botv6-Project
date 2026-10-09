@@ -1,6 +1,19 @@
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
-const BASE_IMG = 'https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/otros/personalidad/';
+const MIRRORES_IMG = [
+  'https://cdn.jsdelivr.net/gh/Luna-botv6/base-archivos@main/otros/personalidad/',
+  'https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/otros/personalidad/'
+];
+
+async function enviarConImagen(conn, chat, slug, caption, mentions, quoted) {
+  for (const base of MIRRORES_IMG) {
+    try {
+      await conn.sendMessage(chat, { image: { url: base + slug + '.png' }, caption, mentions }, { quoted });
+      return true;
+    } catch {}
+  }
+  return false;
+}
 
 const SLUGS = [
   'hombre', 'mujer', 'homosexual', 'bisexual', 'pansexual', 'feminista',
@@ -124,18 +137,9 @@ var handler = async (m, { conn, text }) => {
     '┃\n' +
     '╰━━━━━━━━━━━━━━━━━━━━━━━╯';
 
-  try {
-    await conn.sendMessage(
-      m.chat,
-      { image: { url: BASE_IMG + slug + '.png' }, caption: resultado, mentions },
-      { quoted: m }
-    );
-  } catch {
-    await conn.sendMessage(
-      m.chat,
-      { text: resultado, mentions },
-      { quoted: m }
-    );
+  const envioOk = await enviarConImagen(conn, m.chat, slug, resultado, mentions, m);
+  if (!envioOk) {
+    await conn.sendMessage(m.chat, { text: resultado, mentions }, { quoted: m });
   }
 };
 

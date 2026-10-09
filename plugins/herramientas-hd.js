@@ -35,7 +35,7 @@ const handler = async (m, { conn, usedPrefix, command }) => {
 	const isOwner = ownerNums.includes(m.sender.replace(/\D/g, ''))
 
 	if (!isOwner && !isAdmin && !isPrems) {
-		return m.reply('🌙 *Luna-Botv6-Project*\n\n⚠️ Este comando es solo para admins y usuarios premium 💎')
+		return m.reply('🌙 *' + global.BotName + '*\n\n⚠️ Este comando es solo para admins y usuarios premium 💎')
 	}
 
 	try {
@@ -58,7 +58,7 @@ const handler = async (m, { conn, usedPrefix, command }) => {
 
 		await conn.sendMessage(m.chat, {
 			image: buffer,
-			caption: '✨ *Imagen mejorada con IA* — Luna-Botv6'
+			caption: '✨ *Imagen mejorada con IA* — ' + global.BotName
 		}, { quoted: m })
 	} catch (e) {
 		throw typeof e === 'string' ? e : (tradutor?.texto4 || '❌ Error al procesar la imagen')
