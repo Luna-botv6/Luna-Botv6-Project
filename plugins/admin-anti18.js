@@ -7,6 +7,7 @@ import fetch from 'node-fetch';
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
 import { obtenerMenuChat, verificarMenuChat } from '../src/assets/images/menu/languages/es/menu-img.js';
 import { isProtectedOwner } from '../lib/funcion/ownerGuard.js';
+import { marcarMotivo } from '../lib/funcion/leave-reason.js';
 
 let _sharp = null
 const getSharp = async () => {
@@ -447,13 +448,9 @@ async function bloquearContenido({ m, conn, grupoData: groupData, isOwnerSender,
 
   if (warns >= MAX_WARNS) {
     await resetWarnings(m.sender);
+    marcarMotivo(m.chat, [m.sender], { tipo: '18' });
     await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
     clearGroupCache(m.chat, conn);
-    await conn.sendMessage(m.chat, {
-      text: (t.expulsado || '🚫 @{tag} fue expulsado del grupo por acumular {max} advertencias de contenido +18.')
-        .replace('{tag}', tag).replace('{max}', MAX_WARNS),
-      mentions: [m.sender]
-    });
   }
 
   return true;

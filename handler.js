@@ -26,6 +26,7 @@ import { getGroupDataForPlugin, resolveIsSuperAdmin } from './lib/funcion/plugin
 import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
 import { isProtectedOwner, resolveTargetForOwnerCheck } from './lib/funcion/ownerGuard.js';
+import { marcarMotivo } from './lib/funcion/leave-reason.js';
 import { checkRateLimit, recordMessage, checkWarmupLimit, recordGlobalMessage, recordIncomingMessage } from './lib/funcion/private-rate-limit.js';
 
 EventEmitter.defaultMaxListeners = 30;
@@ -356,7 +357,7 @@ export async function handler(chatUpdate) {
                 global._muteWarnings.delete(k); break;
               }
             }
-            this.sendMessage(chat, { text: _wk.replace('{user}', _phone), mentions: [sender] }).catch(() => {});
+            marcarMotivo(chat, [sender], { tipo: 'mute' });
             this.groupParticipantsUpdate(chat, [sender], 'remove').catch(() => {});
           }
         }
@@ -822,7 +823,7 @@ export async function handler(chatUpdate) {
   }
 }
 
-export async function participantsUpdate({ id, participants, action }) {
+export async function participantsUpdate({ id, participants, action, author, authorPn }) {
   try {
     const conn = currentConn || mconn?.conn || mconn;
     if (!conn?.user?.jid) return;
@@ -877,7 +878,9 @@ export async function participantsUpdate({ id, participants, action }) {
       idioma,
       tradutor,
       opts,
-      groupCache
+      groupCache,
+      author,
+      authorPn
     );
   } catch (e) {}
 }
