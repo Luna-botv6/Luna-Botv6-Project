@@ -22,7 +22,7 @@ import { startCacheCleanupInterval } from './lib/funcion/cacheManager.js';
 import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
 import { invalidateGroupCount } from './src/libraries/print.js';
-import { getGroupDataForPlugin, resolveIsSuperAdmin } from './lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, resolveIsSuperAdmin, mezclarParticipantes } from './lib/funcion/pluginHelper.js';
 import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
 import { isProtectedOwner, resolveTargetForOwnerCheck } from './lib/funcion/ownerGuard.js';
@@ -553,7 +553,7 @@ export async function handler(chatUpdate) {
 
           if (matchSin) {
             m.plugin = name;
-            updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender, chat: m.chat });
+            updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender, pushname: m.pushName || m.pushname || null, chat: m.chat });
             const extra = {
               match: null,
               usedPrefix: '',
@@ -592,7 +592,7 @@ export async function handler(chatUpdate) {
           if (!isAccept) continue;
 
           m.plugin = name;
-          updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender, chat: m.chat });
+          updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender, pushname: m.pushName || m.pushname || null, chat: m.chat });
           global._lastCmd = command;
           if (this.user?.jid) {
             if (!global._presenceCooldown) global._presenceCooldown = new Map();
@@ -839,32 +839,8 @@ export async function participantsUpdate({ id, participants, action, author, aut
     if (global.groupCache?.has(id)) {
       const cached = global.groupCache.get(id);
       if (cached?.data?.participants) {
-        const normalizedParticipants = Array.isArray(participants)
-          ? participants.map(p => (typeof p === 'string' ? p : p.id || p.phoneNumber || '')).filter(Boolean)
-          : [participants].filter(Boolean);
-
-        let updatedParticipants = [...cached.data.participants];
-
-        if (action === 'add') {
-          for (const jid of normalizedParticipants) {
-            if (!updatedParticipants.find(p => p.id === jid)) {
-              updatedParticipants.push({ id: jid, lid: null, admin: null });
-            }
-          }
-        } else if (action === 'remove' || action === 'leave') {
-          updatedParticipants = updatedParticipants.filter(p => !normalizedParticipants.includes(p.id));
-        } else if (action === 'promote') {
-          updatedParticipants = updatedParticipants.map(p =>
-            normalizedParticipants.includes(p.id) ? { ...p, admin: 'admin' } : p
-          );
-        } else if (action === 'demote') {
-          updatedParticipants = updatedParticipants.map(p =>
-            normalizedParticipants.includes(p.id) ? { ...p, admin: null } : p
-          );
-        }
-
         global.groupCache.set(id, {
-          data: { ...cached.data, participants: updatedParticipants },
+          data: { ...cached.data, participants: mezclarParticipantes(cached.data.participants, action, participants) },
           timestamp: Date.now()
         });
       }

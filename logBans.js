@@ -9,6 +9,7 @@ global.latestCommand = {
   plugin: null,
   pluginFile: null,
   sender: null,
+  pushname: null,
   chat: null,
   timestamp: null,
   isFromPluginsFolder: null,
@@ -32,7 +33,7 @@ const MAX_RECONNECTS_BEFORE_LOG = 3;
 const RECONNECT_WINDOW = 5 * 60 * 1000;
 const MAX_DISCONNECT_HISTORY = 20;
 
-export function updateLastCommand({ text, plugin, sender, chat }) {
+export function updateLastCommand({ text, plugin, sender, pushname, chat }) {
   const pluginPath = plugin || '';
   const basename = pluginPath ? path.basename(pluginPath) : null;
 
@@ -47,6 +48,7 @@ export function updateLastCommand({ text, plugin, sender, chat }) {
     plugin: pluginPath,
     pluginFile: basename,
     sender: sender || null,
+    pushname: pushname || null,
     chat: chat || null,
     timestamp: new Date().toISOString(),
     isFromPluginsFolder: isPluginsFolder || isCustomCommands,

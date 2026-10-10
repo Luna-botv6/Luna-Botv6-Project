@@ -61,6 +61,7 @@ import { manejarCanalRelay } from './lib/funcion/canal-relay.js';
 import { manejarPhraseTriggers } from './lib/funcion/phrase-triggers.js';
 import { buttonActions } from './lib/funcion/button-actions.js';
 import { esBotIgnorado, MARCA_LUNA } from './lib/funcion/botsIgnorados.js';
+import { etiquetaUsuarioParaLog, etiquetaChatParaLog } from './lib/funcion/lid-resolver.js';
 import { manejarMarcaLuna, manejarRespuestaBoton, obtenerBotonId, BOTON_VERIFICAR } from './lib/funcion/verificacionBots.js';
 import { installUsersProxy } from './lib/funcion/databaseManager.js';
 import { updateConnectionState, reportBan } from './logBans.js';
@@ -1208,8 +1209,8 @@ global.reloadHandler = async function(restatConn) {
         return;
       }
       if (esBotIgnorado(ignoreSender, msg.messages?.[0]?.key?.remoteJid)) {
-        const ignChat = String(msg.messages?.[0]?.key?.remoteJid || '').replace(/[^0-9]/g, '');
-        console.log(chalk.cyan(`[Ignorado] usuario posible bot ${String(ignoreSender).replace(/[^0-9]/g, '')}${ignChat ? ` en chat ${ignChat}` : ''}`));
+        const ignJid = msg.messages?.[0]?.key?.remoteJid || '';
+        console.log(chalk.cyan(`[Ignorado] usuario posible bot ${etiquetaUsuarioParaLog(ignoreSender, conn)}${ignJid ? ` en chat ${etiquetaChatParaLog(ignJid, conn)}` : ''}`));
         return;
       }
       await conn.handler(msg);
