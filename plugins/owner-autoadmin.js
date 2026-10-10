@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { resolveToPhoneJid } from '../lib/funcion/lid-resolver.js';
 
 const handler = async (m, { conn }) => {
   if (m.fromMe) return;
@@ -13,8 +14,8 @@ const handler = async (m, { conn }) => {
   if (isAdmin) throw t.texto1;
 
   try {
-    await conn.groupParticipantsUpdate(m.chat, [m.sender], 'promote');
-    clearGroupCache(m.chat, conn);
+    const objetivo = resolveToPhoneJid(m.sender, conn) || m.sender;
+    await conn.groupParticipantsUpdate(m.chat, [objetivo], 'promote');
   } catch {
     await m.reply(t.texto2);
   }

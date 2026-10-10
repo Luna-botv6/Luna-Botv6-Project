@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { resolveJidToPhone } from "../../lib/funcion/lid-resolver.js";
 
 const CMD_RE = /^[.!#/\\](\w+)/;
 const MEDIA_MAP = new Map([
@@ -17,6 +18,42 @@ const getMedia = (type) => {
   return null;
 };
 
+const pickNombre = (p) => {
+  const crudo = p?.name || p?.notify || p?.pushName || p?.pushname || p?.displayName || p?.verifiedName || "";
+  const nombre = String(crudo).replace(/\s+/g, " ").trim();
+  if (!nombre) return "";
+  if (!/[@\d]/.test(nombre)) return nombre.slice(0, 40);
+  if (p?.name && !/@/.test(p.name)) return String(p.name).slice(0, 40);
+  if (p?.notify && !/@/.test(p.notify)) return String(p.notify).slice(0, 40);
+  if (p?.verifiedName) return String(p.verifiedName).slice(0, 40);
+  return "";
+};
+
+const buscarNombre = (participants, jid) => {
+  if (!jid || !Array.isArray(participants)) return "";
+  const objetivo = String(jid);
+  const digitos = objetivo.split("@")[0];
+  const p = participants.find(x => x && (x.id === objetivo || x.lid === objetivo))
+    || participants.find(x => x && String(x.id || "").split("@")[0] === digitos)
+    || participants.find(x => x && String(x.lid || "").split("@")[0] === digitos)
+    || participants.find(x => x && String(x.phoneNumber || "").split("@")[0] === digitos);
+  return pickNombre(p || {});
+};
+
+const esNumero = (s) => /^\+?[\d\s().-]{5,}$/.test(String(s || "").trim());
+
+const buscarNombreContacto = (conn, phone) => {
+  if (!phone) return "";
+  const objetivo = phone + "@s.whatsapp.net";
+  const fuentes = [conn?.contacts, conn?.store?.contacts, global?.conn?.contacts];
+  for (const fuente of fuentes) {
+    if (!fuente || typeof fuente !== "object") continue;
+    const nombre = pickNombre(fuente[objetivo] || {});
+    if (nombre) return nombre;
+  }
+  return "";
+};
+
 const TZ          = { timeZone: "America/Argentina/Buenos_Aires" };
 const _seen       = new Set();
 const _recentKeys = new Map();
@@ -28,9 +65,9 @@ const KEY_TTL     = 60000;
 
 const W      = 51;
 const STARS  = "  ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦";
-const TOP    = "╭" + "─".repeat(W) + "╮";
-const DIV    = "├" + "┄".repeat(W) + "┤";
-const BOTTOM = "╰" + "─".repeat(W) + "╯";
+const TOP    = "╭" + "━".repeat(W) + "╮";
+const DIV    = "├" + "━".repeat(W) + "┤";
+const BOTTOM = "╰" + "━".repeat(W) + "╯";
 
 const isEdited = (m) => {
   const mtype = m.mtype || "";
@@ -69,19 +106,21 @@ const isDuplicate = (m, chat, msgType) => {
   return false;
 };
 
-const getGroupName = async (conn, chat) => {
-  if (_groupNames.has(chat)) return _groupNames.get(chat);
+const getGroupMeta = async (conn, chat) => {
+  const _gc = global.groupCache?.get(chat);
+  const syncParts = conn.chats?.[chat]?.participants || _gc?.data?.participants || _gc?.data?.groupMetadata?.participants || [];
+  if (_groupNames.has(chat)) return { name: _groupNames.get(chat), participants: syncParts };
   try {
-    const _gc = global.groupCache?.get(chat);
     const meta = conn.chats?.[chat] || _gc?.data?.groupMetadata || await conn.groupMetadata?.(chat);
     const name = meta?.subject || meta?.name || null;
+    const participants = Array.isArray(meta?.participants) ? meta.participants : syncParts;
     if (name) {
       _groupNames.set(chat, name);
       if (_groupNames.size > 300) _groupNames.delete(_groupNames.keys().next().value);
     }
-    return name;
+    return { name, participants };
   } catch {
-    return null;
+    return { name: null, participants: [] };
   }
 };
 
@@ -167,11 +206,11 @@ export default async function printMessage(m, conn = { user: {} }) {
     const multiline = text.includes("\n");
     const truncated = firstLine.length > 120 ? firstLine.slice(0, 120) : firstLine;
     const preview   = truncated + (multiline || firstLine.length > 120 ? chalk.hex("#5a5278")(" ...") : "");
-    const groupName = isGroup ? await getGroupName(conn, chat) : null;
+    const meta = isGroup ? await getGroupMeta(conn, chat) : { name: null, participants: [] };
+    const groupName = meta.name;
     const groupCount = await getGroupCount(conn);
 
-    const cStars  = chalk.hex("#7c6af7");
-    const cBorder = conn.isSubBot ? chalk.green : chalk.hex("#4a4080");
+    const cBorder = conn.isSubBot ? chalk.green : chalk.magentaBright;
     const cTitle  = chalk.bold.hex("#f7c97a");
     const cSys    = chalk.bold.hex("#5dd9a4");
     const cBadge  = chalk.bold.hex("#00bfff");
@@ -179,12 +218,11 @@ export default async function printMessage(m, conn = { user: {} }) {
     const cTag    = chalk.bold.hex("#50fa7b");
     const cBot    = chalk.bold.hex("#00e5ff");
     const cHrs    = chalk.bold.hex("#ffd166");
-    const cGrp    = chalk.bold.hex("#ff79c6");
+    const cUsr    = chalk.bold.hex("#ff79c6");
+    const cGold   = chalk.yellowBright;
     const cGid    = chalk.bold.hex("#8be9fd");
     const cEvt    = chalk.bold.hex("#50fa7b");
-    const cNom    = chalk.bold.hex("#ffb86c");
     const cCmd    = chalk.bold.hex("#FF00FF");
-    const cMed    = chalk.bold.hex("#bd93f9");
     const cArrow  = chalk.bold.hex("#c490f5");
     const cMsg    = chalk.bold.hex("#f8f8f2");
 
@@ -193,32 +231,71 @@ export default async function printMessage(m, conn = { user: {} }) {
       cBorder("│") + "  " + cLbl(label + " ⟩") + "  " + value;
 
     const botTitle = (global.getBotName ? global.getBotName(conn) : global.BotName) || "LUNA-BOTV6";
+    const _lc = global.latestCommand || null;
+    let senderJid = null;
+    if (_lc?.sender && _lc?.chat === chat) {
+      const _age = _lc.timestamp ? Date.now() - new Date(_lc.timestamp).getTime() : 0;
+      if (!_lc.timestamp || (_age >= 0 && _age < 120000)) senderJid = String(_lc.sender);
+    }
+    let usuario = "desconocido";
+    let usuarioGold = true;
+    const tomarNombre = (n) => {
+      if (n && !esNumero(n)) {
+        usuario = String(n).replace(/\s+/g, " ").trim().slice(0, 40);
+        usuarioGold = false;
+        return true;
+      }
+      return false;
+    };
+    if (senderJid) {
+      let telefono = null;
+      try { telefono = resolveJidToPhone(senderJid, conn); } catch { telefono = null; }
+      const phoneJid = telefono ? telefono + "@s.whatsapp.net" : null;
+      tomarNombre(_lc?.pushname)
+        || tomarNombre(isGroup ? buscarNombre(meta.participants, senderJid) : "")
+        || tomarNombre(phoneJid && isGroup ? buscarNombre(meta.participants, phoneJid) : "")
+        || tomarNombre(pickNombre(conn.chats?.[senderJid] || {}))
+        || tomarNombre(phoneJid ? pickNombre(conn.chats?.[phoneJid] || {}) : "")
+        || tomarNombre(buscarNombreContacto(conn, telefono));
+      if (usuarioGold && conn.getName) {
+        for (const jid of [senderJid, phoneJid]) {
+          if (!jid) continue;
+          let g = null;
+          try { g = await conn.getName(jid); } catch { g = null; }
+          if (tomarNombre(typeof g === "string" ? g : null)) break;
+        }
+      }
+      if (usuarioGold && telefono) usuario = telefono;
+    }
 
     const lines = [
       cBorder(TOP),
       cBorder("│") + "  " +
         cTitle("◈ " + botTitle + (conn.isSubBot ? " [SUB]" : "")) + "  " +
         chalk.hex("#5a5278")("·····") + "  " +
-        cSys("GROUP: " + String(groupCount)) + "  " +
+        cSys("GRUPO Nº " + String(groupCount)) + "  " +
         chalk.hex("#5a5278")("·····") + "  " +
         cBadge(chatBadge),
       cBorder(DIV),
       row("BOT", cBot(botNum)),
-      row("HRS", cHrs(time)),
+      row("USUARIO", usuarioGold ? cGold(usuario) : cUsr(usuario)),
+      row("HORA", cHrs(time)),
     ];
 
     if (isGroup) {
-      lines.push(row("GRP", cGrp("👥 " + (groupName || "Desconocido")) + "  " + cTag("‹ grupo ›")));
-      lines.push(row("GID", cGid(groupId)));
+      lines.push(row("GRUPO", cUsr("👥 " + (groupName || "Desconocido")) + "  " + cTag("‹ grupo ›")));
+      lines.push(row("ID", cGid(groupId)));
     } else {
       const whom = m.pushname || m.sender?.split("@")[0] || "privado";
-      lines.push(row("USR", cGrp(whom) + "  " + cTag("‹ privado ›")));
+      lines.push(row("CHAT", cUsr("💬 " + whom) + "  " + cTag("‹ privado ›")));
     }
 
-    if (isGroup && m.pushname) lines.push(row("NOM", cNom(m.pushname)));
-    if (command)               lines.push(row("CMD", cCmd(command)));
-    lines.push(                row("EVT", cEvt(msgType)));
-    if (media)                 lines.push(row("MED", cMed(media)));
+    if (command) {
+      const prefijo = /^[.!#/\\]/.exec(_lc?.text || "")?.[0] || ".";
+      lines.push(row("COMANDO", cCmd(prefijo + command) + chalk.hex("#5a5278")("  ·  ") + cEvt(media || msgType)));
+    } else {
+      lines.push(row("EVENTO", cEvt(media || msgType)));
+    }
 
     lines.push(cBorder(DIV));
     lines.push(
