@@ -322,6 +322,19 @@ Todo el sistema de Luna se programó con la seguridad como base. No hay procesos
 </div>
 
 <details open>
+<summary><b>👑 09/10/2026 — Owners que se reconocen solos + aviso que etiqueta al dueño 📱</b></summary>
+
+<br>
+
+**👑 Tu número queda reconocido aunque WhatsApp te mande como LID**
+
+- Cada owner guarda un `systemlid` que el bot completa solo: con tu primer comando aprende tu ID interno y desde ahí te reconoce siempre, vengas como número o como LID.
+- Ya no hay que configurar ningún LID a mano: el número real en `system-owner.json` alcanza.
+- Si usás un comando de owner sin serlo, el aviso ahora es simple y directo: menciona con `@` al primer dueño (y nombra al resto), sin foto ni enlaces vacíos.
+
+</details>
+
+<details open>
 <summary><b>📲 08/10/2026 — Comandos desde tu propio número + Panel que se defiende solo 📱</b></summary>
 
 <br>
@@ -1107,6 +1120,8 @@ nano config.js
 
 Para guardar en nano: `Volumen Abajo + O` → Enter → `Volumen Abajo + X`
 
+> Tu número de owner **NO** va en `config.js`. Se pone en `system-owner.json` (ver [👑 Owners](#-owners-sin-tocar-configjs)): el bot lo crea solo en el primer arranque y lo detecta sin reiniciar.
+
 **Paso 7 — Iniciar el bot:**
 ```bash
 npm start
@@ -1209,12 +1224,13 @@ Los owners viven en `system-owner.json`, en la raíz del bot. El `config.js` ya 
 {
   "version": 1,
   "owners": [
-    { "numero": "5491112223333", "nombre": "Tu nombre" },
-    { "numero": "5492223334444", "nombre": "Otro owner" },
-    { "numero": "", "nombre": "" }
+    { "numero": "5491112223333", "systemlid": "128213531545849", "nombre": "Tu nombre" },
+    { "numero": "5492223334444", "systemlid": "", "nombre": "Otro owner" },
+    { "numero": "", "systemlid": "", "nombre": "" }
   ]
 }
 ```
+El campo `systemlid` lo completa el bot solo (es el ID interno de WhatsApp de ese número): no hace falta tocarlo. Si el bot no puede resolver tu LID al principio, lo aprende con tu primer comando y desde ahí te reconoce siempre.
 Hay 10 renglones: uno por owner, número al lado del nombre. Dejá vacíos los que no uses.
 
 * En el primer arranque el bot crea el archivo solo, con una `_nota` que explica el formato. Después agregá tu número real (con código de país, sin `+`). Vale el objeto con nombre o el número solo, y podés poner varios.
@@ -1275,12 +1291,15 @@ pm2 logs LunaBot
 
 ```
 Luna-Botv6-Project/
-├── 📁 database/          # Base de datos JSON (LowDB)
+├── 📁 database/          # Base de datos JSON (LowDB + JSON por usuario)
 ├── 📁 lib/               # Librerías principales
+│   ├── lidMap.js             # Mapa LID→número (database/lid_map.json)
 │   └── funcion/
 │       ├── pluginHelper.js    # Caché de admins + LID
 │       ├── groupMetadata.js   # Metadata de grupos
-│       └── lid-resolver.js    # Resolución LID→JID
+│       ├── lid-resolver.js    # Resolución LID→JID (grupos, contactos, mapa)
+│       ├── system-owners.js   # Owners (fuente única, con systemlid)
+│       └── owners-manager.js  # Puente owners (panel + comandos)
 ├── 📁 plugins/           # Comandos del bot (290+)
 │   ├── game-*.js              # Juegos
 │   ├── tools-*.js             # Herramientas
@@ -1291,10 +1310,11 @@ Luna-Botv6-Project/
 │       ├── es.json            # Español
 │       ├── en.json            # English
 │       └── pt.json            # Português
-├── 📁 MysticSession/     # Sesión de WhatsApp
-├── 📄 main.js            # Archivo principal
-├── 📄 handler.js         # Handler de mensajes
-└── 📄 config.js          # Configuración
+├── 📁 MysticSession/     # Sesión de WhatsApp (no se sube)
+├── 📄 main.js            # Núcleo del bot (socket, handler, reconexión)
+├── 📄 handler.js         # Router de mensajes y permisos
+├── 📄 config.js          # Configuración (SIN owners: viven en system-owner.json)
+└── 📄 system-owner.json  # Tus owners (se crea solo, no se sube a GitHub)
 ```
 
 ---
@@ -1446,22 +1466,6 @@ Luna usa librerías open source de la comunidad: [Baileys](https://github.com/Wh
 ## 📄 Licencia
 
 Licenciado bajo la [Licencia MIT](LICENSE).
-
----
-
-## 🗑️ Registro de Limpieza de Archivos Obsoletos (9 Archivos)
-
-En la última auditoría y refactorización se removieron 9 archivos obsoletos, duplicados o en desuso que no contaban con referencias ni importaciones activas en el código:
-
-1. **`pipdeps.js`** *(Raíz)*: Script para instalar `yt-dlp` vía pip en el arranque. Quedó obsoleto tras la eliminación de los descargadores de YouTube antiguos.
-2. **`lib/downloader-playlist.js`**: Archivo de comando duplicado ubicado por error en `lib/` (el plugin activo está en `plugins/downloader-playlist.js`).
-3. **`lib/chatsDB.js`**: Módulo standalone de base de datos de chats sin importaciones en ningún archivo del proyecto.
-4. **`lib/logError.js`**: Módulo de registro de errores no importado (`handler.js` utiliza su propia función local `logError`).
-5. **`lib/lunaDB.js`**: Adaptador asíncrono sin codificación de JID ni caché, en desuso frente a `lib/funcion/userManager.js`.
-6. **`lib/romperprote.js`**: Lógica auxiliar de juego sin importación en los plugins activos.
-7. **`lib/tictactoe-db.js`**: Módulo de base de datos de tres en raya no referenciado por ningún plugin.
-8. **`lib/funcion/earlyFilter.js`**: Filtro preliminar de mensajes desusado y sin importaciones.
-9. **`lib/funcion/usersDB.js`**: Gestor de usuarios antiguo que guardaba en un JSON monolítico (`./database/users.json`), en lugar del sistema actual con Proxy por JID de `userManager.js` (`./database/users/{jid}.json`).
 
 ---
 

@@ -46,6 +46,8 @@
     "dfail": {
       "texto1": "🚫 Este comando é apenas para o dono principal.",
       "texto2": "🚫 Este comando é apenas para donos.",
+      "owner_denial": "🚫 Este comando está disponível apenas para @{owner}",
+      "owner_denial_mas": "👑 Também são donos: {nombres}",
       "texto3": "🚫 Este comando é apenas para moderadores.",
       "texto4": "🚫 Este comando é apenas para usuários premium.",
       "texto5": "🚫 Este comando só pode ser usado em grupos.",
