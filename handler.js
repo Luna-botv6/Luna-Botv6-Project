@@ -26,6 +26,7 @@ import { getGroupDataForPlugin, resolveIsSuperAdmin } from './lib/funcion/plugin
 import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
 import { isProtectedOwner, resolveTargetForOwnerCheck } from './lib/funcion/ownerGuard.js';
+import { listOwners as listSystemOwners } from './lib/funcion/system-owners.js';
 import { marcarMotivo } from './lib/funcion/leave-reason.js';
 import { checkRateLimit, recordMessage, checkWarmupLimit, recordGlobalMessage, recordIncomingMessage } from './lib/funcion/private-rate-limit.js';
 
@@ -1000,6 +1001,20 @@ global.dfail = async (type, m, conn) => {
     const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
     const _translate = await loadTranslation(idioma);
     const tradutor = _translate.handler?.dfail || {};
+
+    if (type === 'owner' || type === 'rowner') {
+      try {
+        const owners = listSystemOwners().filter((o) => o.numero);
+        if (owners.length) {
+          const primero = owners[0];
+          const resto = owners.slice(1).map((o) => o.nombre || o.numero).filter(Boolean);
+          let texto = String(tradutor.owner_denial || '🚫 Este comando solo está disponible para @{owner}').replace('{owner}', primero.numero);
+          if (resto.length) texto += '\n' + String(tradutor.owner_denial_mas || '👑 También son dueños: {nombres}').replace('{nombres}', resto.join(', '));
+          await conn.reply(m.chat, texto, m, { mentions: [primero.numero + '@s.whatsapp.net'] }).catch(() => {});
+          return;
+        }
+      } catch {}
+    }
 
     const msg = {
       rowner: tradutor.texto1,

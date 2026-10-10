@@ -46,6 +46,8 @@
     "dfail": {
       "texto1": "🚫 This command is only for the main owner.",
       "texto2": "🚫 This command is only for owners.",
+      "owner_denial": "🚫 This command is only available for @{owner}",
+      "owner_denial_mas": "👑 Also owners: {nombres}",
       "texto3": "🚫 This command is only for moderators.",
       "texto4": "🚫 This command is only for premium users.",
       "texto5": "🚫 This command can only be used in groups.",
