@@ -198,6 +198,6 @@ const handler = async (m, { conn }) => {
 };
 
 handler.command = /^(actualizacion|actualizaciones|update|updates)$/i;
-handler.rowner = true; // Solo para el propietario del bot
+handler.subowner = 'actualizacion';
 
 export default handler;

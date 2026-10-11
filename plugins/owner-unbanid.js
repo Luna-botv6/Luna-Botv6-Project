@@ -1,9 +1,12 @@
 import fs from 'fs';
 import { setConfig, getConfig } from '../lib/funcConfig.js';
+import { rolActor, puedeDesbanear } from '../lib/funcion/ban-author.js';
 
-const handler = async (m, { conn, args }) => {
+const handler = async (m, { conn, args, isROwner, isOwner, isSubOwner }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
-  const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).functions.unbanid;
+  const todoIdioma = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
+  const tradutor = todoIdioma.functions.unbanid;
+  const tradSub = todoIdioma.subowner || {};
 
   const botJid = conn.decodeJid(conn.user.jid);
 
@@ -41,6 +44,9 @@ const handler = async (m, { conn, args }) => {
     return m.reply(tradutor.noEstaBaneado);
   }
 
+  const rol = rolActor({ isROwner, isOwner, isSubOwner });
+  if (!puedeDesbanear(rol, getConfig(targetJid)?.bannedRole)) return m.reply(tradSub.soloOwnerDesbaneaGrupo);
+
   let groupMeta = null;
   try {
     groupMeta = await conn.groupMetadata(targetJid);
@@ -48,7 +54,7 @@ const handler = async (m, { conn, args }) => {
     return m.reply(tradutor.noEncontrado);
   }
 
-  setConfig(targetJid, { isBanned: false });
+  setConfig(targetJid, { isBanned: false, bannedBy: null, bannedRole: null, bannedAt: 0 });
 
   await conn.sendMessage(targetJid, { text: tradutor.avisoGrupo });
 
@@ -63,7 +69,7 @@ const handler = async (m, { conn, args }) => {
 handler.help = ['unbanid <id-grupo>'];
 handler.tags = ['owner'];
 handler.command = /^(unbanid|unbanchatid)$/i;
-handler.rowner = true;
+handler.subowner = 'ban_grupos';
 handler.private = true;
 
 export default handler;

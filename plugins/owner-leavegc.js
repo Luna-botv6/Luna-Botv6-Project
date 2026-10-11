@@ -13,5 +13,5 @@ const handler = async (m, {conn, text, command}) => {
 };
 handler.command = /^(out|leavegc|leave|salirdelgrupo)$/i;
 handler.group = true;
-handler.rowner = true;
+handler.subowner = 'salir_grupo';
 export default handler;

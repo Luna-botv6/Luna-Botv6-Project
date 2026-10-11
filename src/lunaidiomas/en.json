@@ -56,6 +56,7 @@
       "texto8": "🚫 I need to be an administrator to run this command.",
       "texto9": "🚫 You need to be registered to use this command.",
       "texto10": "🚫 Restricted command.",
+      "subowner": "🤝 This command is only for owners or subowners.",
       "texto11": [
         "Access denied",
         "You don't have permission to use this command.",
@@ -465,7 +466,8 @@
         "modopublico": "Allows *any user* to use the bot commands.",
         "vierwimage": "Enables automatic profile picture preview.",
         "modogrupos": "Restricts bot usage to groups only.",
-        "antitag": "Detects WhatsApp statuses that mention the group (@luna) and removes the author."
+        "antitag": "Detects WhatsApp statuses that mention the group (@luna) and removes the author.",
+        "inactivos": "Usage: .enable inactivos (24h) or .enable inactivos 48 (48h). Valid values: 24, 48, 72, 96, 120, 144, 168. Removes members who don't write past the threshold. Warns by mention 1h before; if they write, they're saved. Max 5 per hour. Owners, subowners and admins never."
       },
       "solo_rowner_subbot": "🔒 Only the real owner of the main bot can change this. A SubBot cannot touch the global configuration."
     },
@@ -1123,6 +1125,25 @@
       "texto1": "⚠️ Mention or reply to a user to unban them.",
       "texto2": "❌ User not found.",
       "texto3": "✅ User unbanned successfully."
+    },
+    "owner_subowners": {
+      "solo_owners": "❌ *Only owners can use this command.*",
+      "agregar_ayuda": "📋 *ADD SUBOWNER*\n\n*Usage:*\n• `{cmd} @user`\n• `{cmd} 5492483466763`",
+      "numero_corto": "❌ *The number must have at least 10 digits.*",
+      "ya_subowner": "⚠️ *This number is already a subowner.*",
+      "es_owner": "⚠️ *This number is already an owner.*",
+      "agregar_exito": "✅ *SUBOWNER ADDED*\n\n👤 *Number:* {numero}\n📋 *Total:* {total}",
+      "quitar_ayuda": "🗑️ *REMOVE SUBOWNER*\n\n*Usage:* `{cmd} 5492483466763`",
+      "no_registrado": "❌ *This number is not a subowner.*",
+      "quitar_exito": "✅ *SUBOWNER REMOVED*\n\n👤 *Number:* {numero}\n📋 *Remaining:* {total}",
+      "lista_vacia": "📭 *No subowners.*",
+      "lista_header": "🤝 *SUBOWNERS ({total}):*\n",
+      "lista_item": "{i}. {num} ({nombre})\n",
+      "error": "❌ *{mensaje}*"
+    },
+    "admin_inactivos": {
+      "horas_invalidas": "⚠️ Invalid hours. Use 24, 48, 72, 96, 120, 144 or 168.",
+      "aviso": "👋 Hi {tag}, you haven't written for {hace}. If you stay inactive I'll remove you in {gracia}; if you write now, I'll take you off the list."
     },
     "iamenu": {
       "error": "❌ Error displaying AI menu",
@@ -3919,6 +3940,7 @@
       "motivo_toxic": "offensive or toxic language",
       "motivo_18": "adult content (18+)",
       "motivo_tag": "mentioned the group in their status",
+      "motivo_inactivo": "removed for inactivity (anti-inactive feature)",
       "motivo_kick": "removed by an admin",
       "motivo_listanum": "bulk removal (kicknum)",
       "motivo_admin": "removed by an admin",
@@ -4035,5 +4057,10 @@
       "warn2": "🔇 *@{user} second warning.*\n\n⚠️ You kept writing while muted. Your message was deleted.\n❗ *One more warning and you will be removed from the group.*",
       "kick_msg": "🚫 *@{user} was removed from the group.*\n\n📋 *Reason:* Accumulated 3 warnings for sending messages while muted."
     }
+  },
+  "subowner": {
+    "soloOwnerDesbanea": "🛡️ That user was banned by an owner. Only that owner can unban them.",
+    "soloOwnerDesbaneaGrupo": "🛡️ That group was banned by an owner. Only that owner can unban it.",
+    "desbloquearOwner": "🛡️ That user was banned by an owner. Only that owner can unblock them."
   }
 }

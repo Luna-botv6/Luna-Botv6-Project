@@ -53,5 +53,5 @@ handler.all = async function (m, { conn }) {
 handler.help = ['restart'];
 handler.tags = ['owner'];
 handler.command = ['restart', 'reiniciar'];
-handler.rowner = true;
+handler.subowner = 'restart';
 export default handler;

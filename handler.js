@@ -25,7 +25,9 @@ import { invalidateGroupCount } from './src/libraries/print.js';
 import { getGroupDataForPlugin, resolveIsSuperAdmin, mezclarParticipantes } from './lib/funcion/pluginHelper.js';
 import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
-import { isProtectedOwner, resolveTargetForOwnerCheck } from './lib/funcion/ownerGuard.js';
+import { isProtectedOwner, resolveTargetForOwnerCheck, rolProtegido } from './lib/funcion/ownerGuard.js';
+import { tienePoder } from './lib/funcion/subowner-perms.js';
+import { registrarActividad, sembrarIngreso } from './lib/funcion/inactivosDB.js';
 import { listOwners as listSystemOwners } from './lib/funcion/system-owners.js';
 import { marcarMotivo } from './lib/funcion/leave-reason.js';
 import { checkRateLimit, recordMessage, checkWarmupLimit, recordGlobalMessage, recordIncomingMessage } from './lib/funcion/private-rate-limit.js';
@@ -427,6 +429,8 @@ export async function handler(chatUpdate) {
 
       await ensureBotSettings(this.user.jid);
 
+      try { if (m.isGroup && sender && chat) registrarActividad(chat, sender); } catch {}
+
       if (!global.chatgpt.data.users[sender]) {
         global.chatgpt.data.users[sender] = [];
       }
@@ -458,7 +462,7 @@ export async function handler(chatUpdate) {
 
       if (typeof m.text !== 'string') m.text = '';
 
-      const { isROwner, isOwner, isMods, isPrems } = checkUserPermissions(m, this);
+        const { isROwner, isOwner, isSubOwner, isMods, isPrems } = checkUserPermissions(m, this);
 
       if (opts['queque'] && m.text && !(isMods || isPrems)) {
         const queque = this.msgqueque;
@@ -566,6 +570,7 @@ export async function handler(chatUpdate) {
               groupMetadata: {},
               isROwner,
               isOwner,
+              isSubOwner,
               isAdmin: false,
               isBotAdmin: false,
               isPrems,
@@ -607,7 +612,7 @@ export async function handler(chatUpdate) {
           const botSpam = global.db.data.settings[this.user.jid] || {};
 
           if (chat?.isBanned && !isROwner && !['owner-unbanchat.js', 'info-creator.js'].includes(name)) {
-            if (plugin.rowner || plugin.owner) (plugin.fail || global.dfail)(plugin.rowner ? 'rowner' : 'owner', m, this);
+            if (plugin.rowner || plugin.owner || plugin.subowner) (plugin.fail || global.dfail)(plugin.rowner ? 'rowner' : (plugin.owner ? 'owner' : 'subowner'), m, this);
             continue;
           }
 
@@ -657,6 +662,7 @@ export async function handler(chatUpdate) {
 
           if (plugin.rowner && !isROwner) { fail('rowner', m, this); continue; }
           if (plugin.owner && !isOwner) { fail('owner', m, this); continue; }
+          if (plugin.subowner && !isROwner && !(isSubOwner && tienePoder(plugin.subowner))) { fail('subowner', m, this); continue; }
           if (plugin.mods && !isMods) { fail('mods', m, this); continue; }
           if (plugin.premium && !isPrems) { fail('premium', m, this); continue; }
           if (plugin.group && !m.isGroup) { fail('group', m, this); continue; }
@@ -692,9 +698,13 @@ export async function handler(chatUpdate) {
                   }
                 }
                 const { jid: _gJid, phoneNumber: _gPhone } = resolveTargetForOwnerCheck(_guardTarget, _guardParticipants);
-                if (isProtectedOwner(_gJid, _gPhone, this)) {
-                  m.reply('🛡️ Ese es el owner, no puedo hacer eso 😅');
-                  continue;
+                const _rolProt = rolProtegido(_gJid, _gPhone, this);
+                if (_rolProt) {
+                  const _actorEsOwner = isROwner || isOwner;
+                  if (!(_actorEsOwner && _rolProt === 'subowner')) {
+                    m.reply(_rolProt === 'subowner' ? '🤝 Ese es un subowner, no puedo hacer eso 😅' : '🛡️ Ese es el owner, no puedo hacer eso 😅');
+                    continue;
+                  }
                 }
               }
             }
@@ -741,6 +751,7 @@ export async function handler(chatUpdate) {
             bot: {},
             isROwner,
             isOwner,
+            isSubOwner,
             isRAdmin: _isRAdmin,
             isAdmin: _isAdmin,
             isBotAdmin: _isBotAdmin,
@@ -835,6 +846,9 @@ export async function participantsUpdate({ id, participants, action, author, aut
     const conn = currentConn || mconn?.conn || mconn;
     if (!conn?.user?.jid) return;
     try { invalidateGroupCount(); } catch {}
+    if (action === 'add' && id && Array.isArray(participants)) {
+      try { for (const p of participants) sembrarIngreso(id, typeof p === 'string' ? p : (p?.id || p?.lid)); } catch {}
+    }
 
     if (global.groupCache?.has(id)) {
       const cached = global.groupCache.get(id);
@@ -995,6 +1009,7 @@ global.dfail = async (type, m, conn) => {
     const msg = {
       rowner: tradutor.texto1,
       owner: tradutor.texto2,
+      subowner: tradutor.subowner || tradutor.texto2,
       mods: tradutor.texto3,
       premium: tradutor.texto4,
       group: tradutor.texto5,

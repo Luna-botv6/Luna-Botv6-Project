@@ -124,7 +124,8 @@ const handler = async (m, { text, conn, usedPrefix, command }) => {
 };
 
 handler.command = /^(block|blok|unblock|unblok)$/i;
-handler.rowner = true;
+handler.subowner = 'bloqueos';
+handler.ownerProtect = true;
 handler.group = true;
 
 export default handler;
