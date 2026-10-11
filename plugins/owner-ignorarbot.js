@@ -48,6 +48,6 @@ let handler = async (m, { conn, command, usedPrefix, args }) => {
 handler.help = ['ignorarbot'];
 handler.tags = ['owner'];
 handler.command = /^(ignorarbot|ignorarbots)$/i;
-handler.owner = true;
+handler.subowner = 'ignorarbot';
 
 export default handler;

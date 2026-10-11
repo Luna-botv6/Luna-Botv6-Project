@@ -56,6 +56,7 @@
       "texto8": "🚫 Preciso ser administrador para executar este comando.",
       "texto9": "🚫 Você precisa estar registrado para usar este comando.",
       "texto10": "🚫 Comando restrito.",
+      "subowner": "🤝 Este comando é apenas para donos ou subdonos.",
       "texto11": [
         "Acesso negado",
         "Você não tem permissão para usar este comando.",
@@ -458,7 +459,8 @@
         "modopublico": "Permite que *qualquer usuário* use os comandos do bot.",
         "vierwimage": "Ativa a visualização automática de fotos de perfil.",
         "modogrupos": "Restringe o uso do bot apenas a grupos.",
-        "antitag": "Detecta status do WhatsApp que mencionam o grupo (@luna) e remove o autor."
+        "antitag": "Detecta status do WhatsApp que mencionam o grupo (@luna) e remove o autor.",
+        "inactivos": "Uso: .enable inactivos (24h) ou .enable inactivos 48 (48h). Valores válidos: 24, 48, 72, 96, 120, 144, 168. Remove quem não escreve passado o limite. Avisa por menção 1h antes; se escreverem, se salvam. Máx 5 por hora. Donos, subdonos e admins nunca."
       },
       "solo_rowner_subbot": "🔒 Somente o dono real do bot principal pode mudar isto. Um SubBot não pode alterar a configuração global."
     },
@@ -1275,6 +1277,25 @@
       "texto1": "⚠️ Mencione ou responda a um usuário para desbani-lo.",
       "texto2": "❌ Usuário não encontrado.",
       "texto3": "✅ Usuário desbanido com sucesso."
+    },
+    "owner_subowners": {
+      "solo_owners": "❌ *Apenas donos podem usar este comando.*",
+      "agregar_ayuda": "📋 *ADICIONAR SUBDONO*\n\n*Uso:*\n• `{cmd} @usuário`\n• `{cmd} 5492483466763`",
+      "numero_corto": "❌ *O número deve ter pelo menos 10 dígitos.*",
+      "ya_subowner": "⚠️ *Este número já é subdono.*",
+      "es_owner": "⚠️ *Este número já é dono.*",
+      "agregar_exito": "✅ *SUBDONO ADICIONADO*\n\n👤 *Número:* {numero}\n📋 *Total:* {total}",
+      "quitar_ayuda": "🗑️ *REMOVER SUBDONO*\n\n*Uso:* `{cmd} 5492483466763`",
+      "no_registrado": "❌ *Este número não é subdono.*",
+      "quitar_exito": "✅ *SUBDONO REMOVIDO*\n\n👤 *Número:* {numero}\n📋 *Restantes:* {total}",
+      "lista_vacia": "📭 *Sem subdonos.*",
+      "lista_header": "🤝 *SUBDONOS ({total}):*\n",
+      "lista_item": "{i}. {num} ({nombre})\n",
+      "error": "❌ *{mensaje}*"
+    },
+    "admin_inactivos": {
+      "horas_invalidas": "⚠️ Horas inválidas. Use 24, 48, 72, 96, 120, 144 ou 168.",
+      "aviso": "👋 Oi {tag}, faz {hace} que você não escreve. Se continuar inativo vou te remover em {gracia}; se escrever agora, te tiro da lista."
     },
     "info_estado": {
       "texto1": [
@@ -3971,6 +3992,7 @@
       "motivo_toxic": "linguagem ofensiva ou tóxica",
       "motivo_18": "conteúdo adulto (+18)",
       "motivo_tag": "mencionou o grupo no seu status",
+      "motivo_inactivo": "removido por inatividade (função anti-inativos)",
       "motivo_kick": "removido por um administrador",
       "motivo_listanum": "remoção em massa (kicknum)",
       "motivo_admin": "removido por um administrador",
@@ -4183,5 +4205,10 @@
       "warn2": "🔇 *@{user} segundo aviso.*\n\n⚠️ Você continuou escrevendo enquanto estava silenciado. Sua mensagem foi apagada.\n❗ *Mais um aviso e você será removido do grupo.*",
       "kick_msg": "🚫 *@{user} foi removido do grupo.*\n\n📋 *Motivo:* Acumulou 3 avisos por enviar mensagens enquanto estava silenciado."
     }
+  },
+  "subowner": {
+    "soloOwnerDesbanea": "🛡️ Esse usuário foi banido por um dono. Só esse dono pode desbani-lo.",
+    "soloOwnerDesbaneaGrupo": "🛡️ Esse grupo foi banido por um dono. Só esse dono pode desbani-lo.",
+    "desbloquearOwner": "🛡️ Esse usuário foi banido por um dono. Só esse dono pode desbloqueá-lo."
   }
 }

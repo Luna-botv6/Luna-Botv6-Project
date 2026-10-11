@@ -26,6 +26,6 @@ const handler = async (m, { conn, isOwner }) => {
 };
 
 handler.command = /^(banlist|banlistned|bannedlist|daftarban|daftarbanned)$/i;
-handler.rowner = true;
+handler.subowner = 'ver_listas';
 
 export default handler;

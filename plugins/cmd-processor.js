@@ -1,4 +1,6 @@
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { isSubOwnerJid } from '../lib/funcion/system-owners.js';
+import { tienePoder } from '../lib/funcion/subowner-perms.js';
 
 export async function all(m) {
   if (!global.db.data) return;
@@ -108,8 +110,13 @@ export async function all(m) {
           const ownerNums = global.owner.map(([num]) => num);
           const isROwner = ownerNums.includes(senderNum);
           const isOwnerFinal = isROwner || m.fromMe;
+          const isSubOwner = isROwner ? false : isSubOwnerJid(m.sender, this);
           const isMods = isOwnerFinal || global.mods.map((v) => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender);
           const isPrems = isROwner || isOwnerFinal || isMods || global.db.data.users[m.sender]?.premiumTime > 0;
+
+          if (plugin.subowner && !isROwner && !(isSubOwner && tienePoder(plugin.subowner))) {
+            return this.reply(m.chat, t.solo_subowner || 'Solo el owner o un subowner puede usar este comando', m);
+          }
 
           const extra = {
             usedPrefix,
@@ -125,6 +132,7 @@ export async function all(m) {
             bot,
             isROwner,
             isOwner: isOwnerFinal,
+            isSubOwner,
             isRAdmin: user?.admin === 'superadmin' || false,
             isAdmin,
             isBotAdmin,

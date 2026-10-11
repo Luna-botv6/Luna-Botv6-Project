@@ -322,6 +322,25 @@ Todo el sistema de Luna se programó con la seguridad como base. No hay procesos
 </div>
 
 <details open>
+<summary><b>🤝 11/10/2026 — Nuevo rol Subowner + Anti-inactivos 🧹</b></summary>
+
+<br>
+
+**🤝 Subowners: dueños de segunda línea**
+
+- El owner puede nombrar subowners (`.agregarsubowner @usuario`) que ayudan a moderar: banear/desbanear grupos y usuarios, bloqueos, ver listas, sacar al bot de grupos, prender funciones de grupo y reiniciar.
+- No tocan lo sensible: server, panel, archivos, economía ni otros owners. Y no pueden deshacer lo que baneó un owner.
+- Cada poder se prende/apaga desde el panel (sección Owners → Poderes del subowner).
+
+**🧹 Anti-inactivos: tu grupo se limpia solo**
+
+- `.enable inactivos` (24 h) o `.enable inactivos 48` (48 h). Valores válidos: 24, 48, 72, 96, 120, 144 o 168.
+- El bot avisa por mención 1 hora antes; si la persona escribe, se salva. Si no, la expulsa (máx. 5 por hora) y la despedida dice el motivo.
+- Owners, subowners, admins y el bot nunca son expulsados. También se configura desde el panel.
+
+</details>
+
+<details open>
 <summary><b>👑 09/10/2026 — Owners que se reconocen solos + aviso que etiqueta al dueño 📱</b></summary>
 
 <br>

@@ -1,7 +1,7 @@
 import fs from 'fs';
 
-function handler(m, { conn, isOwner }) {
-  if (!isOwner) return m.reply('🚫 Solo el owner puede usar esto.');
+function handler(m, { conn, isOwner, isSubOwner }) {
+  if (!isOwner && !isSubOwner) return m.reply('🚫 Solo el owner puede usar esto.');
 
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
   let _t = {};
@@ -33,7 +33,7 @@ function handler(m, { conn, isOwner }) {
 }
 
 handler.command = ['verbaneados'];
-handler.rowner = true;
+handler.subowner = 'ver_listas';
 handler.help = ['verbaneados'];
 handler.tags = ['owner'];
 
