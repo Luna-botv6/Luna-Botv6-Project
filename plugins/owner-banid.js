@@ -1,7 +1,8 @@
 import fs from 'fs';
 import { setConfig } from '../lib/funcConfig.js';
+import { rolActor } from '../lib/funcion/ban-author.js';
 
-const handler = async (m, { conn, args }) => {
+const handler = async (m, { conn, args, isOwner, isSubOwner }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
   const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).functions.banid;
 
@@ -46,7 +47,7 @@ const handler = async (m, { conn, args }) => {
 
   if (!groupMeta) return m.reply(tradutor.noEncontrado);
 
-  setConfig(targetJid, { isBanned: true });
+  setConfig(targetJid, { isBanned: true, bannedBy: m.sender, bannedRole: rolActor({ isOwner, isSubOwner }) || 'owner', bannedAt: Date.now() });
 
   await conn.sendMessage(targetJid, { text: tradutor.avisoGrupo });
 
@@ -61,7 +62,7 @@ const handler = async (m, { conn, args }) => {
 handler.help = ['banid <id-grupo>'];
 handler.tags = ['owner'];
 handler.command = /^(banid|banchatid)$/i;
-handler.rowner = true;
+handler.subowner = 'ban_grupos';
 handler.private = true;
 
 export default handler;

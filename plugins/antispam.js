@@ -112,6 +112,9 @@ export async function before(m, { isCommand, conn }) {
       const users = global.db.data.users;
       if (!users[sender]) users[sender] = {};
       users[sender].banned = true;
+      users[sender].bannedBy = 'bot';
+      users[sender].bannedRole = 'bot';
+      users[sender].bannedAt = now;
 
       try {
         const ownersToNotify = getOwnerNumbers().filter(num => num.length >= 10);
@@ -163,6 +166,7 @@ export async function before(m, { isCommand, conn }) {
         motivo: 'spam automatico',
         fecha: Date.now(),
         bloqueadoPor: 'antispam',
+        bannedRole: 'bot',
         advertencias: data.warns,
         mensajesTotales: data.totalMessages,
         ultimoConteo: data.count,

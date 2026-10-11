@@ -55,6 +55,7 @@ import { startAutoCleanService, startGroupCleanService } from './auto-cleaner.js
 import { privacyConfig, cleanOldUserData, secureLogger } from './privacy-config.js';
 import mentionListener from './plugins/game-ialuna.js';
 import { startBirthdayChecker } from './plugins/cumple.js';
+import { startInactivosChecker } from './plugins/admin-inactivos.js';
 import { manejarEventosGrupo } from './lib/funcion/eventos-grupo.js';
 import { manejarStatusSniffer } from './lib/funcion/status-sniffer.js';
 import { manejarCanalRelay } from './lib/funcion/canal-relay.js';
@@ -672,6 +673,7 @@ if (isCleanerEnabled()) runCleaner();
 
 startAutoCleanService();
 startBirthdayChecker(global.conn);
+startInactivosChecker(global.conn);
 
 if (!opts['test']) {
   if (global.db) {

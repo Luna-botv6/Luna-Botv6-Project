@@ -4,7 +4,13 @@ import { setOwnerFunction } from '../lib/owner-funciones.js';
 import { resolveMenuMedia } from '../lib/funcion/menu-media.js';
 import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
 import { resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
+import { isSubOwnerJid } from '../lib/funcion/system-owners.js';
+import { tienePoder } from '../lib/funcion/subowner-perms.js';
+import { validarHorasInactivos } from './admin-inactivos.js';
+import { sembrarGrupo, borrarGrupo } from '../lib/funcion/inactivosDB.js';
 import fs from 'fs';
+
+const SUBOWNER_ENABLE_KEYS = new Set(['welcome', 'bye', 'detect', 'detect2', 'antidelete', 'antilink', 'antilink2', 'modoadmin', 'autosticker', 'audios', 'agaudios', 'antitoxic', 'antiviewonce', 'anti18', 'antitag', 'afk', 'inactivos']);
 
 const configLocks = new Map();
 const _translateCache = new Map();
@@ -53,8 +59,9 @@ const CONFIG_MAP = {
   antitoxic:    { key: 'antiToxic',    group: true, admin: true },
   antiviewonce: { key: 'antiviewonce', group: true, admin: true },
   anti18:       { key: 'anti18',       group: true, admin: true },
-  antitag:      { key: 'antitag',      group: true, admin: true },
-  afk:          { key: 'afkAllowed',   group: true, admin: true },
+   antitag:      { key: 'antitag',      group: true, admin: true },
+   afk:          { key: 'afkAllowed',   group: true, admin: true },
+   inactivos:    { key: 'inactivos',    group: true, admin: true },
   restrict:     { key: 'restrict',     bot: true,   owner: true },
   audios_bot:   { key: 'audios_bot',   bot: true,   owner: true },
   autoread:     { key: 'autoread2',    bot: true,   owner: true },
@@ -66,7 +73,7 @@ const CONFIG_MAP = {
   modogrupos:   { key: 'modogrupos',   file: true,  owner: true }
 };
 
-const handler = async (m, { conn, usedPrefix, command, args }) => {
+const handler = async (m, { conn, usedPrefix, command, args, isSubOwner }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
   const _translate = getTranslate(idioma);
   const t = _translate?.plugins?.config_handler;
@@ -79,6 +86,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
     const isROwner = ownerNumbers.includes(realNum);
     const esSubBot = !!conn?.isSubBot;
     const isOwner = isROwner || (!esSubBot && m.sender === conn?.user?.jid);
+  const esSubOwner = typeof isSubOwner === 'boolean' ? isSubOwner : isSubOwnerJid(m.sender, conn);
   const isAdmin = m.isGroup ? (await getGroupDataForPlugin(conn, m.chat, m.sender)).isAdmin : false;
 
   const isEnable = /true|enable|(turn)?on|1/i.test(command);
@@ -151,7 +159,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
           emoji: '🔍',
           title: 'Detección',
           desc: 'Detecta y modera contenido en el grupo\n_Requiere ser admin_',
-          keys: ['detect', 'detect2', 'autosticker', 'afk', 'antitag']
+          keys: ['detect', 'detect2', 'autosticker', 'afk', 'antitag', 'inactivos']
         },
         {
           emoji: '🌐',
@@ -214,13 +222,28 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 
   const config = CONFIG_MAP[type];
 
+  const subComoOwner = esSubOwner && !isOwner && !isROwner && SUBOWNER_ENABLE_KEYS.has(type);
+  if (esSubOwner && !isOwner && !isROwner && !SUBOWNER_ENABLE_KEYS.has(type)) return m.reply(t.solo_owner);
+  if (subComoOwner && !tienePoder(type === 'agaudios' ? 'enable_agaudios' : 'enable_grupo')) return m.reply(t.solo_owner);
+
   if (config.group && !m.isGroup) return m.reply(t.solo_grupos);
     if (esSubBot && !isROwner) {
       return m.reply(t.solo_rowner_subbot || '🔒 Solo el owner real del bot principal puede cambiar esto. Un SubBot no puede tocar la configuración global.');
     }
 
-    if (config.admin && !isAdmin && !isOwner) return m.reply(t.solo_admins);
-    if (config.owner && !isOwner && !isROwner) return m.reply(t.solo_owner);
+    if (config.admin && !isAdmin && !isOwner && !subComoOwner) return m.reply(t.solo_admins);
+    if (config.owner && !isOwner && !isROwner && !subComoOwner) return m.reply(t.solo_owner);
+
+  let inactivosHoras = null;
+  if (type === 'inactivos') {
+    const tInac = _translate?.plugins?.admin_inactivos || {};
+    if (args[1]) {
+      inactivosHoras = validarHorasInactivos(args[1]);
+      if (!inactivosHoras) return m.reply(tInac.horas_invalidas || '⚠️ Horas inválidas. Usá 24, 48, 72, 96, 120, 144 o 168.');
+    } else {
+      inactivosHoras = validarHorasInactivos(getConfig(m.chat)?.inactivosHoras) || 24;
+    }
+  }
 
   if (config.file) {
     const saved = setOwnerFunction(type, isEnable);
@@ -232,7 +255,27 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   } else {
     const chat = getConfig(m.chat) || {};
     chat[config.key] = isEnable;
+    if (type === 'inactivos') {
+      if (isEnable) {
+        chat.inactivosHoras = inactivosHoras || 24;
+        chat.inactivosPor = m.sender;
+      } else {
+        chat.inactivosHoras = 24;
+        chat.inactivosPor = '';
+      }
+    }
     await safeSetConfig(m.chat, chat);
+    if (type === 'inactivos') {
+      if (isEnable) {
+        try {
+          const gd = await getGroupDataForPlugin(conn, m.chat, m.sender);
+          const jids = (gd?.participants || []).flatMap((p) => [p.id, p.lid, p.phoneNumber]).filter(Boolean);
+          sembrarGrupo(m.chat, jids);
+        } catch {}
+      } else {
+        try { borrarGrupo(m.chat); } catch {}
+      }
+    }
   }
 
   const scopeText = config.bot || config.file ? t.alcance[0] : t.alcance[1];
