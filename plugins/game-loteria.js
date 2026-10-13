@@ -1,287 +1,274 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { getUserStats, addExp, addMoney, removeMoney } from '../lib/stats.js';
+import { resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
 
-const lotteryDir = './database';
-const lotteryFile = path.join(lotteryDir, 'lottery.json');
+const DIR = './database';
+const FILE = path.join(DIR, 'lottery.json');
+const DURACION = 30 * 60 * 1000;
+const PRECIO = 200;
+const MINIMO = 5;
+const PREMIOS = [
+  { money: 20000, exp: 60000 },
+  { money: 10000, exp: 30000 },
+  { money: 5000, exp: 15000 }
+];
+const CONSOLO_MONEY = 100;
+const CONSOLO_EXP = 1000;
 
-let lotteryData = {
-  active: false,
-  participants: [],
-  startTime: null,
-  endTime: null,
-  ticketPrice: 200,
-  prizePool: 0,
-  winners: []
-};
+function estadoVacio() {
+  return { active: false, participants: [], startTime: null, endTime: null, ticketPrice: PRECIO, prizePool: 0, winners: [] };
+}
 
-// Variable para guardar el timeout de la lotería activa
-let lotteryTimeout = null;
-
-// Cargar datos de lotería
-function loadLotteryData() {
-  if (!fs.existsSync(lotteryDir)) fs.mkdirSync(lotteryDir);
-  if (!fs.existsSync(lotteryFile)) {
-    fs.writeFileSync(lotteryFile, JSON.stringify(lotteryData, null, 2));
-  } else {
-    try {
-      lotteryData = JSON.parse(fs.readFileSync(lotteryFile));
-    } catch {
-      lotteryData = {
-        active: false,
-        participants: [],
-        startTime: null,
-        endTime: null,
-        ticketPrice: 200,
-        prizePool: 0,
-        winners: []
-      };
-    }
+function leer() {
+  try {
+    if (!fs.existsSync(DIR)) fs.mkdirSync(DIR, { recursive: true });
+    if (!fs.existsSync(FILE)) return { chats: {} };
+    const raw = JSON.parse(fs.readFileSync(FILE, 'utf8'));
+    if (raw && typeof raw === 'object' && raw.chats && typeof raw.chats === 'object') return raw;
+    return { chats: {} };
+  } catch {
+    return { chats: {} };
   }
 }
 
-// Guardar datos de lotería
-function saveLotteryData() {
-  fs.writeFileSync(lotteryFile, JSON.stringify(lotteryData, null, 2));
+function guardar(data) {
+  try {
+    if (!fs.existsSync(DIR)) fs.mkdirSync(DIR, { recursive: true });
+    fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
+  } catch {}
 }
 
-// Función para resetear/limpiar todos los datos de lotería
-function resetLotteryData() {
-  lotteryData = {
-    active: false,
-    participants: [],
-    startTime: null,
-    endTime: null,
-    ticketPrice: 200,
-    prizePool: 0,
-    winners: []
-  };
-  saveLotteryData();
+function migrarLegado() {
+  let raw = null;
+  try {
+    if (!fs.existsSync(FILE)) return;
+    raw = JSON.parse(fs.readFileSync(FILE, 'utf8'));
+  } catch { return; }
+  if (!raw || typeof raw !== 'object' || raw.chats) return;
+  if (raw.active === true && Array.isArray(raw.participants) && raw.participants.length > 0) {
+    const precio = Number(raw.ticketPrice) || PRECIO;
+    for (const p of raw.participants) {
+      try { if (p && p.id) addMoney(p.id, precio); } catch {}
+    }
+  }
+  guardar({ chats: {} });
 }
 
-// Obtener tiempo restante
-function getTimeRemaining() {
-  if (!lotteryData.active) return '0 minutos';
-  
-  const remaining = lotteryData.endTime - Date.now();
-  if (remaining <= 0) return '¡Terminado!';
-  
+function juegoDe(chatId) {
+  const data = leer();
+  const st = data.chats[chatId];
+  if (st && typeof st === 'object' && Array.isArray(st.participants)) return st;
+  return estadoVacio();
+}
+
+function guardarJuego(chatId, st) {
+  const data = leer();
+  if (st && st.active) data.chats[chatId] = st;
+  else delete data.chats[chatId];
+  guardar(data);
+}
+
+function barajar(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function numeroDe(sender, conn) {
+  try {
+    const tel = resolveJidToPhone(sender, conn);
+    if (tel) return String(tel).replace(/\D/g, '');
+  } catch {}
+  return String(sender || '').split('@')[0].replace(/\D/g, '');
+}
+
+function textos(idioma) {
+  const lang = idioma || global.defaultLenguaje || 'es';
+  try {
+    const parsed = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${lang}.json`, 'utf8'));
+    if (parsed?.plugins?.game_loteria) return parsed.plugins.game_loteria;
+  } catch {}
+  try {
+    const parsed = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8'));
+    if (parsed?.plugins?.game_loteria) return parsed.plugins.game_loteria;
+  } catch {}
+  return {};
+}
+
+const timers = new Map();
+
+function limpiarTimer(chatId) {
+  try {
+    if (timers.has(chatId)) clearTimeout(timers.get(chatId));
+  } catch {}
+  timers.delete(chatId);
+}
+
+function programarCierre(conn, chatId) {
+  limpiarTimer(chatId);
+  const st = juegoDe(chatId);
+  if (!st.active || !st.endTime) return;
+  const resto = st.endTime - Date.now();
+  if (resto <= 0) return;
+  timers.set(chatId, setTimeout(() => {
+    timers.delete(chatId);
+    try { endLottery(conn, chatId); } catch {}
+  }, resto));
+}
+
+function tiempoRestante(st, t) {
+  if (!st.active) return t?.tiempo_cero || '0 minutos';
+  const remaining = st.endTime - Date.now();
+  if (remaining <= 0) return t?.terminado || '¡Terminado!';
   const minutes = Math.floor(remaining / (1000 * 60));
   const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
-  
   return `${minutes}m ${seconds}s`;
 }
 
-// Finalizar lotería
-function endLottery(conn, chatId) {
-  if (!lotteryData.active) return;
-
-  if (lotteryData.participants.length < 5) {
-    // Reembolsar a todos
-    lotteryData.participants.forEach(participant => {
-      addMoney(participant.id, lotteryData.ticketPrice);
-    });
-    
-    conn.sendMessage(chatId, { 
-      text: '❌ *Lotería cancelada* \n\n' +
-            '🔄 No se alcanzó el mínimo de 5 participantes\n' +
-            '💎 Se han reembolsado los diamantes a todos los participantes'
-    });
-    
-    // Limpiar completamente los datos después de cancelar
-    resetLotteryData();
-    return;
-  }
-
-  // Seleccionar ganadores aleatoriamente
-  const shuffled = [...lotteryData.participants].sort(() => Math.random() - 0.5);
-  const winners = shuffled.slice(0, 3);
-  
-  // Otorgar premios fijos
-  if (winners[0]) {
-    addMoney(winners[0].id, 20000);
-    addExp(winners[0].id, 60000);
-  }
-  
-  if (winners[1]) {
-    addMoney(winners[1].id, 10000);
-    addExp(winners[1].id, 30000);
-  }
-  
-  if (winners[2]) {
-    addMoney(winners[2].id, 5000);
-    addExp(winners[2].id, 15000);
-  }
-
-  // Dar EXP de consolación a otros participantes
-  lotteryData.participants.forEach(participant => {
-    if (!winners.some(w => w.id === participant.id)) {
-      addExp(participant.id, 1000);
-      addMoney(participant.id, 100);
-    }
-  });
-
-  // Anunciar resultados
-  let resultMessage = '🎰 *¡RESULTADOS DE LA LOTERÍA!* 🎰\n\n' +
-    `💎 *Premio total:* ${lotteryData.prizePool} diamantes\n` +
-    `👥 *Participantes:* ${lotteryData.participants.length}\n\n` +
-    '🏆 *GANADORES:* 🏆\n\n';
-
-  if (winners[0]) {
-    resultMessage += `🥇 *1er Lugar:* @${winners[0].username}\n` +
-      '   💎 20,000 diamantes + 60,000 EXP\n\n';
-  }
-  
-  if (winners[1]) {
-    resultMessage += `🥈 *2do Lugar:* @${winners[1].username}\n` +
-      '   💎 10,000 diamantes + 30,000 EXP\n\n';
-  }
-  
-  if (winners[2]) {
-    resultMessage += `🥉 *3er Lugar:* @${winners[2].username}\n` +
-      '   💎 5,000 diamantes + 15,000 EXP\n\n';
-  }
-
-  resultMessage += '✨ *Todos los demás participantes recibieron 100 💎 + 1,000 EXP de consolación*\n\n' +
-    '¡Gracias por participar! 🎉';
-
-  const mentions = winners.map(w => w.id + '@s.whatsapp.net');
-  
-  // Enviar resultados
-  conn.sendMessage(chatId, { text: resultMessage, mentions });
-  
-  // LIMPIAR COMPLETAMENTE LOS DATOS DESPUÉS DE MOSTRAR RESULTADOS
-  // Usar setTimeout para asegurar que el mensaje se envíe antes de limpiar
-  setTimeout(() => {
-    resetLotteryData();
-    console.log('🧹 Datos de lotería limpiados después de mostrar resultados');
-  }, 1000); // Esperar 1 segundo antes de limpiar
+function comas(x) {
+  return Number(x || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-// Inicializar
-loadLotteryData();
+function endLottery(conn, chatId) {
+  const st = juegoDe(chatId);
+  if (!st.active) return;
+  limpiarTimer(chatId);
+  const lang = global?.db?.data?.chats?.[chatId]?.language || global.defaultLenguaje || 'es';
+  const t = textos(lang);
+  const precio = Number(st.ticketPrice) || PRECIO;
+  if (st.participants.length < MINIMO) {
+    for (const p of st.participants) {
+      try { addMoney(p.jid, precio); } catch {}
+    }
+    try {
+      conn.sendMessage(chatId, { text: t?.cancelada || `❌ *Lotería cancelada*\n\n🔄 No se alcanzó el mínimo de ${MINIMO} participantes\n💎 Se reembolsó a todos` });
+    } catch {}
+    guardarJuego(chatId, estadoVacio());
+    return;
+  }
+  const ganadores = barajar(st.participants).slice(0, 3);
+  const medallas = ['🥇', '🥈', '🥉'];
+  const puestos = [t?.puesto1 || '1er Lugar', t?.puesto2 || '2do Lugar', t?.puesto3 || '3er Lugar'];
+  ganadores.forEach((w, i) => {
+    try { addMoney(w.jid, PREMIOS[i].money); } catch {}
+    try { addExp(w.jid, PREMIOS[i].exp); } catch {}
+  });
+  for (const p of st.participants) {
+    if (ganadores.some((w) => w.num === p.num)) continue;
+    try { addExp(p.jid, CONSOLO_EXP); } catch {}
+    try { addMoney(p.jid, CONSOLO_MONEY); } catch {}
+  }
+  let msg = (t?.resultados || '🎰 *¡RESULTADOS DE LA LOTERÍA!* 🎰\n\n') +
+    `💎 *${t?.premio_total || 'Premio total'}:* ${comas(st.prizePool)} 💎\n` +
+    `👥 *${t?.participantes || 'Participantes'}:* ${st.participants.length}\n\n` +
+    `🏆 *${t?.ganadores || 'GANADORES:'}* 🏆\n\n`;
+  ganadores.forEach((w, i) => {
+    msg += `${medallas[i]} *${puestos[i]}:* @${w.num}\n   💎 ${comas(PREMIOS[i].money)} 💎 + ${comas(PREMIOS[i].exp)} EXP\n\n`;
+  });
+  msg += (t?.consuelo || '✨ *Los demás recibieron 100 💎 + 1,000 EXP de consolación*\n\n¡Gracias por participar! 🎉');
+  try {
+    conn.sendMessage(chatId, { text: msg, mentions: ganadores.map((w) => w.jid) });
+  } catch {}
+  guardarJuego(chatId, estadoVacio());
+}
 
-// Handler principal para múltiples comandos
+migrarLegado();
+
 const handler = async (m, { conn, command, usedPrefix }) => {
-  const userId = m.sender; // Usar el sender completo en lugar de split
-  const username = m.pushName || 'Usuario';
-  
-  switch(command) {
+  const idioma = global.db.data.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
+  const t = textos(idioma);
+  const num = numeroDe(m.sender, conn);
+  const jid = num ? num + '@s.whatsapp.net' : m.sender;
+  const username = m.pushName || (t.usuario_default || 'Usuario');
+
+  let st = juegoDe(m.chat);
+  if (st.active && st.endTime && st.endTime <= Date.now()) {
+    endLottery(conn, m.chat);
+    st = juegoDe(m.chat);
+  }
+  programarCierre(conn, m.chat);
+
+  switch (command) {
   case 'loteria':
   case 'startlottery':
-    if (lotteryData.active) {
-      return m.reply('🎰 *Ya hay una lotería activa!* \n\n' +
-          `⏰ Tiempo restante: ${getTimeRemaining()}\n` +
-          `👥 Participantes: ${lotteryData.participants.length}\n` +
-          `💎 Premio acumulado: ${lotteryData.prizePool} diamantes\n\n` +
-          'Usa *' + usedPrefix + 'linfo* para más detalles');
+    if (st.active) {
+      return m.reply((t?.en_curso || '🎰 *Ya hay una lotería activa!*\n\n') +
+        `⏰ ${t?.tiempo || 'Tiempo restante'}: ${tiempoRestante(st, t)}\n` +
+        `👥 ${t?.participantes || 'Participantes'}: ${st.participants.length}\n` +
+        `💎 ${t?.pozo || 'Pozo'}: ${comas(st.prizePool)} 💎\n\n` +
+        `${t?.ver_mas || 'Usa'} *${usedPrefix}linfo*`);
     }
-
-    // Cancelar timeout si existía una lotería previa
-    if (lotteryTimeout) clearTimeout(lotteryTimeout);
-
-    // Limpiar datos antes de iniciar nueva lotería (por seguridad)
-    resetLotteryData();
-      
-    lotteryData = {
-      active: true,
-      participants: [],
-      startTime: Date.now(),
-      endTime: Date.now() + (30 * 60 * 1000), // 30 minutos
-      ticketPrice: 200,
-      prizePool: 0,
-      winners: []
-    };
-      
-    saveLotteryData();
-      
-    // Programar el final de la lotería y guardar el timeout
-    lotteryTimeout = setTimeout(() => {
-      endLottery(conn, m.chat);
-      lotteryTimeout = null; // limpiar referencia
-    }, 30 * 60 * 1000);
-
-    return m.reply('🎰 *¡NUEVA LOTERÍA INICIADA!* 🎰\n\n' +
-        '💎 *Precio del ticket:* 200 diamantes\n' +
-        '⏰ *Duración:* 30 minutos\n' +
-        '👥 *Mínimo participantes:* 5\n' +
-        '🏆 *Premios:*\n' +
-        '   🥇 1er lugar: 20,000 💎 + 60,000 EXP\n' +
-        '   🥈 2do lugar: 10,000 💎 + 30,000 EXP\n' +
-        '   🥉 3er lugar: 5,000 💎 + 15,000 EXP\n\n' +
-        'ᴄᴏᴍᴀɴᴅᴏs:\n' +
-        `• *${usedPrefix}ticket* - Comprar ticket\n` +
-        `• *${usedPrefix}linfo* - Ver información`);
+    st = { active: true, participants: [], startTime: Date.now(), endTime: Date.now() + DURACION, ticketPrice: PRECIO, prizePool: 0, winners: [] };
+    guardarJuego(m.chat, st);
+    programarCierre(conn, m.chat);
+    return m.reply((t?.nueva || '🎰 *¡NUEVA LOTERÍA INICIADA!* 🎰\n\n') +
+      `💎 *${t?.precio || 'Precio del ticket'}:* ${PRECIO} 💎\n` +
+      `⏰ *${t?.duracion || 'Duración'}:* 30 ${t?.minutos || 'minutos'}\n` +
+      `👥 *${t?.minimo || 'Mínimo'}:* ${MINIMO}\n` +
+      `🏆 *${t?.premios || 'Premios'}:*\n` +
+      `   🥇 20,000 💎 + 60,000 EXP\n` +
+      `   🥈 10,000 💎 + 30,000 EXP\n` +
+      `   🥉 5,000 💎 + 15,000 EXP\n\n` +
+      `• *${usedPrefix}ticket* - ${t?.comprar || 'Comprar ticket'}\n` +
+      `• *${usedPrefix}linfo* - ${t?.ver_info || 'Ver información'}`);
 
   case 'ticket':
   case 'buyticket':
-    if (!lotteryData.active) {
-      return m.reply('❌ No hay ninguna lotería activa. Usa *' + usedPrefix + 'loteria* para iniciar una.');
+    if (!st.active) {
+      return m.reply(t?.sin_loteria?.replace('{usedPrefix}', usedPrefix) || `❌ No hay lotería activa. Usa *${usedPrefix}loteria* para iniciar una.`);
     }
-
-    if (lotteryData.participants.some(p => p.id === userId)) {
-      return m.reply('⚠️ Ya tienes un ticket para esta lotería!');
+    if (st.participants.some((p) => p.num === num)) {
+      return m.reply(t?.ya_tienes || '⚠️ Ya tienes un ticket para esta lotería!');
     }
-
-    const userStats = getUserStats(userId);
-      
-    if (userStats.money < lotteryData.ticketPrice) {
-      return m.reply(`❌ No tienes suficientes diamantes! Necesitas ${lotteryData.ticketPrice} 💎 pero solo tienes ${userStats.money} 💎`);
+    {
+      const stats = getUserStats(jid);
+      const precio = Number(st.ticketPrice) || PRECIO;
+      if (stats.money < precio) {
+        return m.reply((t?.sin_diamantes?.replace('{precio}', precio).replace('{tienes}', stats.money)) || `❌ No tienes suficientes diamantes! Necesitas ${precio} 💎 pero solo tienes ${stats.money} 💎`);
+      }
+      removeMoney(jid, precio);
+      st.prizePool += precio;
+      st.participants.push({ num, jid, username, ticketNumber: st.participants.length + 1, joinTime: Date.now() });
+      guardarJuego(m.chat, st);
     }
-
-    removeMoney(userId, lotteryData.ticketPrice);
-    lotteryData.prizePool += lotteryData.ticketPrice;
-    lotteryData.participants.push({
-      id: userId,
-      username: username,
-      ticketNumber: lotteryData.participants.length + 1,
-      joinTime: Date.now()
-    });
-      
-    saveLotteryData();
-      
-    return m.reply('🎫 *¡Ticket comprado exitosamente!* \n\n' +
-        `🎰 Número de ticket: #${lotteryData.participants.length}\n` +
-        `💎 Premio actual: ${lotteryData.prizePool} diamantes\n` +
-        `👥 Participantes: ${lotteryData.participants.length}\n` +
-        `⏰ Tiempo restante: ${getTimeRemaining()}\n\n` +
-        '¡Buena suerte! 🍀');
+    return m.reply((t?.comprado || '🎫 *¡Ticket comprado!*\n\n') +
+      `🎰 ${t?.tu_ticket || 'Tu ticket'}: #${st.participants.length}\n` +
+      `💎 ${t?.pozo || 'Pozo'}: ${comas(st.prizePool)} 💎\n` +
+      `👥 ${t?.participantes || 'Participantes'}: ${st.participants.length}\n` +
+      `⏰ ${t?.queda || 'Quedan'}: ${tiempoRestante(st, t)}\n\n` +
+      (t?.suerte || '¡Buena suerte! 🍀'));
 
   case 'linfo':
-  case 'lotteryinfo':
-    if (!lotteryData.active) {
-      return m.reply('❌ No hay ninguna lotería activa.');
+  case 'lotteryinfo': {
+    if (!st.active) {
+      return m.reply(t?.sin_loteria_corta || '❌ No hay ninguna lotería activa.');
     }
+    let lista = st.participants.map((p) => `🎫 #${p.ticketNumber} - @${p.num}`).join('\n');
+    if (lista.length > 1000) lista = `${st.participants.length} ${t?.registrados || 'participantes registrados'}`;
+    return m.reply((t?.info_titulo || '🎰 *INFORMACIÓN DE LOTERÍA* 🎰\n\n') +
+      `💎 ${t?.pozo || 'Pozo'}: ${comas(st.prizePool)} 💎\n` +
+      `👥 ${t?.participantes || 'Participantes'}: ${st.participants.length}\n` +
+      `⏰ ${t?.queda || 'Quedan'}: ${tiempoRestante(st, t)}\n` +
+      `💎 ${t?.precio || 'Precio'}: ${Number(st.ticketPrice) || PRECIO} 💎\n\n` +
+      `${t?.lista || 'Participantes'}:\n${lista}\n\n` +
+      `• *${usedPrefix}ticket* - ${t?.comprar || 'Comprar ticket'}`);
+  }
 
-    let participantsList = lotteryData.participants
-      .map(p => `🎫 #${p.ticketNumber} - @${p.username}`)
-      .join('\n');
-
-    if (participantsList.length > 1000) {
-      participantsList = `${lotteryData.participants.length} participantes registrados`;
-    }
-
-    return m.reply('🎰 *INFORMACIÓN DE LOTERÍA* 🎰\n\n' +
-        `💎 *Premio acumulado:* ${lotteryData.prizePool} diamantes\n` +
-        `👥 *Participantes:* ${lotteryData.participants.length}\n` +
-        `⏰ *Tiempo restante:* ${getTimeRemaining()}\n` +
-        `💎 *Precio del ticket:* ${lotteryData.ticketPrice} diamantes\n\n` +
-        `*Participantes:*\n${participantsList}\n\n` +
-        'ᴄᴏᴍᴀɴᴅᴏs:\n' +
-        `• *${usedPrefix}ticket* - Comprar ticket\n` +
-        `• *${usedPrefix}loteria* - Iniciar nueva lotería`);
-
-  case 'reinicarloteria':  // nuevo comando para reiniciar lotería manualmente
+  case 'reiniciarloteria':
+  case 'reinicarloteria':
   case 'cleanlottery':
-    if (lotteryTimeout) clearTimeout(lotteryTimeout);
-    lotteryTimeout = null;
-    resetLotteryData();
-    return m.reply('🧹 *Lotería reiniciada manualmente.* Ahora puedes iniciar una nueva lotería.');
+    limpiarTimer(m.chat);
+    guardarJuego(m.chat, estadoVacio());
+    return m.reply(t?.reiniciada || '🧹 *Lotería reiniciada.* Ya puedes iniciar una nueva.');
   }
 };
 
-handler.help = ['loteria', 'ticket', 'linfo', 'cleanlottery', 'reinicarloteria'];
+handler.help = ['loteria', 'ticket', 'linfo', 'cleanlottery', 'reiniciarloteria', 'reinicarloteria'];
 handler.tags = ['game'];
-handler.command = /^(loteria|startlottery|ticket|buyticket|linfo|lotteryinfo|cleanlottery|reinicarloteria)$/i;
+handler.command = /^(loteria|startlottery|ticket|buyticket|linfo|lotteryinfo|cleanlottery|reiniciarloteria|reinicarloteria)$/i;
 
 export default handler;

@@ -10,7 +10,8 @@ import { validarHorasInactivos } from './admin-inactivos.js';
 import { sembrarGrupo, borrarGrupo } from '../lib/funcion/inactivosDB.js';
 import fs from 'fs';
 
-const SUBOWNER_ENABLE_KEYS = new Set(['welcome', 'bye', 'detect', 'detect2', 'antidelete', 'antilink', 'antilink2', 'modoadmin', 'autosticker', 'audios', 'agaudios', 'antitoxic', 'antiviewonce', 'anti18', 'antitag', 'afk', 'inactivos']);
+import { mapaConfig, setSubowner, puedeEnPrivado } from '../lib/funcion/funciones-catalogo.js';
+const SUBOWNER_ENABLE_KEYS = setSubowner();
 
 const configLocks = new Map();
 const _translateCache = new Map();
@@ -44,34 +45,7 @@ async function safeSetConfig(chatId, config) {
   finally { configLocks.delete(chatId); }
 }
 
-const CONFIG_MAP = {
-  welcome:      { key: 'welcome',      group: true, admin: true },
-  bye:          { key: 'bye',          group: true, admin: true },
-  detect:       { key: 'detect',       group: true, admin: true },
-  detect2:      { key: 'detect2',      group: true, admin: true },
-  antidelete:   { key: 'antidelete',   group: true, admin: true },
-  antilink:     { key: 'antiLink',     group: true, admin: true },
-  antilink2:    { key: 'antiLink2',    group: true, admin: true },
-  modoadmin:    { key: 'modoadmin',    group: true, admin: true },
-  autosticker:  { key: 'autosticker',  group: true, admin: true },
-   audios:       { key: 'audios',       group: true, admin: true },
-   agaudios:     { key: 'agaudios',     group: true, owner: true },
-  antitoxic:    { key: 'antiToxic',    group: true, admin: true },
-  antiviewonce: { key: 'antiviewonce', group: true, admin: true },
-  anti18:       { key: 'anti18',       group: true, admin: true },
-   antitag:      { key: 'antitag',      group: true, admin: true },
-   afk:          { key: 'afkAllowed',   group: true, admin: true },
-   inactivos:    { key: 'inactivos',    group: true, admin: true },
-  restrict:     { key: 'restrict',     bot: true,   owner: true },
-  audios_bot:   { key: 'audios_bot',   bot: true,   owner: true },
-  autoread:     { key: 'autoread2',    bot: true,   owner: true },
-  anticall:     { key: 'antiCall',     bot: true,   owner: true },
-  antispam:     { key: 'antispam',     bot: true,   owner: true },
-  antiprivado:  { key: 'antiprivado',  file: true,  owner: true },
-  modopublico:  { key: 'modopublico',  file: true,  owner: true },
-  vierwimage:   { key: 'vierwimage',   file: true,  owner: true },
-  modogrupos:   { key: 'modogrupos',   file: true,  owner: true }
-};
+const CONFIG_MAP = mapaConfig();
 
 const handler = async (m, { conn, usedPrefix, command, args, isSubOwner }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
@@ -162,6 +136,12 @@ const handler = async (m, { conn, usedPrefix, command, args, isSubOwner }) => {
           keys: ['detect', 'detect2', 'autosticker', 'afk', 'antitag', 'inactivos']
         },
         {
+          emoji: '🧠',
+          title: 'IA y Juegos',
+          desc: 'IA, juegos, RPG y menciones masivas por chat\n_Se configuran por chat sin afectar otros_',
+          keys: ['ia', 'juegos', 'rpg', 'antimencion']
+        },
+        {
           emoji: '🌐',
           title: 'Modo Privado & Grupos',
           desc: 'Controla acceso privado y gestión de grupos\n_Solo owner_',
@@ -226,13 +206,17 @@ const handler = async (m, { conn, usedPrefix, command, args, isSubOwner }) => {
   if (esSubOwner && !isOwner && !isROwner && !SUBOWNER_ENABLE_KEYS.has(type)) return m.reply(t.solo_owner);
   if (subComoOwner && !tienePoder(type === 'agaudios' ? 'enable_agaudios' : 'enable_grupo')) return m.reply(t.solo_owner);
 
-  if (config.group && !m.isGroup) return m.reply(t.solo_grupos);
+  const enPrivado = !m.isGroup;
+  const privadoOk = puedeEnPrivado(type);
+  if (config.group && enPrivado && !privadoOk) return m.reply(t.solo_grupos);
     if (esSubBot && !isROwner) {
       return m.reply(t.solo_rowner_subbot || '🔒 Solo el owner real del bot principal puede cambiar esto. Un SubBot no puede tocar la configuración global.');
     }
 
+    if (!(enPrivado && privadoOk)) {
     if (config.admin && !isAdmin && !isOwner && !subComoOwner) return m.reply(t.solo_admins);
     if (config.owner && !isOwner && !isROwner && !subComoOwner) return m.reply(t.solo_owner);
+    }
 
   let inactivosHoras = null;
   if (type === 'inactivos') {
