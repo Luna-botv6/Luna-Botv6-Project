@@ -27,6 +27,8 @@ import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
 import { isProtectedOwner, resolveTargetForOwnerCheck, rolProtegido } from './lib/funcion/ownerGuard.js';
 import { tienePoder } from './lib/funcion/subowner-perms.js';
+import { esPluginJuego, esPluginRpg, esMencionMasiva } from './lib/funcion/juegos-gate.js';
+import { estaBloqueado } from './lib/funcion/comandos-bloqueo.js';
 import { registrarActividad, sembrarIngreso } from './lib/funcion/inactivosDB.js';
 import { listOwners as listSystemOwners } from './lib/funcion/system-owners.js';
 import { marcarMotivo } from './lib/funcion/leave-reason.js';
@@ -557,6 +559,10 @@ export async function handler(chatUpdate) {
 
           if (matchSin) {
             m.plugin = name;
+            if (!isROwner && estaBloqueado(getConfig(m.chat)?.comandosOff, name)) {
+              m.reply(tradutor.comando_off || '🚫 Ese comando está desactivado en este chat.');
+              continue;
+            }
             updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender, pushname: m.pushName || m.pushname || null, chat: m.chat });
             const extra = {
               match: null,
@@ -610,6 +616,23 @@ export async function handler(chatUpdate) {
           const chat = getConfig(m.chat);
           const user = global.db.data.users[m.sender] || {};
           const botSpam = global.db.data.settings[this.user.jid] || {};
+
+          if (chat?.juegos === false && esPluginJuego(name, plugin)) {
+            m.reply(tradutor.juegos_off || '🎮 Los juegos están desactivados en este chat.');
+            continue;
+          }
+          if (chat?.rpg === false && esPluginRpg(name, plugin)) {
+            m.reply(tradutor.rpg_off || '🐉 El RPG está desactivado en este chat.');
+            continue;
+          }
+          if (chat?.antimencion === true && esMencionMasiva(name)) {
+            m.reply(tradutor.antimencion_off || '🔕 Las menciones masivas de juegos están desactivadas en este chat.');
+            continue;
+          }
+          if (!isROwner && estaBloqueado(chat?.comandosOff, name)) {
+            m.reply(tradutor.comando_off || '🚫 Ese comando está desactivado en este chat.');
+            continue;
+          }
 
           if (chat?.isBanned && !isROwner && !['owner-unbanchat.js', 'info-creator.js'].includes(name)) {
             if (plugin.rowner || plugin.owner || plugin.subowner) (plugin.fail || global.dfail)(plugin.rowner ? 'rowner' : (plugin.owner ? 'owner' : 'subowner'), m, this);
@@ -885,12 +908,13 @@ export async function participantsUpdate({ id, participants, action, author, aut
 export async function callUpdate(callUpdate) {
   try {
     const conn = currentConn || mconn?.conn;
+    if (!conn) return;
     const isAnticall = global?.db?.data?.settings[conn?.user?.jid]?.antiCall;
-    if (!isAnticall || !conn) return;
 
     for (const nk of callUpdate) {
       try {
         if (!nk.isGroup && nk.status === 'offer') {
+          if (!isAnticall) continue;
           const idioma = global?.db?.data?.users[nk.from]?.language || global.defaultLenguaje;
           const _translate = await loadTranslation(idioma);
           const tradutor = _translate?.handler?.callUpdate || {};

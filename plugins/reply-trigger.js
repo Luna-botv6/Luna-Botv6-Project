@@ -133,6 +133,7 @@ handler.before = async function (m, { conn }) {
 
     const settings = global.db?.data?.settings?.[conn.user?.jid];
     if (settings?.iaLunaActive === false) return;
+    try { if (getConfig(jid)?.ia === false) return; } catch {}
 
     const sender = m.key.participant || m.key.remoteJid;
 

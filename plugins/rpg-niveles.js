@@ -4,6 +4,8 @@ import { getUserStats } from '../lib/stats.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const statsFile = path.join('./database', 'stats.json');
+const lbCooldown = new Map();
+const LB_COOLDOWN_MS = 5 * 60 * 1000;
 
 function loadAllStats() {
   if (!fs.existsSync(statsFile)) return {};
@@ -24,6 +26,15 @@ const handler = async (m, { conn }) => {
     try { _t = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')); } catch {}
   }
   const tradutor = _t.plugins.rpg_leaderboard;
+
+  const ahora = Date.now();
+  const ultimo = lbCooldown.get(m.chat) || 0;
+  if (ahora - ultimo < LB_COOLDOWN_MS) {
+    const espera = Math.ceil((LB_COOLDOWN_MS - (ahora - ultimo)) / 1000);
+    const av = tradutor.cooldown || '⏳ El ranking se puede consultar cada 5 minutos.';
+    return m.reply(typeof av === 'string' && av.includes('{s}') ? av.replace('{s}', String(espera)) : `${av} (${espera}s)`);
+  }
+  lbCooldown.set(m.chat, ahora);
 
   const allStats = loadAllStats();
 

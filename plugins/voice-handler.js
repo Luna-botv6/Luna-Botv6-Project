@@ -159,6 +159,7 @@ function puedeUsarIA(conn, msg, chatId) {
   try {
     const settings = global.db?.data?.settings?.[conn?.user?.jid]
     if (settings?.iaLunaActive === false) return false
+    try { if (getConfig(chatId)?.ia === false) return false } catch {}
 
     const sender = msg.key.participant || msg.key.remoteJid
     const senderNum = String(sender || '').replace(/\D/g, '')
