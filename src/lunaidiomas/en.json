@@ -4,7 +4,8 @@
     "confirmado": "Confirmed! {usuario} is really human, no risk of being ignored anymore 🎉😊",
     "otro": "hey {usuario} I didn't ask you jaja 🙊😅",
     "boton": "NO SOY BOT",
-    "footer": "Luna verification 🔐"
+    "footer": "Luna verification 🔐",
+    "sin_boton": "If you don't see the button, reply with the word: nosoybot"
   },
   "handler": {
     "handler": {
@@ -27,7 +28,11 @@
         "times"
       ],
       "antispam": "⏱️ Wait _ seconds before using another command.",
-      "trampa": "Cheating -_-"
+      "trampa": "Cheating -_-",
+      "juegos_off": "🎮 Games are disabled in this chat.",
+      "rpg_off": "🐉 RPG is disabled in this chat.",
+      "antimencion_off": "🔕 Mass game mentions are disabled in this chat.",
+      "comando_off": "🚫 That command is disabled in this chat."
     },
     "participantsUpdate": {},
     "callUpdate": {
@@ -452,7 +457,7 @@
         "antilink": "Removes messages containing links from other groups.",
         "antilink2": "Strict version of antilink, blocks almost any link.",
         "modoadmin": "Only *admins* can run bot commands.",
-        "autosticker": "Converts images and videos into stickers automatically.",
+        "autosticker": "Converts images without caption into stickers automatically.",
         "audios": "Enables automatic audio responses in the group.",
         "agaudios": "Lets admins add audios in the group. Only the owner enables it.",
         "antitoxic": "Detects and removes messages with offensive words.",
@@ -467,6 +472,10 @@
         "vierwimage": "Enables automatic profile picture preview.",
         "modogrupos": "Restricts bot usage to groups only.",
         "antitag": "Detects WhatsApp statuses that mention the group (@luna) and removes the author.",
+        "ia": "The conversational AI replies in this chat. Turning it off doesn't affect other chats.",
+        "juegos": "Enables games and fun in this chat.",
+        "rpg": "Enables RPG, economy and levels in this chat.",
+        "antimencion": "Blocks rankings and games that tag many users (.lb, tops, couples).",
         "inactivos": "Usage: .enable inactivos (24h) or .enable inactivos 48 (48h). Valid values: 24, 48, 72, 96, 120, 144, 168. Removes members who don't write past the threshold. Warns by mention 1h before; if they write, they're saved. Max 5 per hour. Owners, subowners and admins never."
       },
       "solo_rowner_subbot": "🔒 Only the real owner of the main bot can change this. A SubBot cannot touch the global configuration."
@@ -589,7 +598,8 @@
       "texto8": "Top Level",
       "texto9": "Top Diamonds",
       "texto10": "Every step forges your legend",
-      "texto11": "level"
+      "texto11": "level",
+      "cooldown": "⏳ The ranking can be checked every 5 minutes. Wait {s}s."
     },
     "rpg_balance": {
       "texto1": [
@@ -2563,7 +2573,83 @@
       "linea_gano": "💎 Won: {premio} diamonds\n",
       "linea_exp": "📈 EXP: {exp}\n\n",
       "sin_ganadores": "No participant matched any number this time. Better luck next time!\n\n",
-      "despedida": "🎊 Thanks for participating! Good luck in the next draw! 🍀"
+      "despedida": "🎊 Thanks for participating! Good luck in the next draw! 🍀",
+      "numeros_distintos": "❌ The 6 numbers must be different"
+    },
+    "owner_resetuser": {
+      "todos_aviso": "⚠️ *You are about to reset ALL bot users data.*\n\nThis cannot be easily undone.\n\n*Reply \"si\" to confirm or \"no\" to cancel.*",
+      "cancelada": "❌ *Operation cancelled.*",
+      "todos_ok": "✅ *Mass reset done.*\n\n👥 Users reset: *{n}*\n🗑️ All economy and experience data deleted.",
+      "espera": "⏰ *Wait {m}m {s}s before using this command again.*",
+      "uso": "📋 *Usage:* {prefix}{command} <@user>\n*Example:* {prefix}{command} @user\n\nTo reset all: {prefix}{command} todos",
+      "sin_datos": "❌ User @{numero} has no registered data.",
+      "confirmar": "⚠️ *Reset data of @{numero}?*\n\n",
+      "datos": "Current data",
+      "exp": "Experience",
+      "dinero": "Money",
+      "responder": "*Reply \"si\" to confirm or \"no\" to cancel.*",
+      "exito": "✅ *Data reset for @{numero}*\n\n",
+      "valido": "to restore (valid 24h)",
+      "error": "❌ *Error resetting user data.* Try again."
+    },
+    "owner_restaureuser": {
+      "espera": "⏰ *Wait {m}m {s}s before using this command again.*",
+      "uso": "📋 *Usage:* {prefix}{command} <@user>\n*Example:* {prefix}{command} @user\n\n💡 *This command restores data of a previously reset user.*",
+      "numero_invalido": "❌ *Invalid number.* Use: {prefix}{command} <number>",
+      "sin_backup": "❌ *No backup available for @{numero}*\n\n• The user was not reset recently\n• Or the backup expired (>24h)",
+      "expirado": "⏰ *The backup of @{numero} has expired*\n\n• Backups are valid for 24 hours",
+      "confirmar": "🔄 *Restore data of @{numero}?*\n\n",
+      "datos": "DATA TO RESTORE",
+      "exp": "Experience",
+      "nivel": "Level",
+      "dinero": "Money",
+      "misticas": "Mystic coins",
+      "lunas": "Luna Coins",
+      "rol": "Role",
+      "expira": "Expires in",
+      "responder": "*Reply with \"restaurar\" to confirm or \"cancelar\" to cancel.*",
+      "cancelada": "❌ *Restore cancelled.*",
+      "exito": "✅ *Data restored for @{numero}!*\n\n",
+      "un_uso": "⚠️ *The backup was deleted (single use)*",
+      "error": "❌ *Error while restoring.* Try again."
+    },
+    "game_loteria": {
+      "usuario_default": "User",
+      "tiempo_cero": "0 minutes",
+      "terminado": "Finished!",
+      "en_curso": "🎰 *A lottery is already running!* \n\n",
+      "tiempo": "Time left",
+      "participantes": "Players",
+      "pozo": "Pot",
+      "ver_mas": "Use",
+      "nueva": "🎰 *NEW LOTTERY STARTED!* 🎰\n\n",
+      "precio": "Ticket price",
+      "duracion": "Duration",
+      "minutos": "minutes",
+      "minimo": "Minimum",
+      "premios": "Prizes",
+      "comprar": "Buy ticket",
+      "ver_info": "See info",
+      "sin_loteria": "❌ No active lottery. Use *{usedPrefix}loteria* to start one.",
+      "ya_tienes": "⚠️ You already have a ticket for this lottery!",
+      "sin_diamantes": "❌ Not enough diamonds! You need {precio} 💎 but only have {tienes} 💎",
+      "comprado": "🎫 *Ticket bought!* \n\n",
+      "tu_ticket": "Your ticket",
+      "queda": "Left",
+      "suerte": "Good luck! 🍀",
+      "sin_loteria_corta": "❌ No active lottery.",
+      "registrados": "registered players",
+      "info_titulo": "🎰 *LOTTERY INFO* 🎰\n\n",
+      "lista": "Players",
+      "reiniciada": "🧹 *Lottery reset.* You can start a new one.",
+      "cancelada": "❌ *Lottery cancelled*\n\n🔄 Minimum of 5 players not reached\n💎 Everyone was refunded",
+      "resultados": "🎰 *LOTTERY RESULTS!* 🎰\n\n",
+      "premio_total": "Total prize",
+      "ganadores": "WINNERS:",
+      "puesto1": "1st Place",
+      "puesto2": "2nd Place",
+      "puesto3": "3rd Place",
+      "consuelo": "✨ *Everyone else got 100 💎 + 1,000 EXP consolation*\n\nThanks for playing! 🎉"
     },
     "game_ruleta": {
       "cooldown": "⏳ You must wait *{tiempoRestante} seconds* before playing again.",

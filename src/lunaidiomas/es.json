@@ -4,7 +4,8 @@
     "confirmado": "¡Confirmado! {usuario} es humano de verdad, ya no corre riesgo de ser ignorado 🎉😊",
     "otro": "oye {usuario} a ti no te pregunté jaja 🙊😅",
     "boton": "NO SOY BOT",
-    "footer": "Luna verificación 🔐"
+    "footer": "Luna verificación 🔐",
+    "sin_boton": "Si no ves el botón, respondé con la palabra: nosoybot"
   },
   "handler": {
     "handler": {
@@ -27,7 +28,11 @@
         "veces"
       ],
       "antispam": "⏱️ Espera _ segundos antes de usar otro comando.",
-      "trampa": "Haciendo trampa -_-"
+      "trampa": "Haciendo trampa -_-",
+      "juegos_off": "🎮 Los juegos están desactivados en este chat.",
+      "rpg_off": "🐉 El RPG está desactivado en este chat.",
+      "antimencion_off": "🔕 Las menciones masivas de juegos están desactivadas en este chat.",
+      "comando_off": "🚫 Ese comando está desactivado en este chat."
     },
     "participantsUpdate": {},
     "callUpdate": {
@@ -445,7 +450,7 @@
         "antilink": "Elimina mensajes que contienen links de otros grupos.",
         "antilink2": "Versión estricta del antilink, bloquea casi cualquier enlace.",
         "modoadmin": "Solo los *admins* pueden ejecutar comandos del bot.",
-        "autosticker": "Convierte imágenes y videos en stickers automáticamente.",
+        "autosticker": "Convierte imágenes sin texto en stickers automáticamente.",
         "audios": "Activa respuestas automáticas con audios en el grupo.",
         "agaudios": "Permite que los admins agreguen audios en el grupo. Solo el owner lo activa.",
         "antitoxic": "Detecta y elimina mensajes con palabras ofensivas.",
@@ -460,6 +465,10 @@
         "vierwimage": "Activa la visualización automática de fotos de perfil.",
         "modogrupos": "Restringe el uso del bot solo a grupos.",
         "antitag": "Detecta estados de WhatsApp que mencionan al grupo (@luna) y expulsa al autor.",
+        "ia": "La IA conversacional responde en este chat. Apagarla no afecta a otros chats.",
+        "juegos": "Activa juegos y diversión en este chat.",
+        "rpg": "Activa RPG, economía y niveles en este chat.",
+        "antimencion": "Bloquea rankings y juegos que etiquetan a muchos usuarios (.lb, tops, parejas).",
         "inactivos": "Uso: .enable inactivos (24 h) o .enable inactivos 48 (48 h). Valores válidos: 24, 48, 72, 96, 120, 144, 168. Expulsa a quienes no escriben pasado el umbral. Avisa por mención 1 h antes; si escriben, se salvan. Máx 5 por hora. Owners, subowners y admins nunca."
       },
       "solo_rowner_subbot": "🔒 Solo el owner real del bot principal puede cambiar esto. Un SubBot no puede tocar la configuración global."
@@ -875,7 +884,8 @@
       "texto8": "Top Nivel",
       "texto9": "Top Diamantes",
       "texto10": "Cada paso forja tu leyenda",
-      "texto11": "nivel"
+      "texto11": "nivel",
+      "cooldown": "⏳ El ranking se puede consultar cada 5 minutos. Esperá {s}s."
     },
     "rpg_profile": {
       "texto1": "Perfil de Usuario",
@@ -2564,7 +2574,83 @@
       "linea_gano": "💎 Ganó: {premio} diamantes\n",
       "linea_exp": "📈 EXP: {exp}\n\n",
       "sin_ganadores": "Ningún participante acertó ningún número esta vez. ¡Mejor suerte la próxima!\n\n",
-      "despedida": "🎊 ¡Gracias por participar! ¡Buena suerte para el próximo sorteo! 🍀"
+      "despedida": "🎊 ¡Gracias por participar! ¡Buena suerte para el próximo sorteo! 🍀",
+      "numeros_distintos": "❌ Los 6 números deben ser distintos"
+    },
+    "owner_resetuser": {
+      "todos_aviso": "⚠️ *Vas a resetear los datos de TODOS los usuarios del bot.*\n\nEsta accion no se puede deshacer facilmente.\n\n*Responde \"si\" para confirmar o \"no\" para cancelar.*",
+      "cancelada": "❌ *Operacion cancelada.*",
+      "todos_ok": "✅ *Reset masivo completado.*\n\n👥 Usuarios reseteados: *{n}*\n🗑️ Todos los datos de economia y experiencia han sido eliminados.",
+      "espera": "⏰ *Espera {m}m {s}s antes de usar este comando nuevamente.*",
+      "uso": "📋 *Uso:* {prefix}{command} <@usuario>\n*Ejemplo:* {prefix}{command} @usuario\n\nPara resetear todos: {prefix}{command} todos",
+      "sin_datos": "❌ El usuario @{numero} no tiene datos registrados.",
+      "confirmar": "⚠️ *¿Resetear los datos de @{numero}?*\n\n",
+      "datos": "Datos actuales",
+      "exp": "Experiencia",
+      "dinero": "Dinero",
+      "responder": "*Responde con \"si\" para confirmar o \"no\" para cancelar.*",
+      "exito": "✅ *Datos reseteados para @{numero}*\n\n",
+      "valido": "para restaurar (valido 24h)",
+      "error": "❌ *Error al resetear los datos del usuario.* Intentalo nuevamente."
+    },
+    "owner_restaureuser": {
+      "espera": "⏰ *Espera {m}m {s}s antes de usar este comando nuevamente.*",
+      "uso": "📋 *Uso:* {prefix}{command} <@usuario>\n*Ejemplo:* {prefix}{command} @usuario\n\n💡 *Este comando restaura los datos de un usuario previamente reseteado.*",
+      "numero_invalido": "❌ *Número inválido.* Usa: {prefix}{command} <número>",
+      "sin_backup": "❌ *No hay backup disponible para @{numero}*\n\n• El usuario no ha sido reseteado recientemente\n• O el backup ha expirado (>24h)",
+      "expirado": "⏰ *El backup de @{numero} ha expirado*\n\n• Los backups son válidos por 24 horas",
+      "confirmar": "🔄 *¿Restaurar datos de @{numero}?*\n\n",
+      "datos": "DATOS A RESTAURAR",
+      "exp": "Experiencia",
+      "nivel": "Nivel",
+      "dinero": "Dinero",
+      "misticas": "Monedas místicas",
+      "lunas": "Luna Coins",
+      "rol": "Rol",
+      "expira": "Expira en",
+      "responder": "*Responde con \"restaurar\" para confirmar o \"cancelar\" para cancelar.*",
+      "cancelada": "❌ *Restauración cancelada.*",
+      "exito": "✅ *¡Datos restaurados para @{numero}!*\n\n",
+      "un_uso": "⚠️ *El backup fue eliminado (uso único)*",
+      "error": "❌ *Error al restaurar.* Inténtalo nuevamente."
+    },
+    "game_loteria": {
+      "usuario_default": "Usuario",
+      "tiempo_cero": "0 minutos",
+      "terminado": "¡Terminado!",
+      "en_curso": "🎰 *Ya hay una lotería activa!* \n\n",
+      "tiempo": "Tiempo restante",
+      "participantes": "Participantes",
+      "pozo": "Pozo",
+      "ver_mas": "Usa",
+      "nueva": "🎰 *¡NUEVA LOTERÍA INICIADA!* 🎰\n\n",
+      "precio": "Precio del ticket",
+      "duracion": "Duración",
+      "minutos": "minutos",
+      "minimo": "Mínimo",
+      "premios": "Premios",
+      "comprar": "Comprar ticket",
+      "ver_info": "Ver información",
+      "sin_loteria": "❌ No hay lotería activa. Usa *{usedPrefix}loteria* para iniciar una.",
+      "ya_tienes": "⚠️ Ya tienes un ticket para esta lotería!",
+      "sin_diamantes": "❌ No tienes suficientes diamantes! Necesitas {precio} 💎 pero solo tienes {tienes} 💎",
+      "comprado": "🎫 *¡Ticket comprado!* \n\n",
+      "tu_ticket": "Tu ticket",
+      "queda": "Quedan",
+      "suerte": "¡Buena suerte! 🍀",
+      "sin_loteria_corta": "❌ No hay ninguna lotería activa.",
+      "registrados": "participantes registrados",
+      "info_titulo": "🎰 *INFORMACIÓN DE LOTERÍA* 🎰\n\n",
+      "lista": "Participantes",
+      "reiniciada": "🧹 *Lotería reiniciada.* Ya puedes iniciar una nueva.",
+      "cancelada": "❌ *Lotería cancelada*\n\n🔄 No se alcanzó el mínimo de 5 participantes\n💎 Se reembolsó a todos",
+      "resultados": "🎰 *¡RESULTADOS DE LA LOTERÍA!* 🎰\n\n",
+      "premio_total": "Premio total",
+      "ganadores": "GANADORES:",
+      "puesto1": "1er Lugar",
+      "puesto2": "2do Lugar",
+      "puesto3": "3er Lugar",
+      "consuelo": "✨ *Los demás recibieron 100 💎 + 1,000 EXP de consolación*\n\n¡Gracias por participar! 🎉"
     },
     "game_ruleta": {
       "cooldown": "⏳ Debes esperar *{tiempoRestante} segundos* antes de volver a jugar.",

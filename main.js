@@ -63,7 +63,7 @@ import { manejarPhraseTriggers } from './lib/funcion/phrase-triggers.js';
 import { buttonActions } from './lib/funcion/button-actions.js';
 import { esBotIgnorado, MARCA_LUNA } from './lib/funcion/botsIgnorados.js';
 import { etiquetaUsuarioParaLog, etiquetaChatParaLog } from './lib/funcion/lid-resolver.js';
-import { manejarMarcaLuna, manejarRespuestaBoton, obtenerBotonId, BOTON_VERIFICAR } from './lib/funcion/verificacionBots.js';
+import { manejarMarcaLuna, manejarRespuestaBoton, obtenerBotonId, BOTON_VERIFICAR, tieneDesafioPendiente, estaDesafiadoAqui } from './lib/funcion/verificacionBots.js';
 import { installUsersProxy } from './lib/funcion/databaseManager.js';
 import { updateConnectionState, reportBan } from './logBans.js';
 
@@ -1209,6 +1209,13 @@ global.reloadHandler = async function(restatConn) {
       if (typeof textoEntrante === 'string' && textoEntrante.includes(MARCA_LUNA)) {
         await manejarMarcaLuna(conn, msg);
         return;
+      }
+      if (typeof textoEntrante === 'string' && textoEntrante.trim().toLowerCase() === BOTON_VERIFICAR.toLowerCase()) {
+        const chatId = msg.messages?.[0]?.key?.remoteJid || '';
+        if (tieneDesafioPendiente(ignoreSender, chatId) || esBotIgnorado(ignoreSender, chatId) || estaDesafiadoAqui(ignoreSender, chatId)) {
+          await manejarRespuestaBoton(conn, msg);
+          return;
+        }
       }
       if (esBotIgnorado(ignoreSender, msg.messages?.[0]?.key?.remoteJid)) {
         const ignJid = msg.messages?.[0]?.key?.remoteJid || '';
