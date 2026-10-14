@@ -3,7 +3,7 @@ import { isDynamicMessage } from '../lib/funcion/dynamicMessageTracker.js';
 import { checkUserPermissions } from '../lib/funcion/userPermissions.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { dispatchToPlugins } from './pluginDispatch.js';
-import { etiquetaUsuarioParaLog, etiquetaChatParaLog, resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
+import { resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
 
 const _cooldown = new Map();
 const COOLDOWN_MS = 1500;
@@ -162,18 +162,9 @@ handler.before = async function (m, { conn }) {
     if (!m?.text || m.fromMe) return;
 
     const participant = m.message?.extendedTextMessage?.contextInfo?.participant;
-    const ctxInfoDbg = m.message?.extendedTextMessage?.contextInfo || null;
-    const txtDbg = String(m.text || '');
-    const esCitaDbg = !!participant;
-    const esCandidatoDbg = esCitaDbg && (txtDbg.includes('@') || txtDbg.toLowerCase().includes('luna') || (ctxInfoDbg && ctxInfoDbg['stanzaId']));
-    if (esCandidatoDbg) {
-      try {
-        const remitDbg = m.key.participant || m.key.remoteJid;
-        const sufijoDbg = String(participant).indexOf('@') >= 0 ? String(participant).slice(String(participant).indexOf('@')) : 'sin-dominio';
-        console.log(JSON.stringify({ debugCita: 1, chat: etiquetaChatParaLog(m.key.remoteJid, conn), de: etiquetaUsuarioParaLog(remitDbg, conn), texto: txtDbg.slice(0, 200), citadoSufijo: sufijoDbg, stanza: ctxInfoDbg ? ctxInfoDbg['stanzaId'] || null : null, addressing: m.key['addressingMode'] || null, push: m.pushName || null }));
-      } catch {}
-    }
     if (!participant) return;
+
+    
 
     const botJid = conn.user?.jid;
     const botNum = botJid?.split('@')[0]?.split(':')[0];
@@ -182,62 +173,19 @@ handler.before = async function (m, { conn }) {
 
     const { isROwner, isOwner } = checkUserPermissions(m, conn);
     const chat = getConfig(jid);
-    if (m.isGroup && chat?.modoadmin && !isOwner && !isROwner) {
-      if (esCandidatoDbg) {
-        try { console.log(JSON.stringify({ debugCita: 2, paso: 'modoadmin' })); } catch {}
-      }
-      return;
-    }
+    if (m.isGroup && chat?.modoadmin && !isOwner && !isROwner) return;
 
     const cached = global.groupCache?.get(jid);
     const participants = cached?.data?.participants || [];
 
-    const esBotDbg = isBotLid(participant, botNum, participants, conn);
-    if (!esBotDbg) {
-      if (esCandidatoDbg) {
-        try {
-          let resuelveABotDbg = false;
-          let decodeIgualDbg = false;
-          try {
-            const telDbg = resolveJidToPhone(participant, conn);
-            resuelveABotDbg = !!telDbg && telDbg.replace(/[^0-9]/g, '') === String(botNum || '').replace(/[^0-9]/g, '');
-          } catch {}
-          try {
-            if (conn && conn.decodeJid) decodeIgualDbg = conn.decodeJid(participant) === conn.decodeJid(botNum + '@s.whatsapp.net');
-          } catch {}
-          const botEnCacheDbg = (participants || []).some(p => String(p.id || '').split('@')[0].split(':')[0] === String(botNum || ''));
-          console.log(JSON.stringify({ debugCita: 3, paso: 'no-es-bot', resuelveABot: resuelveABotDbg, decodeIgual: decodeIgualDbg, botEnCache: botEnCacheDbg, totalParts: (participants || []).length }));
-        } catch {}
-      }
-      return;
-    }
-    if (esCandidatoDbg) {
-      try { console.log(JSON.stringify({ debugCita: 4, paso: 'cita-ok', bot: botNum })); } catch {}
-    }
+    if (!isBotLid(participant, botNum, participants, conn)) return;
 
     const stanzaId = m.message?.extendedTextMessage?.contextInfo?.stanzaId;
-    if (isDynamicMessage(stanzaId)) {
-      if (esCandidatoDbg) {
-        try { console.log(JSON.stringify({ debugCita: 5, paso: 'dinamico' })); } catch {}
-      }
-      return;
-    }
+    if (isDynamicMessage(stanzaId)) return;
 
     const settings = global.db?.data?.settings?.[conn.user?.jid];
-    if (settings?.iaLunaActive === false) {
-      if (esCandidatoDbg) {
-        try { console.log(JSON.stringify({ debugCita: 6, paso: 'ia-global-off' })); } catch {}
-      }
-      return;
-    }
-    try {
-      if (getConfig(jid)?.ia === false) {
-        if (esCandidatoDbg) {
-          try { console.log(JSON.stringify({ debugCita: 6, paso: 'ia-grupo-off' })); } catch {}
-        }
-        return;
-      }
-    } catch {}
+    if (settings?.iaLunaActive === false) return;
+    try { if (getConfig(jid)?.ia === false) return; } catch {}
 
     const sender = m.key.participant || m.key.remoteJid;
 
@@ -249,20 +197,10 @@ handler.before = async function (m, { conn }) {
       if (v?.until && Date.now() > v.until) return false;
       return true;
     });
-    if (isMuted) {
-      if (esCandidatoDbg) {
-        try { console.log(JSON.stringify({ debugCita: 7, paso: 'muteado', de: etiquetaUsuarioParaLog(sender, conn) })); } catch {}
-      }
-      return;
-    }
+    if (isMuted) return;
 
     const userDB = global.db?.data?.users?.[sender];
-    if (userDB?.banned) {
-      if (esCandidatoDbg) {
-        try { console.log(JSON.stringify({ debugCita: 8, paso: 'baneado', de: etiquetaUsuarioParaLog(sender, conn) })); } catch {}
-      }
-      return;
-    }
+    if (userDB?.banned) return;
 
     cleanExpiredSessions();
 
@@ -318,9 +256,6 @@ handler.before = async function (m, { conn }) {
 
     try {
       await dispatchToPlugins(text, extra);
-      if (esCandidatoDbg) {
-        try { console.log(JSON.stringify({ debugCita: 9, paso: 'dispatch-ok', texto: String(text).slice(0, 120) })); } catch {}
-      }
     } catch {}
 
   } catch {}
