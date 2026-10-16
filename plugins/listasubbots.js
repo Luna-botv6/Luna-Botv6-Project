@@ -1,4 +1,5 @@
-import { connectionManager } from '../lib/funcion/connection-manager.js';
+import * as manager from '../lib/funcion/subbot-manager.js';
+import { leerIdentidad } from '../lib/funcion/subbot-seguridad.js';
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
@@ -15,6 +16,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 
     const userDirs = fs.readdirSync(subBotDir);
     const subbots = [];
+    let guardados = 0;
 
     for (const dirName of userDirs) {
       const userPath = path.join(subBotDir, dirName);
@@ -36,29 +38,25 @@ let handler = async (m, { conn, usedPrefix }) => {
         }
 
         const userJid = `${realNumber}@s.whatsapp.net`;
-        const isConnected = connectionManager.isConnected(dirName);
+        const nombrePropio = leerIdentidad(dirName)?.nombre;
 
-        if (isConnected) {
-          let displayName = realNumber;
-          try {
-            const name = conn.getName(userJid);
-            if (name && name !== realNumber && name.replace(/\D/g, '') !== realNumber) {
-              displayName = name;
-            }
-          } catch (e) {
-            displayName = realNumber;
+        if (manager.conectado(dirName)) {
+          let displayName = nombrePropio || realNumber;
+          if (!nombrePropio) {
+            try {
+              const name = conn.getName(userJid);
+              if (name && name !== realNumber && name.replace(/\D/g, '') !== realNumber) {
+                displayName = name;
+              }
+            } catch {}
           }
 
-          const socket = connectionManager.getSocket(dirName);
+          const socket = manager.socketDe(dirName);
           const status = socket?.user?.jid ? (t.conectado || '🟢 Conectado') : (t.activo || '🟢 Activo');
 
-          subbots.push({
-            jid: userJid,
-            displayName: displayName,
-            userId: realNumber,
-            dirName: dirName,
-            status: status,
-          });
+          subbots.push({ jid: userJid, displayName, userId: realNumber, dirName, status });
+        } else {
+          guardados++;
         }
       } catch (e) {
         console.log(chalk.yellow(`⚠️ Error leyendo creds de ${dirName}`));
@@ -67,11 +65,14 @@ let handler = async (m, { conn, usedPrefix }) => {
     }
 
     if (subbots.length === 0) {
-      return m.reply((t.sin_subbots || '📋 *Lista de SubBots*\n\n❌ No hay SubBots activos en este momento.'));
+      const extra = guardados > 0 ? `\n\n💾 Hay ${guardados} sesión(es) guardada(s) pero desconectadas.` : '';
+      return m.reply((t.sin_subbots || '📋 *Lista de SubBots*\n\n❌ No hay SubBots activos en este momento.') + extra);
     }
 
     let message = (t.titulo_activos || '📋 *Lista de SubBots Activos*\n\n');
-    message += (t.total?.replace('{cantidad}', subbots.length) || `🤖 *Total:* ${subbots.length} SubBot${subbots.length > 1 ? 's' : ''}\n\n`);
+    message += (t.total?.replace('{cantidad}', subbots.length) || `🤖 *Total conectados:* ${subbots.length} SubBot${subbots.length > 1 ? 's' : ''}\n`);
+    if (guardados > 0) message += `💾 *Guardados:* ${guardados}\n`;
+    message += '\n';
 
     subbots.forEach((bot, index) => {
       message += (t.item_num?.replace('{num}', index + 1).replace('{estado}', bot.status) || `*${index + 1}.* ${bot.status}`) + '\n';

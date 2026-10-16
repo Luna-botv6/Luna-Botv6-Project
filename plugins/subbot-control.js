@@ -1,6 +1,6 @@
-import { connectionManager, getRamStatus } from '../lib/funcion/connection-manager.js';
-
-if (global.subbotEnabled === undefined) global.subbotEnabled = true;
+import * as manager from '../lib/funcion/subbot-manager.js';
+import { fijarSistema } from '../lib/funcion/subbot-seguridad.js';
+import { getRamStatus } from '../lib/funcion/connection-manager.js';
 
 const BOT = () => global.BotName || 'Luna';
 
@@ -9,9 +9,9 @@ const handler = async (m, { conn, command }) => {
   const t = _tr?.plugins?.subbot_control || {};
   const isOn = command === 'subbotson';
 
-  global.subbotEnabled = isOn;
+  fijarSistema(isOn);
 
-  const active = connectionManager.getActiveConnectionCount();
+  const active = manager.conteoActivos();
   const { heapUsedMB: used, heapTotalMB: total } = await getRamStatus();
   const pct = total > 0 ? Math.round((used / total) * 100) : 0;
 
