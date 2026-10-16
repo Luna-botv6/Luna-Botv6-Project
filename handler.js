@@ -33,6 +33,7 @@ import { registrarActividad, sembrarIngreso } from './lib/funcion/inactivosDB.js
 import { listOwners as listSystemOwners } from './lib/funcion/system-owners.js';
 import { marcarMotivo } from './lib/funcion/leave-reason.js';
 import { checkRateLimit, recordMessage, checkWarmupLimit, recordGlobalMessage, recordIncomingMessage } from './lib/funcion/private-rate-limit.js';
+import { bloqueadoEnSubbot, textoBloqueoSubbot } from './lib/funcion/subbot-seguridad.js';
 
 EventEmitter.defaultMaxListeners = 30;
 
@@ -559,6 +560,10 @@ export async function handler(chatUpdate) {
 
           if (matchSin) {
             m.plugin = name;
+            if (this?.isSubBot && bloqueadoEnSubbot(cmdSin)) {
+              m.reply(textoBloqueoSubbot());
+              continue;
+            }
             if (!isROwner && estaBloqueado(getConfig(m.chat)?.comandosOff, name)) {
               m.reply(tradutor.comando_off || '🚫 Ese comando está desactivado en este chat.');
               continue;
@@ -601,6 +606,11 @@ export async function handler(chatUpdate) {
           const isAccept = checkCommandAcceptance(plugin, command);
 
           if (!isAccept) continue;
+
+          if (this?.isSubBot && bloqueadoEnSubbot(command)) {
+            m.reply(textoBloqueoSubbot());
+            continue;
+          }
 
           m.plugin = name;
           updateLastCommand({ text: m.text, plugin: m.plugin, sender: m.sender, pushname: m.pushName || m.pushname || null, chat: m.chat });

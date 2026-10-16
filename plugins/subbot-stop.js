@@ -1,4 +1,5 @@
-import { connectionManager } from '../lib/funcion/connection-manager.js';
+import * as manager from '../lib/funcion/subbot-manager.js';
+import { olvidarDbSubbot } from '../lib/funcion/subbot-db.js';
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
@@ -53,33 +54,17 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   const subbotPath = path.join('./sub-lunabot/', id || resolvedPhone);
 
   if (command === 'stopbot' || command === 'stop') {
-    if (!id) {
+    if (!id || !manager.socketDe(id)) {
       return m.reply((t.sin_subbot_activo || '❌ No tienes un SubBot activo para detener.'));
     }
 
-    const socket = connectionManager.getSocket(id);
-
-    if (!socket) {
-      return m.reply((t.sin_subbot_activo || '❌ No tienes un SubBot activo para detener.'));
-    }
-
-    if (!connectionManager.isConnected(id)) {
+    if (!manager.conectado(id)) {
       return m.reply((t.no_conectado || '⚠️ Tu SubBot no está conectado actualmente.'));
     }
 
     try {
       console.log(chalk.yellow(`🛑 Deteniendo SubBot: ${id}`));
-
-      if (socket?.ws?.socket) {
-        socket.ws.close();
-      }
-
-      if (socket?.ev) {
-        socket.ev.removeAllListeners();
-      }
-
-      connectionManager.removeConnection(id);
-
+      manager.quitar(id);
       console.log(chalk.green(`✅ SubBot ${id} detenido correctamente`));
       return m.reply((t.detenido?.replace('{prefix}', usedPrefix) || `✅ SubBot detenido correctamente.\n\n💡 *Tip:* Usa *${usedPrefix}deletebot* para eliminar la sesión completamente.`));
     } catch (error) {
@@ -95,23 +80,8 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
     try {
       console.log(chalk.yellow(`🗑️ Eliminando sesión de SubBot: ${id}`));
-
-      const socket = connectionManager.getSocket(id);
-      if (socket) {
-        try {
-          if (socket?.ws?.socket) {
-            socket.ws.close();
-          }
-          if (socket?.ev) {
-            socket.ev.removeAllListeners();
-          }
-        } catch (e) {
-          console.log(chalk.yellow(`⚠️ Error cerrando socket: ${e.message}`));
-        }
-      }
-
-      connectionManager.removeConnection(id);
-
+      manager.quitar(id);
+      olvidarDbSubbot(id);
       await fs.promises.rm(subbotPath, { recursive: true, force: true });
 
       console.log(chalk.green(`✅ Sesión de SubBot ${id} eliminada correctamente`));

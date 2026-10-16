@@ -9,6 +9,7 @@ const handler = async (m, { conn, usedPrefix, isPrems, isROwner }) => {
   const _translate = await global.loadTranslation(idioma);
   const t = _translate?.menu || {};
   const tm = _translate?.plugins?.menu_media || {};
+  const nombreBot = conn?.isSubBot ? (global.db?.data?.settings?.[conn?.user?.jid]?.botName || global.BotName || 'Luna-Botv6') : (global.BotName || 'Luna-Botv6');
 
   const cmd = (m.text || '').trim().toLowerCase().replace(/^[^a-z0-9]*/i, '');
 
@@ -88,7 +89,7 @@ const handler = async (m, { conn, usedPrefix, isPrems, isROwner }) => {
     const secciones = buildDestacados(extractCommands(global.plugins || {}), usedPrefix, t);
 
     const str = `╭━━━━━━━━━━━━━━━━━━━╮
-┃  🌙 *${global.BotName || 'Luna-Botv6'} MENU* 🌙
+┃  🌙 *${nombreBot} MENU* 🌙
 ╰━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━『 👤 ${t.perfil_titulo} 』━━━╮
@@ -156,7 +157,7 @@ ${secciones}
 ╰━━━━━━━━━━━━━━━━━━━╯
 
 ╭━━━━━━━━━━━━━━━━━━━╮
-┃  🌙 *${global.BotName || 'Luna-Botv6'}* 🌙
+┃  🌙 *${nombreBot}* 🌙
 ┃  ${t.creado}
 ╰━━━━━━━━━━━━━━━━━━━╯`.trim();
 
@@ -164,7 +165,7 @@ ${secciones}
       key: { participants: '0@s.whatsapp.net', remoteJid: 'status@broadcast', fromMe: false, id: 'Halo' },
       message: {
         contactMessage: {
-          vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${global.BotName || 'Luna'};Bot;;;\nFN:${(global.BotName || 'LunaBot').replace(/[^a-zA-Z0-9]/g, '')}\nTEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nEND:VCARD`
+          vcard: `BEGIN:VCARD\nVERSION:3.0\nN:${nombreBot};Bot;;;\nFN:${nombreBot.replace(/[^a-zA-Z0-9]/g, '')}\nTEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nEND:VCARD`
         }
       }
     };
@@ -186,8 +187,8 @@ ${secciones}
 
     await conn.sendButton(
       m.chat,
-      t.ia_boton,
-      (global.BotName && global.BotName !== 'Luna-Botv6' ? global.BotName : 'Luna-Botv6-Project') + ' 🌙',
+      String(t.ia_boton || '').replace(/Luna\s*(IA|AI)/gi, nombreBot),
+      nombreBot + ' 🌙',
       null,
       [
         [`🤖 ${t.ia_boton_ver}`, `${usedPrefix}iamenu`]

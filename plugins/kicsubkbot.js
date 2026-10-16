@@ -1,4 +1,5 @@
-import { connectionManager } from '../lib/funcion/connection-manager.js';
+import * as manager from '../lib/funcion/subbot-manager.js';
+import { olvidarDbSubbot } from '../lib/funcion/subbot-db.js';
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
@@ -19,7 +20,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   }
 
   const subBotDir = './sub-lunabot/';
-  
+
   if (!fs.existsSync(subBotDir)) {
     return m.reply(`❌ No existe ningún SubBot con el número: +${targetNumber}`);
   }
@@ -54,29 +55,12 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   }
 
   const subbotPath = path.join(subBotDir, foundDir);
-  const socket = connectionManager.getSocket(foundDir);
-  const isConnected = connectionManager.isConnected(foundDir);
+  const estabaConectado = manager.conectado(foundDir);
 
   try {
     console.log(chalk.yellow(`🔨 Owner eliminando SubBot: ${realNumber} (${foundDir})`));
-
-    if (socket || isConnected) {
-      console.log(chalk.blue(`🔌 Cerrando conexión de ${realNumber}...`));
-      
-      try {
-        if (socket?.ws?.socket) {
-          socket.ws.close();
-        }
-        if (socket?.ev) {
-          socket.ev.removeAllListeners();
-        }
-      } catch (e) {
-        console.log(chalk.yellow(`⚠️ Error cerrando socket: ${e.message}`));
-      }
-
-      connectionManager.removeConnection(foundDir);
-      console.log(chalk.green(`✅ Conexión de ${realNumber} cerrada`));
-    }
+    manager.quitar(foundDir);
+    olvidarDbSubbot(foundDir);
 
     if (fs.existsSync(subbotPath)) {
       console.log(chalk.blue(`🗑️ Eliminando carpeta de sesión de ${realNumber}...`));
@@ -104,7 +88,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       `👤 Usuario: ${displayName}\n` +
       `📱 Número: +${realNumber}\n` +
       `📁 Carpeta: ${foundDir}\n\n` +
-      `${isConnected ? '🔌 Conexión cerrada\n' : ''}` +
+      `${estabaConectado ? '🔌 Conexión cerrada\n' : ''}` +
       '🗑️ Sesión eliminada\n\n' +
       `El usuario deberá usar *${usedPrefix}serbot* para crear un nuevo SubBot.`
     );
