@@ -123,34 +123,82 @@ ${usedPrefix}ruleta money verde 100`;
   const colores = ['verde', 'rojo', 'blanco', 'rojo', 'blanco', 'rojo', 'blanco', 'rojo', 'blanco', 'rojo'];
   const resultado = colores[Math.floor(Math.random() * colores.length)];
 
+  const emojiColor = { verde: '🟢', rojo: '🔴', blanco: '⚪' };
+  const multiColor = { verde: 5, rojo: 3, blanco: 2 };
+  const nombreColor = {
+    verde: t.color_verde || 'Verde',
+    rojo: t.color_rojo || 'Rojo',
+    blanco: t.color_blanco || 'Blanco'
+  };
   const moneda = tipo === 'exp' ? 'Exp' : 'Diamantes';
+  const monedaEmoji = tipo === 'exp' ? '⭐' : '💎';
+  const gano = color === resultado;
   let ganancia = 0;
-  if (color === resultado) {
-    switch (resultado) {
-    case 'verde': ganancia = cantidad * 5; break;
-    case 'rojo': ganancia = cantidad * 3; break;
-    case 'blanco': ganancia = cantidad * 2; break;
-    }
+  let saldoFinal = 0;
 
+  if (gano) {
+    ganancia = cantidad * multiColor[resultado];
     if (tipo === 'exp') {
       addExp(id, ganancia);
       spendExp(id, cantidad);
+      saldoFinal = getExp(id);
     } else {
       addMoney(id, ganancia);
       spendMoney(id, cantidad);
+      saldoFinal = getMoney(id);
     }
-
-    userCooldowns[id] = Date.now();
-    return m.reply((t.ganaste?.replace('{resultado}', resultado.toUpperCase()).replace('{ganancia}', ganancia).replace('{moneda}', moneda)) || `🎉 ¡Ganaste! El color fue *${resultado.toUpperCase()}*.\nGanaste *${ganancia} ${moneda}*`);
   } else {
     if (tipo === 'exp') {
       spendExp(id, cantidad);
+      saldoFinal = getExp(id);
     } else {
       spendMoney(id, cantidad);
+      saldoFinal = getMoney(id);
     }
+  }
 
-    userCooldowns[id] = Date.now();
-    return m.reply((t.perdiste?.replace('{resultado}', resultado.toUpperCase()).replace('{cantidad}', cantidad).replace('{moneda}', moneda)) || `😢 Perdiste... El color fue *${resultado.toUpperCase()}*.\nPerdiste *${cantidad} ${moneda}*`);
+  userCooldowns[id] = Date.now();
+
+  const nf = (n) => Number(n || 0).toLocaleString();
+  const titulo = t.titulo || '🎡  *R U L E T A*  🎡';
+  const linea = t.linea || '━━━━━━━━━━━━━━━━━━';
+  const frame = (emo, sp, estado) => `${titulo}\n${linea}\n\n        ${emo}\n      ${sp} ${estado}`;
+
+  const cardTexto = (gano
+    ? (t.card_ganaste || `${titulo}\n${linea}\n\n        {emoji}\n\n  *¡SALIÓ {color}!*  (x{multi})\n🎯 Elegiste: {tuEmoji} {tuColor}\n\n🎉 *¡GANASTE!*\n{monedaEmoji} *+{ganancia}* {moneda}\n\n💰 Saldo: *{saldo}* {monedaEmoji}`)
+    : (t.card_perdiste || `${titulo}\n${linea}\n\n        {emoji}\n\n  *¡SALIÓ {color}!*  (x{multi})\n🎯 Elegiste: {tuEmoji} {tuColor}\n\n😢 *Perdiste*\n{monedaEmoji} *-{cantidad}* {moneda}\n\n💰 Saldo: *{saldo}* {monedaEmoji}`))
+    .replace(/\{emoji\}/g, emojiColor[resultado])
+    .replace(/\{color\}/g, nombreColor[resultado].toUpperCase())
+    .replace(/\{multi\}/g, multiColor[resultado])
+    .replace(/\{tuEmoji\}/g, emojiColor[color])
+    .replace(/\{tuColor\}/g, nombreColor[color])
+    .replace(/\{ganancia\}/g, nf(ganancia))
+    .replace(/\{cantidad\}/g, nf(cantidad))
+    .replace(/\{monedaEmoji\}/g, monedaEmoji)
+    .replace(/\{moneda\}/g, moneda)
+    .replace(/\{saldo\}/g, nf(saldoFinal));
+
+  const spinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  const girando = t.spin_girando || 'girando...';
+  const frenando = t.spin_frenando || 'frenando...';
+  const secuencia = ['🔴', '⚪', '🟢', '🔴', '⚪', '🔴', '⚪', '🟢'];
+  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+  try {
+    const msg = await conn.sendMessage(m.chat, { text: frame(secuencia[0], spinner[0], girando) });
+    let i = 1;
+    let espera = 200;
+    for (; i < secuencia.length; i++) {
+      await sleep(espera);
+      espera += 45;
+      await conn.sendMessage(m.chat, { text: frame(secuencia[i], spinner[i % spinner.length], girando), edit: msg.key });
+    }
+    await sleep(espera + 120);
+    await conn.sendMessage(m.chat, { text: frame(emojiColor[resultado], spinner[i % spinner.length], frenando), edit: msg.key });
+    await sleep(600);
+    await conn.sendMessage(m.chat, { text: cardTexto, edit: msg.key });
+  } catch {
+    return m.reply(cardTexto);
   }
 };
 
