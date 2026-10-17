@@ -1,25 +1,37 @@
 import fs from 'fs';
-import { getUserStats, setUserStats, addExp, addMoney } from '../lib/stats.js';
+import { addExp, addMoney } from '../lib/stats.js';
 import { getLastCofreTime, setLastCofreTime, initCofreUser } from '../lib/cofre.js';
 
-const handler = async (m, { isPrems, conn }) => {
+const IMG = 'https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/otros/cofre.png';
+
+function cargarIdioma(m) {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
-  const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.rpg_cofre;
+  try {
+    return JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`, 'utf8'));
+  } catch {
+    try { return JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')); } catch { return {}; }
+  }
+}
+
+function nf(n) {
+  return Number(n || 0).toLocaleString();
+}
+
+function render(tpl, valores) {
+  let out = tpl;
+  for (const [k, v] of Object.entries(valores)) out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+  return out;
+}
+
+const handler = async (m, { conn }) => {
+  const _t = cargarIdioma(m);
+  const t = _t.plugins?.rpg_cofre || {};
 
   const userId = m.sender;
   initCofreUser(userId);
 
-  const baseRewards = {
-    exp: 7500,
-    money: 3000,
-    mysticcoins: 10
-  };
-
-  const premiumRewards = {
-    exp: 15000,
-    money: 6000,
-    mysticcoins: 20
-  };
+  const baseRewards = { exp: 7500, money: 3000, mysticcoins: 10 };
+  const premiumRewards = { exp: 15000, money: 6000, mysticcoins: 20 };
 
   const stats = global.db.data.users[m.sender];
   const isPremium = stats.premiumTime && stats.premiumTime > Date.now();
@@ -31,7 +43,8 @@ const handler = async (m, { isPrems, conn }) => {
   const remaining = cooldown - (now - lastCofre);
 
   if (remaining > 0) {
-    throw `${tradutor.texto1[0]} *${msToTime(remaining)}* ${tradutor.texto1[1]}`;
+    if (t.card_cofre_cooldown) throw render(t.card_cofre_cooldown, { tiempo: msToTime(remaining) });
+    throw `${t.texto1[0]} *${msToTime(remaining)}* ${t.texto1[1]}`;
   }
 
   addExp(userId, recompensas.exp);
@@ -42,17 +55,23 @@ const handler = async (m, { isPrems, conn }) => {
 
   setLastCofreTime(userId, now);
 
-  const img = 'https://img.freepik.com/vector-gratis/cofre-monedas-oro-piedras-preciosas-cristales-trofeo_107791-7769.jpg?w=2000';
-
-  const texto = `
-${tradutor.texto2[0]}
-${tradutor.texto2[1]}
-${tradutor.texto2[2]}
-║➢ *${recompensas.exp}* ⭐ ${tradutor.texto2[3]}
-║➢ *${recompensas.money}* 💎 ${tradutor.texto2[4]}
-║➢ *${recompensas.mysticcoins}* 🪙 ${tradutor.texto2[5]}
-║➢ ${tradutor.texto2[6]} ${isPremium ? '✅' : '❌'}
-${tradutor.texto2[7]}`;
+  const texto = t.card_cofre
+    ? render(t.card_cofre, {
+      exp: nf(recompensas.exp),
+      money: nf(recompensas.money),
+      mystic: nf(recompensas.mysticcoins),
+      premium: isPremium ? '✅' : '❌',
+      saldo: nf(updatedUser.money || 0)
+    })
+    : `
+${t.texto2[0]}
+${t.texto2[1]}
+${t.texto2[2]}
+║➢ *${nf(recompensas.exp)}* ⭐ ${t.texto2[3]}
+║➢ *${nf(recompensas.money)}* 💎 ${t.texto2[4]}
+║➢ *${nf(recompensas.mysticcoins)}* 🪙 ${t.texto2[5]}
+║➢ ${t.texto2[6]} ${isPremium ? '✅' : '❌'}
+${t.texto2[7]}`;
 
   const fkontak = {
     key: { participants: '0@s.whatsapp.net', remoteJid: 'status@broadcast', fromMe: false, id: 'Halo' },
@@ -60,18 +79,22 @@ ${tradutor.texto2[7]}`;
     participant: '0@s.whatsapp.net',
   };
 
-  await conn.sendFile(m.chat, img, 'mystic.jpg', texto, fkontak);
+  try {
+    await conn.sendFile(m.chat, IMG, 'cofre.png', texto, fkontak);
+  } catch {
+    await conn.sendMessage(m.chat, { text: texto }, { quoted: m });
+  }
 };
 
-handler.help = ['daily'];
+handler.help = ['cofre', 'abrircofre'];
 handler.tags = ['xp'];
 handler.command = ['coffer', 'cofre', 'abrircofre', 'cofreabrir'];
 handler.level = 5;
 export default handler;
 
 function msToTime(duration) {
-  let seconds = Math.floor((duration / 1000) % 60);
-  let minutes = Math.floor((duration / (1000 * 60)) % 60);
-  let hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+  const seconds = Math.floor((duration / 1000) % 60);
+  const minutes = Math.floor((duration / (1000 * 60)) % 60);
+  const hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
   return `${hours}h ${minutes}m ${seconds}s`;
 }

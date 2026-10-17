@@ -755,7 +755,8 @@
         "🛒 Loja disponível",
         "━━━━━━━━━━━━━━",
         "<objeto>"
-      ]
+      ],
+      "card_balance": "💰  *B A L A N Ç O*\n━━━━━━━━━━━━━━━━━━\n\n   👤 {nombre}\n\n   💎 Diamantes:    *{money}*\n   ⭐ EXP:          *{exp}*\n   📈 Nível:        *{nivel}*\n   🪙 MysticCoins:  *{mystic}*\n   🌙 LunaCoins:    *{luna}*\n\n──────────────────\n🛒 *{usedPrefix}buy <item>* · *{usedPrefix}buyall*"
     },
     "rpg_shop": {
       "texto1": [
@@ -781,7 +782,9 @@
         "MysticCoins",
         "Estado Premium:",
         "╚═══════════════════════════╝"
-      ]
+      ],
+      "card_cofre": "🎁  *B A Ú   D I Á R I O*  🎁\n━━━━━━━━━━━━━━━━━━\n\n   🪙 Você abriu seu baú!\n\n   ⭐ *{exp}* Experiência\n   💎 *{money}* Diamantes\n   🪙 *{mystic}* MysticCoins\n\n   👑 Premium: {premium}\n   💰 Saldo: *{saldo}* 💎",
+      "card_cofre_cooldown": "🎁  *B A Ú   D I Á R I O*  🎁\n━━━━━━━━━━━━━━━━━━\n\n   ⏳ Você já resgatou.\n   🕒 Volte em *{tiempo}*"
     },
     "rpg_crime": {
       "texto1": "Cuidado! A polícia está te procurando. Espere",
@@ -972,7 +975,10 @@
       "texto10": [
         "Transferiu",
         "para"
-      ]
+      ],
+      "card_ayuda": "💸  *T R A N S F E R I R*  💸\n━━━━━━━━━━━━━━━━━━\n\n📋 Envie recursos para outro usuário.\n\n⭐ EXP   ➜  {usedPrefix}transferir exp 100 @usuario\n💎 Diam  ➜  {usedPrefix}transferir money 50 @usuario\n\n⚠️ Você precisa mencionar o destinatário.",
+      "card_confirmar": "💸  *C O N F I R M A R*  💸\n━━━━━━━━━━━━━━━━━━\n\n   {fromTag}  ➜  {toTag}\n\n   {emoji} *{cantidad}* {moneda}\n\n   💰 {fromTag}: *{saldoFrom}*\n   💰 {toTag}: *{saldoTo}*\n\n──────────────────\nResponda *{confirmar}* para confirmar\nou *{cancelar}* para cancelar",
+      "card_exito": "✅  *T R A N S F E R I D O*\n━━━━━━━━━━━━━━━━━━\n\n   {fromTag}  ➜  {toTag}\n\n   {emoji} *{cantidad}* {moneda}\n   🕒 {fecha}\n\n   💰 {fromTag}: *{saldoFrom}*\n   💰 {toTag}: *{saldoTo}*"
     },
     "rpg_adivemoji": {
       "texto1": "Jogo ativo. Use /pista ou /rpta.",
@@ -2667,7 +2673,16 @@
       "sin_exp": "❌ Você não tem *Exp* suficiente.",
       "sin_money": "❌ Você não tem *Diamantes* suficientes.",
       "ganaste": "🎉 Você ganhou! A cor foi *{resultado}*.\nVocê ganhou *{ganancia} {moneda}*",
-      "perdiste": "😢 Você perdeu... A cor foi *{resultado}*.\nVocê perdeu *{cantidad} {moneda}*"
+      "perdiste": "😢 Você perdeu... A cor foi *{resultado}*.\nVocê perdeu *{cantidad} {moneda}*",
+      "titulo": "🎡  *R O L E T A*  🎡",
+      "linea": "━━━━━━━━━━━━━━━━━━",
+      "spin_girando": "girando...",
+      "spin_frenando": "freando...",
+      "color_verde": "Verde",
+      "color_rojo": "Vermelho",
+      "color_blanco": "Branco",
+      "card_ganaste": "🎡  *R O L E T A*  🎡\n━━━━━━━━━━━━━━━━━━\n\n        {emoji}\n\n  *SAIU {color}!*  (x{multi})\n🎯 Você escolheu: {tuEmoji} {tuColor}\n\n🎉 *VOCÊ GANHOU!*\n{monedaEmoji} *+{ganancia}* {moneda}\n\n💰 Saldo: *{saldo}* {monedaEmoji}",
+      "card_perdiste": "🎡  *R O L E T A*  🎡\n━━━━━━━━━━━━━━━━━━\n\n        {emoji}\n\n  *SAIU {color}!*  (x{multi})\n🎯 Você escolheu: {tuEmoji} {tuColor}\n\n😢 *Você perdeu*\n{monedaEmoji} *-{cantidad}* {moneda}\n\n💰 Saldo: *{saldo}* {monedaEmoji}"
     },
     "rpg_armor": {
       "help": "🛡️ *Sistema de Armaduras*\n\n📋 *Comandos:*\n• *armadura comprar <tipo>* — Comprar e equipar armadura\n• *armadura ver* — Ver sua armadura atual\n• *armadura reparar* — Reparar durabilidade\n• *armadura tienda* — Ver tipos disponíveis e preços\n\n🗡️ *Tipos:* leve • média • pesada • mística",
