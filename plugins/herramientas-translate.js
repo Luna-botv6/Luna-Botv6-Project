@@ -1,12 +1,13 @@
 import fs from 'fs';
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
+import { cabecerasDescarga } from '../src/libraries/api/clientIdentity.js'
 import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js';
 
 try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion faltante o invalido') }
 
 const SERVER_URL = obtenerMenuIuman();
 const API_KEY = cargarOGenerarAPIKey();
-const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY };
+const DL_HEADERS = cabecerasDescarga(API_KEY);
 
 const handler = async (m, {args, usedPrefix, command}) => {
   const datas = global;

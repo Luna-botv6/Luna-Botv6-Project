@@ -1,10 +1,11 @@
 import fetch from 'node-fetch'
 import { obtenerMenuIuman } from '../assets/images/menu/languages/es/menu-img.js'
 import { cargarOGenerarAPIKey } from './api/apiKeyManager.js'
+import { cabecerasDescarga } from './api/clientIdentity.js'
 
 const SERVER_URL = obtenerMenuIuman()
 const API_KEY = cargarOGenerarAPIKey()
-const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY, 'Content-Type': 'application/json' }
+const DL_HEADERS = cabecerasDescarga(API_KEY, { json: true })
 const TIMEOUT = 30000
 
 const ft = async (url, options = {}) => {
