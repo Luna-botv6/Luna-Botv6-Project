@@ -29,6 +29,7 @@ let handler = async (m, { conn, args, usedPrefix }) => {
 
   const phoneArg = (args || []).find(a => /^[0-9]{7,15}$/.test(String(a || '').trim()));
   const quiereCode = (args || []).some(a => /(--code|^code$)/.test(String(a || '').trim()));
+  const porCodigo = !!phoneArg || quiereCode;
 
   if (!phoneArg && !quiereCode && m.isGroup) return m.reply(ayuda(usedPrefix));
 
@@ -69,8 +70,8 @@ let handler = async (m, { conn, args, usedPrefix }) => {
 
   global.db.data.users[sender].Subs = Date.now();
 
-  await m.reply(quiereCode || phoneArg ? '🔢 Generando tu código de vinculación…' : '📱 Generando tu QR de vinculación…');
-  crearSubbot({ subbotPath, m, conn, args, userId, dueno: sender }).catch(() => {});
+  await m.reply(porCodigo ? '🔢 Generando tu código de vinculación…' : '📱 Generando tu QR de vinculación…');
+  crearSubbot({ subbotPath, m, conn, args, userId, dueno: sender, useCode: porCodigo }).catch(() => {});
 };
 
 handler.command = ['jadibot', 'serbot'];
