@@ -9,6 +9,7 @@ import { fileTypeFromBuffer } from 'file-type'
 import fetch from 'node-fetch'
 import { obtenerMenuIuman } from '../assets/images/menu/languages/es/menu-img.js'
 import { cargarOGenerarAPIKey } from './api/apiKeyManager.js'
+import { cabecerasDescarga } from './api/clientIdentity.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const tmp = path.join(__dirname, '../tmp')
@@ -20,7 +21,7 @@ const assertSize = (buf) => {
 
 const SERVER_URL = obtenerMenuIuman()
 const API_KEY = cargarOGenerarAPIKey()
-const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY, 'Content-Type': 'application/json' }
+const DL_HEADERS = cabecerasDescarga(API_KEY, { json: true })
 const TIMEOUT = 30000
 
 const ocultar = (m) => String(m || '').replace(/https?:\/\/\S+/g, '[enlace oculto]').replace(/key=\w+/gi, 'key=[oculta]')

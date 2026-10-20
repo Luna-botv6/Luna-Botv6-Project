@@ -1,6 +1,7 @@
 import fs from 'fs';
 import fetch from 'node-fetch';
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
+import { nombreClienteDescarga } from '../src/libraries/api/clientIdentity.js';
 import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js';
 
 const configContent = fs.readFileSync('./config.js', 'utf-8');
@@ -14,7 +15,6 @@ try {
 
 const SERVER_URL = obtenerMenuIuman();
 const API_KEY = cargarOGenerarAPIKey();
-const CLIENT_NAME = 'luna-bot-v6';
 
 function bar(n) {
   const total = 10;
@@ -80,7 +80,7 @@ async function generarGif(conn, m, estilo, texto) {
     const endpoint = `${SERVER_URL}/api/textstudio/generate?text=${encodeURIComponent(texto)}&style=${encodeURIComponent(estilo)}`;
 
     const apiRes = await fetchWithTimeout(endpoint, 120000, 'GET', {
-      'X-Client-Name': CLIENT_NAME,
+      'X-Client-Name': nombreClienteDescarga(),
       'X-API-Key': API_KEY
     });
 

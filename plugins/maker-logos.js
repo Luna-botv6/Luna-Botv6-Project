@@ -2,6 +2,7 @@ import fs from 'fs'
 import fetch from 'node-fetch'
 import { obtenerMenuIuman, verificarMenuIuman } from '../src/assets/images/menu/languages/es/menu-img.js'
 import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js'
+import { cabecerasDescarga } from '../src/libraries/api/clientIdentity.js'
 
 const configContent = fs.readFileSync('./config.js', 'utf-8')
 if (!configContent.includes('Luna-Botv6')) throw new Error('Handler bloqueado')
@@ -9,7 +10,7 @@ try { verificarMenuIuman() } catch { throw new Error('Archivo de configuracion f
 
 const SERVER_URL = obtenerMenuIuman()
 const API_KEY = cargarOGenerarAPIKey()
-const DL_HEADERS = { 'X-Client-Name': 'luna-bot-v6', 'X-API-Key': API_KEY }
+const DL_HEADERS = cabecerasDescarga(API_KEY)
 const TIMEOUT = 60000
 
 const ocultar = (m) => String(m || '').replace(/https?:\/\/\S+/g, '[enlace oculto]').replace(/key=\w+/gi, 'key=[oculta]')
