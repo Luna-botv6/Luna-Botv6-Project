@@ -25,9 +25,9 @@ const ft = async (url, options = {}) => {
 const handler = async (m, { conn, text }) => {
   const datas = global
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))
   const tradutor = _translate.plugins.downloader_soundcloud
-  if (!text) throw `${tradutor.texto1}`
+  if (!text) return m.reply(`🎧 *SoundCloud*\n\n${tradutor.texto1}`)
   try {
     const searchRes = await ft(`${SERVER_URL}/api/soundcloud/search?q=${encodeURIComponent(text.trim())}&n=5`, { headers: DL_HEADERS })
     const sj = await searchRes.json()
@@ -48,7 +48,7 @@ const handler = async (m, { conn, text }) => {
     }
     await conn.sendMessage(m.chat, { audio: { url: d.url }, fileName: `${(d.title || 'audio').replace(/[\\/:*?"<>|]/g, '_')}.mp3`, mimetype: 'audio/mpeg' }, { quoted: m })
   } catch {
-    throw `${tradutor.texto3}`
+    return m.reply(`🎧 *SoundCloud*\n\n${tradutor.texto3}`)
   }
 }
 handler.command = /^(soundcloud|cover)$/i

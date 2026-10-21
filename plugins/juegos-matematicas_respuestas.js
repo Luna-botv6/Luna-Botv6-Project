@@ -21,7 +21,7 @@ const handler = async (m, { conn }) => {
     };
 
     try {
-      const dataLang = fs.readFileSync(`./src/languages/${idioma}.json`, 'utf8');
+      const dataLang = fs.readFileSync(`./src/lunaidiomas/${idioma}.json`, 'utf8');
       const parsed = JSON.parse(dataLang);
       if (parsed?.plugins?.juegos_matematicas_respuestas) {
         tradutor = parsed.plugins.juegos_matematicas_respuestas;

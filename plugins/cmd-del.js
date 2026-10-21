@@ -6,7 +6,7 @@ const handler = async (m, {conn, usedPrefix, text, command}) => {
   
   let tradutor;
   try {
-    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+    const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
     tradutor = _translate.plugins.cmd_del;
   } catch (e) {
     tradutor = {
@@ -30,15 +30,15 @@ const handler = async (m, {conn, usedPrefix, text, command}) => {
     }
   }
   
-  if (!hash) throw `*${tradutor.texto1} ${usedPrefix}listcmd*`;
+  if (!hash) return m.reply(`❌ *${tradutor.texto1} ${usedPrefix}listcmd*`);
   
   if (!global.db.data.sticker) global.db.data.sticker = {};
   
   const sticker = global.db.data.sticker;
   
-  if (!sticker[hash]) throw '*No existe un comando para este sticker*';
+  if (!sticker[hash]) return m.reply('❌ *No existe un comando para este sticker*');
   
-  if (sticker[hash] && sticker[hash].locked) throw `*${tradutor.texto2}*`;
+  if (sticker[hash] && sticker[hash].locked) return m.reply(`🔒 *${tradutor.texto2}*`);
   
   const cmdInfo = sticker[hash];
   const preview = cmdInfo.text?.slice(0, 50) + (cmdInfo.text?.length > 50 ? '...' : '');

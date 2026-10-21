@@ -46,7 +46,7 @@ const handler = async (m, { text }) => {
 
   let tradutor = {};
   try {
-    const langPath = `./src/languages/${idioma}.json`;
+    const langPath = `./src/lunaidiomas/${idioma}.json`;
     if (fs.existsSync(langPath)) {
       const _translate = JSON.parse(fs.readFileSync(langPath));
       tradutor = _translate.plugins?.owner_limpieza || {};

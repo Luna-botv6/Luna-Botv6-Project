@@ -6,7 +6,7 @@ const handler = async (m, { conn, args, participants, isOwner, isROwner, command
   try {
     
     if (!isOwner && !isROwner ) {
-      throw 'Este comando es solo para los *propietarios del bot*.';
+      return m.reply('❌ Este comando es solo para los *propietarios del bot*.');
     }
     const datas = global || {};
     const dbData = datas.db?.data?.users?.[m.sender] || {};
@@ -14,7 +14,7 @@ const handler = async (m, { conn, args, participants, isOwner, isROwner, command
     
     let tradutor = {};
     try {
-      const languageFile = `./src/languages/${idioma}.json`;
+      const languageFile = `./src/lunaidiomas/${idioma}.json`;
       if (fs.existsSync(languageFile)) {
         const _translate = JSON.parse(fs.readFileSync(languageFile));
         tradutor = _translate.plugins?.owner_addexp || {};
@@ -34,12 +34,12 @@ const handler = async (m, { conn, args, participants, isOwner, isROwner, command
       texto3: tradutor.texto3 || defaultTexts.texto3,
     };
 
-    if (args.length < 2) throw texts.texto1;
+    if (args.length < 2) return m.reply(texts.texto1);
     const exp = parseInt(args[0]);
-    if (isNaN(exp) || exp <= 0) throw texts.texto2;
+    if (isNaN(exp) || exp <= 0) return m.reply(texts.texto2);
 
     const rawJid = m.mentionedJid && m.mentionedJid[0];
-    if (!rawJid) throw texts.texto3;
+    if (!rawJid) return m.reply(texts.texto3);
 
     let mentionedJid = rawJid;
     if (rawJid.includes('@lid') && m.isGroup) {

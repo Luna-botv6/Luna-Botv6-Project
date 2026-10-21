@@ -24,9 +24,9 @@ const ft = async (url, headers = {}) => {
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
 	const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
-	const tradutor = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))?.plugins?.downloader_tiktok_img || {}
+	const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))?.plugins?.downloader_tiktok_img || {}
 	const t1 = tradutor.texto1 || `⚠️ Ingresá el enlace de TikTok\n*${usedPrefix + command} url*`
-	if (!text || !/tiktok\.com/i.test(text)) throw t1
+	if (!text || !/tiktok\.com/i.test(text)) return m.reply(t1)
 	await m.reply(global.wait)
 	try {
 		const res = await ft(SERVER_URL + '/api/tiktok/img?url=' + encodeURIComponent(text.trim()), DL_HEADERS)

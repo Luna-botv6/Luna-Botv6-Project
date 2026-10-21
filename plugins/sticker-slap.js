@@ -7,7 +7,7 @@ import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
 const handler = async (m, { conn, args, usedPrefix, command }) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.sticker_slap;
 
   let who;
@@ -32,7 +32,7 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
     let stiker = await sticker(null, url, `${name2} le dio una bofetada a ${name}`, null);
     conn.sendFile(m.chat, stiker, null, {asSticker: true}, m, true, {contextInfo: {forwardingScore: 200, isForwarded: true}}, {quoted: m});
   } catch {
-    throw tradutor.texto2;
+    return m.reply(tradutor.texto2);
   }
 };
 handler.help = ['slap'];

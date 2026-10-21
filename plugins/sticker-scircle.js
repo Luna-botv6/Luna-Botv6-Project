@@ -26,15 +26,15 @@ const ft = async (url, options = {}) => {
 const handler = async (m, {conn}) => {
   const datas = global
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))
   const tradutor = _translate.plugins.sticker_scircle
 
   try {
     const q = m.quoted ? m.quoted : m
     const mime = (q.msg || q).mimetype || ''
-    if (!/^image\//i.test(mime)) throw tradutor.texto1
+    if (!/^image\//i.test(mime)) return m.reply(tradutor.texto1)
     const img = await q.download?.()
-    if (!img) throw tradutor.texto1
+    if (!img) return m.reply(tradutor.texto1)
 
     const res = await ft(SERVER_URL + '/api/utils/circle', {
       method: 'POST',

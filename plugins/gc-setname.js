@@ -5,7 +5,7 @@ const handler = async (m, { conn, args }) => {
 
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.gc_setname || {};
 
   const { isAdmin, isBotAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
@@ -16,13 +16,13 @@ const handler = async (m, { conn, args }) => {
   const lengthError = tradutor.texto2 || '*[❗] El nombre no puede tener más de 25 caracteres.*';
   const successMessage = tradutor.success || '*✅ Nombre de grupo actualizado correctamente.*';
 
-  if (!isAdmin) throw adminError;
-  if (!isBotAdmin) throw botAdminError;
+  if (!isAdmin) return m.reply(adminError);
+  if (!isBotAdmin) return m.reply(botAdminError);
 
-  if (!args[0]) throw missingTextError;
+  if (!args[0]) return m.reply(missingTextError);
 
   const text = args.join(' ');
-  if (text.length > 25) throw lengthError;
+  if (text.length > 25) return m.reply(lengthError);
 
   await conn.groupUpdateSubject(m.chat, text);
   await new Promise(resolve => setTimeout(resolve, 1500));

@@ -6,7 +6,7 @@ const handler = async (m, {conn, text, usedPrefix, command}) => {
   
   let tradutor;
   try {
-    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+    const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
     tradutor = _translate.plugins.cmd_add;
   } catch (e) {
     tradutor = {
@@ -25,9 +25,9 @@ const handler = async (m, {conn, text, usedPrefix, command}) => {
   
   if (!global.db.data.sticker) global.db.data.sticker = {};
   
-  if (!m.quoted) throw `*${tradutor.texto1}*`;
-  if (!m.quoted.fileSha256) throw `*${tradutor.texto2}*`;
-  if (!text) throw `*${tradutor.texto3[0]}*\n*—◉ ${usedPrefix + command} ${tradutor.texto3[1]}*\n\n*${tradutor.texto3[2]}*\n*—◉ ${usedPrefix + command} <#menu> ${tradutor.texto3[3]}*`;
+  if (!m.quoted) return m.reply(`❌ *${tradutor.texto1}*`);
+  if (!m.quoted.fileSha256) return m.reply(`❌ *${tradutor.texto2}*`);
+  if (!text) return m.reply(`❌ *${tradutor.texto3[0]}*\n*—◉ ${usedPrefix + command} ${tradutor.texto3[1]}*\n\n*${tradutor.texto3[2]}*\n*—◉ ${usedPrefix + command} <#menu> ${tradutor.texto3[3]}*`);
   
   const sticker = global.db.data.sticker;
   
@@ -42,7 +42,7 @@ const handler = async (m, {conn, text, usedPrefix, command}) => {
     hash = Buffer.from(rawHash).toString('base64');
   }
   
-  if (sticker[hash] && sticker[hash].locked) throw `*${tradutor.texto4}*`;
+  if (sticker[hash] && sticker[hash].locked) return m.reply(`🔒 *${tradutor.texto4}*`);
   
   const commandPrefixes = ['.', '#', '!', '/'];
   const isCommand = commandPrefixes.some(prefix => text.startsWith(prefix));

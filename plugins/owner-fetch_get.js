@@ -6,16 +6,16 @@ import {format} from 'util';
 const handler = async (m, {text}) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.owner_fetch_get;
 
-  if (!/^https?:\/\//.test(text)) throw tradutor.texto1;
+  if (!/^https?:\/\//.test(text)) return m.reply(tradutor.texto1);
   const _url = new URL(text);
   const url = global.API(_url.origin, _url.pathname, Object.fromEntries(_url.searchParams.entries()), 'APIKEY');
   const res = await fetch(url);
   if (res.headers.get('content-length') > 100 * 1024 * 1024 * 1024) {
     // delete res
-    throw `Content-Length: ${res.headers.get('content-length')}`;
+    return m.reply(`Content-Length: ${res.headers.get('content-length')}`);
   }
   if (!/text|json/.test(res.headers.get('content-type'))) return conn.sendFile(m.chat, url, 'file', text, m);
   let txt = await res.buffer();

@@ -21,7 +21,7 @@ const handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
   let tradutor;
   try {
-    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+    const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
     tradutor = _translate.plugins.gc_config || { texto1: ['Modo de grupo cambiado'] };
   } catch {
     tradutor = { texto1: ['Modo de grupo cambiado'] };

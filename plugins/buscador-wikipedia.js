@@ -22,8 +22,8 @@ const ft = async (url, headers = {}) => {
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
 	const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
-	const tradutor = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))?.plugins?.buscador_wikipedia || {}
-	if (!text) throw `*${tradutor.texto1?.[0] || 'Ingresá un término'}* ${usedPrefix + command} ${tradutor.texto1?.[1] || 'Estrellas'}`
+	const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))?.plugins?.buscador_wikipedia || {}
+	if (!text) return m.reply(`*📚 Wikipedia*\n\nIngresá un término para buscar.\n\n_Ejemplo: ${usedPrefix + command} inteligencia artificial_`)
 	try {
 		const res = await ft(SERVER_URL + '/api/wikipedia?q=' + encodeURIComponent(text.trim()), DL_HEADERS)
 		if (!res.ok) throw new Error('Error del servidor')

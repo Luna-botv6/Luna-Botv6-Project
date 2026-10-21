@@ -4,7 +4,7 @@ import fs from 'fs';
 const handler = async (m, {conn}) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.fun_verdad;
 
   global.verdad = tradutor.texto3;

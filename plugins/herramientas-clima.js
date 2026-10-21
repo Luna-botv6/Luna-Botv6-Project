@@ -4,10 +4,10 @@ import axios from 'axios';
 const handler = async (m, {args}) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.herramientas_clima;
 
-  if (!args.length) throw tradutor.texto1;
+  if (!args.length) return m.reply(tradutor.texto1);
   try {
     const ciudad = args.join(' ');
     const {data: geo} = await axios.get('https://nominatim.openstreetmap.org/search', {
@@ -15,7 +15,7 @@ const handler = async (m, {args}) => {
       timeout: 10000,
       headers: {'User-Agent': 'Luna-Bot/1.0'}
     });
-    if (!geo || !geo.length) return tradutor.texto3;
+    if (!geo || !geo.length) return m.reply(tradutor.texto3);
     const lugar = geo[0];
     const {data: res} = await axios.get('https://api.open-meteo.com/v1/forecast', {
       params: {
@@ -35,7 +35,7 @@ const handler = async (m, {args}) => {
     const wea = `${tradutor.texto2[0]} ${name}\n${tradutor.texto2[1]} ${Country}\n${tradutor.texto2[2]} ${estado(current.weather_code)}\n${tradutor.texto2[3]} ${current.temperature_2m}°C\n${tradutor.texto2[4]} ${daily.temperature_2m_min[0]}°C\n${tradutor.texto2[5]} ${daily.temperature_2m_max[0]}°C\n${tradutor.texto2[6]} ${current.relative_humidity_2m}%\n${tradutor.texto2[7]} ${current.wind_speed_10m} km/h`;
     m.reply(wea);
   } catch {
-    return tradutor.texto3;
+    return m.reply(tradutor.texto3);
   }
 };
 handler.help = ['clima *<ciudad/país>*'];
