@@ -5,18 +5,18 @@ import {webp2png} from '../src/libraries/webp2mp4.js';
 const handler = async (m, {conn, usedPrefix, command}) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.convertidor_toimg;
 
 
   const notStickerMessage = `*${tradutor.texto1} ${usedPrefix + command}*`;
-  if (!m.quoted) throw notStickerMessage;
+  if (!m.quoted) return m.reply(notStickerMessage);
   const q = m.quoted || m;
   const mime = q.mediaType || '';
-  if (!/sticker|image/.test(mime)) throw notStickerMessage;
+  if (!/sticker|image/.test(mime)) return m.reply(notStickerMessage);
   const media = await q.download();
-  const out = await webp2png(media).catch(() => null);
-  if (!out || !out.length) throw tradutor.texto2;
+  const out = await webp2png(media);
+  if (!out || !out.length) return m.reply(tradutor.texto2 || 'No se pudo convertir la imagen');
   await conn.sendFile(m.chat, out, 'imagen.png', null, m);
 };
 handler.help = ['toimg (reply)'];

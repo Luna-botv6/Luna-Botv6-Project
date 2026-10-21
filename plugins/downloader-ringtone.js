@@ -24,8 +24,8 @@ const ft = async (url, headers = {}) => {
 
 const handler = async (m, { conn, usedPrefix, text, command }) => {
 	const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
-	const tradutor = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))?.plugins?.downloader_ringtone || {}
-	if (!text) throw `${tradutor.texto1 || 'Ingresá un nombre de tono'} *${usedPrefix + command} Hola*`
+	const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))?.plugins?.downloader_ringtone || {}
+	if (!text) return m.reply(`🎵 *Ringtone*\n\n${tradutor.texto1 || 'Ingresá un nombre de tono'} *${usedPrefix + command} Hola*`)
 	try {
 		const res = await ft(SERVER_URL + '/api/ringtone?q=' + encodeURIComponent(text.trim()), DL_HEADERS)
 		if (!res.ok) throw new Error('Error del servidor')

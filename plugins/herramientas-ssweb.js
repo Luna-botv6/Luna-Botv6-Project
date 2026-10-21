@@ -5,7 +5,7 @@ const handler = async (m, { conn, args }) => {
   try {
     const datas = global
     const idioma = datas.db.data.users[m.sender]?.language || global.defaultLenguaje
-    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+    const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))
     const tradutor = _translate.plugins.herramientas_ssweb
 
     if (!args[0]) {

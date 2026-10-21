@@ -6,14 +6,14 @@ const pajak = 0;
 
 const handler = async (m, { conn, text, isOwner, isROwner }) => {
   try {
-    if (!isOwner && !isROwner ) throw 'Este comando es solo para los *propietarios del bot*.';
+    if (!isOwner && !isROwner ) return m.reply('❌ Este comando es solo para los *propietarios del bot*.');
 
     const dbData = global.db?.data?.users?.[m.sender] || {};
     const idioma = dbData.language || global.defaultLenguaje || 'es';
 
     let tradutor = {};
     try {
-      const languageFile = `./src/languages/${idioma}.json`;
+      const languageFile = `./src/lunaidiomas/${idioma}.json`;
       if (fs.existsSync(languageFile)) {
         const _translate = JSON.parse(fs.readFileSync(languageFile));
         tradutor = _translate.plugins?.onwer_anadirlimit || {};
@@ -23,7 +23,7 @@ const handler = async (m, { conn, text, isOwner, isROwner }) => {
     const t = (key, def) => tradutor[key] || def;
 
     let rawJid = m.isGroup ? (m.mentionedJid?.[0] || null) : m.chat;
-    if (!rawJid) throw t('texto1', '⌛ Menciona a alguien o usa el comando en privado');
+    if (!rawJid) return m.reply(t('texto1', '⌛ Menciona a alguien o usa el comando en privado'));
 
     let who = rawJid;
     if (rawJid.includes('@lid') && m.isGroup) {
@@ -40,12 +40,12 @@ const handler = async (m, { conn, text, isOwner, isROwner }) => {
     }
 
     const txt = text ? text.replace('@' + rawJid.split('@')[0], '').trim() : '';
-    if (!txt) throw t('texto2', '⌛ Ingresa la cantidad de límite a añadir');
-    if (isNaN(txt)) throw t('texto3', '⌛ Solo se permiten números');
+    if (!txt) return m.reply(t('texto2', '⌛ Ingresa la cantidad de límite a añadir'));
+    if (isNaN(txt)) return m.reply(t('texto3', '⌛ Solo se permiten números'));
 
     const dmt = parseInt(txt);
     const limit = dmt + Math.ceil(dmt * pajak);
-    if (limit < 1) throw t('texto4', '⌛ La cantidad debe ser mayor a 0');
+    if (limit < 1) return m.reply(t('texto4', '⌛ La cantidad debe ser mayor a 0'));
 
     const userStats = getUserStats(who);
     const limitBefore = userStats.limit;

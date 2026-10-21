@@ -25,11 +25,11 @@ const ft = async (url, headers = {}) => {
 const handler = async (m, { conn, text, command, usedPrefix }) => {
   const datas = global
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))
   const tradutor = _translate.plugins.downloader_pptiktok
 
   const user = String(text || '').trim().replace(/^@/, '')
-  if (!user) throw `${tradutor.texto1} ${usedPrefix + command} luisitocomunica`
+  if (!user) return m.reply(`📸 *Foto de perfil TikTok*\n\n${tradutor.texto1} ${usedPrefix + command} luisitocomunica`)
   await m.reply(global.wait)
 
   try {

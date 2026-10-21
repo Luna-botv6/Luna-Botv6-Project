@@ -5,12 +5,12 @@ import fs from 'fs';
 const handler = async (m, {conn, isAdmin, isOwner, args, usedPrefix, command}) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.gc_config_time;
 
   if (!(isAdmin || isOwner)) {
 	  global.dfail('admin', m, conn);
-    throw false;
+    return;
   }
   const isClose = {
 	  'open': 'not_announcement',
@@ -31,7 +31,7 @@ ${tradutor.texto1[1]} *${usedPrefix + command} close 1*
 ${tradutor.texto1[2]}
 `;
     m.reply(caption);
-	  throw false;
+	  return;
   }
   const timeoutset = 86400000 * args[1] / 24;
   await conn.groupSettingUpdate(m.chat, isClose).then(async (_)=> {

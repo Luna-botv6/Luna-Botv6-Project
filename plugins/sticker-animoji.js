@@ -26,7 +26,7 @@ const extractEmojis = (text) => {
 
 const handler = async (m, { conn, text }) => {
   const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins?.sticker_animoji || {};
 
   let emoji = null;
@@ -42,7 +42,7 @@ const handler = async (m, { conn, text }) => {
     if (emojis.length > 0) emoji = emojis[0];
   }
 
-  if (!emoji) throw tradutor.texto1 || 'Responde a un mensaje con un emoji o escribe uno. Ej: .animoji 🥺';
+  if (!emoji) return m.reply(tradutor.texto1 || 'Responde a un mensaje con un emoji o escribe uno. Ej: .animoji 🥺');
 
   const url = getAnimatedEmojiUrl(emoji);
 
@@ -50,11 +50,11 @@ const handler = async (m, { conn, text }) => {
   try {
     res = await fetch(url);
   } catch (e) {
-    throw tradutor.texto2 || `No se pudo obtener el emoji animado: ${emoji}`;
+    return m.reply(tradutor.texto2 || `No se pudo obtener el emoji animado: ${emoji}`);
   }
 
   if (!res.ok) {
-    throw tradutor.texto3 || `No hay version animada para ${emoji} (intenta con otro)`;
+    return m.reply(tradutor.texto3 || `No hay version animada para ${emoji} (intenta con otro)`);
   }
 
   const buffer = Buffer.from(await res.arrayBuffer());
@@ -65,7 +65,7 @@ const handler = async (m, { conn, text }) => {
     const stik = await sticker(buffer, null, global.packname, global.author, { animated: true });
     await conn.sendFile(m.chat, stik, null, { asSticker: true }, m);
   } catch (e) {
-    throw tradutor.texto5 || `Error creando sticker: ${e.message}`;
+    return m.reply(tradutor.texto5 || `Error creando sticker: ${e.message}`);
   }
 };
 

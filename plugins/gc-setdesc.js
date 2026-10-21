@@ -5,15 +5,15 @@ const handler = async (m, { conn, args }) => {
 
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.gc_setdesc;
 
   const { isAdmin, isBotAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
 
-  if (!isAdmin) throw tradutor.admin;
-  if (!isBotAdmin) throw tradutor.botadmin;
+  if (!isAdmin) return m.reply(tradutor.admin);
+  if (!isBotAdmin) return m.reply(tradutor.botadmin);
 
-  if (!args[0]) throw tradutor.texto2;
+  if (!args[0]) return m.reply(tradutor.texto2);
 
   const text = args.join(' ');
 
