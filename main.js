@@ -66,6 +66,7 @@ import { etiquetaUsuarioParaLog, etiquetaChatParaLog } from './lib/funcion/lid-r
 import { manejarMarcaLuna, manejarRespuestaBoton, obtenerBotonId, BOTON_VERIFICAR, tieneDesafioPendiente, estaDesafiadoAqui } from './lib/funcion/verificacionBots.js';
 import { installUsersProxy } from './lib/funcion/databaseManager.js';
 import { updateConnectionState, reportBan } from './logBans.js';
+import { planPlugins } from './lib/funcion/lazyPlugins.js';
 
 const { chain } = lodash;
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
@@ -1281,7 +1282,10 @@ const pluginFolder = global.__dirname(join(__dirname, './plugins/index'));
 const pluginFilter = (filename) => /\.js$/.test(filename);
 global.plugins = {};
 async function filesInit() {
-  const _files = readdirSync(pluginFolder).filter(pluginFilter);
+  const _all = readdirSync(pluginFolder).filter(pluginFilter);
+  const _plan = planPlugins(_all, pluginFolder, join(__dirname, './plugins-manifest.json'));
+  Object.assign(global.plugins, _plan.lazy);
+  const _files = _plan.eager;
   const _CONC = 20;
   const _pool = [];
   for (const filename of _files) {
@@ -1298,6 +1302,7 @@ async function filesInit() {
     if (_pool.length >= _CONC) { await Promise.allSettled(_pool); _pool.length = 0; }
   }
   await Promise.allSettled(_pool);
+  global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b)));
 }
 filesInit().then((_) => Object.keys(global.plugins)).catch(console.error);
 

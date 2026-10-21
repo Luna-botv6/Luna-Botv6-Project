@@ -7,6 +7,13 @@ import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
 const cooldowns = new Map();
 const COOLDOWN_MS = 45 * 1000;
 
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of cooldowns) {
+    if (now - (v || 0) > COOLDOWN_MS * 2) cooldowns.delete(k);
+  }
+}, 60 * 1000).unref();
+
 function limiteCooldown() {
   const desdeGlobal = Number(global.__kickbanCooldownMs);
   return Number.isFinite(desdeGlobal) && desdeGlobal >= 0 ? desdeGlobal : COOLDOWN_MS;
