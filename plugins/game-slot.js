@@ -45,7 +45,7 @@ const handler = async (m, { args, usedPrefix, command }) => {
 
     let _translate, tradutor;
     try {
-      _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+      _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
       tradutor = _translate.plugins.game?.slot || _translate.plugins?.game_slot || {
         texto1: '🎰 *SLOT MACHINE*',
         texto2: 'Usa el comando con una apuesta:',
@@ -79,27 +79,27 @@ ${tradutor.texto2}
 📊 Apuesta máxima: ${MAX_APUESTA} XP`.trim();
 
     // Validación de argumentos
-    if (!args[0]) throw mensajeUso;
-    if (isNaN(args[0])) throw `❌ Debes ingresar un número válido\n\n${mensajeUso}`;
+    if (!args[0]) return m.reply(mensajeUso);
+    if (isNaN(args[0])) return m.reply(`❌ Debes ingresar un número válido\n\n${mensajeUso}`);
 
     const apuesta = parseInt(args[0]);
 
     // Validaciones de apuesta
-    if (apuesta <= 0) throw '❌ La apuesta debe ser un número positivo';
-    if (apuesta < MIN_APUESTA) throw `❌ ${tradutor.texto4}\nApuesta mínima: ${MIN_APUESTA} XP`;
-    if (apuesta > MAX_APUESTA) throw `❌ Apuesta máxima permitida: ${MAX_APUESTA} XP`;
+    if (apuesta <= 0) return m.reply('❌ La apuesta debe ser un número positivo');
+    if (apuesta < MIN_APUESTA) return m.reply(`❌ ${tradutor.texto4}\nApuesta mínima: ${MIN_APUESTA} XP`);
+    if (apuesta > MAX_APUESTA) return m.reply(`❌ Apuesta máxima permitida: ${MAX_APUESTA} XP`);
 
     // Anti-spam individual
     const puedeJugar = await canPlay(m.sender);
     if (!puedeJugar) {
       const restante = await tiempoRestante(m.sender);
-      throw `⏰ ${tradutor.texto3[0]} ${restante} ${tradutor.texto3[1]}`;
+      return m.reply(`⏰ ${tradutor.texto3[0]} ${restante} ${tradutor.texto3[1]}`);
     }
 
     // Verificar saldo
     const expActual = getExp(m.sender);
     if (expActual < apuesta) {
-      throw `💰 ${tradutor.texto5}\nTu saldo: ${expActual} XP\nApuesta: ${apuesta} XP`;
+      return m.reply(`💰 ${tradutor.texto5}\nTu saldo: ${expActual} XP\nApuesta: ${apuesta} XP`);
     }
 
     // Generar 3x3 slots

@@ -26,7 +26,7 @@ const fr = async (url, body, headers = {}) => {
 
 const handler = async (m, { conn, usedPrefix, command }) => {
 	const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
-	const tradutor = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))?.plugins?.herramientas_hd
+	const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))?.plugins?.herramientas_hd
 
 	const isPrems = global.db?.data?.users?.[m.sender]?.premiumTime > 0
 	const isAdmin = m.isGroup
@@ -43,17 +43,17 @@ const handler = async (m, { conn, usedPrefix, command }) => {
 		const q = m.quoted ? m.quoted : m
 		const mime = (q.msg || q).mimetype || q.mediaType || ''
 
-		if (!mime) throw `${tradutor?.texto1 || 'Enviá o respondé una imagen'} *${usedPrefix + command}*`
-		if (!/image\/(jpe?g|png|webp)/.test(mime)) throw `${tradutor?.texto2?.[0] || 'Solo imágenes'} (${mime})`
+		if (!mime) return m.reply(`${tradutor?.texto1 || 'Enviá o respondé una imagen'} *${usedPrefix + command}*`)
+		if (!/image\/(jpe?g|png|webp)/.test(mime)) return m.reply(`${tradutor?.texto2?.[0] || 'Solo imágenes'} (${mime})`)
 
 		await m.reply(tradutor?.texto3 || '🔍 Mejorando imagen con IA, esperá un momento...')
 
 		const imgBuffer = await q.download?.()
-		if (!imgBuffer) throw tradutor?.texto4 || '❌ No se pudo descargar la imagen'
+		if (!imgBuffer) return m.reply(tradutor?.texto4 || '❌ No se pudo descargar la imagen')
 
 		const res = await fr(SERVER_URL + '/api/hd', { image: imgBuffer.toString('base64') }, DL_HEADERS)
 		const data = await res.json()
-		if (!data.status || !data.image) throw new Error(tradutor?.texto4 || '❌ Error al procesar la imagen')
+		if (!data.status || !data.image) return m.reply(tradutor?.texto4 || '❌ Error al procesar la imagen')
 
 		const buffer = Buffer.from(data.image, 'base64')
 
@@ -62,7 +62,7 @@ const handler = async (m, { conn, usedPrefix, command }) => {
 			caption: '✨ *Imagen mejorada con IA* — ' + global.BotName
 		}, { quoted: m })
 	} catch (e) {
-		throw typeof e === 'string' ? e : (tradutor?.texto4 || '❌ Error al procesar la imagen')
+		return m.reply(typeof e === 'string' ? e : (tradutor?.texto4 || '❌ Error al procesar la imagen'))
 	}
 }
 

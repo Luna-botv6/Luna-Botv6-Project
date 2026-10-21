@@ -6,13 +6,13 @@ import uploadImage from '../src/libraries/uploadImage.js';
 const handler = async (m) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.convertidorTourl;
 
   
   const q = m.quoted ? m.quoted : m;
   const mime = (q.msg || q).mimetype || '';
-  if (!mime) throw `*${tradutor.texto1}*`;
+  if (!mime) return m.reply(`🔗 *Subir a URL*\n\n${tradutor.texto1}`);
   const media = await q.download();
   const isTele = /image\/(png|jpe?g|gif)|video\/mp4/.test(mime);
   const link = await (isTele ? uploadImage : uploadFile)(media);

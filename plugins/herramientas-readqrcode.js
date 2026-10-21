@@ -25,14 +25,14 @@ const ft = async (url, options = {}) => {
 const handler = async (m, { conn }) => {
   const datas = global
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))
   const tradutor = _translate.plugins.herramientas_readqrcode
 
   const q = m.quoted ? m.quoted : m
   const mime = (q.msg || q).mimetype || ''
-  if (!/^image\//i.test(mime)) throw tradutor.texto1
+  if (!/^image\//i.test(mime)) return m.reply(tradutor.texto1)
   const img = await q.download?.()
-  if (!img) throw tradutor.texto1
+  if (!img) return m.reply(tradutor.texto1)
 
   try {
     const res = await ft(SERVER_URL + '/api/qr', {
@@ -45,7 +45,7 @@ const handler = async (m, { conn }) => {
     if (!data.status || !data.text) throw new Error(data.error || 'QR no detectado')
     await m.reply(`${tradutor.texto2} ${data.text}`)
   } catch (e) {
-    throw tradutor.texto1 + '\n' + ocultar(e.message || e)
+    return m.reply(tradutor.texto1 + '\n' + ocultar(e.message || e))
   }
 }
 handler.command = /^(readqr)$/i

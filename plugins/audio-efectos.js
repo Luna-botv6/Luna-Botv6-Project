@@ -26,14 +26,14 @@ const EFFECTS = {
 
 const handler = async (m, { conn, usedPrefix, command }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.audio_efectos;
 
   const q = m.quoted ? m.quoted : m;
   const mime = (q.mimetype || q.msg?.mimetype || '');
 
   if (!/audio|ogg|opus/i.test(mime)) {
-    return m.reply(`${tradutor.texto1} ${usedPrefix}${command}`);
+    return m.reply(`*🎧 Efecto de audio*\n\n${tradutor.texto1} ${usedPrefix}${command}`);
   }
 
   const effect = EFFECTS[command.toLowerCase()];

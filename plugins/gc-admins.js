@@ -21,7 +21,7 @@ function getTraductor(idioma) {
       continue;
     }
     try {
-      const data = JSON.parse(fs.readFileSync(`./src/languages/${lang}.json`));
+      const data = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${lang}.json`));
       const t = data?.plugins?.gc_admins || null;
       _langCache.set(lang, t);
       if (t) return t;

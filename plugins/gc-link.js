@@ -14,7 +14,7 @@ const handler = async (m, { conn }) => {
   const idioma = datas.db?.data?.users[m.sender]?.language || global.defaultLenguaje || 'es';
   let tradutor;
   try {
-    const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+    const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
     tradutor = _translate.plugins.gc_link || { texto1: ['Enlace del grupo'] };
   } catch {
     tradutor = { texto1: ['Enlace del grupo'] };

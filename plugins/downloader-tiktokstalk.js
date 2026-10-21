@@ -25,7 +25,7 @@ const ft = async (url, headers = {}) => {
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   const datas = global
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))
   const tradutor = _translate.plugins.downloader_tiktokstalk
 
   const user = String(text || '').trim().replace(/^@/, '')
@@ -49,7 +49,7 @@ ${tradutor.texto2[6]} ${data.firma || 'Sin Información'}
 
     await conn.sendFile(m.chat, data.avatar, 'profile.jpg', info, m)
   } catch (e) {
-    throw tradutor.texto3 + '\n' + ocultar(e.message || e)
+    m.reply(tradutor.texto3 + '\n' + ocultar(e.message || e))
   }
 }
 

@@ -4,16 +4,16 @@ import fs from 'fs';
 const handler = async (m, {conn, text, usedPrefix, command}) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.owner_delprem;
 
   let who;
   if (m.isGroup) who = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : false;
   else who = m.chat;
   const user = global.db.data.users[who];
-  if (!who) throw tradutor.texto1;
-  if (!user) throw tradutor.texto2;
-  if (!user.premiumTime) throw tradutor.texto3;
+  if (!who) return m.reply(tradutor.texto1);
+  if (!user) return m.reply(tradutor.texto2);
+  if (!user.premiumTime) return m.reply(tradutor.texto3);
   const txt = text.replace('@' + who.split`@`[0], '').trim();
 
   user.premiumTime = 0;

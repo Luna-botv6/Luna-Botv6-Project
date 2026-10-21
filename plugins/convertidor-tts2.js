@@ -41,7 +41,7 @@ const handler = async (m, { conn, usedPrefix, command, text }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
   let t = {}
   try {
-    const _tr = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+    const _tr = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))
     t = _tr.plugins?.convertidor_tts2 || {}
   } catch {}
 
@@ -80,7 +80,7 @@ const handler = async (m, { conn, usedPrefix, command, text }) => {
     if (buffer.length < 1000) throw new Error('Audio vacio')
     buffer = await mp3BufferToOggOpus(buffer)
   } catch {
-    throw (t.error || '❌ No se pudo generar el audio. Intenta de nuevo en un momento.')
+    return m.reply(t.error || '❌ No se pudo generar el audio. Intenta de nuevo en un momento.')
   }
 
   await conn.sendMessage(m.chat, { audio: buffer, mimetype: 'audio/ogg; codecs=opus', ptt: true }, { quoted: m })

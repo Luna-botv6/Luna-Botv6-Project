@@ -12,27 +12,27 @@ const handler = async (m, {conn, usedPrefix, text}) => {
   let _t = {};
   try {
     const _lang = idioma || global.defaultLenguaje || 'es';
-    _t = JSON.parse(fs.readFileSync(`./src/languages/${_lang}.json`, 'utf8'));
+    _t = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${_lang}.json`, 'utf8'));
   } catch {
-    try { _t = JSON.parse(fs.readFileSync('./src/languages/es.json', 'utf8')); } catch {}
+    try { _t = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json', 'utf8')); } catch {}
   }
   const tradutor = _t.plugins.sticker_stickerfilter;
 
   const effect = text.trim().toLowerCase();
   if (!effects.includes(effect)) {
-    throw `
+    return m.reply(`
 ${tradutor.texto1[0]}
 ${tradutor.texto1[1]} ${usedPrefix}stickerfilter ${tradutor.texto1[2]}
 ${tradutor.texto1[3]}
 ${tradutor.texto1[4]} ${usedPrefix}stickerfilter greyscale
 ${tradutor.texto1[5]}
 ${effects.map((effect) => `_> ${effect}_`).join('\n')}
-`.trim();
+`.trim());
   }
   const q = m.quoted ? m.quoted : m;
   const mime = (q.msg || q).mimetype || '';
-  if (!mime) throw tradutor.texto2;
-  if (!/image\/(jpe?g|png)/.test(mime)) throw tradutor.texto3;
+  if (!mime) return m.reply(tradutor.texto2);
+  if (!/image\/(jpe?g|png)/.test(mime)) return m.reply(tradutor.texto3);
   const img = await q.download();
   const url = await uploadImage(img);
   const apiUrl = global.API('https://some-random-api.com/canvas/', encodeURIComponent(effect), {

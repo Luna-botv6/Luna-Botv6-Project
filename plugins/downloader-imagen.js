@@ -24,7 +24,7 @@ const ft = async (url, options = {}) => {
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   const idioma = global.db.data.users?.[m.sender]?.language || global.defaultLenguaje || 'es';
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));const tradutor = _translate.plugins.downloader_imagen;
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));const tradutor = _translate.plugins.downloader_imagen;
 
   if (!text) return m.reply(`${tradutor.texto1} ${usedPrefix + command} Minecraft*`);
 

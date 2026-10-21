@@ -5,11 +5,11 @@ import * as baileys from '@whiskeysockets/baileys';
 const handler = async (m, {conn, text}) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.herramientas_inspect;
 
   const [, code] = text.match(/chat\.whatsapp\.com\/(?:invite\/)?([0-9A-Za-z]{20,24})/i) || [];
-  if (!code) throw tradutor.texto1;
+  if (!code) return m.reply(tradutor.texto1);
   const res = await conn.query({tag: 'iq', attrs: {type: 'get', xmlns: 'w:g2', to: '@g.us'}, content: [{tag: 'invite', attrs: {code}}]});
   const data = extractGroupMetadata(res);
   const txt = `${tradutor.texto2[0]} ${data.id}\n${tradutor.texto2[1]} ${data.subject}\n${tradutor.texto2[2]} ${data.creation}\n${tradutor.texto2[3]} ${data.owner}\n${tradutor.texto2[4]}\n${data.desc}`;

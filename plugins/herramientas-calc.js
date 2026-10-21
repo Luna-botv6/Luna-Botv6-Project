@@ -4,7 +4,7 @@ import fs from 'fs';
 const handler = async (m, {conn, text}) => {
   const datas = global;
   const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
-  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
   const tradutor = _translate.plugins.herramientas_calc;
 
   const id = m.chat;
@@ -31,11 +31,11 @@ const handler = async (m, {conn, text}) => {
   try {
     console.log(val);
     const result = (new Function('return ' + val))();
-    if (!result) throw result;
+    if (!result) return m.reply(tradutor.texto1);
     m.reply(`*${format}* = _${result}_`);
   } catch (e) {
-    if (e == undefined) throw tradutor.texto1;
-    throw tradutor.texto3;
+    if (e == undefined) return m.reply(tradutor.texto1);
+    return m.reply(tradutor.texto3);
   }
 };
 handler.help = ['calc <expression>'];

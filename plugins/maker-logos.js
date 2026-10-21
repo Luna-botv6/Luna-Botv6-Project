@@ -34,7 +34,7 @@ const obtenerEfectos = async () => {
 
 const handler = async (m, { conn, args: [effect], text: txt, usedPrefix, command }) => {
 	const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje
-	const tradutor = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))?.plugins?.maker_logos || {}
+	const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`))?.plugins?.maker_logos || {}
 	const t1 = tradutor.texto1 || 'Falta el efecto'
 	const t2 = tradutor.texto2 || ['Efecto no válido', 'no existe']
 	const t3 = tradutor.texto3 || 'Error del generador'
@@ -42,12 +42,12 @@ const handler = async (m, { conn, args: [effect], text: txt, usedPrefix, command
 	const lista = await obtenerEfectos().catch(() => [])
 	if (!effect) {
 		const menu = t1 + (lista.length ? '\n' + lista.map(v => `° ඬ⃟📝 #${command} ${v}`).join('\n') : '')
-		throw menu
+		return m.reply(menu)
 	}
 	const efectoOk = lista.find(v => (new RegExp(v, 'gi')).test(effect))
-	if (!efectoOk) throw `${t2[0]} ${effect} ${t2[1]}`
+	if (!efectoOk) return m.reply(`${t2[0]} ${effect} ${t2[1]}`)
 	const texto = txt.replace(new RegExp(effect, 'gi'), '').trimStart()
-	if (!texto) throw t1
+	if (!texto) return m.reply(t1)
 	const texts = texto.includes('|') ? texto.split('|').map(v => v.trim()) : [texto.trim()]
 	try {
 		const res = await ft(SERVER_URL + '/api/maker/logo?effect=' + encodeURIComponent(effect) + '&text=' + encodeURIComponent(texts.join('|')), DL_HEADERS)
@@ -57,7 +57,7 @@ const handler = async (m, { conn, args: [effect], text: txt, usedPrefix, command
 		if (!buffer.length) throw new Error(t3)
 		await conn.sendMessage(m.chat, { image: buffer, caption: `${t5}: ${effect}` }, { quoted: m })
 	} catch (e) {
-		throw typeof e === 'string' ? e : (tradutor.texto3 || `❌ ${ocultar(e.message || e)}`)
+		return m.reply(typeof e === 'string' ? e : (tradutor.texto3 || `❌ ${ocultar(e.message || e)}`))
 	}
 }
 
