@@ -3094,7 +3094,11 @@
       "linea_comando": "├ 🔧 *Commande signalée :* {comando}",
       "linea_descripcion": "├ 📝 *Description :*",
       "linea_mensaje_citado": "├ 💬 *Message cité :*",
-      "enviado": "✅ Ton rapport a été envoyé correctement.\n\nMerci de l'avoir signalé, nous allons le vérifier rapidement 🙏"
+      "enviado": "✅ Ton rapport a été envoyé correctement.\n\nMerci de l'avoir signalé, nous allons le vérifier rapidement 🙏",
+      "linea_ticket": "├ 🎫 *Ticket:* {ticket}",
+      "espera": "⏳ Attends *{seg}* secondes avant d'envoyer un autre rapport.",
+      "sin_destino": "⚠️ Aucun owner n'est configuré pour recevoir les rapports.",
+      "desconocido": "inconnu"
     },
     "owner_resetprefix": {
       "texto1": "[❗𝐈𝐍𝐅𝐎❗] PRÉFIXE RÉINITIALISÉ AVEC SUCCÈS"
