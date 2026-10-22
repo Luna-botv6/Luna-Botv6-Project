@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { addExp, getUserStats, registerLidMapping } from '../lib/stats.js';
+import { limitarConcesion } from '../lib/antiCheat.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const handler = async (m, { conn, args, participants, isOwner, isROwner, command }) => {
@@ -55,10 +56,13 @@ const handler = async (m, { conn, args, participants, isOwner, isROwner, command
       if (found?.id) senderJid = found.id;
     }
 
-    addExp(mentionedJid, exp);
+    const concesion = limitarConcesion('exp', exp, senderJid, mentionedJid);
+    if (concesion.permitido <= 0) return m.reply('⛔ Concesión rechazada por el anti-cheat.');
+    const aplicado = concesion.permitido;
+    addExp(mentionedJid, aplicado);
     const s = getUserStats(mentionedJid);
 
-    const expFmt = exp >= 1000 ? `${(exp / 1000).toFixed(exp % 1000 === 0 ? 0 : 1)}K` : exp;
+    const expFmt = aplicado >= 1000 ? `${(aplicado / 1000).toFixed(aplicado % 1000 === 0 ? 0 : 1)}K` : aplicado;
     const expNowFmt = s.exp >= 1000 ? `${(s.exp / 1000).toFixed(1)}K` : s.exp;
 
     const msg =
@@ -66,7 +70,7 @@ const handler = async (m, { conn, args, participants, isOwner, isROwner, command
       `┃ *👤 Para:* @${mentionedJid.split('@')[0]}\n` +
       `┃ *👑 Por:* @${senderJid.split('@')[0]}\n` +
       '┃\n' +
-      `┃ *✨ EXP añadida:* +${expFmt}\n` +
+      `┃ *✨ EXP añadida:* +${expFmt}${concesion.rechazado ? ' (recortado por anti-cheat)' : ''}\n` +
       '┃\n' +
       `┃ *📈 Nivel actual:* ${s.level}\n` +
       `┃ *🏅 Rol:* ${s.role}\n` +

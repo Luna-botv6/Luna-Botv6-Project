@@ -23,6 +23,7 @@ import { limitCache } from './lib/funcion/cacheLimit.js';
 import { handleParticipantsUpdate } from './lib/funcion/groupMetadata.js';
 import { invalidateGroupCount } from './src/libraries/print.js';
 import { getGroupDataForPlugin, resolveIsSuperAdmin, mezclarParticipantes } from './lib/funcion/pluginHelper.js';
+import { normalizarMensaje } from './lib/identidad.js';
 import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
 import { isProtectedOwner, resolveTargetForOwnerCheck, rolProtegido } from './lib/funcion/ownerGuard.js';
@@ -106,16 +107,33 @@ Object.defineProperty(global, 'BotName', {
 const isNumber = (x) => typeof x === 'number' && !isNaN(x);
 const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(() => resolve(), ms));
 
+function deepMergeTranslation(base, override) {
+  if (Array.isArray(base) || Array.isArray(override)) return override !== undefined ? override : base;
+  if (typeof base !== 'object' || base === null) return override !== undefined ? override : base;
+  if (typeof override !== 'object' || override === null) return override !== undefined ? override : base;
+  const out = { ...base };
+  for (const key of Object.keys(override)) {
+    out[key] = key in base ? deepMergeTranslation(base[key], override[key]) : override[key];
+  }
+  return out;
+}
+
 async function loadTranslation(idioma) {
   const cached = translationsCache.get(idioma);
   if (cached) return cached;
+  let parsed = {};
+  let base = {};
   try {
-    const parsed = JSON.parse(await readFile(`./src/lunaidiomas/${idioma}.json`, 'utf8'));
-    translationsCache.set(idioma, parsed);
-    return parsed;
+    parsed = JSON.parse(await readFile(`./src/lunaidiomas/${idioma}.json`, 'utf8'));
   } catch (e) {
-    return {};
+    parsed = {};
   }
+  if (idioma !== 'es') {
+    try { base = JSON.parse(await readFile('./src/lunaidiomas/es.json', 'utf8')); } catch (e) { base = {}; }
+  }
+  const merged = deepMergeTranslation(base, parsed);
+  translationsCache.set(idioma, merged);
+  return merged;
 }
 
 global.loadTranslation = loadTranslation;
@@ -411,6 +429,7 @@ export async function handler(chatUpdate) {
     try {
       m = smsg(this, m) || m;
       if (!m) return;
+      m = normalizarMensaje(m, this) || m;
 
       global.mconn = m;
       mconn = m;

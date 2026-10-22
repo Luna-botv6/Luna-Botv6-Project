@@ -2,6 +2,7 @@ import fs from 'fs'
 import { getPlayerState, setPlayerState, requestRescue, releasePlayer, capturePlayer, increaseBounty, isPlayerCaptured, applyDeathPenalty, isCapturedByHunter } from '../lib/stats.js'
 import { rescuerBounty, checkSavior } from '../lib/hunterSystem.js'
 import { resolveMention } from '../lib/mentionHelper.js'
+import { idCanonico, mismoUsuario } from '../lib/identidad.js'
 
 const RESCUE_TIMEOUT_MS = 5 * 60 * 1000
 const TICK_DAMAGE = 8
@@ -50,7 +51,9 @@ async function getDisplayName(conn, jid) {
 const handler = async (m, { conn, args }) => {
   const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es')
   const t = _tr?.plugins?.rpg_rescate || {}
-  const mentioned = resolveMention(m, args)
+  const mentionedRaw = resolveMention(m, args)
+  const mentioned = mentionedRaw ? (idCanonico(mentionedRaw) || mentionedRaw) : null
+  const userId = idCanonico(m.sender) || m.sender
   let cmd = (args && args[0]) ? args[0].toLowerCase() : ''
 
   if (!cmd && mentioned) cmd = 'rescatar'
@@ -58,24 +61,24 @@ const handler = async (m, { conn, args }) => {
 
   // ─── PEDIR ───
   if (cmd === 'pedir' || cmd === 'request') {
-    if (!isPlayerCaptured(m.sender)) return m.reply(t.no_capturado || `❌ No estás capturado.\n💡 Usa *rescate ver* para ver tu estado.`)
+    if (!isPlayerCaptured(userId)) return m.reply(t.no_capturado || `❌ No estás capturado.\n💡 Usa *rescate ver* para ver tu estado.`)
 
-    const savior = checkSavior(m.sender)
+    const savior = checkSavior(userId)
     if (savior) return m.reply(savior.message)
 
-    const u = getPlayerState(m.sender)
-    const senderName = await getDisplayName(conn, m.sender) || `@${m.sender.split('@')[0]}`
+    const u = getPlayerState(userId)
+    const senderName = await getDisplayName(conn, userId) || `@${userId.split('@')[0]}`
 
     if (u.rescueRequest?.active && u.rescueRequest.startedAt) {
-      const damage = applyPendingDamage(m.sender)
-      const uActual = getPlayerState(m.sender)
+      const damage = applyPendingDamage(userId)
+      const uActual = getPlayerState(userId)
       const elapsed = Date.now() - u.rescueRequest.startedAt
       const remaining = Math.max(0, RESCUE_TIMEOUT_MS - elapsed)
       const remainingMin = Math.ceil(remaining / 60000)
 
       if (remaining <= 0 || uActual.hp <= 0) {
-        const penalty = applyDeathPenalty(m.sender)
-        releasePlayer(m.sender)
+        const penalty = applyDeathPenalty(userId)
+        releasePlayer(userId)
         return m.reply(t.muerto_cautiverio?.replace('{exp}', penalty.lostExp).replace('{diamantes}', penalty.lostMoney) || `💀 *Has muerto en cautiverio.*\nNadie llegó a tiempo.\nPerdiste *${penalty.lostExp} EXP* y *${penalty.lostMoney} diamantes*.\nFuiste liberado pero con grandes consecuencias.`)
       }
 
@@ -87,9 +90,9 @@ const handler = async (m, { conn, args }) => {
       return m.reply(textoSolicitud)
     }
 
-    const u2 = getPlayerState(m.sender)
+    const u2 = getPlayerState(userId)
     u2.rescueRequest = { active: true, helper: null, penalty: u2.bountyFine || 0, startedAt: Date.now(), damageApplied: 0 }
-    setPlayerState(m.sender, u2)
+    setPlayerState(userId, u2)
 
     return m.reply(
       t.solicitud_enviada?.replace('{dano}', TICK_DAMAGE).replace('{hp}', u2.hp).replace('{maxHp}', u2.maxHp).replace('{nombre}', senderName) ||
@@ -97,19 +100,19 @@ const handler = async (m, { conn, args }) => {
       `⚠️ Tienes *5 minutos* o perderás *${TICK_DAMAGE} HP por minuto*.\n` +
       `❤️ HP actual: *${u2.hp}/${u2.maxHp}*\n` +
       `💡 Alguien debe mencionar a *${senderName}* y usar: *rescate rescatar @usuario*`,
-      null, { mentions: [m.sender] }
+      null, { mentions: [userId] }
     )
   }
 
   // ─── RESCATAR ───
   if (cmd === 'rescatar' || cmd === 'rescue') {
     if (!mentioned) return m.reply(t.menciona_a_quien || `❌ Menciona a quien rescatar.\n💡 Uso: *rescate rescatar @usuario*`)
-    if (mentioned === m.sender) return m.reply(t.no_auto_rescate || `❌ No puedes rescatarte a ti mismo.`)
-    if (isPlayerCaptured(m.sender)) return m.reply(t.estas_capturado || `❌ Estás capturado, no puedes rescatar a nadie.\n💡 Usa *rescate pedir* primero.`)
+    if (mismoUsuario(mentioned, userId)) return m.reply(t.no_auto_rescate || `❌ No puedes rescatarte a ti mismo.`)
+    if (isPlayerCaptured(userId)) return m.reply(t.estas_capturado || `❌ Estás capturado, no puedes rescatar a nadie.\n💡 Usa *rescate pedir* primero.`)
 
     const targetState = getPlayerState(mentioned)
     const targetName = await getDisplayName(conn, mentioned) || `@${mentioned.split('@')[0]}`
-    const helperName = await getDisplayName(conn, m.sender) || `@${m.sender.split('@')[0]}`
+    const helperName = await getDisplayName(conn, userId) || `@${userId.split('@')[0]}`
 
     if (!targetState?.isCaptured) return m.reply(t.no_capturado_target?.replace('{nombre}', targetName) || `❌ ${targetName} no está capturado.`, null, { mentions: [mentioned] })
     if (!targetState?.rescueRequest?.active) return m.reply(t.sin_solicitud_target?.replace('{nombre}', targetName) || `⏳ ${targetName} está capturado pero no ha pedido rescate.\nDile que use *rescate pedir* primero.`, null, { mentions: [mentioned] })
@@ -139,24 +142,24 @@ const handler = async (m, { conn, args }) => {
       releasePlayer(mentioned)
       let successMsg = (t.rescate_exito?.replace('{nombre}', targetName) || `✅ ¡Rescate exitoso! *${targetName}* ha sido liberado.`) + hpInfo
       if (wasCapturedByHunter) {
-        const bonus = rescuerBounty(m.sender, mentioned)
+        const bonus = rescuerBounty(userId, mentioned)
         if (bonus) successMsg += bonus.message
       }
       return m.reply(successMsg, null, { mentions: [mentioned] })
     } else {
-      capturePlayer(m.sender, 'Intento de rescate fallido')
-      increaseBounty(m.sender, 1, 200, 'Rescate fallido')
+      capturePlayer(userId, 'Intento de rescate fallido')
+      increaseBounty(userId, 1, 200, 'Rescate fallido')
       increaseBounty(mentioned, 1, 100, 'Rescate fallido (consecuencia)')
       return m.reply(
         (t.rescate_fallido?.replace('{helper}', helperName) || `❌ ¡Rescate fallido! *${helperName}* fue capturado en el intento.`) + hpInfo,
-        null, { mentions: [m.sender, mentioned] }
+        null, { mentions: [userId, mentioned] }
       )
     }
   }
 
   // ─── VER ───
   if (cmd === 'ver') {
-    const who = mentioned || m.sender
+    const who = mentioned || userId
     const damage = applyPendingDamage(who)
     const u = getPlayerState(who)
     const whoName = await getDisplayName(conn, who) || `@${who.split('@')[0]}`
@@ -173,7 +176,8 @@ const handler = async (m, { conn, args }) => {
 
     let hpLine = ''
     if (u.isCaptured) {
-      hpLine = t.hp_linea?.replace('{hp}', u.hp).replace('{maxHp}', u.maxHp) || `\n❤️ HP: *${u.hp}/${u.maxHp}*`
+      const hpBar = '█'.repeat(Math.round(((u.hp || 0) / (u.maxHp || 100)) * 10)) + '░'.repeat(10 - Math.round(((u.hp || 0) / (u.maxHp || 100)) * 10))
+      hpLine = t.hp_linea?.replace('{hp}', u.hp).replace('{maxHp}', u.maxHp) || `\n❤️ HP: *${u.hp}/${u.maxHp}* ${hpBar}`
       if (damage > 0) hpLine += t.dano_recien?.replace('{dano}', damage) || ` (-${damage} recién)`
     }
 
