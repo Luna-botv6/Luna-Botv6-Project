@@ -102,8 +102,10 @@ const handler = async (m, { conn, usedPrefix }) => {
       
       await new Promise(resolve => setTimeout(resolve, 500));
       
+      const botJid = conn.decodeJid(conn.user.jid);
+      const botLid = conn.user?.lid ? conn.decodeJid(conn.user.lid) : null;
       const isBotAdmin = metadata.participants.find(
-        p => conn.decodeJid(p.id) === conn.decodeJid(conn.user.jid)
+        p => conn.decodeJid(p.id) === botJid || (botLid && conn.decodeJid(p.id) === botLid) || (botLid && conn.decodeJid(p.lid || '') === botLid)
       )?.admin;
 
       await new Promise(resolve => setTimeout(resolve, 1500));

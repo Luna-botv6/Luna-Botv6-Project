@@ -1,12 +1,14 @@
 import fs from 'fs'
 import { getPlayerState, payFine } from '../lib/stats.js'
 import { resolveMention } from '../lib/mentionHelper.js'
+import { idCanonico, mismoUsuario } from '../lib/identidad.js'
 
 const handler = async (m, { conn, args }) => {
   const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
   const t = _tr?.plugins?.rpg_bounty || {};
-  const mentioned = resolveMention(m, args)
-  const userId = mentioned || m.sender
+  const mentionedRaw = resolveMention(m, args)
+  const mentioned = mentionedRaw ? (idCanonico(mentionedRaw) || mentionedRaw) : null
+  const userId = mentioned || (idCanonico(m.sender) || m.sender)
   const cmd = (args && args[0]) ? args[0].toLowerCase() : ''
 
   const user = getPlayerState(userId)
@@ -24,7 +26,7 @@ const handler = async (m, { conn, args }) => {
   }
 
   if (cmd === 'pagar' || cmd === 'pay') {
-    if (m.sender !== userId) return m.reply(t.pagar_propia || 'Debes pagar tu propia multa.')
+    if (!mismoUsuario(m.sender, userId)) return m.reply(t.pagar_propia || 'Debes pagar tu propia multa.')
     const ok = payFine(userId)
     if (!ok) return m.reply(t.sin_multa || 'No tienes multa activa o no tienes suficiente dinero.')
     return m.reply(t.pagada || '✅ Has pagado la multa y tu bounty se ha eliminado.')

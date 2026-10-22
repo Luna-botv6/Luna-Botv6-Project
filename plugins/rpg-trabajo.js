@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { getUserStats, addExp, addMoney, setUserStats, getPlayerState, isCapturedByHunter } from '../lib/stats.js';
+import { getClanBonus, addToClanFund } from '../lib/clanSystem.js';
 import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js';
 import { checkMerchantTrigger, checkGambler, checkUndeadTrigger, checkVagrantTrigger } from '../lib/npcSystem.js';
 
@@ -46,13 +47,22 @@ const handler = async (m, { conn }) => {
     return conn.sendMessage(m.chat, { text: `⏳ *${tradutor.texto1}*\n\n🏃‍♂️ ${tradutor.texto2}: *${timeLeft}*` }, { quoted: m });
   }
 
-  const expGanada = Math.floor(Math.random() * 5000) + 500;
-  const moneyGanado = Math.floor(Math.random() * 1000) + 100;
+  const baseExp = Math.floor(Math.random() * 5000) + 500;
+  const baseMoney = Math.floor(Math.random() * 1000) + 100;
+  const bonus = getClanBonus(userId);
+  const expGanada = Math.round(baseExp * (1 + bonus));
+  const moneyGanado = Math.round(baseMoney * (1 + bonus));
 
   addExp(userId, expGanada);
   addMoney(userId, moneyGanado);
 
-  setUserStats(userId, { lastwork: now });
+  addToClanFund(userId, Math.round((expGanada + moneyGanado) * 0.05));
+
+  const _u2 = getPlayerState(userId)
+  _u2.dailyExp = (_u2.dailyExp || 0) + expGanada
+  _u2.dailyMoney = (_u2.dailyMoney || 0) + moneyGanado
+  _u2.lastwork = now
+  setUserStats(userId, _u2)
 
   const statsActualizados = getUserStats(userId);
 

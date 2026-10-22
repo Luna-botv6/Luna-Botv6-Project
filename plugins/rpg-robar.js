@@ -4,6 +4,7 @@ import { addExp, removeExp, getExp, getArmorStats, hasArmor, damageArmor, getPla
 import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js'
 import { tieneProteccion } from '../lib/usarprote.js'
 import { resolveMention } from '../lib/mentionHelper.js'
+import { idCanonico, mismoUsuario } from '../lib/identidad.js'
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
 
 const COOLDOWN_FILE = './database/robCooldown.json'
@@ -47,7 +48,7 @@ const handler = async (m, { conn, args }) => {
   }
   const tradutor = _t.plugins.rpg_robar
 
-  const sender = m.sender
+  const sender = idCanonico(m.sender) || m.sender
 
   const _capture = checkHunterCapture(sender)
   if (_capture) return m.reply(_capture.message)
@@ -60,10 +61,11 @@ const handler = async (m, { conn, args }) => {
     return m.reply(_reason)
   }
 
-  const target = m.isGroup ? resolveMention(m, args) : m.chat
+  const targetRaw = m.isGroup ? resolveMention(m, args) : m.chat
+  const target = targetRaw ? (idCanonico(targetRaw) || targetRaw) : null
 
   if (!target) return m.reply(`❌ ${tradutor.texto1}`)
-  if (target === sender) return m.reply(`🤨 ${tradutor.texto2}`)
+  if (mismoUsuario(target, sender)) return m.reply(`🤨 ${tradutor.texto2}`)
 
   if (m.isGroup) {
     const _g = await getGroupDataForPlugin(conn, m.chat, m.sender)

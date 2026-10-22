@@ -1,21 +1,36 @@
 import fs from 'fs'
-import { getUserStats, getRoleByLevel, getPlayerState, setPlayerState, applyDeathPenalty, releasePlayer } from '../lib/stats.js'
+import { getUserStats, getPlayerState, setPlayerState, getArmorStats, addExp, removeMoney, cleanExpiredBuffs } from '../lib/stats.js'
 import { getProteccionRestante } from '../lib/usarprote.js'
 import { xpRange } from '../lib/levelling.js'
 import { resolveMention } from '../lib/mentionHelper.js'
+import { idCanonico, mismoUsuario } from '../lib/identidad.js'
+import { resolveJidToPhone } from '../lib/funcion/lid-resolver.js'
+import { getHunterStatus } from '../lib/hunterSystem.js'
+
+const COSTO_ESCANEO = 200
+const EXP_GANADA = 50
 
 async function handler(m, { conn, args }) {
   const idioma = global.db.data.users?.[m.sender]?.language || global.defaultLenguaje || 'es'
-  const tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.stats
+  let tradutor = {}
+  try { tradutor = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`)).plugins.stats } catch {}
+  try { if (!tradutor || !tradutor.texto1) tradutor = JSON.parse(fs.readFileSync('./src/lunaidiomas/es.json')).plugins.stats } catch {}
 
-  const mentioned = resolveMention(m, args)
-  const userId = mentioned || m.sender
+  const tieneObjetivo = !!(m.mentionedJid?.[0] || m.message?.contextInfo?.mentionedJid?.[0] || m.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || m.quoted?.sender)
+  const mentionedRaw = tieneObjetivo ? resolveMention(m, args) : null
+  const mentioned = mentionedRaw ? (idCanonico(mentionedRaw) || mentionedRaw) : null
+  const propio = idCanonico(m.sender) || m.sender
+  const esOtro = !!mentioned && !mismoUsuario(mentioned, propio)
+  const userId = esOtro ? mentioned : propio
+  const consultante = propio
 
-  let name = userId.split('@')[0]
-  try {
-    const contact = await conn.getContact(userId)
-    name = contact.notify || contact.name || name
-  } catch {}
+  if (esOtro) {
+    const uConsultante = getPlayerState(consultante)
+    const saldo = uConsultante?.money || 0
+    if (saldo < COSTO_ESCANEO) {
+      return m.reply(`❌ Necesitas *${COSTO_ESCANEO} 💎* para escanear a otro jugador.\nTu saldo: *${saldo} 💎*`)
+    }
+  }
 
   // Aplicar daño acumulado por rescate pendiente antes de mostrar
   const _u = getPlayerState(userId)
@@ -30,55 +45,80 @@ async function handler(m, { conn, args }) {
       setPlayerState(userId, _u)
     }
     if (_u.hp <= 0) {
+      const { applyDeathPenalty, releasePlayer } = await import('../lib/stats.js')
       applyDeathPenalty(userId)
       releasePlayer(userId)
     }
   }
 
-  const stats = getUserStats(userId)
-  const currentRole = getRoleByLevel(stats.level)
+  cleanExpiredBuffs(userId)
 
+  const stats = getUserStats(userId)
+  const currentRole = (await import('../lib/stats.js')).getRoleByLevel(stats.level)
   const { min, max } = xpRange(stats.level, global.multiplier || 1)
   const expForNextLevel = max - stats.exp
   const expProgress = `${stats.exp}/${max}`
 
   const protectionMs = typeof getProteccionRestante === 'function' ? getProteccionRestante(userId) : 0
   const protectionText = protectionMs > 0 ? msToTime(protectionMs) : (stats.protectActive || stats.protectExpires > Date.now() ? 'Activo' : '—')
-  const armor = stats.armor || { type: 'ninguna', durability: 0, maxDurability: 0 }
+  const armor = stats.armor || { type: 'ninguna', durability: 0, maxDurability: 0, defense: 0 }
   const bountyStars = stats.bountyStars || 0
   const bountyFine = stats.bountyFine || 0
   const capturedText = stats.isCaptured ? '⛓️ Capturado' : '✅ Libre'
+  const hunterStatus = getHunterStatus(userId)
+  const buffs = (stats.activeBuffs || []).filter(b => b.expiresAt > Date.now())
+  const inv = stats.inventory || {}
+  const invItems = Object.entries(inv).filter(([, q]) => q > 0).map(([k, q]) => `${k} x${q}`).join(', ') || '—'
+
+  let name = (resolveJidToPhone(userId) || 'desconocido')
+  try {
+    const contact = await conn.getContact(userId)
+    name = contact.notify || contact.name || name
+  } catch {}
+
+  const buffText = buffs.length
+    ? buffs.map(b => `${b.type} (${msToTime(b.expiresAt - Date.now())})`).join(', ')
+    : '—'
 
   const text = `
-╭━━━〔 *📊 ${tradutor.texto1}* 〕━━━⬣
-┃ *👤 ${tradutor.texto2}:* @${userId.split('@')[0]}
+╭━━━〔 *📊 ${tradutor.texto1 || 'Estadísticas'}* 〕━━━⬣
+┃ *👤 ${tradutor.texto2 || 'Usuario'}:* @${(resolveJidToPhone(userId) || 'desconocido')}
 ┃
-┃ *📈 ${tradutor.texto3}:* ${stats.level}
-┃ *🏅 ${tradutor.texto4}:* ${currentRole}
-┃ *⚡ ${tradutor.texto5}:* ${formatNumber(stats.exp)}
-┃ *📊 ${tradutor.texto6}:* ${expProgress}
-┃ *🎯 ${tradutor.texto7}:* ${formatNumber(expForNextLevel)} exp
+┃ *📈 ${tradutor.texto3 || 'Nivel'}:* ${stats.level}
+┃ *🏅 ${tradutor.texto4 || 'Rango'}:* ${currentRole}
+┃ *⚡ ${tradutor.texto5 || 'EXP'}:* ${formatNumber(stats.exp)}
+┃ *📊 ${tradutor.texto6 || 'Progreso'}:* ${expProgress}
+┃ *🎯 ${tradutor.texto7 || 'Para siguiente'}:* ${formatNumber(expForNextLevel)} exp
 ┃
-┃ *💰 ${tradutor.texto8}:*
-┃ *💎 ${tradutor.texto9}:* ${formatNumber(stats.money)}
-┃ *🌙 ${tradutor.texto10}:* ${formatNumber(stats.lunaCoins)}
-┃ *🔮 ${tradutor.texto11}:* ${formatNumber(stats.mysticcoins)}
+┃ *💰 ${tradutor.texto8 || 'Economía'}:*
+┃ *💎 ${tradutor.texto9 || 'Diamantes'}:* ${formatNumber(stats.money)}
+┃ *🌙 ${tradutor.texto10 || 'LunaCoins'}:* ${formatNumber(stats.lunaCoins)}
+┃ *🔮 ${tradutor.texto11 || 'MysticCoins'}:* ${formatNumber(stats.mysticcoins)}
 ┃
 ┃ *❤️ Vida:* ${stats.hp || 0}/${stats.maxHp || 0}
-┃ *🥼 Armadura:* ${armor.type} (${armor.durability || 0}/${armor.maxDurability || 0})
+┃ *🥼 Armadura:* ${armor.type} (${armor.durability || 0}/${armor.maxDurability || 0}) DEF ${armor.defense || 0}
 ┃ *🛡️ Protección:* ${protectionText}
 ┃ *🚨 Bounty:* ${'⭐'.repeat(bountyStars) || '—'} (${formatNumber(bountyFine)} diamantes)
 ┃ *⛓️ Estado:* ${capturedText}
+┃ *🎯 Amenaza cazador:* ${hunterStatus.threat}% (${hunterStatus.active ? 'ACTIVO' : 'inactivo'})
 ┃
-┃ *📋 ${tradutor.texto12}:*
-┃ *📦 ${tradutor.texto13}:* ${stats.limit}
-┃ *🎮 ${tradutor.texto14}:* ${stats.joincount}
-┃ *🪙 ${tradutor.texto15}:* ${stats.premiumTime > 0 ? tradutor.texto16 : tradutor.texto17}
+┃ *✨ Buffs:* ${buffText}
+┃ *🎒 Inventario:* ${invItems}
+┃
+┃ *📋 ${tradutor.texto12 || 'Otros'}:*
+┃ *📦 ${tradutor.texto13 || 'Límites'}:* ${stats.limit}
+┃ *🎮 ${tradutor.texto14 || 'Usos'}:* ${stats.joincount}
+┃ *🪙 ${tradutor.texto15 || 'Premium'}:* ${stats.premiumTime > 0 ? (tradutor.texto16 || 'Sí') : (tradutor.texto17 || 'No')}
 ┃
 ╰━━━━━━━━━━━━━━━━━━━━⬣
 
 💬 ${getMotivationalMessage(stats.level, tradutor)}
   `.trim()
+
+  if (esOtro) {
+    removeMoney(consultante, COSTO_ESCANEO)
+    addExp(consultante, EXP_GANADA)
+  }
 
   await m.reply(text, null, { mentions: [userId] })
 }
@@ -103,24 +143,24 @@ function msToTime(duration) {
 }
 
 function getMotivationalMessage(level, tradutor) {
-  if (level >= 500) return tradutor.texto18
-  if (level >= 400) return tradutor.texto19
-  if (level >= 300) return tradutor.texto20
-  if (level >= 200) return tradutor.texto21
-  if (level >= 150) return tradutor.texto22
-  if (level >= 120) return tradutor.texto23
-  if (level >= 100) return tradutor.texto24
-  if (level >= 80) return tradutor.texto25
-  if (level >= 70) return tradutor.texto26
-  if (level >= 60) return tradutor.texto27
-  if (level >= 50) return tradutor.texto28
-  if (level >= 40) return tradutor.texto29
-  if (level >= 30) return tradutor.texto30
-  if (level >= 20) return tradutor.texto31
-  if (level >= 15) return tradutor.texto32
-  if (level >= 10) return tradutor.texto33
-  if (level >= 5) return tradutor.texto34
-  return tradutor.texto35
+  if (level >= 500) return tradutor.texto18 || '¡Eres una leyenda!'
+  if (level >= 400) return tradutor.texto19 || '¡Imparable!'
+  if (level >= 300) return tradutor.texto20 || '¡Gran guerrero!'
+  if (level >= 200) return tradutor.texto21 || '¡Sigue así!'
+  if (level >= 150) return tradutor.texto22 || '¡Buen progreso!'
+  if (level >= 120) return tradutor.texto23 || '¡Avanzando!'
+  if (level >= 100) return tradutor.texto24 || '¡Centurión!'
+  if (level >= 80) return tradutor.texto25 || '¡Fuerte!'
+  if (level >= 70) return tradutor.texto26 || '¡Creciendo!'
+  if (level >= 60) return tradutor.texto27 || '¡Mejorando!'
+  if (level >= 50) return tradutor.texto28 || '¡A la mitad!'
+  if (level >= 40) return tradutor.texto29 || '¡Avanzado!'
+  if (level >= 30) return tradutor.texto30 || '¡Intermedio!'
+  if (level >= 20) return tradutor.texto31 || '¡Novato+!'
+  if (level >= 15) return tradutor.texto32 || '¡Aprendiendo!'
+  if (level >= 10) return tradutor.texto33 || '¡Principiante!'
+  if (level >= 5) return tradutor.texto34 || '¡Iniciado!'
+  return tradutor.texto35 || '¡Comienza tu aventura!'
 }
 
 handler.help = ['verexp', 'stats', 'estadisticas']
