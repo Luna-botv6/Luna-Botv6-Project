@@ -2283,7 +2283,11 @@
       "linea_comando": "├ 🔧 *Reported command:* {comando}",
       "linea_descripcion": "├ 📝 *Description:*",
       "linea_mensaje_citado": "├ 💬 *Quoted message:*",
-      "enviado": "✅ Your report was sent successfully.\n\nThanks for reporting, we'll review it as soon as possible 🙏"
+      "enviado": "✅ Your report was sent successfully.\n\nThanks for reporting, we'll review it as soon as possible 🙏",
+      "linea_ticket": "├ 🎫 *Ticket:* {ticket}",
+      "espera": "⏳ Wait *{seg}* seconds before sending another report.",
+      "sin_destino": "⚠️ No owner is configured to receive reports.",
+      "desconocido": "unknown"
     },
     "owner_setppbot": {
       "sin_imagen": "*[❗INFO❗] IMAGE NOT FOUND, PLEASE REPLY TO AN IMAGE USING THE COMMAND {comando}*",

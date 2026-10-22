@@ -2284,7 +2284,11 @@
       "linea_comando": "├ 🔧 *Comando reportado:* {comando}",
       "linea_descripcion": "├ 📝 *Descrição:*",
       "linea_mensaje_citado": "├ 💬 *Mensagem citada:*",
-      "enviado": "✅ Seu relatório foi enviado com sucesso.\n\nObrigado por reportar, vamos revisar em breve 🙏"
+      "enviado": "✅ Seu relatório foi enviado com sucesso.\n\nObrigado por reportar, vamos revisar em breve 🙏",
+      "linea_ticket": "├ 🎫 *Ticket:* {ticket}",
+      "espera": "⏳ Espera *{seg}* segundos antes de enviar outro relatório.",
+      "sin_destino": "⚠️ Nenhum owner está configurado para receber relatórios.",
+      "desconocido": "desconhecido"
     },
     "owner_setppbot": {
       "sin_imagen": "*[❗INFO❗] IMAGEM NÃO ENCONTRADA, POR FAVOR RESPONDA A UMA IMAGEM USANDO O COMANDO {comando}*",
