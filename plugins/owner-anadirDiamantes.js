@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { addMoney, getMoney } from '../lib/stats.js';
+import { limitarConcesion } from '../lib/antiCheat.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 
 const handler = async (m, { conn, text, isOwner, isROwner }) => {
@@ -44,8 +45,11 @@ const handler = async (m, { conn, text, isOwner, isROwner }) => {
     const amount = parseInt(txt);
     if (amount < 1) return m.reply(t('texto4', '⌛ La cantidad debe ser mayor a 0'));
 
+    const concesion = limitarConcesion('money', amount, senderJid, who);
+    if (concesion.permitido <= 0) return m.reply('⛔ Concesión rechazada por el anti-cheat.');
+    const aplicado = concesion.permitido;
     const before = getMoney(who);
-    addMoney(who, amount);
+    addMoney(who, aplicado);
     const after = getMoney(who);
 
     const fmt = n => n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n;
@@ -55,7 +59,7 @@ const handler = async (m, { conn, text, isOwner, isROwner }) => {
       `┃ *👤 Para:* @${who.split('@')[0]}\n` +
       `┃ *👑 Por:* @${senderJid.split('@')[0]}\n` +
       '┃\n' +
-      `┃ *✨ Diamantes añadidos:* +${fmt(amount)}\n` +
+      `┃ *✨ Diamantes añadidos:* +${fmt(aplicado)}${concesion.rechazado ? ' (recortado por anti-cheat)' : ''}\n` +
       '┃\n' +
       `┃ *💎 Diamantes anteriores:* ${fmt(before)}\n` +
       `┃ *💎 Diamantes actuales:* ${fmt(after)}\n` +

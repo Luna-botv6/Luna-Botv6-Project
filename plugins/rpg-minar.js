@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { getLastMiningTime, setLastMiningTime, initMiningUser } from '../lib/minar.js'
-import { addExp, getPlayerState, isCapturedByHunter } from '../lib/stats.js'
+import { addExp, getPlayerState, isCapturedByHunter, setUserStats } from '../lib/stats.js'
+import { getClanBonus, addToClanFund } from '../lib/clanSystem.js'
 import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js'
 import { checkMerchantTrigger, checkGambler, checkUndeadTrigger, checkVagrantTrigger } from '../lib/npcSystem.js'
 
@@ -47,9 +48,17 @@ ${t.texto1[2]} *${msToTime(remaining)}*
 ${t.texto1[3]}`)
   }
 
-  const expGained = Math.floor(Math.random() * 1901) + 100
+  const baseExp = Math.floor(Math.random() * 1901) + 100
+  const bonus = getClanBonus(userId)
+  const expGained = Math.round(baseExp * (1 + bonus))
   await setLastMiningTime(userId, now)
   addExp(userId, expGained)
+  addToClanFund(userId, Math.round(expGained * 0.05))
+  const _u2 = getPlayerState(userId)
+  _u2.dailyMines = (_u2.dailyMines || 0) + 1
+  _u2.totalMines = (_u2.totalMines || 0) + 1
+  _u2.dailyExp = (_u2.dailyExp || 0) + expGained
+  setUserStats(userId, _u2)
 
   const _hunt     = checkHunterTrigger(userId, expGained, 0)
   const _merchant = checkMerchantTrigger(userId)

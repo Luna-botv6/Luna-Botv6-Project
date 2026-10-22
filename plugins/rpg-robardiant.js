@@ -4,6 +4,7 @@ import { addMoney, removeMoney, getMoney, getArmorStats, hasArmor, damageArmor, 
 import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js'
 import { tieneProteccion } from '../lib/usarprote.js'
 import { resolveMention } from '../lib/mentionHelper.js'
+import { idCanonico, mismoUsuario } from '../lib/identidad.js'
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
 
 const cooldownPath = './database/robCooldownMoney.json'
@@ -47,7 +48,7 @@ const handler = async (m, { conn, command, args }) => {
   }
   const tradutor = _t.plugins.rpg_robardiamantes
 
-  const userId = m.sender
+  const userId = idCanonico(m.sender) || m.sender
 
   const _capture = checkHunterCapture(userId)
   if (_capture) return m.reply(_capture.message)
@@ -60,9 +61,10 @@ const handler = async (m, { conn, command, args }) => {
     return m.reply(_reason)
   }
 
-  const who = m.isGroup ? resolveMention(m, args) : m.chat
+  const whoRaw = m.isGroup ? resolveMention(m, args) : m.chat
+  const who = whoRaw ? (idCanonico(whoRaw) || whoRaw) : null
   if (!who) return m.reply(`💎 ${tradutor.texto3}`)
-  if (who === userId) return m.reply(`🤨 No podés robarte a vos mismo.`)
+  if (mismoUsuario(who, userId)) return m.reply(`🤨 No podés robarte a vos mismo.`)
 
   if (m.isGroup) {
     const _g = await getGroupDataForPlugin(conn, m.chat, m.sender)

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { getUserStats, setUserStats } from '../lib/stats.js';
 import { getGroupDataForPlugin, buscarNombreEnParticipantes, resolveRealJidDeLid } from '../lib/funcion/pluginHelper.js';
+import { idCanonico, mismoUsuario } from '../lib/identidad.js';
 
 const items = ['exp', 'money'];
 const confirmation = {};
@@ -66,22 +67,28 @@ async function etiquetaDe(conn, jid, participants) {
 }
 
 async function handler(m, { conn, args, usedPrefix }) {
+  const userId = idCanonico(m.sender) || m.sender;
   const _t = cargarIdioma(m);
   const tradutor = _t.plugins?.rpg_transferir || {};
 
-  if (confirmation[m.sender]) {
+  if (confirmation[userId]) {
     return conn.sendMessage(m.chat, { text: `⏳ ${tradutor.texto1 || '*Tienes una transferencia pendiente.* Responde *Si* o *No* para continuar.'}` }, { quoted: m });
   }
 
-  const user = getUserStats(m.sender);
+  const user = getUserStats(userId);
   const type = (args[0] || '').toLowerCase();
   const countArg = args[1];
-  const whoMention = m.mentionedJid && m.mentionedJid[0];
+  const whoRaw = m.mentionedJid && m.mentionedJid[0];
+  const whoMention = whoRaw ? (idCanonico(whoRaw) || whoRaw) : null;
 
   const moneda = type === 'money' ? (tradutor.texto3 || 'diamantes') : 'EXP';
   const emoji = type === 'money' ? '💎' : '⭐';
 
   const ayuda = render(tradutor.card_ayuda, '💸  *T R A N S F E R I R*  💸\n━━━━━━━━━━━━━━━━━━\n\n📋 Enviá recursos a otro usuario.\n\n⭐ EXP   ➜  {usedPrefix}transferir exp 100 @usuario\n💎 Diam  ➜  {usedPrefix}transferir money 50 @usuario\n\n⚠️ Tenés que mencionar al destinatario.', { usedPrefix });
+
+  if (whoMention && mismoUsuario(whoMention, userId)) {
+    return conn.sendMessage(m.chat, { text: '❌ No puedes transferirte a ti mismo.' }, { quoted: m });
+  }
 
   if (!items.includes(type) || !countArg || !whoMention) {
     return conn.sendMessage(m.chat, { text: ayuda }, { quoted: m });
@@ -94,7 +101,7 @@ async function handler(m, { conn, args, usedPrefix }) {
   }
 
   const participants = await participantesDe(conn, m);
-  const from = await etiquetaDe(conn, m.sender, participants);
+  const from = await etiquetaDe(conn, userId, participants);
   const to = await etiquetaDe(conn, whoMention, participants);
 
   const confirmMessage = render(tradutor.card_confirmar, '💸  *C O N F I R M A R*  💸\n━━━━━━━━━━━━━━━━━━\n\n   {fromTag}  ➜  {toTag}\n\n   {emoji} *{cantidad}* {moneda}\n\n   💰 {fromTag}: *{saldoFrom}*\n   💰 {toTag}: *{saldoTo}*\n\n──────────────────\nRespondé *{confirmar}* para confirmar\no *{cancelar}* para cancelar', {
@@ -112,8 +119,8 @@ async function handler(m, { conn, args, usedPrefix }) {
   const mentions = [from.mention, to.mention].filter(Boolean);
   await conn.sendMessage(m.chat, mentions.length ? { text: confirmMessage, mentions } : { text: confirmMessage }, { quoted: m });
 
-  confirmation[m.sender] = {
-    sender: m.sender,
+  confirmation[userId] = {
+    sender: userId,
     to: whoMention,
     type,
     count,
@@ -124,19 +131,19 @@ async function handler(m, { conn, args, usedPrefix }) {
     message: m,
     timeout: setTimeout(() => {
       conn.sendMessage(m.chat, { text: `⌛️ *${tradutor.texto7 || 'Tiempo agotado, transferencia cancelada.'}*` }, { quoted: m });
-      delete confirmation[m.sender];
+      delete confirmation[userId];
     }, 60 * 1000)
   };
 }
 
 handler.before = async (m, { conn }) => {
-  if (!confirmation[m.sender]) return;
+  if (!confirmation[userId]) return;
   if (!m.text) return;
 
   const _t = cargarIdioma(m);
   const tradutor = _t.plugins?.rpg_transferir || {};
 
-  const { sender, to, type, count, timeout, message, fromTag, toTag, mentionFrom, mentionTo } = confirmation[m.sender];
+  const { sender, to, type, count, timeout, message, fromTag, toTag, mentionFrom, mentionTo } = confirmation[userId];
 
   if (m.id === message.id) return;
 

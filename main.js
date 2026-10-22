@@ -465,6 +465,12 @@ const connectionOptions = {
 
 global.conn = await makeWASocket(connectionOptions);
 import printMessage from './src/libraries/print.js';
+import { iniciarEconomiaSync } from './lib/economiaSync.js';
+
+if (!global._economiaSyncStarted) {
+  global._economiaSyncStarted = true;
+  iniciarEconomiaSync();
+}
 
 function attachConnectionListener() {
   const sock = global.conn;

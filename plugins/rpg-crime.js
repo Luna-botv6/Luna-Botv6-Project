@@ -61,7 +61,11 @@ const handler = async (m, { conn, usedPrefix, command }) => {
 
   addExp(m.sender, expGain);
   addMoney(m.sender, moneyGain);
-  setUserStats(m.sender, { lastCrime: now });
+  const _u2 = getPlayerState(m.sender)
+  _u2.dailyExp = (_u2.dailyExp || 0) + expGain
+  _u2.dailyMoney = (_u2.dailyMoney || 0) + moneyGain
+  _u2.lastCrime = now
+  setUserStats(m.sender, _u2)
 
   // posibilidad baja de generar sospecha: aumentar bounty leve
   if (Math.random() < 0.05) {
