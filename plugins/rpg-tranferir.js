@@ -137,6 +137,7 @@ async function handler(m, { conn, args, usedPrefix }) {
 }
 
 handler.before = async (m, { conn }) => {
+  const userId = idCanonico(m.sender) || m.sender;
   if (!confirmation[userId]) return;
   if (!m.text) return;
 
