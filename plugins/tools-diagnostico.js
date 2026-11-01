@@ -1,3 +1,5 @@
+import { isFunctionEnabled } from '../lib/owner-funciones.js';
+
 const handler = async (m, { conn, isAdmin, isBotAdmin, isOwner }) => {
   const chat = global.db.data.chats[m.chat] || {};
   const user = global.db.data.users[m.sender] || {};
@@ -8,7 +10,7 @@ const handler = async (m, { conn, isAdmin, isBotAdmin, isOwner }) => {
   const modoGrupos = conn.modogrupos;
   const modoAdmin = chat.modoadmin;
   const modoPublico = conn.public;
-  const antiPrivado = settings.antiPrivate;
+  const antiPrivado = isFunctionEnabled('antiprivado');
   const antispam = settings.antispam;
   const registrado = user.registered;
 
