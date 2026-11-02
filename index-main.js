@@ -301,7 +301,11 @@ function detenerModoPanel() {
 
 async function preguntarOpcionConsola() {
   for (;;) {
+    const recordatorio = setInterval(() => {
+      console.log(chalk.hex('#FFD700').bold('\n🔗 VINCULACIÓN — sigo esperando: escribí 1 (código QR) o 2 (código de 8 dígitos), o vinculá desde la Torre de Control.'));
+    }, 300000);
     const opcion = await question(chalk.hex('#FFD700').bold('─◉　Seleccione una opción (solo el numero):\n') + chalk.hex('#E0E0E0').bold('1. Con código QR\n2. Con código de texto de 8 dígitos\n─> '));
+    clearInterval(recordatorio);
     if (!panelVinculandoAhora()) return opcion;
     const seguir = String(await question('La APK está vinculando ahora mismo y seguir por consola la corta. ¿Seguir por consola igual? (s/n)\n─> ')).trim().toLowerCase();
     if (seguir === 's' || seguir === 'si' || seguir === 'sí') return opcion;

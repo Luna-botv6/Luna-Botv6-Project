@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1';
 
 const _origConsoleInfo = console.info.bind(console);
@@ -816,17 +816,44 @@ const REASON_LABELS = {
   429: 'rateLimit — demasiadas peticiones',
 };
 
+function sinSesionEnDisco() {
+  try {
+    return !fs.existsSync(`./${global.authFile}/creds.json`);
+  } catch {
+    return false;
+  }
+}
+
+function respaldarSesionAntesDeBorrar() {
+  const origen = `./${global.authFile}`;
+  if (!fs.existsSync(`${origen}/creds.json`)) return null;
+  const d = new Date();
+  const dos = (n) => String(n).padStart(2, '0');
+  const destino = `${origen}.bak-${d.getFullYear()}${dos(d.getMonth() + 1)}${dos(d.getDate())}-${dos(d.getHours())}${dos(d.getMinutes())}`;
+  try {
+    fs.cpSync(origen, destino, { recursive: true });
+    const copias = fs.readdirSync('.').filter((n) => n.startsWith(`${global.authFile}.bak-`)).sort();
+    for (const viejo of copias.slice(0, Math.max(0, copias.length - 2))) {
+      fs.rmSync(`./${viejo}`, { recursive: true, force: true });
+    }
+    return destino;
+  } catch {
+    return null;
+  }
+}
+
 function cierrePanelSinSesion(reason) {
   if (!global.modoPanel || global.conn?.user) return false;
+  if (sinSesionEnDisco()) return true;
   return !(reason === DisconnectReason.badSession || reason === DisconnectReason.loggedOut || reason === 500 || reason === 401);
 }
 
 function reintentarPanelSinSesion(reason) {
   global._panelCierres = (global._panelCierres || 0) + 1;
+  const intentos = global._panelCierres;
   const limitado = reason === DisconnectReason.forbidden || reason === 429 || reason === 'forbidden';
-  const base = Math.min(30000, 3000 * global._panelCierres);
+  const base = Math.min(15000, 3000 * intentos);
   const delay = (limitado ? Math.max(60000, base) : base) + Math.floor(Math.random() * 1000);
-  console.log(`[ ⏳ ] Panel sin sesión: conexión cerrada (${reason ?? 'sin código'}), reintento en ${Math.round(delay / 1000)}s. El bot no se apaga.`);
   if (global._panelReintentoTimer) clearTimeout(global._panelReintentoTimer);
   global._panelReintentoTimer = setTimeout(async () => {
     global._panelReintentoTimer = null;
@@ -864,6 +891,8 @@ async function connectionUpdate(update) {
     global._restartRequiredCount = 0;
     global._manualWsClose = false;
     global._loggedOutHandled = false;
+    global._badSessionRetry = 0;
+    global._panelCierres = 0;
     stopped = 'open';
     if (!global._connectedLogged) {
       global._connectedLogged = true;
@@ -907,13 +936,12 @@ async function connectionUpdate(update) {
   } else if (connection === 'close') {
     global._connectedLogged = false;
     const _closeReason = lastDisconnect?.error?.output?.statusCode;
-    if (_closeReason !== DisconnectReason.restartRequired) {
+    if (_closeReason !== DisconnectReason.restartRequired && !(global.modoPanel && sinSesionEnDisco())) {
       console.log(chalk.red('[ ✖ ] Conexión cerrada'));
     }
   }
 
   let reason = lastDisconnect?.error?.output?.statusCode;
-  if (update?.qr || connection === 'open') global._panelCierres = 0;
 
   if (connection === 'close') {
     const rawError = lastDisconnect?.error;
@@ -959,15 +987,25 @@ async function connectionUpdate(update) {
     if (cierrePanelSinSesion(reason)) {
       reintentarPanelSinSesion(reason);
     } else if (reason === DisconnectReason.badSession) {
-      console.log(chalk.red('[ ✖ ] Sesión corrupta detectada'));
-      console.log(chalk.yellow('[ ⚠ ] Limpiando sesión...'));
+      const ultimo500 = global._badSessionRetry || 0;
+      if (Date.now() - ultimo500 > 120000) {
+        global._badSessionRetry = Date.now();
+        console.log(chalk.yellow('[ ⚠ ] WhatsApp cortó con 500 (puede ser un error pasajero). Reintento sin tocar la sesión...'));
+        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 5000);
+        return;
+      }
+      global._badSessionRetry = 0;
+      global._motivoExit = 'sesion_invalida_500';
+      console.log(chalk.red('[ ✖ ] No se pudo reconectar: la sesión quedó inválida'));
+      const copia = respaldarSesionAntesDeBorrar();
+      if (copia) console.log(chalk.yellow(`[ ⚠ ] Copia de la sesión guardada en: ${copia}`));
       try {
         const authPath = `./${global.authFile}`;
         if (fs.existsSync(authPath)) {
           await fs.promises.rm(authPath, { recursive: true, force: true });
         }
       } catch (e) {}
-      console.log(chalk.yellow('[ ⚠ ] Por favor reinicia con: npm start'));
+      console.log(chalk.yellow('[ ⚠ ] Se reinicia solo y te muestra las opciones para vincular (1 o 2)'));
       setTimeout(() => process.exit(1), 2000);
       return;
 
@@ -1025,16 +1063,18 @@ async function connectionUpdate(update) {
 
     } else if (reason === DisconnectReason.forbidden) {
       global._reconnect403Count = (global._reconnect403Count || 0) + 1;
-      console.log(chalk.red('┌────────────────────────────────────────────-+'));
-      console.log(chalk.red.bold(`🚫 403 FORBIDDEN — posible baneo real (intento ${global._reconnect403Count}/3)`));
-      console.log(chalk.red('└────────────────────────────────────────────-+'));
+      const msg403 = lastDisconnect?.error?.message || 'sin mensaje';
+      console.log(chalk.red.bold(`\n[ 🚫 ] WHATSAPP RECHAZÓ LA CONEXIÓN (403) · intento ${global._reconnect403Count}/3`));
+      console.log(chalk.red(`        Mensaje real: "${msg403}"`));
+      console.log(chalk.red('        El 403 es el único código que suele ser baneo o bloqueo del número.'));
 
       if (global._reconnect403Count >= 3) {
-        reportBan(`403 forbidden persistente — ${global._reconnect403Count} intentos seguidos`, {
+        global._motivoExit = 'forbidden_403';
+        reportBan(`403 forbidden persistente — ${global._reconnect403Count} intentos seguidos: ${msg403}`, {
           disconnectCode: reason,
-          rawMessage: lastDisconnect?.error?.message || 'sin mensaje',
+          rawMessage: msg403,
         });
-        console.log(chalk.yellow('[ ⚠ ] No se borra la sesión automáticamente. Revisa logs_bans/ y decide manualmente si vincular de nuevo.'));
+        console.log(chalk.yellow('[ ⚠ ] No se borra la sesión: el log queda en logs_bans/ para revisar y apelar.'));
         setTimeout(() => process.exit(0), 2000);
       } else {
         const delay = 5000 * global._reconnect403Count;
@@ -1068,19 +1108,38 @@ async function connectionUpdate(update) {
 
       if (isRealLogout && !global._loggedOutHandled) {
         global._loggedOutHandled = true;
-        console.log(chalk.red('┌────────────────────────────────────────────-+'));
-        console.log(chalk.red.bold('🚫 BOT DESVINCULADO / BANEADO DETECTADO'));
-        console.log(chalk.red(`  Código: ${reason} (loggedOut)`));
-        console.log(chalk.red(`  Mensaje: ${lastDisconnect?.error?.message || 'sin mensaje'}`));
-        console.log(chalk.red('└────────────────────────────────────────────-+'));
+        const msgReal = lastDisconnect?.error?.message || 'sin mensaje';
+        const esBaneo = /banned|spam|abuse|violat|blocked/.test(msgReal.toLowerCase());
+
+        if (esBaneo) {
+          console.log(chalk.red.bold('\n[ 🚫 ] CUENTA BANEADA POR WHATSAPP'));
+          console.log(chalk.red(`        Código ${reason} · mensaje real: "${msgReal}"`));
+          console.log(chalk.red('        WhatsApp bloqueó el número (no es una sesión vencida).'));
+          console.log(chalk.red('        El detalle queda en logs_bans/ para reclamar desde el teléfono.'));
+        } else {
+          console.log(chalk.yellow.bold('\n[ ⚠️ ] SESIÓN CERRADA POR WHATSAPP (no es baneo)'));
+          console.log(chalk.yellow(`        Código ${reason} · mensaje real: "${msgReal}"`));
+          console.log(chalk.yellow('        El número sigue válido: hay que volver a vincular (1/2 o desde la Torre).'));
+          console.log(chalk.yellow('        Se guarda copia de la sesión antes de limpiarla.'));
+        }
 
         if (!global._logoutVoluntario) {
-          reportBan(`loggedOut real — código ${reason}: ${lastDisconnect?.error?.message || 'sin mensaje'}`, {
-            disconnectCode: reason,
-            rawMessage: lastDisconnect?.error?.message || '',
-            softReconnectCount: global._softReconnectCount || 0,
-          });
+          global._motivoExit = esBaneo ? 'baneo_401' : 'sesion_cerrada_401';
+          reportBan(
+            esBaneo
+              ? `401 banned (baneo confirmado): ${msgReal}`
+              : `401 loggedOut real (no es baneo): ${msgReal}`,
+            {
+              disconnectCode: reason,
+              rawMessage: msgReal,
+              softReconnectCount: global._softReconnectCount || 0,
+              esBaneo,
+            }
+          );
         }
+
+        const copiaSesion = respaldarSesionAntesDeBorrar();
+        if (copiaSesion) console.log(chalk.yellow(`[ ⚠ ] Copia de la sesión guardada en: ${copiaSesion}`));
 
         const _carpetas = [global.authFile, 'MysticSession'];
         await Promise.allSettled(
@@ -1091,6 +1150,8 @@ async function connectionUpdate(update) {
             }
           })
         );
+        global._motivoExit = esBaneo ? 'baneo_401' : 'sesion_cerrada_401';
+        console.log(chalk.yellow('[ ⚠ ] Se reinicia solo y te muestra las opciones para vincular (1 o 2)'));
         setTimeout(() => process.exit(1), 2000);
       }
 
