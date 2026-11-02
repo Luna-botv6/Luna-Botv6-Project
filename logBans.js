@@ -109,7 +109,14 @@ function buildFileName() {
   const yyyy = now.getFullYear();
   const hh = String(now.getHours()).padStart(2, '0');
   const min = String(now.getMinutes()).padStart(2, '0');
-  return `${dd}-${mm}-${yyyy}_${hh}.${min}.json`;
+  const base = `${dd}-${mm}-${yyyy}_${hh}.${min}`;
+  let nombre = `${base}.json`;
+  let n = 2;
+  while (fs.existsSync(path.join(LOG_FOLDER, nombre))) {
+    nombre = `${base}-${n}.json`;
+    n++;
+  }
+  return nombre;
 }
 
 function classifyDisconnect(reason, method) {
@@ -121,7 +128,7 @@ function classifyDisconnect(reason, method) {
   if (r.includes('rate limit') || r.includes('too many requests')) {
     return { type: 'RATE_LIMIT', severity: 'high', icon: '⚡' };
   }
-  if (r.includes('unauthorized') || r.includes('invalid session') || r.includes('authentication failed') || r.includes('logged out') || r.includes('session terminated')) {
+  if (r.includes('unauthorized') || r.includes('invalid session') || r.includes('authentication failed') || r.includes('logged out') || r.includes('loggedout') || r.includes('session terminated') || r.includes('bad session') || r.includes('bad-session')) {
     return { type: 'SESION_INVALIDA', severity: 'high', icon: '🔐' };
   }
   if (r.includes('connection closed') || r.includes('connection reset') || r.includes('econnreset') || r.includes('websocket')) {
@@ -159,6 +166,12 @@ function buildPossibleCause(classification, cmd) {
   }
 
   if (classification.type === 'SESION_INVALIDA') {
+    if (global._motivoExit === 'sesion_cerrada_401') {
+      return 'No es un baneo: WhatsApp cerró la sesión (401) pero el número sigue válido. Hay que volver a vincular (opción 1/2 en consola o desde la Torre); la sesión anterior quedó respaldada en MysticSession.bak-*.';
+    }
+    if (global._motivoExit === 'baneo_401') {
+      return 'WhatsApp informó que la cuenta está bloqueada (401). Esto sí es un baneo: no borres nada, guardá logs_bans/ y reclamá desde el teléfono del bot.';
+    }
     return 'La sesión de WhatsApp fue invalidada. Puede que otro dispositivo haya iniciado sesión o que WhatsApp cerró la sesión remotamente.';
   }
 
@@ -171,13 +184,22 @@ function buildPossibleCause(classification, cmd) {
   }
 
   if (classification.type === 'ERROR_PROCESO') {
+    if (global._motivoExit === 'sesion_invalida_500') {
+      return 'No es un baneo: WhatsApp cortó la conexión con 500 (sesión inválida). El bot guardó una copia de la sesión antes de borrarla, así que al reiniciar hay que volver a vincular (opción 1/2 en consola o desde la Torre).';
+    }
+    if (global._motivoExit === 'sesion_cerrada_401') {
+      return 'No es un baneo: la sesión se cerró (401) y el bot se reinició para pedir vinculación de nuevo. La sesión anterior quedó respaldada en MysticSession.bak-*.';
+    }
+    if (global._motivoExit === 'baneo_401' || global._motivoExit === 'forbidden_403') {
+      return 'WhatsApp bloqueó la conexión de esta cuenta. El detalle real está en "evento.motivo_raw"; es el único caso que se reporta como baneo.';
+    }
     if (hasPlugin) {
       return `El proceso terminó inesperadamente. El último plugin activo fue "${cmd.pluginFile}". Puede ser un error no manejado en ese plugin o en un archivo de núcleo.`;
     }
     return 'El proceso de Node.js terminó con un código de error. Revisa los logs del sistema para más detalles.';
   }
 
-  return 'Causa no determinada con certeza. Analiza el historial de desconexiones y el contexto del último comando.';
+  return 'Corte sin clasificar. No hay ningún indicio de baneo en este evento: mirá "evento.motivo_raw" y las últimas líneas de la consola para ver el motivo real.';
 }
 
 function saveBanLog(reason, detectionMethod = 'auto', extraContext = {}) {
@@ -213,7 +235,7 @@ function saveBanLog(reason, detectionMethod = 'auto', extraContext = {}) {
   const possibleCause = buildPossibleCause(classification, cmd);
 
   const logData = {
-    titulo: 'BOT DESCONECTADO / POSIBLE BANEO',
+    titulo: classification.type === 'BAN_CONFIRMADO' ? 'BOT BANEADO / BLOQUEADO POR WHATSAPP' : 'EVENTO DEL BOT',
     clasificacion: {
       tipo: classification.type,
       severidad: classification.severity,
@@ -263,10 +285,12 @@ function saveBanLog(reason, detectionMethod = 'auto', extraContext = {}) {
 
   try {
     fs.writeFileSync(logFile, JSON.stringify(logData, null, 2), 'utf-8');
+    global._logReciente = Date.now();
 
-    console.log(chalk.redBright(`\n${classification.icon} EVENTO DETECTADO: ${classification.type}`));
+    const colorEvento = classification.severity === 'critical' ? chalk.redBright : chalk.yellow;
+    console.log(colorEvento(`\n${classification.icon} EVENTO DETECTADO: ${classification.type}`));
     console.log(chalk.yellow(`📁 Log: ${logFile}`));
-    if (cmd.pluginFile && cmd.pluginFile !== 'desconocido') {
+    if (!global._motivoExit && cmd.pluginFile && cmd.pluginFile !== 'desconocido') {
       console.log(chalk.red(`🎯 Último plugin: ${cmd.pluginFile} (${cmd.isFromPluginsFolder ? 'plugins/' : cmd.isFromCoreFile ? 'núcleo' : 'otro'})`));
       console.log(chalk.red(`💬 Último comando: ${cmd.text || 'ninguno'}`));
     }
@@ -332,7 +356,9 @@ process.on('SIGINT', () => {
 
 process.on('exit', (code) => {
   if (code !== 0) {
-    saveBanLog(`Proceso terminado con código de error: ${code}`, 'exit_handler');
+    const yaReportado = global._logReciente && Date.now() - global._logReciente < 120000;
+    if (yaReportado) return;
+    saveBanLog(`Proceso terminado con código de error: ${code}`, 'exit_handler', global._motivoExit ? { motivo: global._motivoExit } : {});
   }
 });
 
