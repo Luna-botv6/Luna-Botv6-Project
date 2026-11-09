@@ -304,8 +304,27 @@ async function preguntarOpcionConsola() {
     const recordatorio = setInterval(() => {
       console.log(chalk.hex('#FFD700').bold('\n🔗 VINCULACIÓN — sigo esperando: escribí 1 (código QR) o 2 (código de 8 dígitos), o vinculá desde la Torre de Control.'));
     }, 300000);
-    const opcion = await question(chalk.hex('#FFD700').bold('─◉　Seleccione una opción (solo el numero):\n') + chalk.hex('#E0E0E0').bold('1. Con código QR\n2. Con código de texto de 8 dígitos\n─> '));
+    process.stdout.write(chalk.hex('#FFD700').bold('─◉　Seleccione una opción (solo el numero):\n') + chalk.hex('#E0E0E0').bold('1. Con código QR\n2. Con código de texto de 8 dígitos\n─> '));
+    const opcion = await new Promise((resolver) => {
+      let resuelto = false;
+      const finalizar = (valor) => {
+        if (resuelto) return;
+        resuelto = true;
+        clearInterval(chequeoPanel);
+        rl.removeListener('line', alEscribir);
+        resolver(valor);
+      };
+      const chequeoPanel = setInterval(() => {
+        if (verificarCredsJson()) finalizar(null);
+      }, 3000);
+      const alEscribir = (line) => finalizar(String(line).trim());
+      rl.once('line', alEscribir);
+    });
     clearInterval(recordatorio);
+    if (opcion === null) {
+      console.log(chalk.green('[ ✅ ] Vinculación detectada desde la Torre de Control. El bot sigue corriendo y la consola deja de pedir opciones.'));
+      return null;
+    }
     if (!panelVinculandoAhora()) return opcion;
     const seguir = String(await question('La APK está vinculando ahora mismo y seguir por consola la corta. ¿Seguir por consola igual? (s/n)\n─> ')).trim().toLowerCase();
     if (seguir === 's' || seguir === 'si' || seguir === 'sí') return opcion;
@@ -341,7 +360,7 @@ async function start(file) {
   console.log(chalk.hex('#FFD700').bold('==============================================='));
   const opcion = await preguntarOpcionConsola();
   preguntando = false;
-  if (verificarCredsJson()) {
+  if (opcion === null || verificarCredsJson()) {
     isRunning = false;
     return;
   }

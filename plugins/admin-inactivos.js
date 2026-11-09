@@ -6,7 +6,7 @@ import { resolveRealJidDeLid } from '../lib/funcion/pluginHelper.js';
 import {
   loadInactivos, getVisto, getAvisados, marcarAvisado, quitarAvisado,
   quitarVisto, limpiarGrupo, borrarGrupo, horaKey, contarKicksHora,
-  sumarKickHora, flushInactivos
+  sumarKickHora, flushInactivos, sembrarGrupo
 } from '../lib/funcion/inactivosDB.js';
 
 export const INACTIVOS_GRACIA_MS = 60 * 60 * 1000;
@@ -178,6 +178,10 @@ export async function procesarGrupo(conn, chat, cfg) {
       continue;
     }
     const vistoTs = vistoDe(chat, p);
+    if (!vistoTs) {
+      sembrarGrupo(chat, [p?.id, p?.lid, p?.phoneNumber].filter(Boolean));
+      continue;
+    }
     const warnTs = avisados[jid] || 0;
     const accion = decidirAccion({ vistoTs, warnTs, ahora, umbralMs, graciaMs: INACTIVOS_GRACIA_MS, kicksHora: kicks, cap: INACTIVOS_CAP_HORA });
     if (accion === 'perdonar') {

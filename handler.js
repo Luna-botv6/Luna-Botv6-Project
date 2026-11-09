@@ -895,12 +895,12 @@ export async function handler(chatUpdate) {
 
 export async function participantsUpdate({ id, participants, action, author, authorPn }) {
   try {
-    const conn = currentConn || mconn?.conn || mconn;
-    if (!conn?.user?.jid) return;
-    try { invalidateGroupCount(); } catch {}
     if (action === 'add' && id && Array.isArray(participants)) {
       try { for (const p of participants) sembrarIngreso(id, typeof p === 'string' ? p : (p?.id || p?.lid)); } catch {}
     }
+    const conn = currentConn || mconn?.conn || mconn;
+    if (!conn?.user?.jid) return;
+    try { invalidateGroupCount(); } catch {}
 
     if (global.groupCache?.has(id)) {
       const cached = global.groupCache.get(id);
