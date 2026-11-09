@@ -305,8 +305,11 @@ const modoPanel = process.argv.includes("panel");
 global.modoPanel = modoPanel;
 const methodCode = !!phoneNumber || process.argv.includes("code");
 const MethodMobile = process.argv.includes("mobile");
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const question = (texto) => new Promise((resolver) => rl.question(texto, resolver));
+let rl = null;
+const question = (texto) => new Promise((resolver) => {
+  if (!rl) rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  rl.question(texto, resolver);
+});
 
 const idiomaConfigPath = './database/idioma-bot.json';
 const idiomaGlobalDisponibles = { '1': 'es', '2': 'en', '3': 'pt' };
@@ -434,7 +437,7 @@ try {
 
 const connectionOptions = {
   logger: Pino({ level: 'silent' }),
-  printQRInTerminal: opcion === '1',
+  printQRInTerminal: false,
   mobile: false,
   browser: ['Windows', 'Chrome', '149.0.7827.197'],
   auth: {
@@ -576,7 +579,7 @@ if (opcion === '2' && !fs.existsSync(`./${authFolder}/creds.json`)) {
   }
 
   if (!phoneNumber) {
-    rl.close();
+    rl?.close();
   }
 
   global.conn.phoneNumber = numeroTelefono;
