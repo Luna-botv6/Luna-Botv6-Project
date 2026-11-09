@@ -87,6 +87,30 @@ const RESTART_HISTORY_PATH = './database/reconnect-restart-history.json';
 const RESTART_WINDOW_MS = 3600000; 
 const RESTART_THRESHOLD = 3; 
 const RESTART_COOLDOWN_MS = 1800000; 
+const BAD_SESSION_MARKER_PATH = './database/ultimo-500.json';
+
+function leerUltimo500() {
+  try {
+    if (!fs.existsSync(BAD_SESSION_MARKER_PATH)) return 0;
+    const data = JSON.parse(fs.readFileSync(BAD_SESSION_MARKER_PATH, 'utf8'));
+    return typeof data?.cuando === 'number' ? data.cuando : 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function marcar500() {
+  try {
+    fs.mkdirSync('./database', { recursive: true });
+    fs.writeFileSync(BAD_SESSION_MARKER_PATH, JSON.stringify({ cuando: Date.now() }));
+  } catch (e) {}
+}
+
+function limpiarMarca500() {
+  try {
+    if (fs.existsSync(BAD_SESSION_MARKER_PATH)) fs.unlinkSync(BAD_SESSION_MARKER_PATH);
+  } catch (e) {}
+}
 
 function getRestartHistory() {
   try {
@@ -892,6 +916,7 @@ async function connectionUpdate(update) {
     global._manualWsClose = false;
     global._loggedOutHandled = false;
     global._badSessionRetry = 0;
+    limpiarMarca500();
     global._panelCierres = 0;
     stopped = 'open';
     if (!global._connectedLogged) {
@@ -987,14 +1012,16 @@ async function connectionUpdate(update) {
     if (cierrePanelSinSesion(reason)) {
       reintentarPanelSinSesion(reason);
     } else if (reason === DisconnectReason.badSession) {
-      const ultimo500 = global._badSessionRetry || 0;
+      const ultimo500 = leerUltimo500() || global._badSessionRetry || 0;
       if (Date.now() - ultimo500 > 120000) {
         global._badSessionRetry = Date.now();
-        console.log(chalk.yellow('[ ⚠ ] WhatsApp cortó con 500 (puede ser un error pasajero). Reintento sin tocar la sesión...'));
-        setTimeout(async () => { await global.reloadHandler(true).catch(console.error); }, 5000);
+        marcar500();
+        console.log(chalk.yellow('[ ⚠ ] WhatsApp cortó con 500 (puede ser un error pasajero). Reinicio limpio del bot sin tocar la sesión...'));
+        setTimeout(() => process.exit(0), 5000);
         return;
       }
       global._badSessionRetry = 0;
+      limpiarMarca500();
       global._motivoExit = 'sesion_invalida_500';
       console.log(chalk.red('[ ✖ ] No se pudo reconectar: la sesión quedó inválida'));
       const copia = respaldarSesionAntesDeBorrar();
