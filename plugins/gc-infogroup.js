@@ -71,7 +71,6 @@ ${listAdmin}
 > ◆ *Anti-Tóxico* » ${config.antiToxic   ? on : off}
 > ◆ *Anti-Traba* » ${config.antiTraba    ? on : off}
 > ◆ *Anti-Delete* » ${config.antidelete  ? on : off}
-> ◆ *Anti-ViewOnce* » ${config.antiviewonce ? on : off}
 > ◆ *Modo Admin* » ${config.modoadmin    ? on : off}
 > ◆ *Auto-Sticker* » ${config.autosticker ? on : off}
 > ◆ *Audios Bot* » ${config.audios       ? on : off}

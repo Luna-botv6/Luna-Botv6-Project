@@ -1,29 +1,28 @@
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
 import { isProtectedOwner } from '../lib/funcion/ownerGuard.js'
+import { desenvolverViewOnce, armarPayloadViewOnce } from '../lib/funcion/viewonce-media.js'
 const handler = async (m, { conn }) => {
   const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es')
   const t = _tr?.plugins?.herramientas_readviewonce || {}
   const { isAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender)
   const isOwner = isProtectedOwner(m.sender, null, conn)
   if (!isAdmin && !isOwner) throw (t.no_admin || '🚫 *Solo un admin o el owner puede usar este comando*')
-  const q = m.quoted ? m.quoted : null
-  if (!q) throw (t.no_citado || '👀 *Respondé a una imagen o video de una sola vez para revelarlo*')
-  if (!q.viewOnce) throw (t.no_viewonce || '⚠️ *Eso no es una imagen o video de una sola vez*')
-  let data
+  const citado = m.msg?.contextInfo?.quotedMessage || null
+  if (!citado) throw (t.no_citado || '👀 *Respondé a una imagen, video o audio de una sola vez para revelarlo*')
+  const revelado = desenvolverViewOnce(citado)
+  if (!revelado?.viewOnce) throw (t.no_viewonce || '⚠️ *Eso no es un contenido de una sola vez*')
+  let data = null
   try {
-    data = await q.download?.()
+    data = await conn.downloadM(revelado.media, revelado.tipo.replace(/Message$/i, ''), false)
   } catch {
-    throw (t.no_viewonce || '⚠️ *Eso no es una imagen o video de una sola vez*')
+    data = null
   }
-  if (!data) throw (t.no_viewonce || '⚠️ *Eso no es una imagen o video de una sola vez*')
-  const mime = q.mimetype || q.mediaType || ''
+  const payload = armarPayloadViewOnce(revelado, data)
+  if (!payload) throw (t.no_viewonce || '⚠️ *Eso no es un contenido de una sola vez*')
   try {
-    if (/video/.test(mime)) {
-      return await conn.sendMessage(m.chat, { video: data, mimetype: 'video/mp4' }, { quoted: m })
-    }
-    return await conn.sendMessage(m.chat, { image: data, mimetype: 'image/jpeg' }, { quoted: m })
+    return await conn.sendMessage(m.chat, payload, { quoted: m })
   } catch {
-    throw (t.no_viewonce || '⚠️ *Eso no es una imagen o video de una sola vez*')
+    throw (t.no_viewonce || '⚠️ *Eso no es un contenido de una sola vez*')
   }
 }
 handler.help = ['readvo']

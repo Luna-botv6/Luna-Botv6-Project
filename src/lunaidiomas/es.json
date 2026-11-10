@@ -2320,8 +2320,8 @@
     },
     "herramientas_readviewonce": {
       "no_admin": "🚫 *Solo un admin o el owner puede usar este comando*",
-      "no_citado": "👀 *Respondé a una imagen o video de una sola vez para revelarlo*",
-      "no_viewonce": "⚠️ *Eso no es una imagen o video de una sola vez*"
+      "no_citado": "👀 *Respondé a una imagen, video o audio de una sola vez para revelarlo*",
+      "no_viewonce": "⚠️ *Eso no es un contenido de una sola vez*"
     },
     "herramientas_stats_top": {
       "solo_owner": "Este comando es solo para los *propietarios del bot*.",
