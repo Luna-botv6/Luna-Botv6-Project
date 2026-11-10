@@ -2377,8 +2377,8 @@
       "texto1": "*[❗] RÉPONDEZ À UN MESSAGE QUI A ÉTÉ ENVOYÉ EN VUE UNIQUE (VOIR SEUL)*",
       "texto2": "*[❗] LE MESSAGE SÉLECTIONNÉ N'EST PAS UNE VUE UNIQUE (VOIR SEUL)*",
       "no_admin": "🚫 *Seul un admin ou le owner peut utiliser cette commande*",
-      "no_citado": "👀 *Réponds à une image ou une vidéo à vue unique pour la révéler*",
-      "no_viewonce": "⚠️ *Ce n'est pas une image ou une vidéo à vue unique*"
+      "no_citado": "👀 *Réponds à une image, une vidéo ou un audio à vue unique pour le révéler*",
+      "no_viewonce": "⚠️ *Ce n'est pas un contenu à vue unique*"
     },
     "herramientas_spamwa": {
       "texto1": "*[ ⚠️ ] S'IL VOUS PLAÎT, N'ABUSEZ PAS DE L'ENVOI DE SPAMS DE MESSAGES !*\n*COMMENT UTILISER :*\n*—◉ #spamwa numéro|texte|quantité*\n*EXEMPLE :*\n*—◉ #spamwa 5219999999999|résponse :v|25*",

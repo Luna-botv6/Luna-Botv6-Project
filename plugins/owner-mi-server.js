@@ -15,7 +15,7 @@ async function buildLinksText(t) {
   if (!url) {
     return t?.tunel_no_listo || '⚠️ El enlace todavía no está listo. Probá de nuevo en unos segundos.';
   }
-  return url + (t?.link_acceso_temporal || '\n\n🕐 Este enlace es de un solo uso y vence en 2 minutos. Si vence, usá de nuevo .miserver.');
+  return url + (t?.link_acceso_temporal || '\n\n🕐 Este enlace vence en 15 minutos y se puede abrir varias veces. Si vence, usá de nuevo .miserver.');
 }
 
 async function responder(conn, m, texto) {

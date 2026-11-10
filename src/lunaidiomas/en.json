@@ -2177,8 +2177,8 @@
     },
     "herramientas_readviewonce": {
       "no_admin": "🚫 *Only an admin or the owner can use this command*",
-      "no_citado": "👀 *Reply to a one-time-view image or video to reveal it*",
-      "no_viewonce": "⚠️ *That's not a one-time-view image or video*"
+      "no_citado": "👀 *Reply to a one-time-view image, video or audio to reveal it*",
+      "no_viewonce": "⚠️ *That's not one-time-view content*"
     },
     "herramientas_stats_top": {
       "solo_owner": "This command is only for the *bot owners*.",
