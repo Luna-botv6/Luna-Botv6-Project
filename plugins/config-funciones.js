@@ -118,12 +118,6 @@ const handler = async (m, { conn, usedPrefix, command, args, isSubOwner }) => {
           keys: ['antidelete', 'antitoxic']
         },
         {
-          emoji: '👁️',
-          title: 'Anti View Once',
-          desc: 'Revela automáticamente imágenes y videos de una sola vista\n_Requiere ser admin_',
-          keys: ['antiviewonce']
-        },
-        {
           emoji: '🔞',
           title: 'Anti +18',
           desc: 'Detecta y elimina imágenes/stickers con contenido para adultos\n_Requiere ser admin_',
@@ -145,7 +139,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isSubOwner }) => {
           emoji: '🌐',
           title: 'Modo Privado & Grupos',
           desc: 'Controla acceso privado y gestión de grupos\n_Solo owner_',
-          keys: ['antiprivado', 'modopublico', 'modogrupos', 'vierwimage']
+          keys: ['antiprivado', 'modopublico', 'modogrupos']
         }
       ];
 
