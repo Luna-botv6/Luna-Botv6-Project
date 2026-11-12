@@ -12,7 +12,7 @@ import { EventEmitter } from 'events';
 import { isVoiceMessage, handleVoiceMessage } from './plugins/voice-handler.js';
 import { getConfig } from './lib/funcConfig.js';
 import { readFile } from 'fs/promises';
-import { addExp, getUserStats, setUserStats } from './lib/stats.js';
+import { addExp, getUserStats, setUserStats, registrarChatUsuario } from './lib/stats.js';
 import { getSinPrefijo } from './lib/sinPrefijo.js';
 import { isValidMessage, isDuplicate, extractMessageText, extractSenderAndChat, normalizeMessageText } from './lib/funcion/messageValidation.js';
 import { checkUserPermissions } from './lib/funcion/userPermissions.js';
@@ -397,6 +397,8 @@ export async function handler(chatUpdate) {
 
     m = normalizeMessageText(m);
 
+    if (m.isGroup && m.chat && m.sender) registrarChatUsuario(m.sender, m.chat);
+
     const globalPrefix = this.prefix || global.prefix;
 
     if (isVoiceMessage(m, this)) {
@@ -608,6 +610,7 @@ export async function handler(chatUpdate) {
               __dirname: name.startsWith('custom-') ? customCommandsDir : ___dirname,
               __filename
             };
+            global.__ecoOrigen = { plugin: name, at: Date.now() };
             try {
               await plugin.call(this, m, extra);
             } catch (e) {
@@ -813,6 +816,7 @@ export async function handler(chatUpdate) {
             __filename
           };
 
+          global.__ecoOrigen = { plugin: name, at: Date.now() };
           try {
             await plugin.call(this, m, extra);
             if (!isPrems) {
