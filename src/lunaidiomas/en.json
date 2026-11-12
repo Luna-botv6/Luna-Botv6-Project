@@ -2178,7 +2178,9 @@
     "herramientas_readviewonce": {
       "no_admin": "🚫 *Only an admin or the owner can use this command*",
       "no_citado": "👀 *Reply to a one-time-view image, video or audio to reveal it*",
-      "no_viewonce": "⚠️ *That's not one-time-view content*"
+      "no_viewonce": "⚠️ *That's not one-time-view content*",
+      "no_descarga": "⚠️ *WhatsApp didn't send me the file for that one-time message* (the quote arrives empty). It can't be revealed.",
+      "error_envio": "⚠️ *I couldn't resend the revealed content*"
     },
     "herramientas_stats_top": {
       "solo_owner": "This command is only for the *bot owners*.",
@@ -4425,6 +4427,7 @@
     "desbloquearOwner": "🛡️ That user was banned by an owner. Only that owner can unblock them."
   },
   "anticheat": {
-    "texto1": "🕵️ *The Inquisitor* reviewed your accounts and found impossible values. Your resources were reset to the minimum and you are now flagged as a cheater."
+    "texto1": "🕵️ *The Inquisitor* reviewed your accounts and found impossible values. Your resources were reset to the minimum and you are now flagged as a cheater.",
+    "texto_grupo": "🕵️ *The Inquisitor* reviewed {usuario}'s account and found impossible values. The account was reset to the minimum and flagged as cheating."
   }
 }
