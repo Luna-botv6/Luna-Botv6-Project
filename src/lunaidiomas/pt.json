@@ -2179,7 +2179,9 @@
     "herramientas_readviewonce": {
       "no_admin": "🚫 *Somente um admin ou o owner pode usar este comando*",
       "no_citado": "👀 *Responda a uma imagem, vídeo ou áudio de visualização única para revelá-lo*",
-      "no_viewonce": "⚠️ *Isso não é um conteúdo de visualização única*"
+      "no_viewonce": "⚠️ *Isso não é um conteúdo de visualização única*",
+      "no_descarga": "⚠️ *O WhatsApp não me enviou o arquivo dessa mensagem de visualização única* (a citação chega vazia). Não é possível revelar.",
+      "error_envio": "⚠️ *Não consegui reenviar o conteúdo revelado*"
     },
     "herramientas_stats_top": {
       "solo_owner": "Este comando é apenas para os *proprietários do bot*.",
@@ -4573,6 +4575,7 @@
     "desbloquearOwner": "🛡️ Esse usuário foi banido por um dono. Só esse dono pode desbloqueá-lo."
   },
   "anticheat": {
-    "texto1": "🕵️ *O Inquisidor* revisou suas contas e encontrou valores impossíveis. Seus recursos foram resetados ao mínimo e você foi marcado como trapaceiro."
+    "texto1": "🕵️ *O Inquisidor* revisou suas contas e encontrou valores impossíveis. Seus recursos foram resetados ao mínimo e você foi marcado como trapaceiro.",
+    "texto_grupo": "🕵️ *O Inquisidor* revisou a conta de {usuario} e encontrou valores impossíveis. A conta foi resetada ao mínimo e marcada como trapaça."
   }
 }

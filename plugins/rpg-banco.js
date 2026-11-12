@@ -1,5 +1,4 @@
-import { getUserStats, setUserStats } from '../lib/stats.js'
-import { LIMITES } from '../lib/antiCheat.js'
+import { getUserStats, setUserStats, getTodosLosUsuarios } from '../lib/stats.js'
 import { idCanonico, mismoUsuario } from '../lib/identidad.js'
 import { resolveRealJidDeLid } from '../lib/funcion/pluginHelper.js'
 import {
@@ -49,8 +48,7 @@ async function depositar(conn, m, stats, args) {
     const res = calcularDeposito({
       billetera: saldoBilletera(stats, campo),
       guardado: banco[campo] || 0,
-      cantidad,
-      limite: LIMITES[campo]
+      cantidad
     })
     if (res.monto <= 0) continue
     stats[campo] = res.billetera
@@ -78,7 +76,6 @@ async function retirar(conn, m, stats, args) {
   const destinos = moneda ? [moneda] : (cantidad === 'all' ? [...CAMPOS_BANCO] : ['money'])
   let total = 0
   const lineas = []
-  const avisos = []
 
   for (const campo of destinos) {
     const meta = MONEDAS[campo]
@@ -86,12 +83,8 @@ async function retirar(conn, m, stats, args) {
     const res = calcularRetiro({
       billetera: saldoBilletera(stats, campo),
       guardado,
-      cantidad,
-      limite: LIMITES[campo]
+      cantidad
     })
-    if (cantidad !== 'all' && res.monto < cantidad && guardado >= cantidad) {
-      avisos.push(`> ⚠️ De *${meta.corto}* solo podés retirar *${nf(res.cupo)}* (límite del bot).`)
-    }
     if (res.monto <= 0) continue
     banco[campo] = res.guardado
     stats[campo] = res.billetera
@@ -101,13 +94,13 @@ async function retirar(conn, m, stats, args) {
 
   if (!total) {
     const motivo = moneda
-      ? `> ⚠️ No tenés *${MONEDAS[moneda].corto}* en el banco o ya llegaste al límite de la billetera.`
+      ? `> ⚠️ No tenés *${MONEDAS[moneda].corto}* en el banco.`
       : '> ⚠️ No tenés nada guardado en el banco.'
     return responder(conn, m, `🏦 *NO SE RETIRÓ NADA*\n\n${motivo}`)
   }
 
   setUserStats(m.sender, stats)
-  return responder(conn, m, `✅ *RETIRO*\n\n${lineas.join('\n')}\n${avisos.length ? avisos.join('\n') + '\n' : ''}\n> 👛 Ya está en tu billetera.`)
+  return responder(conn, m, `✅ *RETIRO*\n\n${lineas.join('\n')}\n\n> 👛 Ya está en tu billetera.`)
 }
 
 async function transferir(conn, m, stats, args) {
@@ -128,9 +121,6 @@ async function transferir(conn, m, stats, args) {
   }
   const destinoStats = getUserStats(destino)
   const bancoDestino = asegurarBanco(destinoStats.banco)
-  if ((bancoDestino[campo] || 0) + cantidad > (LIMITES[campo] || 0)) {
-    return responder(conn, m, '❌ El banco del destinatario está lleno para esa moneda.')
-  }
   banco[campo] -= cantidad
   bancoDestino[campo] = (bancoDestino[campo] || 0) + cantidad
   setUserStats(m.sender, stats)
@@ -155,15 +145,15 @@ async function cobrarInteres(conn, m, stats) {
   if (!interes.money && !interes.exp) {
     return responder(conn, m, `📈 *INTERÉS*\n\n> 💤 Todavía no generás interés.\n> 💡 Depositá diamantes o EXP con *.banco depositar*.`)
   }
-  banco.money = Math.min((LIMITES.money || 0), (banco.money || 0) + interes.money)
-  banco.exp = Math.min((LIMITES.exp || 0), (banco.exp || 0) + interes.exp)
+  banco.money = Math.round((banco.money || 0) + interes.money)
+  banco.exp = Math.round((banco.exp || 0) + interes.exp)
   banco.lastInterest = ahora
   setUserStats(m.sender, stats)
   return responder(conn, m, `🎁 *INTERÉS COBRADO*\n\n> 💎 *+${nf(interes.money)}* diamantes\n> ⭐ *+${nf(interes.exp)}* EXP\n> 🏦 Ya están en tu banco\n> ⏳ Próximo cobro en *24 h*`)
 }
 
 async function top(conn, m) {
-  const usuarios = global.db?.data?.users || {}
+  const usuarios = getTodosLosUsuarios() || {}
   const lista = []
   for (const [jid, datos] of Object.entries(usuarios)) {
     if (!jid.endsWith('@s.whatsapp.net')) continue
