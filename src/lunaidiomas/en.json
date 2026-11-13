@@ -479,8 +479,13 @@
         "juegos": "Enables games and fun in this chat.",
         "rpg": "Enables RPG, economy and levels in this chat.",
         "antimencion": "Blocks rankings and games that tag many users (.lb, tops, couples).",
-        "inactivos": "Usage: .enable inactivos (24h) or .enable inactivos 48 (48h). Valid values: 24, 48, 72, 96, 120, 144, 168. Removes members who don't write past the threshold. Warns by mention 1h before; if they write, they're saved. Max 5 per hour. Owners, subowners and admins never."
+        "inactivos": "Usage: .enable inactivos (24h) or .enable inactivos 48 (48h). Valid values: 24, 48, 72, 96, 120, 144, 168. Removes members who don't write past the threshold. Warns by mention 1h before; if they write, they're saved. Max 5 per hour. Owners, subowners and admins never.",
+        "antinumero": "Usage: *.enable antinumero 549* or *.enable antinumero 521 54* (several prefixes separated by space). The + sign works too (e.g. *+54*). Deletes the message and instantly kicks anyone writing from a number starting with those prefixes. Never touches owners, subowners or admins.",
+        "antiarabes": "Blocks, deletes the message and kicks numbers from Arab countries (Morocco, Algeria, Tunisia, Libya, Egypt, Sudan, Lebanon, Jordan, Syria, Iraq, Kuwait, Saudi Arabia, Yemen, Oman, Palestine, UAE, Bahrain, Qatar). Never touches owners, subowners or admins.",
+        "grupcall": "Rejects and kicks whoever starts a voice or video call *in the group*. Does not act on private calls. Never touches owners, subowners or admins."
       },
+      "antinumero_uso": "⚠️ Provide at least one prefix. E.g. *.enable antinumero 549* or *.enable antinumero 521 54*.",
+      "antinumero_invalido": "⚠️ Invalid prefix: *{p}*. Use digits only (with or without +), e.g. *549*, *521*, *+54*.",
       "solo_rowner_subbot": "🔒 Only the real owner of the main bot can change this. A SubBot cannot touch the global configuration."
     },
     "audio_efectos": {

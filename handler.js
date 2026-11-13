@@ -10,7 +10,7 @@ import chalk from 'chalk';
 import ws from 'ws';
 import { EventEmitter } from 'events';
 import { isVoiceMessage, handleVoiceMessage } from './plugins/voice-handler.js';
-import { getConfig } from './lib/funcConfig.js';
+import { getConfig, getConfigChatIds } from './lib/funcConfig.js';
 import { readFile } from 'fs/promises';
 import { addExp, getUserStats, setUserStats, registrarChatUsuario } from './lib/stats.js';
 import { getSinPrefijo } from './lib/sinPrefijo.js';
@@ -35,6 +35,8 @@ import { listOwners as listSystemOwners } from './lib/funcion/system-owners.js';
 import { marcarMotivo } from './lib/funcion/leave-reason.js';
 import { checkRateLimit, recordMessage, checkWarmupLimit, recordGlobalMessage, recordIncomingMessage } from './lib/funcion/private-rate-limit.js';
 import { bloqueadoEnSubbot, textoBloqueoSubbot } from './lib/funcion/subbot-seguridad.js';
+import { datosLlamada, participanteEsAutor, soloDigitos } from './lib/funcion/grupcall.js';
+import { esProtegido, jidParaExpulsar, jidDeMencion } from './lib/funcion/filtro-numeros.js';
 
 EventEmitter.defaultMaxListeners = 30;
 
@@ -955,6 +957,57 @@ export async function callUpdate(callUpdate) {
           const msg = `Hola *@${nk.from.split('@')[0]}*, ${tipoLlamada} ${tradutor.texto1}`;
           await conn.reply(nk.from, msg, false, { mentions: [nk.from] });
           await conn.updateBlockStatus(nk.from, 'block');
+        }
+
+        if (nk.isGroup && nk.status === 'offer') {
+          const datos = datosLlamada(nk);
+          if (!datos?.autorJid) continue;
+          const autor = datos.autorJid;
+          let esDuenio = false;
+          try { esDuenio = isProtectedOwner(autor, datos.autorNumero, conn); } catch {}
+          let grupo = null;
+          let participante = null;
+          for (const chatId of getConfigChatIds()) {
+            if (!String(chatId).includes('@g.us')) continue;
+            let cfg;
+            try { cfg = getConfig(chatId); } catch { continue; }
+            if (!cfg?.grupcall) continue;
+            let gd;
+            try { gd = await getGroupDataForPlugin(conn, chatId, autor); } catch { continue; }
+            if (!gd?.isBotAdmin) continue;
+            const encontrado = participanteEsAutor(gd?.participants, autor, datos.autorNumero);
+            if (!encontrado) continue;
+            if (!esDuenio && esProtegido(encontrado, conn, gd?.isAdmin)) continue;
+            grupo = chatId;
+            participante = encontrado;
+            break;
+          }
+          if (!grupo) continue;
+          const numero = datos.autorNumero || soloDigitos(participante?.id) || 'desconocido';
+          const mencion = jidDeMencion(participante, `${numero}@s.whatsapp.net`);
+          if (esDuenio) {
+            try {
+              await conn.sendMessage(grupo, {
+                text: `💖 *LLAMADA DE GRUPO*\n\n👤 *Usuario:* @${numero}\n📞 *Tipo:* ${datos.tipo}\n👑 *Las anti llamadas están activadas en este grupo, pero no te elimino porque sos mi dueñ@.* 💖`,
+                mentions: [mencion]
+              });
+            } catch {}
+            continue;
+          }
+          try { await conn.rejectCall(nk.id, autor); } catch {}
+          const objetivo = jidParaExpulsar(participante, autor);
+          let expulsado = false;
+          try {
+            marcarMotivo(grupo, [objetivo], { tipo: 'grupcall' });
+            await conn.groupParticipantsUpdate(grupo, [objetivo], 'remove');
+            expulsado = true;
+          } catch {}
+          try {
+            await conn.sendMessage(grupo, {
+              text: `📵 *LLAMADA DE GRUPO BLOQUEADA*\n\n👤 *Usuario:* @${numero}\n📞 *Tipo:* ${datos.tipo}\n${expulsado ? '✅ *Expulsado del grupo.*' : '⚠️ *No pude expulsarlo, avisen a un admin.*'}`,
+              mentions: [mencion]
+            });
+          } catch {}
         }
       } catch (e) {}
     }

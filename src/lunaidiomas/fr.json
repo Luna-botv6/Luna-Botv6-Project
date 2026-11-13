@@ -4117,8 +4117,13 @@
         "juegos": "Active les jeux et le divertissement dans ce chat.",
         "rpg": "Active le RPG, l'économie et les niveaux dans ce chat.",
         "antimencion": "Bloque les classements et les jeux qui mentionnent beaucoup d'utilisateurs (.lb, tops, parejas).",
-        "inactivos": "Utilisation : .enable inactivos (24 h) ou .enable inactivos 48 (48 h). Valeurs valides : 24, 48, 72, 96, 120, 144, 168. Expulse ceux qui n'écrivent pas passé le seuil. Prévient par mention 1 h avant ; s'ils écrivent, ils sont sauvés. Max 5 par heure. Owners, subowners et admins jamais."
+        "inactivos": "Utilisation : .enable inactivos (24 h) ou .enable inactivos 48 (48 h). Valeurs valides : 24, 48, 72, 96, 120, 144, 168. Expulse ceux qui n'écrivent pas passé le seuil. Prévient par mention 1 h avant ; s'ils écrivent, ils sont sauvés. Max 5 par heure. Owners, subowners et admins jamais.",
+        "antinumero": "Utilisation : *.enable antinumero 549* ou *.enable antinumero 521 54* (plusieurs préfixes séparés par un espace). Le signe + fonctionne aussi (ex. *+54*). Supprime le message et expulse immédiatement quiconque écrit depuis un numéro commençant par ces préfixes. Ne touche jamais aux owners, subowners ni admins.",
+        "antiarabes": "Bloque, supprime le message et expulse les numéros des pays arabes (Maroc, Algérie, Tunisie, Libye, Égypte, Soudan, Liban, Jordanie, Syrie, Irak, Koweït, Arabie saoudite, Yémen, Oman, Palestine, EAU, Bahreïn, Qatar). Ne touche jamais aux owners, subowners ni admins.",
+        "grupcall": "Rejette et expulse quiconque démarre un appel vocal ou vidéo *dans le groupe*. N'agit pas sur les appels privés. Ne touche jamais aux owners, subowners ni admins."
       },
+      "antinumero_uso": "⚠️ Indiquez au moins un préfixe. Ex : *.enable antinumero 549* ou *.enable antinumero 521 54*.",
+      "antinumero_invalido": "⚠️ Préfixe invalide : *{p}*. Utilisez uniquement des chiffres (avec ou sans +), ex : *549*, *521*, *+54*.",
       "solo_rowner_subbot": "🔒 Seul le owner réel du bot principal peut modifier ceci. Un SubBot ne peut pas toucher à la configuration globale."
     },
     "calcular": {

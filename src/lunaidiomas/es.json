@@ -614,8 +614,13 @@
         "juegos": "Activa juegos y diversión en este chat.",
         "rpg": "Activa RPG, economía y niveles en este chat.",
         "antimencion": "Bloquea rankings y juegos que etiquetan a muchos usuarios (.lb, tops, parejas).",
-        "inactivos": "Uso: .enable inactivos (24 h) o .enable inactivos 48 (48 h). Valores válidos: 24, 48, 72, 96, 120, 144, 168. Expulsa a quienes no escriben pasado el umbral. Avisa por mención 1 h antes; si escriben, se salvan. Máx 5 por hora. Owners, subowners y admins nunca."
+        "inactivos": "Uso: .enable inactivos (24 h) o .enable inactivos 48 (48 h). Valores válidos: 24, 48, 72, 96, 120, 144, 168. Expulsa a quienes no escriben pasado el umbral. Avisa por mención 1 h antes; si escriben, se salvan. Máx 5 por hora. Owners, subowners y admins nunca.",
+        "antinumero": "Uso: *.enable antinumero 549* o *.enable antinumero 521 54* (varios prefijos separados por espacio). Acepta el signo + (ej. *+54*). Borra el mensaje y expulsa al instante a quien escriba desde un número que empiece con esos prefijos. Nunca toca owners, subowners ni admins.",
+        "antiarabes": "Bloquea, borra el mensaje y expulsa a números de países árabes (Marruecos, Argelia, Túnez, Libia, Egipto, Sudán, Líbano, Jordania, Siria, Irak, Kuwait, Arabia, Yemen, Omán, Palestina, EAU, Baréin, Catar). Nunca toca owners, subowners ni admins.",
+        "grupcall": "Rechaza y expulsa a quien inicie una llamada de voz o video *en el grupo*. No actúa en llamadas privadas. Nunca toca owners, subowners ni admins."
       },
+      "antinumero_uso": "⚠️ Indicá al menos un prefijo. Ej: *.enable antinumero 549* o *.enable antinumero 521 54*.",
+      "antinumero_invalido": "⚠️ Prefijo inválido: *{p}*. Usá solo dígitos (con o sin +), ej: *549*, *521*, *+54*.",
       "solo_rowner_subbot": "🔒 Solo el owner real del bot principal puede cambiar esto. Un SubBot no puede tocar la configuración global."
     },
     "audio_efectos": {

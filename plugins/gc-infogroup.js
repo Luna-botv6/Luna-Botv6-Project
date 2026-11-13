@@ -70,6 +70,9 @@ ${listAdmin}
 > ◆ *Anti-Link2* » ${config.antiLink2 ? on : off}
 > ◆ *Anti-Tóxico* » ${config.antiToxic   ? on : off}
 > ◆ *Anti-Traba* » ${config.antiTraba    ? on : off}
+> ◆ *Anti-Números* » ${config.antinumero  ? on : off}
+> ◆ *Anti-Árabes* » ${config.antiarabes  ? on : off}
+> ◆ *Anti-Llamadas* » ${config.grupcall   ? on : off}
 > ◆ *Anti-Delete* » ${config.antidelete  ? on : off}
 > ◆ *Modo Admin* » ${config.modoadmin    ? on : off}
 > ◆ *Auto-Sticker* » ${config.autosticker ? on : off}
