@@ -8,6 +8,7 @@ import { isSubOwnerJid } from '../lib/funcion/system-owners.js';
 import { tienePoder } from '../lib/funcion/subowner-perms.js';
 import { validarHorasInactivos } from './admin-inactivos.js';
 import { sembrarGrupo, borrarGrupo } from '../lib/funcion/inactivosDB.js';
+import { parsearPrefijos, normalizarPrefijo, prefijosPropios } from '../lib/funcion/filtro-numeros.js';
 import fs from 'fs';
 
 import { mapaConfig, setSubowner, puedeEnPrivado } from '../lib/funcion/funciones-catalogo.js';
@@ -124,6 +125,18 @@ const handler = async (m, { conn, usedPrefix, command, args, isSubOwner }) => {
           keys: ['anti18']
         },
         {
+          emoji: '🚷',
+          title: 'Anti Números & Árabes',
+          desc: 'Bloquea, borra el mensaje y expulsa a números con prefijos definidos o de países árabes\n_Requiere ser admin_',
+          keys: ['antinumero', 'antiarabes']
+        },
+        {
+          emoji: '📵',
+          title: 'Anti Llamadas de Grupo',
+          desc: 'Rechaza y expulsa a quien inicie llamada de voz o video en el grupo\n_Requiere ser admin_',
+          keys: ['grupcall']
+        },
+        {
           emoji: '🔍',
           title: 'Detección',
           desc: 'Detecta y modera contenido en el grupo\n_Requiere ser admin_',
@@ -223,6 +236,21 @@ const handler = async (m, { conn, usedPrefix, command, args, isSubOwner }) => {
     }
   }
 
+  let antinumeroPrefijos = null;
+  if (type === 'antinumero') {
+    const nuevos = parsearPrefijos(args.slice(1));
+    const invalido = args.slice(1).find((a) => !normalizarPrefijo(a));
+    if (invalido) {
+      const txt = t.antinumero_invalido || '⚠️ Prefijo inválido: *{p}*. Usá solo dígitos (con o sin +), ej: *549*, *521*, *+54*.';
+      return m.reply(txt.replace('{p}', invalido));
+    }
+    if (nuevos.length) antinumeroPrefijos = nuevos;
+    const guardados = prefijosPropios(getConfig(m.chat));
+    if (isEnable && !antinumeroPrefijos && !guardados.length) {
+      return m.reply(t.antinumero_uso || '⚠️ Indicá al menos un prefijo. Ej: *.enable antinumero 549* o *.enable antinumero 521 54*.');
+    }
+  }
+
   if (config.file) {
     const saved = setOwnerFunction(type, isEnable);
     if (!saved) return m.reply(t.error_config);
@@ -241,6 +269,9 @@ const handler = async (m, { conn, usedPrefix, command, args, isSubOwner }) => {
         chat.inactivosHoras = 24;
         chat.inactivosPor = '';
       }
+    }
+    if (type === 'antinumero' && antinumeroPrefijos) {
+      chat.antinumeroPrefijos = antinumeroPrefijos;
     }
     await safeSetConfig(m.chat, chat);
     if (type === 'inactivos') {

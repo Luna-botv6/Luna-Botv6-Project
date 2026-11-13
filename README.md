@@ -4,7 +4,7 @@
 
 <br>
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&weight=900&size=22&pause=800&color=00FFF7&center=true&vCenter=true&width=750&lines=🌙+Bot+Avanzado+de+WhatsApp+con+IA;⚡+290%2B+Plugins+•+Multi-idioma+•+RPG;🤖+Inteligencia+Artificial+Conversacional;🛡️+Moderación+•+Juegos+•+Herramientas;✨+Creado+por+Germán+Miño+—+Argentina" alt="Typing SVG" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&weight=900&size=22&pause=800&color=00FFF7&center=true&vCenter=true&width=750&lines=🌙+Bot+Avanzado+de+WhatsApp+con+IA;⚡+375%2B+Plugins+•+Multi-idioma+•+RPG;🤖+Inteligencia+Artificial+Conversacional;🛡️+Moderación+•+Juegos+•+Herramientas;✨+Creado+por+Germán+Miño+—+Argentina" alt="Typing SVG" />
 
 <br>
 
@@ -31,7 +31,7 @@
     <img src="https://img.shields.io/badge/💬%20WhatsApp-Canal%20Oficial-25D366?style=for-the-badge&logo=whatsapp&logoColor=white&labelColor=128C7E" alt="WhatsApp"/>
   </a>
   <img src="https://img.shields.io/badge/🔥%20Estado-100%25%20OPERATIVO-00fff7?style=for-the-badge&logo=statuspage&logoColor=black&labelColor=0d0d0d" alt="Status"/>
-  <img src="https://img.shields.io/badge/🤖%20Plugins-290%2B-FF6B9D?style=for-the-badge&logo=electron&logoColor=white&labelColor=3d0a20" alt="Plugins"/>
+  <img src="https://img.shields.io/badge/🤖%20Plugins-375%2B-FF6B9D?style=for-the-badge&logo=electron&logoColor=white&labelColor=3d0a20" alt="Plugins"/>
 </p>
 
 <p>
@@ -56,7 +56,7 @@
 
 | | 💎 Detalle |
 |:---|:---|
-| 🤖 **Qué es** | Bot de WhatsApp con **290+ plugins** (400+ comandos reales) organizados por categoría |
+| 🤖 **Qué es** | Bot de WhatsApp con **375+ plugins** (700+ comandos y atajos) organizados por categoría |
 | 🧠 **IA propia** | Conversación natural **sin prefijos** (`@Luna` + lo que necesites) · agentes especializados: inteligencia, música/descargas y control |
 | 🌍 **Idiomas** | 🇪🇸 Español · 🇧🇷 Português · 🇺🇸 English — multi-idioma **por usuario** |
 | 📥 **Contenido** | Descargas YT/TikTok/IG/Spotify · juegos · RPG y economía · moderación · herramientas |
@@ -108,7 +108,7 @@
 
 ## ✨ ¿Qué es Luna Bot?
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=18&pause=1000&color=00FFF7&center=true&vCenter=true&width=650&lines=Bot+completo+para+WhatsApp+hecho+con+Baileys;IA+conversacional+•+290%2B+comandos+•+multi-idioma;Moderación+•+RPG+•+Economía+•+Multimedia" alt="Que es" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=18&pause=1000&color=00FFF7&center=true&vCenter=true&width=650&lines=Bot+completo+para+WhatsApp+hecho+con+Baileys;IA+conversacional+•+700%2B+comandos+•+multi-idioma;Moderación+•+RPG+•+Economía+•+Multimedia" alt="Que es" />
 
 </div>
 
@@ -119,7 +119,7 @@ const LunaBot = {
   version:     "6.0.0",
   estado:      "🔥 ACTIVO — 24/7",
   tecnologia:  "Baileys + LowDB + Agentes de Luna",
-  plugins:     "290+ comandos organizados por categoría",
+  plugins:     "375+ plugins · 700+ comandos y atajos",
   idiomas:     ["🇦🇷 Español", "🇧🇷 Português", "🇺🇸 English"],
   caracteristicas: [
     "🤖 IA conversacional con personalidad argentina",
@@ -317,134 +317,41 @@ Todo el sistema de Luna se programó con la seguridad como base. No hay procesos
 
 ## 🆕 Últimas Actualizaciones
 
-<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=20&pause=1000&color=00FFF7&center=true&vCenter=true&width=700&lines=🆕+Actualizaciones+Recientes;🛡️+Anti-Bot%3A+Captcha+NO+SOY+BOT+%2B+Ignorados+por+Grupo;✨+Sistema+Multi-Idioma+Integrado;🖼️+Personalizá+el+Menú+del+Bot" alt="Updates" />
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=20&pause=1000&color=00FFF7&center=true&vCenter=true&width=700&lines=🆕+Actualizaciones+Recientes;🛡️+Nuevos+filtros+por+grupo;🖼️+Cambiá+la+foto+del+grupo+con+.setimg" alt="Updates" />
 
 </div>
 
 <details open>
-<summary><b>🤝 11/10/2026 — Nuevo rol Subowner + Anti-inactivos 🧹</b></summary>
-
-<br>
-
-**🤝 Subowners: dueños de segunda línea**
-
-- El owner puede nombrar subowners (`.agregarsubowner @usuario`) que ayudan a moderar: banear/desbanear grupos y usuarios, bloqueos, ver listas, sacar al bot de grupos, prender funciones de grupo y reiniciar.
-- No tocan lo sensible: server, panel, archivos, economía ni otros owners. Y no pueden deshacer lo que baneó un owner.
-- Cada poder se prende/apaga desde el panel (sección Owners → Poderes del subowner).
-
-**🧹 Anti-inactivos: tu grupo se limpia solo**
-
-- `.enable inactivos` (24 h) o `.enable inactivos 48` (48 h). Valores válidos: 24, 48, 72, 96, 120, 144 o 168.
-- El bot avisa por mención 1 hora antes; si la persona escribe, se salva. Si no, la expulsa (máx. 5 por hora) y la despedida dice el motivo.
-- Owners, subowners, admins y el bot nunca son expulsados. También se configura desde el panel.
-
-</details>
-
-<details open>
-<summary><b>👑 09/10/2026 — Owners que se reconocen solos + aviso que etiqueta al dueño 📱</b></summary>
-
-<br>
-
-**👑 Tu número queda reconocido aunque WhatsApp te mande como LID**
-
-- Cada owner guarda un `systemlid` que el bot completa solo: con tu primer comando aprende tu ID interno y desde ahí te reconoce siempre, vengas como número o como LID.
-- Ya no hay que configurar ningún LID a mano: el número real en `system-owner.json` alcanza.
-- Si usás un comando de owner sin serlo, el aviso ahora es simple y directo: menciona con `@` al primer dueño (y nombra al resto), sin foto ni enlaces vacíos.
-
-</details>
-
-<details open>
-<summary><b>📲 08/10/2026 — Comandos desde tu propio número + Panel que se defiende solo 📱</b></summary>
-
-<br>
-
-**📲 Usá el bot desde tu propio WhatsApp**
-
-- Si Luna corre en tu número personal, ahora los comandos con prefijo (`.menu`, `.sticker`, `.miserver`, etc.) **sí responden** aunque salgan de tu propio número.
-- La charla libre, las menciones y los audios se siguen ignorando a propósito (anti-bucle).
-- Los comandos de owner real (`.miserver`, `.reparar`) piden que ese número esté en la lista de owners.
-
-**🛡️ Tu panel ahora se defiende solo**
-
-- Bloqueo automático ante contraseñas erradas.
-- Si tu link se filtra, pedí `.milink nuevo` y todos los viejos mueren al instante.
-- Los avisos del celu muestran menos datos.
-
-**📱 APK 1.6**
-
-- Te avisa sola cuando hay versión nueva.
-- Instalala encima de la anterior y bajala solo de este canal.
-
-**⚠️ Reglas de oro**
-
-- Link y contraseña no se comparten con NADIE.
-- Si algo raro pasa: `.password nueva` + `.milink nuevo`.
-- Solo instalen lo que paso yo por este canal.
-
-</details>
-
-<details open>
-<summary><b>🛡️ 23/09/2026 — Anti-Bot Definitivo: Captcha + Ignorados por Grupo + Panel 🗼</b></summary>
+<summary><b>🛡️ 14/11/2026 — Filtros nuevos por grupo + foto del grupo con `.setimg` 🖼️</b></summary>
 
 <br>
 
 <p>
-  <img src="https://img.shields.io/badge/✅%20Captcha-NO%20SOY%20BOT%20nativo-00fff7?style=for-the-badge&labelColor=0d0d0d"/>
-  <img src="https://img.shields.io/badge/👥%20Ignorados-Por%20grupo-8B5CF6?style=for-the-badge&labelColor=5B21B6"/>
-  <img src="https://img.shields.io/badge/🗼%20Panel-Bots%20ignorados%20con%20Quitar-EC4899?style=for-the-badge&labelColor=9F1239"/>
+  <img src="https://img.shields.io/badge/🚷%20Anti%20Números-por%20prefijo-00fff7?style=for-the-badge&labelColor=0d0d0d"/>
+  <img src="https://img.shields.io/badge/🕌%20Anti%20Árabes-automático-8B5CF6?style=for-the-badge&labelColor=5B21B6"/>
+  <img src="https://img.shields.io/badge/📵%20Anti%20Llamadas-de%20grupo-EC4899?style=for-the-badge&labelColor=9F1239"/>
 </p>
 
-**🧠 Captcha "NO SOY BOT" — nunca más se ignora a un humano por error**
+**🚷 Anti Números — bloqueá por prefijo de país**
 
-- Los mensajes de Luna llevan una **firma invisible** al ser reenviados; si se detecta ese reenvío, Luna le muestra al autor un botón **"NO SOY BOT"** dentro del propio chat.
-- Toca el botón → queda **verificado para siempre** (global, por número).
-- No lo toca y vuelve a reenviar → se ignora **solo en ese grupo**, no en todos.
+- `.enable antinumero 549` (o varios a la vez: `.enable antinumero 521 54`) — el bot borra el mensaje y **expulsa** a cualquier número que empiece con esos prefijos, tanto si escribe como si entra al grupo.
+- Guardá los prefijos una vez y después prendé/apagá el filtro con `.enable antinumero` / `.disable antinumero`.
 
-**👥 Ignorados por grupo (`.ignorarbot`)**
+**🕌 Anti Árabes — un toque y listo**
 
-- `add` / `remove` / `list` ahora operan **por grupo**: cada chat maneja su propia lista.
-- El `bots-ignorados.json` pasó a formato **versionado v2**: el formato viejo (que quedaba "roto" listando usuarios de más) se **limpia una sola vez** automáticamente y arranca de cero.
-- **Anti re-pregunta persistente**: un bot recibe el botón **una sola vez**; la 2ª vez que reenvía se ignora directo, aunque pasen horas, días o Luna reinicie.
+- `.enable antiarabes` — usa la lista estándar de prefijos árabes. Borra el mensaje y expulsa.
 
-**🗼 Torre de control**
+**📵 Anti Llamadas de Grupo — adiós al que llama**
 
-- Sección nueva **"Bots ignorados"**: cada número muestra el **nombre del grupo** donde está ignorado (o "Global (todos los chats)"), el origen (a mano / no confirmó el botón / legado) y filtro en vivo.
-- Botón **"Quitar"** por fila para des-ignorar directo desde el panel.
+- `.enable grupcall` — rechaza la llamada de grupo y **expulsa** al que la inició.
+- Si el que llama es **el dueño**, el bot no lo toca: le deja un aviso con un 💖 recordándole que las anti llamadas están activas en ese grupo.
+
+**🖼️ `.setimg` — cambiá la foto del grupo**
+
+- Respondé a una imagen con `.setimg` (alias de `.setppgc`) y el bot la pone como foto del grupo.
 
 > [!NOTE]
-> **¿Se le puede hablar a Luna desde su propio WhatsApp?** Sí, pero solo con comandos. Los mensajes que salen **del número de Luna** llevan la marca `fromMe`: si traen prefijo (`.menu`, `.sticker`, etc.) el bot los ejecuta (ideal si usás tu número personal como bot); la charla libre, las menciones `@Luna` y los audios se siguen ignorando para evitar bucles. Para todo lo demás, comandeala desde tu número (owner/rowner) en otro chat, o mencionala con `@Luna` en un grupo.
-
-</details>
-
-<details open>
-<summary><b>🌍 28/05/2026 — Sistema Multi-Idioma Global 🌐</b></summary>
-
-<br>
-
-<p>
-  <img src="https://img.shields.io/badge/✅%20es.json-Español-10B981?style=flat-square&labelColor=065F46"/>
-  <img src="https://img.shields.io/badge/✅%20en.json-English-3B82F6?style=flat-square&labelColor=1E3A8A"/>
-  <img src="https://img.shields.io/badge/✅%20pt.json-Português-F59E0B?style=flat-square&labelColor=78350F"/>
-</p>
-
-El bot ahora habla en el idioma de cada usuario de forma automática. Sin configuración manual, sin mensajes hardcodeados — todo sale del JSON correcto según el idioma guardado en la base de datos.
-
-**Lo que cambió:**
-- ✅ Todos los plugins usan variables dinámicas en lugar de texto fijo en español
-- ✅ Archivos `es.json`, `en.json` y `pt.json` unificados y completos
-- ✅ Estructura centralizada: `plugins.nombre_del_plugin`
-- ✅ Sistema escalable para agregar nuevos idiomas sin tocar el código
-- ✅ Código más limpio, mantenible y consistente
-
-**Cómo cambiar el idioma:**
-
-```bash
-.idioma es   # 🇦🇷 Español
-.idioma en   # 🇺🇸 English
-.idioma pt   # 🇧🇷 Português
-```
-
-El idioma se guarda automáticamente por usuario y todos los mensajes del bot se adaptan de inmediato.
+> Los 3 filtros y sus toggles también están en el panel (sección Funciones del grupo) y requieren que el bot sea **admin**. Owners y admins nunca son expulsados.
 
 </details>
 
@@ -824,7 +731,7 @@ Luna tiene **dos capas de caché persistente** que sobreviven a reinicios del se
 
 **`texto.json`** — Caché de respuestas de la IA. Si alguien pregunta algo similar, Luna responde instantáneamente desde disco sin llamadas externas.
 
-**`plugins-index.json`** — Índice de los 290+ plugins. La detección de comandos es **instantánea** sin tocar la red. Se actualiza automáticamente al recargar plugins.
+**`plugins-manifest.json`** — Índice de los 375+ plugins (con hash, peso y props de cada uno). La detección de comandos es **instantánea** sin tocar la red. Se regenera con `node scripts/gen-plugin-manifest.mjs` al recargar plugins.
 
 > [!TIP]
 > Podés ver el menú completo de la IA con el comando `.iamenu`
@@ -1132,14 +1039,30 @@ npm install
 pkg install ffmpeg -y
 ```
 
-**Paso 6 — Editar la configuración:**
+**Paso 6 — Configurar tu número de owner:**
+
+El `config.js` ya viene listo en el repositorio: **no hace falta tocarlo**. Tu número de owner va en `system-owner.json`, un archivo aparte que el bot crea solo en el primer arranque.
+
+Si querés dejarlo listo antes de arrancar:
+
 ```bash
-nano config.js
+nano system-owner.json
+```
+
+Pegá esto cambiando el número por el tuyo (con código de país, sin `+`):
+
+```json
+{
+  "version": 1,
+  "owners": [
+    { "numero": "5491112223333", "nombre": "Tu nombre" }
+  ]
+}
 ```
 
 Para guardar en nano: `Volumen Abajo + O` → Enter → `Volumen Abajo + X`
 
-> Tu número de owner **NO** va en `config.js`. Se pone en `system-owner.json` (ver [👑 Owners](#-owners-sin-tocar-configjs)): el bot lo crea solo en el primer arranque y lo detecta sin reiniciar.
+> Si no lo creás vos, el bot lo genera solo en el primer arranque. También podés agregar owners desde el panel o con `.agregarowner`. El campo `systemlid` lo completa el bot solo. Más detalle en [👑 Owners](#-owners-sin-tocar-configjs).
 
 **Paso 7 — Iniciar el bot:**
 ```bash
@@ -1211,8 +1134,6 @@ git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
 cd Luna-Botv6-Project
 sudo apt update && sudo apt install nodejs npm python3 ffmpeg -y
 npm install
-cp config.example.js config.js
-nano config.js
 npm start
 ```
 
@@ -1222,10 +1143,10 @@ git clone https://github.com/Luna-botv6/Luna-Botv6-Project.git
 cd Luna-Botv6-Project
 brew install node python3 ffmpeg
 npm install
-cp config.example.js config.js
-nano config.js
 npm start
 ```
+
+> Tu número de owner no va en `config.js` (ya viene listo en el repositorio): va en `system-owner.json`, que el bot crea solo en el primer arranque. Más detalle en [👑 Owners](#-owners-sin-tocar-configjs).
 
 </details>
 
@@ -1319,16 +1240,16 @@ Luna-Botv6-Project/
 │       ├── lid-resolver.js    # Resolución LID→JID (grupos, contactos, mapa)
 │       ├── system-owners.js   # Owners (fuente única, con systemlid)
 │       └── owners-manager.js  # Puente owners (panel + comandos)
-├── 📁 plugins/           # Comandos del bot (290+)
+├── 📁 plugins/           # Comandos del bot (375+)
 │   ├── game-*.js              # Juegos
 │   ├── tools-*.js             # Herramientas
 │   ├── gc-*.js                # Comandos de grupo
 │   └── lunaia/                # Sistema IA
 ├── 📁 src/
-│   └── lunaidiomas/      # Archivos de traducción JSON
+│   └── lunaidiomas/      # Traducciones JSON (es, en, pt, fr, ru, ar)
 │       ├── es.json            # Español
 │       ├── en.json            # English
-│       └── pt.json            # Português
+│       └── pt.json            # Português (y fr/ru/ar como traducciones extra)
 ├── 📁 MysticSession/     # Sesión de WhatsApp (no se sube)
 ├── 📄 main.js            # Núcleo del bot (socket, handler, reconexión)
 ├── 📄 handler.js         # Router de mensajes y permisos
@@ -1411,7 +1332,7 @@ Luna no solo se actualiza: **se cura sola** cuando algo se rompe.
 - [x] Sistema multi-idioma (ES/EN/PT)
 - [x] Personalización de menú (imagen/GIF/video)
 - [x] Agentes de Luna especializados
-- [ ] Panel web de administración para grupos
+- [x] Panel web de administración (Torre de Control)
 - [ ] Nuevos juegos multijugador
 - [ ] Más idiomas soportados
 
