@@ -8,6 +8,7 @@ const handler = async (m, { conn }) => {
 
     const quoted = m.quoted;
     const media = await quoted.download();
+    if (!media) throw (t.responde_imagen || '*⚠️️ Responde a una imagen.*');
     const groupJid = m.chat;
 
     async function resizeImage(buffer) {
@@ -20,11 +21,7 @@ const handler = async (m, { conn }) => {
 
     const { img } = await resizeImage(media);
 
-    await conn.query({
-      tag: 'iq',
-      attrs: { to: groupJid, type: 'set', xmlns: 'w:profile:picture' },
-      content: [{ tag: 'picture', attrs: { type: 'image' }, content: img }]
-    });
+    await conn.updateProfilePicture(groupJid, img);
 
     m.reply(t.exito || '⚘ *_Imagen actualizada con éxito._*');
   } catch {
@@ -32,9 +29,9 @@ const handler = async (m, { conn }) => {
   }
 };
 
-handler.help = ['setppgc'];
+handler.help = ['setimg', 'setppgc'];
 handler.tags = ['group', 'adm'];
-handler.command = /^setpp(gc|grup|group)$/i;
+handler.command = /^(setimg|setpp(gc|grup|group))$/i;
 handler.botAdmin = handler.admin = handler.group = true;
 
 export default handler;
