@@ -615,8 +615,8 @@
         "rpg": "Activa RPG, economía y niveles en este chat.",
         "antimencion": "Bloquea rankings y juegos que etiquetan a muchos usuarios (.lb, tops, parejas).",
         "inactivos": "Uso: .enable inactivos (24 h) o .enable inactivos 48 (48 h). Valores válidos: 24, 48, 72, 96, 120, 144, 168. Expulsa a quienes no escriben pasado el umbral. Avisa por mención 1 h antes; si escriben, se salvan. Máx 5 por hora. Owners, subowners y admins nunca.",
-        "antinumero": "Uso: *.enable antinumero 549* o *.enable antinumero 521 54* (varios prefijos separados por espacio). Acepta el signo + (ej. *+54*). Borra el mensaje y expulsa al instante a quien escriba desde un número que empiece con esos prefijos. Nunca toca owners, subowners ni admins.",
-        "antiarabes": "Bloquea, borra el mensaje y expulsa a números de países árabes (Marruecos, Argelia, Túnez, Libia, Egipto, Sudán, Líbano, Jordania, Siria, Irak, Kuwait, Arabia, Yemen, Omán, Palestina, EAU, Baréin, Catar). Nunca toca owners, subowners ni admins.",
+        "antinumero": "Uso: *.enable antinumero 549* o *.enable antinumero 521 54* (varios prefijos separados por espacio). Acepta el signo + (ej. *+54*). Borra el mensaje y expulsa al instante a quien escriba desde un número que empiece con esos prefijos. Nunca toca owners, subowners ni admins. Para exceptuar un número usá *.permitir @usuario* o *.permitir 5491123456789*.",
+        "antiarabes": "Bloquea, borra el mensaje y expulsa a números de países árabes (Marruecos, Argelia, Túnez, Libia, Egipto, Sudán, Líbano, Jordania, Siria, Irak, Kuwait, Arabia, Yemen, Omán, Palestina, EAU, Baréin, Catar). Nunca toca owners, subowners ni admins. Para exceptuar un número usá *.permitir @usuario* o *.permitir 5491123456789*.",
         "grupcall": "Rechaza y expulsa a quien inicie una llamada de voz o video *en el grupo*. No actúa en llamadas privadas. Nunca toca owners, subowners ni admins."
       },
       "antinumero_uso": "⚠️ Indicá al menos un prefijo. Ej: *.enable antinumero 549* o *.enable antinumero 521 54*.",
@@ -1415,6 +1415,47 @@
       "formato_horas_pl": "horas",
       "formato_y": "y",
       "sin_limite_fmt": "sin límite de tiempo"
+    },
+    "gc_repetir": {
+      "solo_grupos": "❌ Este comando solo funciona en grupos.",
+      "solo_admins": "⚠️ Solo los administradores pueden usar este comando.",
+      "uso": "🔁 *Repetir mensaje*\n\nRespondé a un mensaje con *{prefix}{cmd}* para repetirlo sin etiquetar a nadie.\n\n• *{prefix}{cmd} tu texto* → repite tu texto.\n• Si el mensaje tiene *@alguien*, se etiqueta solo a esa persona.\n• Funciona con texto, imagen, video, audio, sticker y documento.",
+      "sin_contenido": "❌ Respondé a un mensaje o escribí el texto que querés repetir.",
+      "viewonce": "⚠️ No puedo repetir contenido de una sola vez. Usá *{prefix}revelar* si necesitás verlo.",
+      "no_valido": "⚠️ Ese tipo de mensaje no lo puedo repetir.",
+      "error_descarga": "❌ No pude descargar el archivo de ese mensaje.",
+      "error": "❌ Error al repetir el mensaje."
+    },
+    "gc_inmunidad": {
+      "solo_grupos": "❌ Este comando solo funciona en grupos.",
+      "solo_admins": "⚠️ Solo los administradores pueden dar o quitar inmunidad.",
+      "uso": "🛡️ *Inmunidad*\n\n• *{prefix}{cmd} @usuario* → lo protege de mute, advertencias, expulsiones y borrado de mensajes.\n• *{prefix}{cmd} quitar @usuario* → le quita la inmunidad.\n• *{prefix}{cmd} lista* → muestra quiénes tienen inmunidad.",
+      "lista_titulo": "🛡️ *USUARIOS CON INMUNIDAD*",
+      "lista_vacia": "🛡️ *INMUNIDAD*\n\nNo hay usuarios con inmunidad en este grupo.",
+      "agregado": "🛡️ *INMUNIDAD OTORGADA*\n\n👤 *Usuario:* @{tag}\n👮 *Por:* @{por}\n\n_Ya no se le puede dar mute, advertir, expulsar ni borrar sus mensajes._",
+      "ya_es_inmune": "⚠️ @{tag} ya tiene inmunidad en este grupo.",
+      "quitado": "✅ *INMUNIDAD QUITADA*\n\n👤 *Usuario:* @{tag}\n\n_Vuelve a estar sujeto a las reglas del grupo._",
+      "no_era_inmune": "⚠️ @{tag} no tiene inmunidad en este grupo.",
+      "no_en_grupo": "❌ Ese usuario no está en el grupo.",
+      "no_numero": "❌ No pude identificar a ese usuario. Mencionalo con *@* o respondé a su mensaje.",
+      "admin_ya_protegido": "🛡️ @{tag} es administrador: ya está protegido y no se le puede dar mute.",
+      "owner_ya_protegido": "👑 @{tag} es owner/subowner: ya tiene protección total.",
+      "error": "❌ Error al procesar la inmunidad."
+    },
+    "gc_permitir": {
+      "solo_grupos": "❌ Este comando solo funciona en grupos.",
+      "solo_admins": "⚠️ Solo los administradores pueden permitir números en el grupo.",
+      "uso": "✅ *Permitir número (anti números / anti árabes)*\n\n• *{prefix}{cmd} @usuario* o *{prefix}{cmd} 5491123456789* → ese número puede estar y escribir en el grupo aunque su prefijo esté bloqueado.\n• *{prefix}{cmd} quitar @usuario* → le quita el permiso.\n• *{prefix}{cmd} lista* → muestra los números permitidos.\n\n_Sirve para los filtros *antinumero* y *antiarabes*._",
+      "lista_titulo": "✅ *NÚMEROS PERMITIDOS*",
+      "lista_vacia": "✅ *NÚMEROS PERMITIDOS*\n\nNo hay números permitidos en este grupo.",
+      "agregado": "✅ *NÚMERO PERMITIDO*\n\n📱 *Número:* {numero}\n👮 *Por:* @{por}\n\n_Ese número ya puede estar y escribir en el grupo aunque su prefijo esté bloqueado._",
+      "agregado_fuera": "✅ *NÚMERO PERMITIDO*\n\n📱 *Número:* {numero}\n👮 *Por:* @{por}\n\n_No está en el grupo todavía, pero cuando entre no lo va a expulsar._",
+      "ya_permitido": "⚠️ El número {numero} ya está permitido.",
+      "quitado": "✅ *PERMISO QUITADO*\n\n📱 *Número:* {numero}\n\n_Vuelve a estar sujeto a los filtros de números._",
+      "no_estaba": "⚠️ El número {numero} no estaba permitido.",
+      "numero_invalido": "❌ Número inválido. Mandá el número completo con código de país, ej: *5491123456789*.",
+      "no_numero": "❌ Mencioná al usuario, respondé a su mensaje o escribí el número completo.",
+      "error": "❌ Error al procesar el permiso."
     },
     "lista_mute": {
       "solo_grupos": "*[⚠] Este comando solo funciona en grupos*",

@@ -1,6 +1,7 @@
 import { getConfig, setConfig } from '../lib/funcConfig.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { marcarMotivo } from '../lib/funcion/leave-reason.js';
+import { esInmune } from '../lib/funcion/proteccion-grupo.js';
 
 const warnings = new Map();
 const MAX_WARNINGS = 3;
@@ -87,6 +88,7 @@ const handler = async (m, { conn }) => {
 
     const groupData = await getGroupDataForPlugin(conn, m.chat, m.sender);
     if (groupData.isAdmin) return;
+    if (esInmune(m.chat, m.sender, conn, groupData.participants)) return;
 
     const alConfig = getAntiLinkConfig(config);
     if (!hasBlockedLink(m.text, alConfig)) return;

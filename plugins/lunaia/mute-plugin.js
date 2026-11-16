@@ -1,5 +1,6 @@
 import { muteUser, unmuteUser, isUserMuted } from '../gc-mute.js';
 import { isProtectedOwner } from '../../lib/funcion/ownerGuard.js';
+import { esInmune } from '../../lib/funcion/proteccion-grupo.js';
 
 const BOT = () => global.BotName || 'Luna';
 
@@ -94,6 +95,21 @@ async function handle(text, { conn, msg, jid, mentionedJids, groupData }) {
       `negativo ${senderTag}, el owner tiene inmunidad total 🛡️ pero yo no tengo inmunidad para mutearte a vos 👀`
     ];
     return reply(ownerReplies[Math.floor(Math.random() * ownerReplies.length)], [targetRaw]);
+  }
+
+  const targetDigits = targetRaw.replace(/\D/g, '');
+  const targetParticipant = (participants || []).find(p =>
+    p.id === targetRaw || p.lid === targetRaw ||
+    String(p.id || '').replace(/\D/g, '') === targetDigits ||
+    String(p.lid || '').replace(/\D/g, '') === targetDigits
+  );
+
+  if (targetParticipant?.admin === 'admin' || targetParticipant?.admin === 'superadmin') {
+    return reply(`${senderTag} no puedo silenciar a un administrador del grupo 🛡️`, [targetRaw]);
+  }
+
+  if (esInmune(jid, targetParticipant || targetRaw, conn, participants)) {
+    return reply(`${senderTag} ${targetTag} tiene inmunidad en este grupo, no lo puedo silenciar 🛡️`, [targetRaw]);
   }
 
   if (isUserMuted(jid, targetRaw)) return reply(`${senderTag} ${targetTag} ya está silenciado 😅`, [targetRaw]);

@@ -3,6 +3,7 @@ import { getConfig, getConfigChatIds } from '../lib/funcConfig.js';
 import { getOwnerNumbers, getSubOwnerNumbers } from '../lib/funcion/system-owners.js';
 import { marcarMotivo } from '../lib/funcion/leave-reason.js';
 import { resolveRealJidDeLid } from '../lib/funcion/pluginHelper.js';
+import { numerosInmunes } from '../lib/funcion/proteccion-grupo.js';
 import {
   loadInactivos, getVisto, getAvisados, marcarAvisado, quitarAvisado,
   quitarVisto, limpiarGrupo, borrarGrupo, horaKey, contarKicksHora,
@@ -154,6 +155,7 @@ export async function procesarGrupo(conn, chat, cfg) {
     botJid,
     activador: cfg?.inactivosPor || ''
   });
+  for (const n of numerosInmunes(chat)) exentos.add(n);
   const jidsValidos = [];
   for (const p of participants) {
     if (p?.id) jidsValidos.push(p.id);

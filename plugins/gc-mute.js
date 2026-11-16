@@ -1,6 +1,8 @@
 import fs from 'fs';
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 import { marcarMotivo } from '../lib/funcion/leave-reason.js';
+import { esInmune, avisoInmunidad } from '../lib/funcion/proteccion-grupo.js';
+import { buscarParticipante } from '../lib/funcion/participantes.js';
 
 const NUM_WORDS = {
   'cero':0,'uno':1,'una':1,'dos':2,'tres':3,'cuatro':4,'cinco':5,
@@ -228,18 +230,14 @@ const handler = async (m, { conn, usedPrefix, isOwner, command }) => {
       return m.reply(tFallback.solo_grupos);
     }
 
-    const { participants, isAdmin, isBotAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
+    let { participants, isAdmin, isBotAdmin } = await getGroupDataForPlugin(conn, m.chat, m.sender);
     const idioma = global.db?.data?.users?.[m.sender]?.language || global.defaultLenguaje;
     const t = getT(idioma);
 
     if (!isBotAdmin) return m.reply(t.bot_no_admin);
     if (!isAdmin && !isOwner) return m.reply(t.solo_admins);
 
-    const resolveLid = (jid) => {
-      if (!jid) return null;
-      if (!jid.includes('@lid')) return jid;
-      return participants.find(u => u.lid === jid)?.id || null;
-    };
+    const resolveLid = (jid) => buscarParticipante(participants, jid, conn)?.id || null;
 
     const isMuteCmd   = /^(mute|silenciar)$/i.test(command);
     const isUnmuteCmd = /^(unmute|dessilenciar)$/i.test(command);
@@ -259,13 +257,42 @@ const handler = async (m, { conn, usedPrefix, isOwner, command }) => {
       return m.reply(`${t.uso_unmute} ${usedPrefix}${command} @usuario`);
     }
 
-    const exists = participants.find(p => p.id === user);
+    let exists = buscarParticipante(participants, user, conn);
+
+    if (!exists) {
+      try {
+        clearGroupCache(m.chat, conn);
+        const fresco = await getGroupDataForPlugin(conn, m.chat, m.sender);
+        participants = fresco.participants || [];
+        exists = buscarParticipante(participants, user, conn);
+      } catch {}
+    }
+
     if (!exists) return m.reply(t.usuario_no_encontrado);
+
+    if (exists?.id) user = exists.id;
 
     const adminTag = `@${m.sender.split('@')[0]}`;
     const userTag  = `@${user.split('@')[0]}`;
 
     if (isMuteCmd) {
+      if (exists.admin === 'admin' || exists.admin === 'superadmin') {
+        return m.reply(t.no_admin || '*[⚠] No puedo silenciar a un administrador del grupo.*');
+      }
+      if (esInmune(m.chat, exists, conn, participants)) {
+        const aviso = avisoInmunidad({
+          chat: m.chat,
+          jid: exists,
+          conn,
+          participants,
+          accion: 'mute',
+          prefix: usedPrefix
+        });
+        if (aviso) {
+          return conn.sendMessage(m.chat, { text: aviso.texto, mentions: aviso.mentions }, { quoted: m });
+        }
+        return m.reply(t.inmune || '*[⚠] Ese usuario tiene inmunidad en este grupo.*');
+      }
       if (isUserMuted(m.chat, user)) return m.reply(`*[⚠] ${userTag} ${t.ya_silenciado}`);
 
       const textSinMenciones = (m.text || '').replace(/@\d+/g, '').trim();

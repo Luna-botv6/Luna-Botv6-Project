@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { removeWarning } from '../lib/advertencias.js';
+import { buscarParticipante } from '../lib/funcion/participantes.js';
 
 function getT(idioma) {
   try {
@@ -21,15 +22,11 @@ const handler = async (m, { conn, isOwner, usedPrefix, command }) => {
   let target = m.mentionedJid?.[0] || m.quoted?.sender;
   if (!target) return m.reply(t.uso.replace('{prefix}', usedPrefix).replace('{cmd}', command));
 
-  const resolveLid = (jid) => {
-    if (!jid?.includes('@lid')) return jid;
-    const p = participants.find(x => x.lid === jid);
-    return p?.id || null;
-  };
+  const resolveLid = (jid) => buscarParticipante(participants, jid, conn)?.id || null;
 
   target = resolveLid(target) || target;
 
-  const finalCheck = participants.find(p => p.id === target);
+  const finalCheck = buscarParticipante(participants, target, conn);
   if (!finalCheck) return m.reply(t.no_en_grupo);
 
   target = finalCheck.id;
