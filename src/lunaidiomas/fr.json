@@ -4589,6 +4589,47 @@
       "formato_y": "et",
       "sin_limite_fmt": "sans limite de temps"
     },
+    "gc_repetir": {
+      "solo_grupos": "❌ Cette commande ne fonctionne que dans les groupes.",
+      "solo_admins": "⚠️ Seuls les administrateurs du groupe peuvent utiliser cette commande.",
+      "uso": "🔁 *Répéter un message*\n\nRépondez à un message avec *{prefix}{cmd}* pour le répéter sans mentionner personne.\n\n• *{prefix}{cmd} votre texte* → répète votre texte.\n• Si le message contient *@quelqu'un*, seule cette personne est mentionnée.\n• Fonctionne avec texte, image, vidéo, audio, sticker et document.",
+      "sin_contenido": "❌ Répondez à un message ou écrivez le texte à répéter.",
+      "viewonce": "⚠️ Je ne peux pas répéter un contenu à vue unique. Utilisez *{prefix}revelar* si besoin.",
+      "no_valido": "⚠️ Je ne peux pas répéter ce type de message.",
+      "error_descarga": "❌ Je n'ai pas pu télécharger le fichier de ce message.",
+      "error": "❌ Erreur lors de la répétition du message."
+    },
+    "gc_inmunidad": {
+      "solo_grupos": "❌ Cette commande ne fonctionne que dans les groupes.",
+      "solo_admins": "⚠️ Seuls les admins peuvent donner ou retirer l'immunité.",
+      "uso": "🛡️ *Immunité*\n\n• *{prefix}{cmd} @utilisateur* → le protège du mute, des avertissements, des expulsions et de la suppression de messages.\n• *{prefix}{cmd} retirer @utilisateur* → retire l'immunité.\n• *{prefix}{cmd} liste* → affiche qui a l'immunité.",
+      "lista_titulo": "🛡️ *UTILISATEURS IMMUNISÉS*",
+      "lista_vacia": "🛡️ *IMMUNITÉ*\n\nAucun utilisateur n'a l'immunité dans ce groupe.",
+      "agregado": "🛡️ *IMMUNITÉ ACCORDÉE*\n\n👤 *Utilisateur:* @{tag}\n👮 *Par:* @{por}\n\n_Il ne peut plus être mute, averti, expulsé ni avoir ses messages supprimés._",
+      "ya_es_inmune": "⚠️ @{tag} a déjà l'immunité dans ce groupe.",
+      "quitado": "✅ *IMMUNITÉ RETIRÉE*\n\n👤 *Utilisateur:* @{tag}\n\n_Il est de nouveau soumis aux règles du groupe._",
+      "no_era_inmune": "⚠️ @{tag} n'a pas l'immunité dans ce groupe.",
+      "no_en_grupo": "❌ Cet utilisateur n'est pas dans le groupe.",
+      "no_numero": "❌ Je n'ai pas pu identifier cet utilisateur. Mentionnez-le avec *@* ou répondez à son message.",
+      "admin_ya_protegido": "🛡️ @{tag} est administrateur : il est déjà protégé et ne peut pas être mute.",
+      "owner_ya_protegido": "👑 @{tag} est owner/subowner : il a déjà une protection totale.",
+      "error": "❌ Erreur lors du traitement de l'immunité."
+    },
+    "gc_permitir": {
+      "solo_grupos": "❌ Cette commande ne fonctionne que dans les groupes.",
+      "solo_admins": "⚠️ Seuls les admins peuvent autoriser des numéros dans le groupe.",
+      "uso": "✅ *Autoriser un numéro (anti-numéro / anti-arabe)*\n\n• *{prefix}{cmd} @utilisateur* ou *{prefix}{cmd} 5491123456789* → ce numéro peut rester et écrire dans le groupe même si son préfixe est bloqué.\n• *{prefix}{cmd} retirer @utilisateur* → retire l'autorisation.\n• *{prefix}{cmd} liste* → affiche les numéros autorisés.\n\n_Fonctionne avec les filtres *antinumero* et *antiarabes*._",
+      "lista_titulo": "✅ *NUMÉROS AUTORISÉS*",
+      "lista_vacia": "✅ *NUMÉROS AUTORISÉS*\n\nAucun numéro n'est autorisé dans ce groupe.",
+      "agregado": "✅ *NUMÉRO AUTORISÉ*\n\n📱 *Numéro:* {numero}\n👮 *Par:* @{por}\n\n_Ce numéro peut rester et écrire dans le groupe même si son préfixe est bloqué._",
+      "agregado_fuera": "✅ *NUMÉRO AUTORISÉ*\n\n📱 *Numéro:* {numero}\n👮 *Par:* @{por}\n\n_Il n'est pas encore dans le groupe, mais il ne sera pas expulsé à son entrée._",
+      "ya_permitido": "⚠️ Le numéro {numero} est déjà autorisé.",
+      "quitado": "✅ *AUTORISATION RETIRÉE*\n\n📱 *Numéro:* {numero}\n\n_Il est de nouveau soumis aux filtres de numéros._",
+      "no_estaba": "⚠️ Le numéro {numero} n'était pas autorisé.",
+      "numero_invalido": "❌ Numéro invalide. Envoyez le numéro complet avec l'indicatif pays, ex : *5491123456789*.",
+      "no_numero": "❌ Mentionnez l'utilisateur, répondez à son message ou écrivez le numéro complet.",
+      "error": "❌ Erreur lors du traitement de l'autorisation."
+    },
     "lista_mute": {
       "solo_grupos": "*[⚠] Cette commande ne fonctionne que dans les groupes*",
       "sin_silenciados": "*[✅] Aucun utilisateur en sourdine dans ce groupe*",

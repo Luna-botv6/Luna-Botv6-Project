@@ -2,6 +2,8 @@ import fs from 'fs';
 import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 import { addWarning, resetWarnings } from '../lib/advertencias.js';
 import { marcarMotivo } from '../lib/funcion/leave-reason.js';
+import { esInmune, avisoInmunidad } from '../lib/funcion/proteccion-grupo.js';
+import { buscarParticipante } from '../lib/funcion/participantes.js';
 
 function getT(idioma) {
   try {
@@ -26,16 +28,36 @@ const handler = async (m, { conn, text, isOwner, usedPrefix, command }) => {
   if (!target) return m.reply(t.uso.replace('{prefix}', usedPrefix).replace('{cmd}', command));
   if (target === conn.user.jid) return m.reply(t.no_auto);
 
-  const resolveLid = (jid) => {
-    if (!jid?.includes('@lid')) return jid;
-    const p = participants.find(x => x.lid === jid);
-    return p?.id || null;
-  };
+  const resolveLid = (jid) => buscarParticipante(participants, jid, conn)?.id || null;
 
   target = resolveLid(target) || target;
 
-  const finalCheck = participants.find(p => p.id === target);
+  let finalCheck = buscarParticipante(participants, target, conn);
+  if (!finalCheck) {
+    try {
+      clearGroupCache(m.chat, conn);
+      const fresco = await getGroupDataForPlugin(conn, m.chat, m.sender);
+      finalCheck = buscarParticipante(fresco.participants || [], target, conn);
+    } catch {}
+  }
   if (!finalCheck) return m.reply(t.no_en_grupo);
+
+  if (finalCheck.admin === 'admin' || finalCheck.admin === 'superadmin') {
+    return m.reply(t.no_admin || '⚠️ No puedo advertir a un administrador del grupo.');
+  }
+
+  if (esInmune(m.chat, finalCheck, conn, participants)) {
+    const aviso = avisoInmunidad({
+      chat: m.chat,
+      jid: finalCheck,
+      conn,
+      participants,
+      accion: 'warn',
+      prefix: usedPrefix
+    });
+    if (aviso) return conn.sendMessage(m.chat, { text: aviso.texto, mentions: aviso.mentions }, { quoted: m });
+    return m.reply(t.inmune || '⚠️ Ese usuario tiene inmunidad en este grupo.');
+  }
 
   target = finalCheck.id;
   const reason = text?.replace(/@\d+/g, '').trim() || t.sin_motivo;

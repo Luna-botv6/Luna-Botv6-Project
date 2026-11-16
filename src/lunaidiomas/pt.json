@@ -1236,6 +1236,47 @@
       "rpg9": "pesca",
       "rpg10": "craft receitas"
     },
+    "gc_repetir": {
+      "solo_grupos": "❌ Este comando só funciona em grupos.",
+      "solo_admins": "⚠️ Apenas administradores do grupo podem usar este comando.",
+      "uso": "🔁 *Repetir mensagem*\n\nResponda a uma mensagem com *{prefix}{cmd}* para repeti-la sem marcar ninguém.\n\n• *{prefix}{cmd} seu texto* → repete seu texto.\n• Se a mensagem tiver *@alguém*, só essa pessoa é marcada.\n• Funciona com texto, imagem, vídeo, áudio, figurinha e documento.",
+      "sin_contenido": "❌ Responda a uma mensagem ou escreva o texto que deseja repetir.",
+      "viewonce": "⚠️ Não posso repetir conteúdo de visualização única. Use *{prefix}revelar* se precisar ver.",
+      "no_valido": "⚠️ Não posso repetir esse tipo de mensagem.",
+      "error_descarga": "❌ Não consegui baixar o arquivo dessa mensagem.",
+      "error": "❌ Erro ao repetir a mensagem."
+    },
+    "gc_inmunidad": {
+      "solo_grupos": "❌ Este comando só funciona em grupos.",
+      "solo_admins": "⚠️ Apenas administradores podem dar ou remover imunidade.",
+      "uso": "🛡️ *Imunidade*\n\n• *{prefix}{cmd} @usuário* → protege de mute, advertências, expulsões e exclusão de mensagens.\n• *{prefix}{cmd} remover @usuário* → remove a imunidade.\n• *{prefix}{cmd} lista* → mostra quem tem imunidade.",
+      "lista_titulo": "🛡️ *USUÁRIOS COM IMUNIDADE*",
+      "lista_vacia": "🛡️ *IMUNIDADE*\n\nNenhum usuário tem imunidade neste grupo.",
+      "agregado": "🛡️ *IMUNIDADE CONCEDIDA*\n\n👤 *Usuário:* @{tag}\n👮 *Por:* @{por}\n\n_Não pode mais receber mute, advertência, expulsão nem ter mensagens apagadas._",
+      "ya_es_inmune": "⚠️ @{tag} já tem imunidade neste grupo.",
+      "quitado": "✅ *IMUNIDADE REMOVIDA*\n\n👤 *Usuário:* @{tag}\n\n_Volta a estar sujeito às regras do grupo._",
+      "no_era_inmune": "⚠️ @{tag} não tem imunidade neste grupo.",
+      "no_en_grupo": "❌ Esse usuário não está no grupo.",
+      "no_numero": "❌ Não consegui identificar esse usuário. Marque com *@* ou responda à mensagem dele.",
+      "admin_ya_protegido": "🛡️ @{tag} é administrador: já está protegido e não pode receber mute.",
+      "owner_ya_protegido": "👑 @{tag} é owner/subowner: já tem proteção total.",
+      "error": "❌ Erro ao processar a imunidade."
+    },
+    "gc_permitir": {
+      "solo_grupos": "❌ Este comando só funciona em grupos.",
+      "solo_admins": "⚠️ Apenas administradores podem permitir números no grupo.",
+      "uso": "✅ *Permitir número (anti números / anti árabes)*\n\n• *{prefix}{cmd} @usuário* ou *{prefix}{cmd} 5491123456789* → esse número pode ficar e escrever no grupo mesmo que o prefixo esteja bloqueado.\n• *{prefix}{cmd} remover @usuário* → remove a permissão.\n• *{prefix}{cmd} lista* → mostra os números permitidos.\n\n_Funciona com os filtros *antinumero* e *antiarabes*._",
+      "lista_titulo": "✅ *NÚMEROS PERMITIDOS*",
+      "lista_vacia": "✅ *NÚMEROS PERMITIDOS*\n\nNão há números permitidos neste grupo.",
+      "agregado": "✅ *NÚMERO PERMITIDO*\n\n📱 *Número:* {numero}\n👮 *Por:* @{por}\n\n_Ese número já pode ficar e escrever no grupo mesmo que o prefixo esteja bloqueado._",
+      "agregado_fuera": "✅ *NÚMERO PERMITIDO*\n\n📱 *Número:* {numero}\n👮 *Por:* @{por}\n\n_Ainda não está no grupo, mas quando entrar não será expulso._",
+      "ya_permitido": "⚠️ O número {numero} já está permitido.",
+      "quitado": "✅ *PERMISSÃO REMOVIDA*\n\n📱 *Número:* {numero}\n\n_Volta a estar sujeito aos filtros de números._",
+      "no_estaba": "⚠️ O número {numero} não estava permitido.",
+      "numero_invalido": "❌ Número inválido. Envie o número completo com código do país, ex: *5491123456789*.",
+      "no_numero": "❌ Marque o usuário, responda à mensagem dele ou escreva o número completo.",
+      "error": "❌ Erro ao processar a permissão."
+    },
     "lista_mute": {
       "expira": "expira em *{min} min*",
       "sin_limite": "sem limite",

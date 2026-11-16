@@ -8,6 +8,7 @@ import { cargarOGenerarAPIKey } from '../src/libraries/api/apiKeyManager.js';
 import { obtenerMenuChat, verificarMenuChat } from '../src/assets/images/menu/languages/es/menu-img.js';
 import { isProtectedOwner } from '../lib/funcion/ownerGuard.js';
 import { marcarMotivo } from '../lib/funcion/leave-reason.js';
+import { esInmune } from '../lib/funcion/proteccion-grupo.js';
 
 let _sharp = null
 const getSharp = async () => {
@@ -475,7 +476,7 @@ handler.before = async function (m, { conn }) {
   const t = _tr?.plugins?.admin_anti18 || {};
 
   const isOwnerSender = esOwner(m.sender, conn);
-  const isPrivilegiado = groupData.isAdmin || isOwnerSender;
+  const isPrivilegiado = groupData.isAdmin || isOwnerSender || esInmune(m.chat, m.sender, conn, groupData.participants);
 
   const tipo = m.mtype;
 

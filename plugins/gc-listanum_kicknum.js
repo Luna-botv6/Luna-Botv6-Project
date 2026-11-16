@@ -3,6 +3,7 @@
 
 import fs from 'fs';
 import { marcarMotivo } from '../lib/funcion/leave-reason.js';
+import { esInmune } from '../lib/funcion/proteccion-grupo.js';
 
 const handler = async (m, {conn, args, groupMetadata, participants, usedPrefix, command, isBotAdmin, isSuperAdmin}) => {
   const datas = global;
@@ -31,6 +32,7 @@ const handler = async (m, {conn, args, groupMetadata, participants, usedPrefix, 
     for (const user of users) {
       const error = `@${user.split('@')[0]} ${tradutor.texto8}`;
       if (user !== ownerGroup + '@s.whatsapp.net' && user !== global.conn.user.jid && user !== global.owner + '@s.whatsapp.net' && user.startsWith(lol || lol) && user !== isSuperAdmin && isBotAdmin && bot.restrict) {
+        if (esInmune(m.chat, user, conn, participants || [])) continue;
         await delay(2000);
         marcarMotivo(m.chat, [user], { tipo: 'listanum', autor: m.sender });
         const responseb = await conn.groupParticipantsUpdate(m.chat, [user], 'remove');

@@ -1,6 +1,8 @@
 import fs from 'fs';
 import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
 import { marcarMotivo } from '../lib/funcion/leave-reason.js';
+import { esInmune, avisoInmunidad } from '../lib/funcion/proteccion-grupo.js';
+import { buscarParticipante } from '../lib/funcion/participantes.js';
 
 const cooldowns = new Map();
 
@@ -49,11 +51,7 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
       return jid;
     };
 
-    const findParticipantByJid = (jid) => {
-      if (!jid) return null;
-      const decoded = conn.decodeJid(jid);
-      return groupParticipants.find(p => conn.decodeJid(p.id) === decoded);
-    };
+    const findParticipantByJid = (jid) => buscarParticipante(groupParticipants, jid, conn);
 
     let targetJid = null;
     let reason    = '';
@@ -87,6 +85,19 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
     if (!targetParticipant)  return m.reply(t.not_in_group    || '*[◉] La persona mencionada no está en el grupo.*');
     if (targetParticipant.admin === 'admin' || targetParticipant.admin === 'superadmin') {
       return m.reply(t.cant_kick_admin || '*[◉] No puedo expulsar a un administrador del grupo.*');
+    }
+
+    if (esInmune(chatId, targetParticipant, conn, groupParticipants)) {
+      const aviso = avisoInmunidad({
+        chat: chatId,
+        jid: targetParticipant,
+        conn,
+        participants: groupParticipants,
+        accion: 'kick',
+        prefix: usedPrefix
+      });
+      if (aviso) return conn.sendMessage(chatId, { text: aviso.texto, mentions: aviso.mentions }, { quoted: m });
+      return m.reply(t.inmune || '*[◉] Ese usuario tiene inmunidad en este grupo.*');
     }
 
     const jidToKick = targetParticipant.id;

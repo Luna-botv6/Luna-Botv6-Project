@@ -37,6 +37,7 @@ import { checkRateLimit, recordMessage, checkWarmupLimit, recordGlobalMessage, r
 import { bloqueadoEnSubbot, textoBloqueoSubbot } from './lib/funcion/subbot-seguridad.js';
 import { datosLlamada, participanteEsAutor, soloDigitos } from './lib/funcion/grupcall.js';
 import { esProtegido, jidParaExpulsar, jidDeMencion } from './lib/funcion/filtro-numeros.js';
+import { esInmune } from './lib/funcion/proteccion-grupo.js';
 
 EventEmitter.defaultMaxListeners = 30;
 
@@ -345,7 +346,14 @@ export async function handler(chatUpdate) {
     });
     if (_muteEntry) {
       const _isOwner = isProtectedOwner(sender, null, this);
-      if (!_isOwner) {
+      let _protegidoMute = _isOwner;
+      if (!_protegidoMute) {
+        try {
+          const _gdMute = await getGroupDataForPlugin(this, chat, sender);
+          _protegidoMute = _gdMute?.isAdmin === true || esInmune(chat, sender, this, _gdMute?.participants || []);
+        } catch {}
+      }
+      if (!_protegidoMute) {
         const _cachedForDel = global.groupCache?.get(chat);
         const _botJid = this.user?.jid ? this.decodeJid(this.user.jid) : '';
         const _botIsAdmin = _cachedForDel?.data?.participants?.some(p => p.id === _botJid && p.admin) ?? false;
@@ -455,7 +463,7 @@ export async function handler(chatUpdate) {
 
       await ensureBotSettings(this.user.jid);
 
-      try { if (m.isGroup && sender && chat) registrarActividad(chat, sender); } catch {}
+      try { if (m.isGroup && sender && chat && getConfig(chat)?.inactivos) registrarActividad(chat, sender); } catch {}
 
       if (!global.chatgpt.data.users[sender]) {
         global.chatgpt.data.users[sender] = [];
@@ -902,7 +910,11 @@ export async function handler(chatUpdate) {
 export async function participantsUpdate({ id, participants, action, author, authorPn }) {
   try {
     if (action === 'add' && id && Array.isArray(participants)) {
-      try { for (const p of participants) sembrarIngreso(id, typeof p === 'string' ? p : (p?.id || p?.lid)); } catch {}
+      try {
+        if (getConfig(id)?.inactivos) {
+          for (const p of participants) sembrarIngreso(id, typeof p === 'string' ? p : (p?.id || p?.lid));
+        }
+      } catch {}
     }
     const conn = currentConn || mconn?.conn || mconn;
     if (!conn?.user?.jid) return;
@@ -978,6 +990,7 @@ export async function callUpdate(callUpdate) {
             const encontrado = participanteEsAutor(gd?.participants, autor, datos.autorNumero);
             if (!encontrado) continue;
             if (!esDuenio && esProtegido(encontrado, conn, gd?.isAdmin)) continue;
+            if (!esDuenio && esInmune(chatId, encontrado, conn, gd?.participants)) continue;
             grupo = chatId;
             participante = encontrado;
             break;
