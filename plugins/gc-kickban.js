@@ -3,6 +3,8 @@ import { getGroupDataForPlugin, clearGroupCache, resolveRealJidDeLid, buscarNomb
 import { registrarKickban, listarKickbans, quitarKickban, normalizarNumero, obtenerKickban, contarGrupos } from '../lib/funcion/kickban-store.js';
 import { cinta, cabecera, titulo, pie, campo, fila, mensajeKickban, mensajeLista, mensajeSinRegistro, escapeCinta } from '../lib/funcion/kickban-estilo.js';
 import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
+import { esInmune, avisoInmunidad } from '../lib/funcion/proteccion-grupo.js';
+import { buscarParticipante as buscarParticipantePorJid } from '../lib/funcion/participantes.js';
 
 const cooldowns = new Map();
 const COOLDOWN_MS = 45 * 1000;
@@ -51,13 +53,7 @@ function resolverLid(jid, participants) {
 }
 
 function buscarParticipante(participants, raw) {
-  if (!raw) return null;
-  const digits = String(raw).replace(/\D/g, '');
-  return participants.find(p => p.id === raw)
-    || participants.find(p => p.lid === raw)
-    || participants.find(p => String(p.id || '').replace(/\D/g, '') === digits)
-    || participants.find(p => String(p.lid || '').replace(/\D/g, '') === digits)
-    || null;
+  return buscarParticipantePorJid(participants, raw, global.conn || null);
 }
 
 function sacarNumeroDeTexto(text) {
@@ -188,6 +184,19 @@ async function cmdKickban(m, ctx) {
 
   if (encontrado && (encontrado.admin === 'admin' || encontrado.admin === 'superadmin')) {
     return aviso(m, corto('🛡️', 'No puedo expulsar a un administrador', 'bajale el admin primero y reintentá.'));
+  }
+
+  if (esInmune(m.chat, encontrado || objetivo, conn, participants)) {
+    const avisoInm = avisoInmunidad({
+      chat: m.chat,
+      jid: encontrado || objetivo,
+      conn,
+      participants,
+      accion: 'ban',
+      prefix: usedPrefix
+    });
+    if (avisoInm) return aviso(m, avisoInm.texto, { mentions: avisoInm.mentions });
+    return aviso(m, corto('🛡️', 'Ese usuario tiene inmunidad', 'quitale la inmunidad primero y volvé a intentar.'));
   }
 
   if (!encontrado) {

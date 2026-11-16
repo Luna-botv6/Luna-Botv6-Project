@@ -2,6 +2,7 @@ import { getConfig } from '../lib/funcConfig.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { marcarMotivo } from '../lib/funcion/leave-reason.js';
 import { filtrosActivos, numeroBloqueado, esProtegido, jidParaExpulsar, jidDeMencion } from '../lib/funcion/filtro-numeros.js';
+import { esInmune, esNumeroPermitido } from '../lib/funcion/proteccion-grupo.js';
 
 const ETIQUETA = {
   antinumero: 'número no permitido',
@@ -40,6 +41,8 @@ const handler = async (m, { conn }) => {
     ) || m.sender;
 
     if (esProtegido(participante, conn, groupData.isAdmin)) return;
+    if (esInmune(m.chat, participante, conn, groupData.participants)) return;
+    if (esNumeroPermitido(m.chat, participante, conn, groupData.participants)) return;
 
     const match = numeroBloqueado(participante, filtros, conn);
     if (!match) return;

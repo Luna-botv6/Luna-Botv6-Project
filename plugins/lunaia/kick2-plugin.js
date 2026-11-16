@@ -10,6 +10,7 @@
 //   dispararse en medio de una frase larga sin relación), y se buscan con
 //   límite de palabra (\b) para que "echale sal" no dispare por "echa".
 import { isProtectedOwner } from '../../lib/funcion/ownerGuard.js';
+import { esInmune } from '../../lib/funcion/proteccion-grupo.js';
 const BOT = () => global.BotName || 'Luna';
 
 const STRONG_KEYWORDS = ['expulsa', 'expulsar', 'kickea'];
@@ -76,6 +77,10 @@ async function handle(text, { conn, msg, jid, mentionedJids, groupData }) {
 
   if (target.admin === 'admin' || target.admin === 'superadmin') {
     return reply(`${senderTag} no puedo expulsar a un admin 😅`);
+  }
+
+  if (esInmune(jid, target, conn, participants)) {
+    return reply(`${senderTag} ${'@' + targetId.split('@')[0]} tiene inmunidad en este grupo, no lo puedo expulsar 🛡️`, [targetId]);
   }
 
   const targetDigits = targetId.replace(/\D/g, '');

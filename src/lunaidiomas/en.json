@@ -480,7 +480,7 @@
         "rpg": "Enables RPG, economy and levels in this chat.",
         "antimencion": "Blocks rankings and games that tag many users (.lb, tops, couples).",
         "inactivos": "Usage: .enable inactivos (24h) or .enable inactivos 48 (48h). Valid values: 24, 48, 72, 96, 120, 144, 168. Removes members who don't write past the threshold. Warns by mention 1h before; if they write, they're saved. Max 5 per hour. Owners, subowners and admins never.",
-        "antinumero": "Usage: *.enable antinumero 549* or *.enable antinumero 521 54* (several prefixes separated by space). The + sign works too (e.g. *+54*). Deletes the message and instantly kicks anyone writing from a number starting with those prefixes. Never touches owners, subowners or admins.",
+        "antinumero": "Usage: *.enable antinumero 549* or *.enable antinumero 521 54* (several prefixes separated by space). The + sign works too (e.g. *+54*). Deletes the message and instantly kicks anyone writing from a number starting with those prefixes. Never touches owners, subowners or admins. To allow a specific number use *.permitir @user* or *.permitir 5491123456789*.",
         "antiarabes": "Blocks, deletes the message and kicks numbers from Arab countries (Morocco, Algeria, Tunisia, Libya, Egypt, Sudan, Lebanon, Jordan, Syria, Iraq, Kuwait, Saudi Arabia, Yemen, Oman, Palestine, UAE, Bahrain, Qatar). Never touches owners, subowners or admins.",
         "grupcall": "Rejects and kicks whoever starts a voice or video call *in the group*. Does not act on private calls. Never touches owners, subowners or admins."
       },
@@ -1301,6 +1301,47 @@
       "formato_horas_pl": "hours",
       "formato_y": "and",
       "sin_limite_fmt": "no time limit"
+    },
+    "gc_repetir": {
+      "solo_grupos": "❌ This command only works in groups.",
+      "solo_admins": "⚠️ Only group admins can use this command.",
+      "uso": "🔁 *Repeat message*\n\nReply to a message with *{prefix}{cmd}* to repeat it without tagging anyone.\n\n• *{prefix}{cmd} your text* → repeats your text.\n• If the message contains *@someone*, only that person is tagged.\n• Works with text, image, video, audio, sticker and document.",
+      "sin_contenido": "❌ Reply to a message or type the text you want to repeat.",
+      "viewonce": "⚠️ I can't repeat view-once content. Use *{prefix}revelar* if you need to see it.",
+      "no_valido": "⚠️ I can't repeat that type of message.",
+      "error_descarga": "❌ I couldn't download the file from that message.",
+      "error": "❌ Error repeating the message."
+    },
+    "gc_inmunidad": {
+      "solo_grupos": "❌ This command only works in groups.",
+      "solo_admins": "⚠️ Only admins can grant or remove immunity.",
+      "uso": "🛡️ *Immunity*\n\n• *{prefix}{cmd} @user* → protects them from mute, warnings, kicks and message deletion.\n• *{prefix}{cmd} remove @user* → removes immunity.\n• *{prefix}{cmd} list* → shows who has immunity.",
+      "lista_titulo": "🛡️ *IMMUNE USERS*",
+      "lista_vacia": "🛡️ *IMMUNITY*\n\nNo users have immunity in this group.",
+      "agregado": "🛡️ *IMMUNITY GRANTED*\n\n👤 *User:* @{tag}\n👮 *By:* @{por}\n\n_They can no longer be muted, warned, kicked or have their messages deleted._",
+      "ya_es_inmune": "⚠️ @{tag} already has immunity in this group.",
+      "quitado": "✅ *IMMUNITY REMOVED*\n\n👤 *User:* @{tag}\n\n_They are subject to the group rules again._",
+      "no_era_inmune": "⚠️ @{tag} doesn't have immunity in this group.",
+      "no_en_grupo": "❌ That user is not in the group.",
+      "no_numero": "❌ I couldn't identify that user. Mention them with *@* or reply to their message.",
+      "admin_ya_protegido": "🛡️ @{tag} is an admin: they are already protected and can't be muted.",
+      "owner_ya_protegido": "👑 @{tag} is the owner/subowner: they already have full protection.",
+      "error": "❌ Error processing immunity."
+    },
+    "gc_permitir": {
+      "solo_grupos": "❌ This command only works in groups.",
+      "solo_admins": "⚠️ Only admins can allow numbers in the group.",
+      "uso": "✅ *Allow number (anti-number / anti-Arab)*\n\n• *{prefix}{cmd} @user* or *{prefix}{cmd} 5491123456789* → that number can stay and write in the group even if its prefix is blocked.\n• *{prefix}{cmd} remove @user* → removes the permission.\n• *{prefix}{cmd} list* → shows allowed numbers.\n\n_Works with the *antinumero* and *antiarabes* filters._",
+      "lista_titulo": "✅ *ALLOWED NUMBERS*",
+      "lista_vacia": "✅ *ALLOWED NUMBERS*\n\nThere are no allowed numbers in this group.",
+      "agregado": "✅ *NUMBER ALLOWED*\n\n📱 *Number:* {numero}\n👮 *By:* @{por}\n\n_That number can now stay and write in the group even if its prefix is blocked._",
+      "agregado_fuera": "✅ *NUMBER ALLOWED*\n\n📱 *Number:* {numero}\n👮 *By:* @{por}\n\n_It's not in the group yet, but it won't be kicked when it joins._",
+      "ya_permitido": "⚠️ Number {numero} is already allowed.",
+      "quitado": "✅ *PERMISSION REMOVED*\n\n📱 *Number:* {numero}\n\n_It is subject to the number filters again._",
+      "no_estaba": "⚠️ Number {numero} was not allowed.",
+      "numero_invalido": "❌ Invalid number. Send the full number with country code, e.g. *5491123456789*.",
+      "no_numero": "❌ Mention the user, reply to their message or type the full number.",
+      "error": "❌ Error processing the permission."
     },
     "lista_mute": {
       "solo_grupos": "*[⚠] This command only works in groups*",

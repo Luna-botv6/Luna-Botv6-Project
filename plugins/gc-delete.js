@@ -1,11 +1,13 @@
 import { readFileSync } from 'fs';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { esInmune, avisoInmunidad } from '../lib/funcion/proteccion-grupo.js';
+import { buscarParticipante } from '../lib/funcion/participantes.js';
 
 const normalizeJid = (jid = '') => jid.replace(/:\d+@/, '@').trim();
 const deleteCooldown = new Map();
 const COOLDOWN_TIME = 5000;
 
-const handler = async (m, { conn, isOwner }) => {
+const handler = async (m, { conn, isOwner, usedPrefix }) => {
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje;
   const langData = JSON.parse(readFileSync(`./src/lunaidiomas/${idioma}.json`, 'utf-8'));
   const txt = langData?.plugins?.gc_delete || langData?.plugins?.gc_delete;
@@ -37,12 +39,7 @@ const handler = async (m, { conn, isOwner }) => {
 
   if (!m.quoted) return m.reply(txt.no_quoted);
 
-  const resolveLid = (jidOrLid) => {
-    if (!jidOrLid) return null;
-    if (!jidOrLid.includes('@lid')) return jidOrLid;
-    const match = participants.find((p) => p.lid === jidOrLid);
-    return match ? match.id : null;
-  };
+  const resolveLid = (jidOrLid) => buscarParticipante(participants, jidOrLid, conn)?.id || null;
 
   const quotedSender = m.quoted.sender
     ? resolveLid(m.quoted.sender) || m.quoted.sender
@@ -57,6 +54,19 @@ const handler = async (m, { conn, isOwner }) => {
     m.message?.extendedTextMessage?.contextInfo?.participant;
 
   if (!messageId || !participant) return m.reply(txt.error);
+
+  if (esInmune(m.chat, quotedSender || participant, conn, participants)) {
+    const aviso = avisoInmunidad({
+      chat: m.chat,
+      jid: quotedSender || participant,
+      conn,
+      participants,
+      accion: 'del',
+      prefix: usedPrefix || '.'
+    });
+    if (aviso) return conn.sendMessage(m.chat, { text: aviso.texto, mentions: aviso.mentions }, { quoted: m });
+    return m.reply(txt.inmune || '🛡️ Ese usuario tiene inmunidad: no puedo borrar sus mensajes.');
+  }
 
   try {
     await conn.sendMessage(m.chat, {
