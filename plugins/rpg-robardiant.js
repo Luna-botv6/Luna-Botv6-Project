@@ -5,7 +5,8 @@ import { checkHunterTrigger, checkHunterCapture } from '../lib/hunterSystem.js'
 import { tieneProteccion } from '../lib/usarprote.js'
 import { resolveMention } from '../lib/mentionHelper.js'
 import { idCanonico, mismoUsuario } from '../lib/identidad.js'
-import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
+import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js'
+import { buscarParticipante } from '../lib/funcion/participantes.js'
 import { defensaRobo } from '../lib/agenteSystem.js'
 
 const cooldownPath = './database/robCooldownMoney.json'
@@ -69,13 +70,16 @@ const handler = async (m, { conn, command, args }) => {
 
   if (m.isGroup) {
     const _g = await getGroupDataForPlugin(conn, m.chat, m.sender)
-    const _miembros = _g.participants || []
-    const _digitos = who.replace(/@[^@]+$/, '').replace(/[^0-9]/g, '')
-    const _esMiembro = _miembros.some(p =>
-      (p.id || '').replace(/@[^@]+$/, '').replace(/[^0-9]/g, '') === _digitos ||
-      (p.lid || '').replace(/@[^@]+$/, '').replace(/[^0-9]/g, '') === _digitos
-    )
-    if (_miembros.length > 0 && !_esMiembro) {
+    let _miembros = _g.participants || []
+    let _dentro = buscarParticipante(_miembros, who, conn)
+    if (!_dentro && _miembros.length > 0) {
+      clearGroupCache(m.chat, conn)
+      const _fresco = await getGroupDataForPlugin(conn, m.chat, m.sender)
+      _miembros = _fresco.participants || _miembros
+      _dentro = buscarParticipante(_miembros, who, conn)
+    }
+    if (_miembros.length > 0 && !_dentro) {
+      const _digitos = who.replace(/@[^@]+$/, '').replace(/[^0-9]/g, '')
       return m.reply(`🚫 @${_digitos} no está en este grupo. Solo podés robar diamantes a alguien que esté presente aquí (mención o respuesta a un mensaje suyo).`)
     }
   }
