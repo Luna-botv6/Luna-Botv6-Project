@@ -59,9 +59,10 @@ const handler = async (m, { conn, args, usedPrefix, command }) => {
   const resolveParticipant = (jid) => {
     const num = (jid || '').replace(/[^0-9]/g, '');
     return participants.find(pp =>
-      pp.id === jid || pp.lid === jid ||
-      (pp.id  || '').replace(/[^0-9]/g, '') === num ||
-      (pp.lid || '').replace(/[^0-9]/g, '') === num
+      pp.id === jid || pp.lid === jid || pp.phoneNumber === jid ||
+      (pp.id || '').replace(/[^0-9]/g, '') === num ||
+      (pp.lid || '').replace(/[^0-9]/g, '') === num ||
+      (pp.phoneNumber || '').replace(/[^0-9]/g, '') === num
     ) || null;
   };
 

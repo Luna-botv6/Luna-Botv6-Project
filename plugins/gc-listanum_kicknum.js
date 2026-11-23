@@ -4,6 +4,7 @@
 import fs from 'fs';
 import { marcarMotivo } from '../lib/funcion/leave-reason.js';
 import { esInmune } from '../lib/funcion/proteccion-grupo.js';
+import { soloDigitos } from '../lib/funcion/participantes.js';
 
 const handler = async (m, {conn, args, groupMetadata, participants, usedPrefix, command, isBotAdmin, isSuperAdmin}) => {
   const datas = global;
@@ -13,10 +14,15 @@ const handler = async (m, {conn, args, groupMetadata, participants, usedPrefix, 
 
   if (!args[0]) return m.reply(`${tradutor.texto1} ${usedPrefix + command} 52*`);
   if (isNaN(args[0])) return m.reply(`${tradutor.texto2} ${usedPrefix + command} 52*`);
-  const lol = args[0].replace(/[+]/g, '');
-  const ps = participants.map((u) => u.id).filter((v) => v !== conn.user.jid && v.startsWith(lol || lol));
+  const lol = args[0].replace(/[+]/g, '').replace(/\D/g, '');
+  const jidDe = (u) => u?.id || u?.phoneNumber || u?.lid || null;
+  const coincide = (u) => [u?.id, u?.lid, u?.phoneNumber]
+    .filter(Boolean)
+    .some((v) => soloDigitos(v).startsWith(lol));
+  const coincidentes = participants.filter((u) => u && coincide(u) && jidDe(u) !== conn.user.jid);
+  const ps = coincidentes.map(jidDe).filter(Boolean);
   const bot = global.db.data.settings[conn.user.jid] || {};
-  if (ps == '') return m.reply(`${tradutor.texto3} +${lol}*`);
+  if (!ps.length) return m.reply(`${tradutor.texto3} +${lol}*`);
   const numeros = ps.map((v)=> '⭔ @' + v.replace(/@.+/, ''));
   const delay = (time) => new Promise((res)=>setTimeout(res, time));
   switch (command) {
@@ -28,10 +34,9 @@ const handler = async (m, {conn, args, groupMetadata, participants, usedPrefix, 
     if (!isBotAdmin) return m.reply(tradutor.texto6);
     conn.reply(m.chat, `${tradutor.texto7[0]} +${lol}, ${tradutor.texto7[1]}`, m);
     const ownerGroup = m.chat.split`-`[0] + '@s.whatsapp.net';
-    const users = participants.map((u) => u.id).filter((v) => v !== conn.user.jid && v.startsWith(lol || lol));
-    for (const user of users) {
+    for (const user of ps) {
       const error = `@${user.split('@')[0]} ${tradutor.texto8}`;
-      if (user !== ownerGroup + '@s.whatsapp.net' && user !== global.conn.user.jid && user !== global.owner + '@s.whatsapp.net' && user.startsWith(lol || lol) && user !== isSuperAdmin && isBotAdmin && bot.restrict) {
+      if (user !== ownerGroup + '@s.whatsapp.net' && user !== global.conn.user.jid && user !== global.owner + '@s.whatsapp.net' && user !== isSuperAdmin && isBotAdmin && bot.restrict) {
         if (esInmune(m.chat, user, conn, participants || [])) continue;
         await delay(2000);
         marcarMotivo(m.chat, [user], { tipo: 'listanum', autor: m.sender });
