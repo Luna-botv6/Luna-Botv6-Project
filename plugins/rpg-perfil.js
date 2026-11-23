@@ -9,6 +9,7 @@ import { idCanonico } from '../lib/identidad.js'
 import { getHunterStatus } from '../lib/hunterSystem.js'
 import { getClanDeUsuario } from '../lib/clanSystem.js'
 import { getUserPosition } from '../lib/pvpSystem.js'
+import { estadoAgente, msBonito } from '../lib/agenteSystem.js'
 
 function tpl(str, vars) {
   if (!str) return ''
@@ -73,6 +74,11 @@ const handler = async (m, { conn, args }) => {
     ? `┃ ⚔️ ${tpl(t.pvp_line || '*PvP:* #{pos} — {puntos} pts ({wins}V/{losses}D)', { pos: pvp.pos, puntos: pvp.stats.points || 0, wins: pvp.stats.wins || 0, losses: pvp.stats.losses || 0 })}`
     : `┃ ⚔️ ${t.pvp_sin || '*PvP:* sin duelos esta semana'}`
 
+  const agenteInfo = estadoAgente(who)
+  const agenteLine = agenteInfo.activo
+    ? `┃ 🕵️ *Agente:* ${agenteInfo.agente.emoji} ${agenteInfo.agente.nombre} — ${msBonito(agenteInfo.restanteMs)}`
+    : `┃ 🕵️ *Agente:* ${agenteInfo.estado === 'caido' ? 'cayó por vos' : 'sin contratar'}`
+
   let profilePic = 'https://telegra.ph/file/06cc652844ea19e8aed1c.jpg'
   try { profilePic = await conn.profilePictureUrl(who, 'image') } catch {}
 
@@ -108,6 +114,7 @@ ${pvpLine}
 ┃ 🚨 *Bounty:* ${'⭐'.repeat(bountyStars) || '—'} (${bountyFine} 💎)
 ┃ ⛓️ *${t.estado || 'Estado'}:* ${capturedText}
 ┃ 🎯 *${t.amenaza || 'Amenaza'}:* ${hunterStatus.threat}%
+${agenteLine}
 ┃
 ┃ ✨ *Buffs:* ${buffText}
 ┃ 🎒 *${t.inventario || 'Inventario'}:* ${invItems}

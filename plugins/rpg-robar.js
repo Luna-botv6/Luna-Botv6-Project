@@ -6,6 +6,7 @@ import { tieneProteccion } from '../lib/usarprote.js'
 import { resolveMention } from '../lib/mentionHelper.js'
 import { idCanonico, mismoUsuario } from '../lib/identidad.js'
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js'
+import { defensaRobo } from '../lib/agenteSystem.js'
 
 const COOLDOWN_FILE = './database/robCooldown.json'
 const MAX_ROB = 3000
@@ -119,6 +120,14 @@ const handler = async (m, { conn, args }) => {
     }
   }
 
+  const defensa = defensaRobo(target)
+  let avisoAgente = ''
+  if (defensa && robAmount > 0) {
+    const antes = robAmount
+    robAmount = Math.max(1, Math.floor(robAmount * defensa.factor))
+    avisoAgente = `\n🛡️ *${defensa.agente.emoji} ${defensa.agente.nombre}* (agente de @${target.split('@')[0]}) te frenó: de *${antes}* te dejó llevarte *${robAmount}* (-${defensa.porcentaje}%).`
+  }
+
   if (robAmount <= 0) return m.reply(`😢 @${target.split('@')[0]} ${tradutor.texto6}`, null, { mentions: [target] })
 
   if (Math.random() < FAIL_CHANCE) {
@@ -147,7 +156,7 @@ const handler = async (m, { conn, args }) => {
 
   const _hunt = checkHunterTrigger(sender, 8000, 0)
   const _huntMsg = _hunt ? _hunt.message : ''
-  m.reply(msg + _huntMsg, null, { mentions: [target] })
+  m.reply(msg + avisoAgente + _huntMsg, null, { mentions: [target] })
 }
 
 handler.help = ['rob']
