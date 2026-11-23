@@ -4,14 +4,42 @@ const userCommandHistory = {};
 const userWarnings = {};
 const userCooldowns = {};
 
+const RULETA_BASE = 'https://raw.githubusercontent.com/Luna-botv6/base-archivos/main/ruleta';
+const VIDEOS = {
+  rojo: `${RULETA_BASE}/rojo.mp4`,
+  verde: `${RULETA_BASE}/verde.mp4`,
+  blanco: `${RULETA_BASE}/blanco.mp4`
+};
+const VIDEO_CACHE = new Map();
+const VIDEO_TTL = 30 * 60 * 1000;
+const VIDEO_MAX = 6 * 1024 * 1024;
+const VIDEO_WAIT_MS = 3500;
+
+async function obtenerVideo(color) {
+  const url = VIDEOS[color];
+  if (!url) return null;
+  const hit = VIDEO_CACHE.get(url);
+  if (hit && Date.now() - hit.at < VIDEO_TTL) return hit.buffer;
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(9000) });
+    if (!res.ok) return null;
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length < 1024 || buffer.length > VIDEO_MAX) return null;
+    if (VIDEO_CACHE.size > 6) VIDEO_CACHE.clear();
+    VIDEO_CACHE.set(url, { buffer, at: Date.now() });
+    return buffer;
+  } catch {
+    return null;
+  }
+}
+
 const handler = async (m, { conn, usedPrefix, args }) => {
   const _tr = await global.loadTranslation(global.getIdioma?.(m) || 'es');
   const t = _tr?.plugins?.game_ruleta || {};
   const id = m.sender;
   const currentTime = Date.now();
-  const cooldown = 120000; // 2 minutos
+  const cooldown = 120000;
 
-  // 🕒 Verificar cooldown de 2 minutos
   if (!userCooldowns[id]) userCooldowns[id] = 0;
   if (currentTime - userCooldowns[id] < cooldown) {
     const tiempoRestante = ((cooldown - (currentTime - userCooldowns[id])) / 1000).toFixed(0);
@@ -21,7 +49,6 @@ const handler = async (m, { conn, usedPrefix, args }) => {
   if (!userCommandHistory[id]) userCommandHistory[id] = [];
   if (!userWarnings[id]) userWarnings[id] = { count: 0, lastWarning: 0 };
 
-  // Limpiar historial de comandos viejos (10s)
   userCommandHistory[id] = userCommandHistory[id].filter(ts => currentTime - ts < 10000);
 
   if (currentTime - userWarnings[id].lastWarning > 30000) {
@@ -120,9 +147,6 @@ ${usedPrefix}ruleta money verde 100`;
   if (tipo === 'exp' && saldoExp < cantidad) return m.reply(t.sin_exp || '❌ No tienes suficiente *Exp*.');
   if (tipo === 'money' && saldoMoney < cantidad) return m.reply(t.sin_money || '❌ No tienes suficientes *Diamantes*.');
 
-  const colores = ['verde', 'rojo', 'blanco', 'rojo', 'blanco', 'rojo', 'blanco', 'rojo', 'blanco', 'rojo'];
-  const resultado = colores[Math.floor(Math.random() * colores.length)];
-
   const emojiColor = { verde: '🟢', rojo: '🔴', blanco: '⚪' };
   const multiColor = { verde: 5, rojo: 3, blanco: 2 };
   const nombreColor = {
@@ -130,6 +154,10 @@ ${usedPrefix}ruleta money verde 100`;
     rojo: t.color_rojo || 'Rojo',
     blanco: t.color_blanco || 'Blanco'
   };
+  const pesos = { verde: 1 / multiColor.verde, rojo: 1 / multiColor.rojo, blanco: 1 / multiColor.blanco };
+  const totalPesos = pesos.verde + pesos.rojo + pesos.blanco;
+  const azar = Math.random() * totalPesos;
+  const resultado = azar < pesos.verde ? 'verde' : azar < pesos.verde + pesos.rojo ? 'rojo' : 'blanco';
   const moneda = tipo === 'exp' ? 'Exp' : 'Diamantes';
   const monedaEmoji = tipo === 'exp' ? '⭐' : '💎';
   const gano = color === resultado;
@@ -162,7 +190,6 @@ ${usedPrefix}ruleta money verde 100`;
   const nf = (n) => Number(n || 0).toLocaleString();
   const titulo = t.titulo || '🎡  *R U L E T A*  🎡';
   const linea = t.linea || '━━━━━━━━━━━━━━━━━━';
-  const frame = (emo, sp, estado) => `${titulo}\n${linea}\n\n        ${emo}\n      ${sp} ${estado}`;
 
   const cardTexto = (gano
     ? (t.card_ganaste || `${titulo}\n${linea}\n\n        {emoji}\n\n  *¡SALIÓ {color}!*  (x{multi})\n🎯 Elegiste: {tuEmoji} {tuColor}\n\n🎉 *¡GANASTE!*\n{monedaEmoji} *+{ganancia}* {moneda}\n\n💰 Saldo: *{saldo}* {monedaEmoji}`)
@@ -178,28 +205,20 @@ ${usedPrefix}ruleta money verde 100`;
     .replace(/\{moneda\}/g, moneda)
     .replace(/\{saldo\}/g, nf(saldoFinal));
 
-  const spinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
-  const girando = t.spin_girando || 'girando...';
-  const frenando = t.spin_frenando || 'frenando...';
-  const secuencia = ['🔴', '⚪', '🟢', '🔴', '⚪', '🔴', '⚪', '🟢'];
-  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
-
-  try {
-    const msg = await conn.sendMessage(m.chat, { text: frame(secuencia[0], spinner[0], girando) });
-    let i = 1;
-    let espera = 200;
-    for (; i < secuencia.length; i++) {
-      await sleep(espera);
-      espera += 45;
-      await conn.sendMessage(m.chat, { text: frame(secuencia[i], spinner[i % spinner.length], girando), edit: msg.key });
-    }
-    await sleep(espera + 120);
-    await conn.sendMessage(m.chat, { text: frame(emojiColor[resultado], spinner[i % spinner.length], frenando), edit: msg.key });
-    await sleep(600);
-    await conn.sendMessage(m.chat, { text: cardTexto, edit: msg.key });
-  } catch {
-    return m.reply(cardTexto);
+  let videoEnviado = false;
+  const video = await obtenerVideo(resultado);
+  if (video) {
+    try {
+      await conn.sendMessage(m.chat, { video, gifPlayback: true, mimetype: 'video/mp4' }, { quoted: m });
+      videoEnviado = true;
+    } catch {}
   }
+
+  if (videoEnviado) {
+    await new Promise((resolve) => setTimeout(resolve, VIDEO_WAIT_MS));
+  }
+
+  return conn.sendMessage(m.chat, { text: cardTexto }, { quoted: m });
 };
 
 handler.command = /^ruleta$/i;
