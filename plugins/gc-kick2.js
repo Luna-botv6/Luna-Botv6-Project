@@ -1,8 +1,9 @@
 import fs from 'fs';
-import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, clearGroupCache, resolveRealJidDeLid } from '../lib/funcion/pluginHelper.js';
 import { marcarMotivo } from '../lib/funcion/leave-reason.js';
-import { esInmune, avisoInmunidad } from '../lib/funcion/proteccion-grupo.js';
-import { buscarParticipante } from '../lib/funcion/participantes.js';
+import { esInmune, avisoInmunidad, esInmuneDigitos } from '../lib/funcion/proteccion-grupo.js';
+import { buscarParticipante, soloDigitos } from '../lib/funcion/participantes.js';
+import { resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
 
 const cooldowns = new Map();
 
@@ -22,7 +23,8 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
     const tGrp     = tFull.functions?.group_msgs || {};
 
     const groupData = await getGroupDataForPlugin(conn, chatId, senderId);
-    const { isAdmin, isBotAdmin, participants: groupParticipants } = groupData;
+    let { participants: groupParticipants } = groupData;
+    const { isAdmin, isBotAdmin } = groupData;
 
     if (!isAdmin && !isOwner) return m.reply(t.no_admin     || '⚠️ Solo administradores pueden usar este comando.');
     if (!isBotAdmin)          return m.reply(t.no_bot_admin || '⚠️ Necesito ser administrador para expulsar usuarios.');
@@ -42,32 +44,62 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
       return m.reply(t.no_restrict || '⚠️ Necesitas habilitar *restrict* para usar este comando.');
     }
 
-    const resolveLidToJid = (jid) => {
-      if (!jid) return null;
-      if (jid.includes('@lid')) {
-        const found = groupParticipants.find(p => p.lid === jid);
-        return found?.id || null;
-      }
-      return jid;
+    const resolverEnGrupo = (raw, lista) => {
+      if (!raw) return null;
+      const directo = buscarParticipante(lista, raw, conn);
+      if (directo) return directo;
+      try {
+        const real = resolveRealJidDeLid(raw);
+        if (real && real !== raw) return buscarParticipante(lista, real, conn);
+      } catch {}
+      return null;
     };
 
-    const findParticipantByJid = (jid) => buscarParticipante(groupParticipants, jid, conn);
+    const recolectarObjetivo = (lista) => {
+      if (m.mentionedJid?.[0]) {
+        const crudo = m.mentionedJid[0];
+        return { participante: resolverEnGrupo(crudo, lista), crudo, motivo: text.replace(/@\d+/g, '').trim() };
+      }
+      if (m.quoted) {
+        const candidatos = [
+          m.quoted.sender,
+          m.quoted.participant,
+          m.msg?.contextInfo?.participant,
+          m.quoted.key?.participant,
+          m.quoted.author
+        ].filter(Boolean);
+        for (const candidato of candidatos) {
+          const encontrado = resolverEnGrupo(candidato, lista);
+          if (encontrado) return { participante: encontrado, crudo: candidato, motivo: text?.trim() || '' };
+        }
+        return { participante: null, crudo: candidatos[0] || null, motivo: text?.trim() || '' };
+      }
+      if (text) {
+        const numMatch = text.match(/(\d{11,15})(.*)/);
+        if (!numMatch) return { participante: null, crudo: null, motivo: '', numeroInvalido: true };
+        const crudo = numMatch[1] + '@s.whatsapp.net';
+        return { participante: resolverEnGrupo(crudo, lista), crudo, motivo: numMatch[2]?.trim() || '' };
+      }
+      return { participante: null, crudo: null, motivo: '' };
+    };
 
-    let targetJid = null;
-    let reason    = '';
-
-    if (m.mentionedJid?.[0]) {
-      targetJid = resolveLidToJid(m.mentionedJid[0]) || m.mentionedJid[0];
-      reason    = text.replace(/@\d+/g, '').trim();
-    } else if (m.quoted?.sender) {
-      targetJid = resolveLidToJid(m.quoted.sender) || m.quoted.sender;
-      reason    = text?.trim() || '';
-    } else if (text) {
-      const numMatch = text.match(/(\d{11,15})(.*)/);
-      if (!numMatch) return m.reply(t.wrong_number || '*[◉] El número ingresado es incorrecto.*');
-      targetJid = numMatch[1] + '@s.whatsapp.net';
-      reason    = numMatch[2]?.trim() || '';
+    let objetivo = recolectarObjetivo(groupParticipants);
+    if (!objetivo.participante && !objetivo.numeroInvalido) {
+      clearGroupCache(chatId, conn);
+      const fresco = await getGroupDataForPlugin(conn, chatId, senderId);
+      groupParticipants = fresco.participants || groupParticipants;
+      objetivo = recolectarObjetivo(groupParticipants);
     }
+
+    if (objetivo.numeroInvalido) {
+      return m.reply(t.wrong_number || '*[◉] El número ingresado es incorrecto.*');
+    }
+
+    let targetParticipant = objetivo.participante;
+    const reason = objetivo.motivo || '';
+    let targetJid = targetParticipant
+      ? (targetParticipant.id || targetParticipant.phoneNumber || targetParticipant.lid)
+      : objetivo.crudo;
 
     if (!targetJid) {
       const fallback = (t.no_target || 'Menciona a un usuario.\n*{prefix}{cmd} @usuario*')
@@ -81,29 +113,38 @@ const handler = async (m, { isOwner, conn, text, command, usedPrefix }) => {
 
     if (decodedTarget === botJid) return m.reply(t.cant_kick_self  || '*🤖 No puedo expulsarme a mí mismo.*');
 
-    const targetParticipant = findParticipantByJid(targetJid);
-    if (!targetParticipant)  return m.reply(t.not_in_group    || '*[◉] La persona mencionada no está en el grupo.*');
-    if (targetParticipant.admin === 'admin' || targetParticipant.admin === 'superadmin') {
-      return m.reply(t.cant_kick_admin || '*[◉] No puedo expulsar a un administrador del grupo.*');
+    if (targetParticipant) {
+      if (targetParticipant.admin === 'admin' || targetParticipant.admin === 'superadmin') {
+        return m.reply(t.cant_kick_admin || '*[◉] No puedo expulsar a un administrador del grupo.*');
+      }
+
+      if (esInmune(chatId, targetParticipant, conn, groupParticipants)) {
+        const aviso = avisoInmunidad({
+          chat: chatId,
+          jid: targetParticipant,
+          conn,
+          participants: groupParticipants,
+          accion: 'kick',
+          prefix: usedPrefix
+        });
+        if (aviso) return conn.sendMessage(chatId, { text: aviso.texto, mentions: aviso.mentions }, { quoted: m });
+        return m.reply(t.inmune || '*[◉] Ese usuario tiene inmunidad en este grupo.*');
+      }
+    } else {
+      const digitos = [soloDigitos(targetJid)];
+      try {
+        const tel = resolveJidToPhone(targetJid, conn);
+        if (tel) digitos.push(soloDigitos(tel));
+      } catch {}
+      if (esInmuneDigitos(chatId, digitos)) {
+        return m.reply(t.inmune || '*[◉] Ese usuario tiene inmunidad en este grupo.*');
+      }
     }
 
-    if (esInmune(chatId, targetParticipant, conn, groupParticipants)) {
-      const aviso = avisoInmunidad({
-        chat: chatId,
-        jid: targetParticipant,
-        conn,
-        participants: groupParticipants,
-        accion: 'kick',
-        prefix: usedPrefix
-      });
-      if (aviso) return conn.sendMessage(chatId, { text: aviso.texto, mentions: aviso.mentions }, { quoted: m });
-      return m.reply(t.inmune || '*[◉] Ese usuario tiene inmunidad en este grupo.*');
-    }
-
-    const jidToKick = targetParticipant.id;
+    const jidToKick = targetJid;
     const chat      = global.db.data.chats[chatId] || {};
 
-    marcarMotivo(chatId, [jidToKick, targetParticipant.lid, targetParticipant.phoneNumber], {
+    marcarMotivo(chatId, [jidToKick, targetParticipant?.lid, targetParticipant?.phoneNumber], {
       tipo: 'kick',
       motivo: reason,
       autor: senderId
