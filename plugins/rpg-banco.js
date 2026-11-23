@@ -1,5 +1,6 @@
 import { getUserStats, setUserStats, getTodosLosUsuarios } from '../lib/stats.js'
 import { idCanonico, mismoUsuario } from '../lib/identidad.js'
+import { claveEconomia } from '../lib/funcion/economiaCanonica.js'
 import { resolveRealJidDeLid } from '../lib/funcion/pluginHelper.js'
 import {
   MONEDAS,
@@ -64,7 +65,7 @@ async function depositar(conn, m, stats, args) {
     return responder(conn, m, `🏦 *NO SE DEPOSITÓ NADA*\n\n${motivo}`)
   }
 
-  setUserStats(m.sender, stats)
+  setUserStats(claveEconomia(m.sender, conn) || m.sender, stats)
   return responder(conn, m, `✅ *DEPÓSITO*\n\n${lineas.join('\n')}\n\n> 🏦 Tu banco quedó actualizado.\n> 💡 *.banco* para ver el total.`)
 }
 
@@ -99,12 +100,12 @@ async function retirar(conn, m, stats, args) {
     return responder(conn, m, `🏦 *NO SE RETIRÓ NADA*\n\n${motivo}`)
   }
 
-  setUserStats(m.sender, stats)
+  setUserStats(claveEconomia(m.sender, conn) || m.sender, stats)
   return responder(conn, m, `✅ *RETIRO*\n\n${lineas.join('\n')}\n\n> 👛 Ya está en tu billetera.`)
 }
 
 async function transferir(conn, m, stats, args) {
-  const mencion = m.mentionedJid?.[0] || null
+  const mencion = m.mentionedJid?.[0] || m.quoted?.sender || m.quoted?.participant || null
   const destino = mencion ? (idCanonico(mencion) || mencion) : null
   if (!destino || mismoUsuario(destino, m.sender)) {
     return responder(conn, m, `🏦 *TRANSFERIR*\n\n> 💡 Ejemplo: *.banco transferir 500 money @usuario*\n> Se transfiere desde tu banco al banco del otro usuario.`)
@@ -123,7 +124,7 @@ async function transferir(conn, m, stats, args) {
   const bancoDestino = asegurarBanco(destinoStats.banco)
   banco[campo] -= cantidad
   bancoDestino[campo] = (bancoDestino[campo] || 0) + cantidad
-  setUserStats(m.sender, stats)
+  setUserStats(claveEconomia(m.sender, conn) || m.sender, stats)
   setUserStats(destino, destinoStats)
 
   const real = resolveRealJidDeLid(destino)
@@ -148,7 +149,7 @@ async function cobrarInteres(conn, m, stats) {
   banco.money = Math.round((banco.money || 0) + interes.money)
   banco.exp = Math.round((banco.exp || 0) + interes.exp)
   banco.lastInterest = ahora
-  setUserStats(m.sender, stats)
+  setUserStats(claveEconomia(m.sender, conn) || m.sender, stats)
   return responder(conn, m, `🎁 *INTERÉS COBRADO*\n\n> 💎 *+${nf(interes.money)}* diamantes\n> ⭐ *+${nf(interes.exp)}* EXP\n> 🏦 Ya están en tu banco\n> ⏳ Próximo cobro en *24 h*`)
 }
 
@@ -174,7 +175,7 @@ async function top(conn, m) {
 
 const handler = async (m, { conn, args, usedPrefix }) => {
   const sub = String(args[0] || '').toLowerCase()
-  const stats = getUserStats(m.sender)
+  const stats = getUserStats(claveEconomia(m.sender, conn) || m.sender)
   const banco = asegurarBanco(stats.banco)
   const pasado = Date.now() - (banco.lastInterest || 0)
   const interesListo = pasado >= COOLDOWN_INTERES_MS
