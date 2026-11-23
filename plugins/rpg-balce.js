@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { getUserStats } from '../lib/stats.js';
+import { claveEconomia } from '../lib/funcion/economiaCanonica.js';
 import { getGroupDataForPlugin, buscarNombreEnParticipantes, resolveRealJidDeLid } from '../lib/funcion/pluginHelper.js';
 
 function nf(n) {
@@ -38,7 +39,8 @@ async function etiquetaDe(conn, jid, participants) {
 }
 
 const handler = async (m, { conn, usedPrefix }) => {
-  const who = m.isGroup ? (m.mentionedJid?.[0] || m.sender) : m.sender;
+  const bruto = m.mentionedJid?.[0] || m.quoted?.sender || m.quoted?.participant || m.sender;
+  const who = claveEconomia(bruto, conn) || bruto;
 
   const idioma = global.db.data.users[m.sender]?.language || global.defaultLenguaje || 'es';
   let _t = {};
