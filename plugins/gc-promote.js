@@ -1,5 +1,6 @@
 import fs from 'fs';
-import { getGroupDataForPlugin, clearGroupCache } from '../lib/funcion/pluginHelper.js';
+import { getGroupDataForPlugin, clearGroupCache, resolveRealJidDeLid } from '../lib/funcion/pluginHelper.js';
+import { buscarParticipante } from '../lib/funcion/participantes.js';
 
 const handler = async (m, { conn, usedPrefix, isOwner, args, command }) => {
   const datas = global;
@@ -20,59 +21,64 @@ const handler = async (m, { conn, usedPrefix, isOwner, args, command }) => {
     return m.reply(t_handler.texto8);
   }
 
-  const resolveLidToId = (jidOrLid) => {
-    if (!jidOrLid) return null;
-    if (!jidOrLid.includes('@lid')) return jidOrLid;
-    const pdata = participants.find(p => p.lid && conn.decodeJid(p.lid) === conn.decodeJid(jidOrLid));
-    return pdata ? pdata.id : null;
-  };
-
-  let user = null;
   const botJid = conn.decodeJid(conn.user.id);
 
-  if (m.mentionedJid && m.mentionedJid.length) {
-    const filtered = m.mentionedJid.filter(jid => conn.decodeJid(jid) !== botJid);
-    if (filtered.length) {
-      const mention = filtered[0];
-      user = resolveLidToId(mention) || mention;
-    }
-  } else if (m.quoted && m.quoted.sender) {
-    const quotedSender = m.quoted.sender;
-    user = resolveLidToId(quotedSender) || quotedSender;
-  } else if (m.text) {
+  const resolverEnGrupo = (raw, lista) => {
+    if (!raw) return null;
+    const directo = buscarParticipante(lista, raw, conn);
+    if (directo) return directo;
+    try {
+      const real = resolveRealJidDeLid(raw);
+      if (real && real !== raw) return buscarParticipante(lista, real, conn);
+    } catch {}
+    return null;
+  };
+
+  const candidatos = [];
+  if (m.mentionedJid?.length) {
+    candidatos.push(...m.mentionedJid.filter(jid => conn.decodeJid(jid) !== botJid));
+  }
+  if (m.quoted) {
+    candidatos.push(m.quoted.sender, m.quoted.participant, m.msg?.contextInfo?.participant);
+  }
+  if (!candidatos.filter(Boolean).length && m.text) {
     const cleanText = m.text.replace(/[^0-9]/g, '');
-    if (cleanText.length >= 11 && cleanText.length <= 15) {
-      user = cleanText + '@s.whatsapp.net';
+    if (cleanText.length >= 11 && cleanText.length <= 15) candidatos.push(cleanText + '@s.whatsapp.net');
+  }
+
+  let objetivo = null;
+  for (const candidato of candidatos.filter(Boolean)) {
+    objetivo = resolverEnGrupo(candidato, participants);
+    if (objetivo) break;
+  }
+
+  if (!objetivo && candidatos.filter(Boolean).length) {
+    clearGroupCache(m.chat, conn);
+    const fresco = await getGroupDataForPlugin(conn, m.chat, m.sender);
+    for (const candidato of candidatos.filter(Boolean)) {
+      objetivo = resolverEnGrupo(candidato, fresco.participants || []);
+      if (objetivo) break;
     }
   }
 
-  if (!user) {
-    const msg = `${tradutor.texto1[0]}\n\n*┯┷*\n*┃ ≽ ${usedPrefix}${command} @tag*\n*┃ ≽ ${usedPrefix}${command} ${tradutor.texto1[1]}\n*┷┯*`;
-    return m.reply(msg, m.chat, { mentions: conn.parseMention(msg) });
-  }
-
-  if (conn.decodeJid(user) === botJid) {
-    return m.reply(tradutor.texto2);
-  }
-
-  const decodedUser = conn.decodeJid(user);
-  const isUserInGroup = participants.find(p =>
-    conn.decodeJid(p.id) === decodedUser ||
-    (p.lid && conn.decodeJid(p.lid) === decodedUser)
-  );
-
-  if (!isUserInGroup) {
+  if (!objetivo) {
+    if (!candidatos.filter(Boolean).length) {
+      const msg = `${tradutor.texto1[0]}\n\n*┯┷*\n*┃ ≽ ${usedPrefix}${command} @tag*\n*┃ ≽ ${usedPrefix}${command} ${tradutor.texto1[1]}\n*┷┯*`;
+      return m.reply(msg, m.chat, { mentions: conn.parseMention(msg) });
+    }
     return m.reply(tradutor.texto4);
   }
 
-  if (isUserInGroup.admin) {
-    return m.reply(tradutor.texto5);
-  }
+  const user = objetivo.id || objetivo.phoneNumber || objetivo.lid;
+  if (!user) return m.reply(tradutor.texto4);
+  if (conn.decodeJid(user) === botJid) return m.reply(tradutor.texto2);
+  if (objetivo.admin) return m.reply(tradutor.texto5);
 
   try {
     await conn.groupParticipantsUpdate(m.chat, [user], 'promote');
     clearGroupCache(m.chat, conn);
-    await m.reply(`${tradutor.texto3} @${user.split('@')[0]}`, null, { mentions: [user] });
+    const tag = String(objetivo.phoneNumber || user).split('@')[0];
+    await m.reply(`${tradutor.texto3} @${tag}`, null, { mentions: [user] });
   } catch (e) {
     console.error(e);
     await m.reply(tradutor.texto6);

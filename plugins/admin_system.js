@@ -1,26 +1,21 @@
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { addOwner, removeOwner, listOwners } from '../lib/funcion/owners-manager.js';
+import { buscarParticipante, soloDigitos } from '../lib/funcion/participantes.js';
+
+async function numeroRealEnGrupo(m, conn, jid) {
+  if (!jid) return null;
+  try {
+    const { participants } = await getGroupDataForPlugin(conn, m.chat, m.sender);
+    const encontrado = buscarParticipante(participants || [], jid, conn);
+    const real = encontrado?.phoneNumber || encontrado?.id || encontrado?.lid;
+    if (real) return soloDigitos(real);
+  } catch {}
+  return soloDigitos(jid);
+}
 
 async function resolveOwnerNumber(m, conn) {
-  if (m.mentionedJid?.[0]) {
-    const mentioned = m.mentionedJid[0];
-    if (!mentioned.includes('@lid')) return mentioned.replace(/[^0-9]/g, '');
-    try {
-      const { participants } = await getGroupDataForPlugin(conn, m.chat, m.sender);
-      const real = participants.find(p => p.lid === mentioned)?.id;
-      if (real) return real.replace(/[^0-9]/g, '');
-    } catch {}
-    return mentioned.replace(/[^0-9]/g, '');
-  }
-  if (m.quoted?.sender) {
-    const sender = m.quoted.sender;
-    if (!sender.includes('@lid')) return sender.replace(/[^0-9]/g, '');
-    try {
-      const { participants } = await getGroupDataForPlugin(conn, m.chat, m.sender);
-      const real = participants.find(p => p.lid === sender)?.id;
-      if (real) return real.replace(/[^0-9]/g, '');
-    } catch {}
-  }
+  if (m.mentionedJid?.[0]) return numeroRealEnGrupo(m, conn, m.mentionedJid[0]);
+  if (m.quoted?.sender) return numeroRealEnGrupo(m, conn, m.quoted.sender);
   if (m.text) return m.text.replace(/[^0-9]/g, '');
   return null;
 }
