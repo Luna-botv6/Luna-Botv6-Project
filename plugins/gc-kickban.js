@@ -5,6 +5,7 @@ import { cinta, cabecera, titulo, pie, campo, fila, mensajeKickban, mensajeLista
 import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
 import { esInmune, avisoInmunidad } from '../lib/funcion/proteccion-grupo.js';
 import { buscarParticipante as buscarParticipantePorJid } from '../lib/funcion/participantes.js';
+import { nombreSeguro } from '../lib/funcion/nombre.js';
 
 const cooldowns = new Map();
 const COOLDOWN_MS = 45 * 1000;
@@ -244,7 +245,7 @@ async function cmdKickban(m, ctx) {
     console.log(chalk.red(`[kickban] no se pudo expulsar a ${numero}: ${e.message}`));
   }
 
-  const grupoNombre = (await conn.getName(m.chat).catch(() => '')) || '';
+  const grupoNombre = await nombreSeguro(conn, m.chat, '');
 
   if (!expulsado) {
     return aviso(m, corto('😵', `No pude expulsar a ${nombre}`, 'igual quedó vetado: si vuelve a entrar, lo saco.'), { mentions: mencionesDe(participants, objetivo, numero) });
@@ -275,7 +276,7 @@ async function cmdUnkickban(m, ctx) {
     return aviso(m, corto('🔒', 'Solo administradores pueden levantar el veto', 'pedile a un admin que lo haga.'));
   }
 
-  const grupoNombre = (await conn.getName(m.chat).catch(() => '')) || '';
+  const grupoNombre = await nombreSeguro(conn, m.chat, '');
 
   const eleccion = (m.mentionedJid?.length && m.mentionedJid[0])
     || m.quoted?.sender
@@ -356,7 +357,7 @@ async function cmdKicklist(m, ctx) {
   const entradas = listarKickbans(m.chat);
   if (!entradas.length) return aviso(m, mensajeSinRegistro());
 
-  const grupoNombre = (await conn.getName(m.chat).catch(() => '')) || '';
+  const grupoNombre = await nombreSeguro(conn, m.chat, '');
   const totalGrupos = contarGrupos();
 
   return aviso(m, mensajeLista({
