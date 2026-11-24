@@ -5,13 +5,14 @@ import {
   listarBotsIgnorados,
   cantidadBotsIgnorados
 } from '../lib/funcion/botsIgnorados.js';
+import { nombreSeguro } from '../lib/funcion/nombre.js';
 
 let handler = async (m, { conn, command, usedPrefix, args }) => {
   const sub = (args[0] || '').toLowerCase();
   const target = String(args[1] || '');
 
   const botNum = conn.user?.jid?.split('@')[0]?.split(':')[0];
-  const chatNombre = m.isGroup ? await conn.getName(m.chat).catch(() => m.chat) : 'este chat';
+  const chatNombre = m.isGroup ? await nombreSeguro(conn, m.chat, m.chat) : 'este chat';
 
   if (sub === 'add' || sub === 'agregar' || sub === '+') {
     const num = target.replace(/[^0-9]/g, '');

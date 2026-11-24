@@ -9,6 +9,7 @@ import {
   addMoney
 } from '../lib/stats.js';
 import { claveEconomia } from '../lib/funcion/economiaCanonica.js';
+import { nombreSeguro } from '../lib/funcion/nombre.js';
 
 const nf = (n) => Number(n || 0).toLocaleString('es-AR');
 
@@ -52,7 +53,7 @@ const handler = async (m, { conn }) => {
     setUserStats(id, user);
   }
 
-  const nombre = (await conn.getName(id).catch(() => null)) || String(id).split('@')[0];
+  const nombre = await nombreSeguro(conn, id, String(id).split('@')[0]);
 
   if (user.level > beforeLevel) {
     const levelsGained = user.level - beforeLevel;
