@@ -33,6 +33,7 @@ import { estaBloqueado } from './lib/funcion/comandos-bloqueo.js';
 import { registrarActividad, sembrarIngreso } from './lib/funcion/inactivosDB.js';
 import { listOwners as listSystemOwners } from './lib/funcion/system-owners.js';
 import { marcarMotivo } from './lib/funcion/leave-reason.js';
+import { registrarEliminado } from './lib/funcion/numeros-eliminados.js';
 import { checkRateLimit, recordMessage, checkWarmupLimit, recordGlobalMessage, recordIncomingMessage } from './lib/funcion/private-rate-limit.js';
 import { bloqueadoEnSubbot, textoBloqueoSubbot } from './lib/funcion/subbot-seguridad.js';
 import { datosLlamada, participanteEsAutor, soloDigitos } from './lib/funcion/grupcall.js';
@@ -1015,6 +1016,19 @@ export async function callUpdate(callUpdate) {
             await conn.groupParticipantsUpdate(grupo, [objetivo], 'remove');
             expulsado = true;
           } catch {}
+          if (expulsado) {
+            registrarEliminado({
+              chatId: grupo,
+              jid: objetivo,
+              lid: participante?.lid,
+              numero,
+              nombre: '',
+              motivo: `llamada de grupo (${datos.tipo || 'voz'})`,
+              origen: 'grupcall',
+              autor: 'bot',
+              autorNombre: 'Anti llamadas'
+            });
+          }
           try {
             await conn.sendMessage(grupo, {
               text: `📵 *LLAMADA DE GRUPO BLOQUEADA*\n\n👤 *Usuario:* @${numero}\n📞 *Tipo:* ${datos.tipo}\n${expulsado ? '✅ *Expulsado del grupo.*' : '⚠️ *No pude expulsarlo, avisen a un admin.*'}`,

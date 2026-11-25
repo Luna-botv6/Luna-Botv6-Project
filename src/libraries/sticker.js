@@ -124,8 +124,8 @@ function sticker6(img, url) {
         })
       })
       .addOutputOptions([
-        `-vcodec`, `libwebp`, `-quality`, `50`, `-compression_level`, `6`, `-t`, `10`, `-vf`,
-        `scale=512:512:force_original_aspect_ratio=increase,crop=512:512,fps=10,format=rgba,split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`
+        `-vcodec`, `libwebp`, `-quality`, `25`, `-compression_level`, `6`, `-t`, `10`, `-vf`,
+        `scale=512:512:force_original_aspect_ratio=increase,crop=512:512,fps=8,format=rgba,split [a][b]; [a] palettegen=reserve_transparent=on:transparency_color=ffffff [p]; [b][p] paletteuse`
       ])
       .toFormat('webp')
       .save(out)

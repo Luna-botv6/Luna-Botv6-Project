@@ -2877,15 +2877,15 @@
       "dinero": "Dinero",
       "responder": "*Responde con \"si\" para confirmar o \"no\" para cancelar.*",
       "exito": "✅ *Datos reseteados para @{numero}*\n\n",
-      "valido": "para restaurar (valido 24h)",
+      "valido": "para restaurar (valido 72h)",
       "error": "❌ *Error al resetear los datos del usuario.* Intentalo nuevamente."
     },
     "owner_restaureuser": {
       "espera": "⏰ *Espera {m}m {s}s antes de usar este comando nuevamente.*",
       "uso": "📋 *Uso:* {prefix}{command} <@usuario>\n*Ejemplo:* {prefix}{command} @usuario\n\n💡 *Este comando restaura los datos de un usuario previamente reseteado.*",
       "numero_invalido": "❌ *Número inválido.* Usa: {prefix}{command} <número>",
-      "sin_backup": "❌ *No hay backup disponible para @{numero}*\n\n• El usuario no ha sido reseteado recientemente\n• O el backup ha expirado (>24h)",
-      "expirado": "⏰ *El backup de @{numero} ha expirado*\n\n• Los backups son válidos por 24 horas",
+      "sin_backup": "❌ *No hay backup disponible para @{numero}*\n\n• El usuario no ha sido reseteado recientemente\n• O el backup ha expirado (>72h)",
+      "expirado": "⏰ *El backup de @{numero} ha expirado*\n\n• Los backups son válidos por 72 horas",
       "confirmar": "🔄 *¿Restaurar datos de @{numero}?*\n\n",
       "datos": "DATOS A RESTAURAR",
       "exp": "Experiencia",

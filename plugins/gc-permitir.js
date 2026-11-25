@@ -6,6 +6,7 @@ import {
   quitarPermitido,
   listarPermitidos,
   esNumeroPermitido,
+  numerosDeJid,
   soloDigitos
 } from '../lib/funcion/proteccion-grupo.js';
 
@@ -78,8 +79,8 @@ function numeroDeTexto(texto) {
     .replace(/@\d+/g, ' ')
     .replace(/^(quitar|remover|sacar|eliminar|del|off|lista|listar|ver|mostrar)\b/i, ' ')
     .trim();
-  const match = limpio.match(/\d+/);
-  return match ? match[0] : null;
+  const digitos = limpio.replace(/\D/g, '');
+  return digitos || null;
 }
 
 const handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
@@ -96,8 +97,10 @@ const handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
     const accion = accionDe(text);
     const raw = m.mentionedJid?.[0] || m.quoted?.sender || null;
     const target = buscarParticipante(participants, raw);
-    let numero = target ? soloDigitos(jidReal(target, conn)) : '';
+    const jidObjetivo = target ? jidReal(target, conn) : raw;
+    let numero = jidObjetivo ? soloDigitos(jidObjetivo) : '';
     if (!numero) numero = numeroDeTexto(text) || '';
+    const aliases = [...numerosDeJid(target || jidObjetivo || raw, conn, participants)];
 
     if (accion === 'lista' || (!numero && accion === 'agregar')) {
       const lista = listarPermitidos(m.chat);
@@ -116,7 +119,9 @@ const handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
     }
 
     if (!numero) return m.reply(t.no_numero);
-    if (numero.length < 8 || numero.length > 15) return m.reply(t.numero_invalido);
+    const objetivoEsLid = target && (String(target.id || '').includes('@lid') || String(target.lid || '').includes('@lid'));
+    const maxNumero = objetivoEsLid ? 20 : 15;
+    if (numero.length < 8 || numero.length > maxNumero) return m.reply(t.numero_invalido);
 
     const jidMencion = target?.id || `${numero}@s.whatsapp.net`;
 
@@ -141,7 +146,7 @@ const handler = async (m, { conn, text, usedPrefix, command, isOwner }) => {
       }, { quoted: m });
     }
 
-    agregarPermitido(m.chat, { numero, nombre: target?.name || '', por: m.sender });
+    agregarPermitido(m.chat, { numero, nombre: target?.name || '', por: m.sender, aliases });
     const clave = target ? 'agregado' : 'agregado_fuera';
 
     return conn.sendMessage(m.chat, {
