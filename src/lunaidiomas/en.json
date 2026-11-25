@@ -2734,15 +2734,15 @@
       "dinero": "Money",
       "responder": "*Reply \"si\" to confirm or \"no\" to cancel.*",
       "exito": "✅ *Data reset for @{numero}*\n\n",
-      "valido": "to restore (valid 24h)",
+      "valido": "to restore (valid 72h)",
       "error": "❌ *Error resetting user data.* Try again."
     },
     "owner_restaureuser": {
       "espera": "⏰ *Wait {m}m {s}s before using this command again.*",
       "uso": "📋 *Usage:* {prefix}{command} <@user>\n*Example:* {prefix}{command} @user\n\n💡 *This command restores data of a previously reset user.*",
       "numero_invalido": "❌ *Invalid number.* Use: {prefix}{command} <number>",
-      "sin_backup": "❌ *No backup available for @{numero}*\n\n• The user was not reset recently\n• Or the backup expired (>24h)",
-      "expirado": "⏰ *The backup of @{numero} has expired*\n\n• Backups are valid for 24 hours",
+      "sin_backup": "❌ *No backup available for @{numero}*\n\n• The user was not reset recently\n• Or the backup expired (>72h)",
+      "expirado": "⏰ *The backup of @{numero} has expired*\n\n• Backups are valid for 72 hours",
       "confirmar": "🔄 *Restore data of @{numero}?*\n\n",
       "datos": "DATA TO RESTORE",
       "exp": "Experience",

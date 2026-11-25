@@ -3,11 +3,11 @@ import { spawn } from 'child_process'
 import { promises as fsp } from 'fs'
 import os from 'os'
 import path from 'path'
-import { sticker as crearSticker } from '../src/libraries/sticker.js'
+import { sticker as crearSticker, sticker6 } from '../src/libraries/sticker.js'
 
-const MAX_SEG = 8
+const MAX_SEG = 10
 const MIME_AUDIO = 'audio/ogg; codecs=opus'
-const MAX_STICKER = 1536 * 1024
+const MAX_STICKER = 1000 * 1000
 const TTL_PENDIENTE = 5 * 60 * 1000
 const TTL_RECIENTE = 10 * 60 * 1000
 const MAX_CACHE = 500
@@ -99,6 +99,32 @@ const prepararAudio = async (buffer, seg, duracion) => {
   return esOgg(buffer) ? buffer : null
 }
 
+const planificarRecorte = (duracion) => {
+  const numero = Number(duracion)
+  const seg = Number.isFinite(numero) && numero > 0
+    ? Math.min(MAX_SEG, Math.max(1, Math.ceil(numero)))
+    : MAX_SEG
+  const recortar = !Number.isFinite(numero) || numero <= 0 || numero > seg + 0.05
+  return { seg, recortar }
+}
+
+const recortarVideo = async (buffer, seg) => {
+  const id = `sa-cut-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  const entrada = path.join(os.tmpdir(), `${id}.bin`)
+  const salida = path.join(os.tmpdir(), `${id}.mp4`)
+  try {
+    await fsp.writeFile(entrada, buffer)
+    await correr(['-i', entrada, '-t', String(seg), '-c:v', 'mpeg4', '-q:v', '4', '-c:a', 'aac', '-b:a', '64k', '-movflags', '+faststart', salida])
+    const listo = await fsp.readFile(salida)
+    return listo?.length ? listo : null
+  } catch {
+    return null
+  } finally {
+    await fsp.unlink(entrada).catch(() => {})
+    await fsp.unlink(salida).catch(() => {})
+  }
+}
+
 const onda = (buffer) => {
   const marcas = new Uint8Array(64)
   if (!Buffer.isBuffer(buffer) || !buffer.length) return marcas
@@ -183,25 +209,49 @@ const handler = async (m, { conn, usedPrefix, command }) => {
     }
 
     if (esVideo(tipoDe(q))) {
+      console.log('[STICKERAUDIO] video pedido', { tipo: tipoDe(q), dur: segundosDe(q), download: typeof q?.download === 'function', directPath: !!(q?.msg?.directPath || q?.msg?.url) })
       await reaccion(conn, m, '⏳')
       const video = await bajar(q)
+      console.log('[STICKERAUDIO] video bytes', video?.length || 0)
       if (!video) {
         await reaccion(conn, m, '❌')
         return responder('no_descarga', '❌ No pude descargar ese video.')
       }
-      const webp = await crearSticker(video, false, pack, author)
-      if (!esWebp(webp)) {
+      const duracion = segundosDe(q)
+      const { seg, recortar } = planificarRecorte(duracion)
+      let videoFinal = video
+      if (recortar) {
+        const recortado = await recortarVideo(video, seg)
+        console.log('[STICKERAUDIO] recorte', { seg, recortar, bytes: recortado?.length || 0 })
+        if (!recortado) {
+          await reaccion(conn, m, '❌')
+          return responder('no_recorta', '❌ Ese video dura más de 10 segundos y no pude recortarlo. Probá con uno más corto.')
+        }
+        videoFinal = recortado
+      }
+      let webp = await crearSticker(videoFinal, false, pack, author)
+      console.log('[STICKERAUDIO] webp', webp?.length || 0)
+      if (!esWebp(webp) || webp.length > MAX_STICKER) {
+        try {
+          const local = await sticker6(videoFinal)
+          console.log('[STICKERAUDIO] webp local', local?.length || 0)
+          if (esWebp(local)) webp = local
+        } catch (e) {
+          console.log('[STICKERAUDIO] sticker6 error', e?.message || e)
+        }
+      }
+      if (!esWebp(webp) || webp.length > MAX_STICKER) {
         await reaccion(conn, m, '❌')
         return responder('no_video', '❌ No pude convertir ese video en sticker.')
       }
-      const duracion = segundosDe(q)
-      const seg = Math.min(MAX_SEG, Math.max(1, Math.round(duracion || MAX_SEG)))
-      const opus = await prepararAudio(video, seg, duracion)
+      const opus = await prepararAudio(videoFinal, seg, seg)
+      console.log('[STICKERAUDIO] opus', opus?.length || 0, 'animado', webp.includes('ANMF'))
       if (!opus) {
         await reaccion(conn, m, '❌')
         return responder('sin_audio', '❌ No encontré audio en ese video.')
       }
       await mandar(conn, m, webp, opus, seg, webp.includes('ANMF'))
+      console.log('[STICKERAUDIO] enviado')
       await reaccion(conn, m, '✅')
       return
     }
@@ -322,5 +372,7 @@ handler.all = async function (m, { conn }) {
 handler.command = ['sa', 'stickeraudio', 'stickeraudioagregar', 'stickersonoro']
 handler.tags = ['sticker']
 handler.help = ['sa']
+
+export const __test = { planificarRecorte, recortarVideo, prepararAudio, MAX_SEG }
 
 export default handler

@@ -3128,7 +3128,7 @@
       "dinero": "Argent",
       "responder": "*Réponds « oui » pour confirmer ou « non » pour annuler.*",
       "exito": "✅ *Données réinitialisées pour @{numero}*\n\n",
-      "valido": "pour restaurer (valable 24 h)",
+      "valido": "pour restaurer (valable 72 h)",
       "error": "❌ *Erreur lors de la réinitialisation des données de l'utilisateur.* Réessaie."
     },
     "owner_restart": {
@@ -5739,8 +5739,8 @@
       "espera": "⏰ *Attends {m}m {s}s avant d'utiliser cette commande à nouveau.*",
       "uso": "📋 *Utilisation :* {prefix}{command} <@usuario>\n*Exemple :* {prefix}{command} @usuario\n\n💡 *Cette commande restaure les données d'un utilisateur précédemment réinitialisé.*",
       "numero_invalido": "❌ *Numéro invalide.* Utilise : {prefix}{command} <numéro>",
-      "sin_backup": "❌ *Aucune sauvegarde disponible pour @{numero}*\n\n• L'utilisateur n'a pas été réinitialisé récemment\n• Ou la sauvegarde a expiré (> 24 h)",
-      "expirado": "⏰ *La sauvegarde de @{numero} a expiré*\n\n• Les sauvegardes sont valables 24 heures",
+      "sin_backup": "❌ *Aucune sauvegarde disponible pour @{numero}*\n\n• L'utilisateur n'a pas été réinitialisé récemment\n• Ou la sauvegarde a expiré (> 72 h)",
+      "expirado": "⏰ *La sauvegarde de @{numero} a expiré*\n\n• Les sauvegardes sont valables 72 heures",
       "confirmar": "🔄 *Restaurer les données de @{numero} ?*\n\n",
       "datos": "DONNÉES À RESTAURER",
       "exp": "Expérience",

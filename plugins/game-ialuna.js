@@ -1,1 +1,238 @@
-(function(_0x5b4087,_0x3e0688){const _0x7ebe91=_0x492c,_0x5414ad=_0x5b4087();while(!![]){try{const _0x1d63c2=-parseInt(_0x7ebe91(0x11b))/0x1+-parseInt(_0x7ebe91(0x11e))/0x2+parseInt(_0x7ebe91(0x146))/0x3*(parseInt(_0x7ebe91(0x13d))/0x4)+-parseInt(_0x7ebe91(0x14e))/0x5+parseInt(_0x7ebe91(0x120))/0x6*(parseInt(_0x7ebe91(0x123))/0x7)+-parseInt(_0x7ebe91(0x11c))/0x8+-parseInt(_0x7ebe91(0x136))/0x9*(-parseInt(_0x7ebe91(0x12f))/0xa);if(_0x1d63c2===_0x3e0688)break;else _0x5414ad['push'](_0x5414ad['shift']());}catch(_0xbc844e){_0x5414ad['push'](_0x5414ad['shift']());}}}(_0x4c23,0x677b5));import{isVoiceMessage,handleVoiceMessage}from'./voice-handler.js';import{getGroupDataForPlugin}from'../lib/funcion/pluginHelper.js';import{getConfig}from'../lib/funcConfig.js';function _0x4c23(){const _0x25f8e8=['decodeJid','user','contextInfo','fromMe','@g.us','map','9EMSrPh','next','Hola','\x20en\x20chat\x20','delete','modoadmin','participant','1933820AoaZiD','until','filter','@lid','find','text','get','messages','banned','3WWcgsA','key','size','messages.upsert','has','mutes','jid','message','2581720BzKTZo','length','lid','pushName','set','caption','videoMessage','includes','indexOf','@s.whatsapp.net','conversation','value','462885eUsVtu','1507680CMsEzb','cyan','445814cQQXjS','extendedTextMessage','667530XrGGId','data','now','7cQWlMj','string','name','keys','split','mentionedJid','replace','iaLunaActive','[Ignorado]\x20usuario\x20posible\x20bot\x20','log','remoteJid','isAdmin','12197470tDvVCi'];_0x4c23=function(){return _0x25f8e8;};return _0x4c23();}import{dispatchToPlugins}from'./pluginDispatch.js';import{isBanned}from'../plugins/lunaia/banchat-plugin.js';import _0x1f9c54 from'../plugins/lunaia/banchat-plugin.js';import{esBotIgnorado,MARCA_LUNA}from'../lib/funcion/botsIgnorados.js';import{etiquetaUsuarioParaLog,etiquetaChatParaLog,resolveJidToPhone}from'../lib/funcion/lid-resolver.js';function _0x492c(_0x1eb273,_0x545b32){_0x1eb273=_0x1eb273-0x119;const _0x4c23a3=_0x4c23();let _0x492c3b=_0x4c23a3[_0x1eb273];return _0x492c3b;}import{getOwnerNumbers}from'../lib/funcion/system-owners.js';import{cleanMessageText,esMencionSinContenido,tieneMencionPosible}from'../lib/funcion/mencion-sola.js';import _0x3c9bd8 from'chalk';export default function mentionListener(_0x34c1af){const _0x1f2795=_0x492c,_0x381e36=new Map(),_0x2cd141=new Map(),_0x3a607d=0x12c;let _0x4b9b32=null;function _0x4519c9(_0x1be0a3,_0x30e2c6){const _0x30bbea=_0x492c;_0x2cd141[_0x30bbea(0x148)]>=_0x3a607d&&_0x2cd141[_0x30bbea(0x13a)](_0x2cd141[_0x30bbea(0x126)]()[_0x30bbea(0x137)]()[_0x30bbea(0x11a)]),_0x2cd141[_0x30bbea(0x152)](_0x1be0a3,_0x30e2c6);}function _0x540418(_0x5790da){const _0x1b26d0=_0x492c;return _0x5790da['endsWith'](_0x1b26d0(0x134));}let _0x3016d0=null,_0x252fd2=0x0;function _0x41c792(){const _0x2a13d9=Date['now']();if(_0x2a13d9<_0x252fd2)return _0x3016d0;return _0x3016d0=getOwnerNumbers(),_0x252fd2=_0x2a13d9+0x2710,_0x3016d0;}function _0x39a9d4(_0x35f050){const _0xf7e537=_0x492c,_0x477e3a=String(_0x35f050||'')[_0xf7e537(0x129)](/\D/g,'');if(!_0x477e3a)return![];return _0x41c792()[_0xf7e537(0x155)](_0x477e3a);}function _0x1e0652(_0x26c552,_0x56cc44,_0x1e3c45){const _0x43fa3b=_0x492c;if(!_0x4b9b32)return![];const _0x31194c=_0x26c552['message']?.[_0x43fa3b(0x11f)]?.[_0x43fa3b(0x132)]?.['mentionedJid']||[];if(_0x56cc44[_0x43fa3b(0x155)]('@'+_0x4b9b32))return!![];const _0x290621=_0x34c1af[_0x43fa3b(0x130)](_0x4b9b32+_0x43fa3b(0x157)),_0x4158b0=(_0x1e3c45||[])[_0x43fa3b(0x141)](_0x14fb94=>_0x34c1af[_0x43fa3b(0x130)](_0x14fb94['id']||_0x14fb94['jid']||'')===_0x290621),_0x57a158=_0x4158b0?.['lid']||null,_0x4a295e=_0x34c1af&&_0x34c1af[_0x43fa3b(0x131)]&&(_0x34c1af[_0x43fa3b(0x131)][_0x43fa3b(0x150)]||_0x34c1af['user']['id'])||null;for(const _0x1f700c of _0x31194c){if(!_0x1f700c)continue;let _0x36e0a8=null;try{_0x36e0a8=_0x34c1af['decodeJid'](_0x1f700c);}catch{}const _0x1fcadc=_0x36e0a8?_0x36e0a8['includes'](_0x4b9b32):String(_0x1f700c)['replace'](/[^0-9]/g,'')['includes'](String(_0x4b9b32)['replace'](/[^0-9]/g,'')),_0x5a0c4c=_0x57a158&&(_0x36e0a8===_0x34c1af['decodeJid'](_0x57a158)||_0x1f700c===_0x57a158);if(_0x1fcadc||_0x5a0c4c)return!![];try{const _0x18aedd=resolveJidToPhone(_0x1f700c,_0x34c1af);if(_0x18aedd&&_0x18aedd['replace'](/[^0-9]/g,'')===String(_0x4b9b32)[_0x43fa3b(0x129)](/[^0-9]/g,''))return!![];}catch{}try{if(_0x4a295e&&_0x34c1af[_0x43fa3b(0x130)](_0x4a295e)===_0x34c1af[_0x43fa3b(0x130)](_0x1f700c))return!![];}catch{}if(typeof _0x1f700c===_0x43fa3b(0x124)&&_0x1f700c[_0x43fa3b(0x156)]('@')<0x0)try{const _0x5547e1=resolveJidToPhone(_0x1f700c+_0x43fa3b(0x140),_0x34c1af);if(_0x5547e1&&_0x5547e1[_0x43fa3b(0x129)](/[^0-9]/g,'')===String(_0x4b9b32)[_0x43fa3b(0x129)](/[^0-9]/g,''))return!![];}catch{}}return![];}function _0x299e12(_0x15d46a){const _0x53318d=_0x492c,_0x226863=_0x15d46a['key'][_0x53318d(0x12d)];if(_0x15d46a['key'][_0x53318d(0x133)])return!![];if(_0x226863==='status@broadcast')return!![];if(!_0x540418(_0x226863))return!![];return![];}_0x34c1af['ev']['on'](_0x1f2795(0x149),async _0x519e65=>{const _0x51b4aa=_0x1f2795;try{if(!_0x519e65?.[_0x51b4aa(0x144)]?.[0x0]?.[_0x51b4aa(0x14d)])return;const _0x2506d6=_0x519e65[_0x51b4aa(0x144)][0x0];if(_0x299e12(_0x2506d6))return;if(!tieneMencionPosible(_0x2506d6))return;const _0x3e24da=_0x2506d6[_0x51b4aa(0x147)][_0x51b4aa(0x13c)]||_0x2506d6['key'][_0x51b4aa(0x12d)],_0x5fd5e2=_0x2506d6['message']?.[_0x51b4aa(0x119)]||_0x2506d6[_0x51b4aa(0x14d)]?.[_0x51b4aa(0x11f)]?.['text']||'';if(_0x5fd5e2['includes'](MARCA_LUNA))return;if(esBotIgnorado(_0x3e24da,_0x2506d6[_0x51b4aa(0x147)][_0x51b4aa(0x12d)])){const _0x2c0bb7=_0x2506d6[_0x51b4aa(0x147)]['remoteJid'];console[_0x51b4aa(0x12c)](_0x3c9bd8[_0x51b4aa(0x11d)](_0x51b4aa(0x12b)+etiquetaUsuarioParaLog(_0x3e24da,_0x34c1af)+(_0x2c0bb7?_0x51b4aa(0x139)+etiquetaChatParaLog(_0x2c0bb7,_0x34c1af):'')));return;}const _0x8d34c1=_0x2506d6[_0x51b4aa(0x147)]['remoteJid'],_0x11551b=_0x2506d6[_0x51b4aa(0x147)]['id'],_0x2ecd8b=Date[_0x51b4aa(0x122)]();if(_0x381e36[_0x51b4aa(0x14a)](_0x11551b)&&_0x2ecd8b-_0x381e36[_0x51b4aa(0x143)](_0x11551b)<0x2710)return;_0x381e36[_0x51b4aa(0x152)](_0x11551b,_0x2ecd8b);if(_0x381e36[_0x51b4aa(0x148)]>0x64)for(const [_0x5b5c63,_0x5e315f]of _0x381e36['entries']()){if(_0x2ecd8b-_0x5e315f>0x493e0)_0x381e36[_0x51b4aa(0x13a)](_0x5b5c63);}!_0x4b9b32&&_0x34c1af[_0x51b4aa(0x131)]?.['id']&&(_0x4b9b32=_0x34c1af[_0x51b4aa(0x131)]['id'][_0x51b4aa(0x127)]('@')[0x0][_0x51b4aa(0x127)](':')[0x0]);if(!_0x4b9b32)return;const _0x508d13=global['db']?.[_0x51b4aa(0x121)]?.['settings']?.[_0x34c1af?.[_0x51b4aa(0x131)]?.['jid']];if(_0x508d13?.[_0x51b4aa(0x12a)]===![])return;try{if(getConfig(_0x8d34c1)?.['ia']===![])return;}catch{}const _0x27c4c6=_0x2506d6['key'][_0x51b4aa(0x13c)]||_0x2506d6[_0x51b4aa(0x147)][_0x51b4aa(0x12d)],_0x44643d=global['db']?.[_0x51b4aa(0x121)]?.['users']?.[_0x27c4c6];if(_0x44643d?.[_0x51b4aa(0x145)])return;const _0xfe4429=isBanned(_0x2506d6[_0x51b4aa(0x147)][_0x51b4aa(0x12d)]),_0x33dc02=_0x39a9d4(_0x27c4c6),_0x174596=await getGroupDataForPlugin(_0x34c1af,_0x8d34c1,_0x27c4c6),{participants:_0x8937e5}=_0x174596,_0x544997=getConfig(_0x8d34c1);if(_0x544997?.[_0x51b4aa(0x13b)]&&!_0x174596?.[_0x51b4aa(0x12e)]&&!_0x39a9d4(_0x27c4c6))return;let _0x3044aa=_0x27c4c6;if(_0x27c4c6[_0x51b4aa(0x155)](_0x51b4aa(0x140))){const _0x475d5f=(_0x8937e5||[])['find'](_0x4f73a3=>_0x4f73a3[_0x51b4aa(0x150)]===_0x27c4c6);if(_0x475d5f?.['id'])_0x3044aa=_0x34c1af[_0x51b4aa(0x130)](_0x475d5f['id']);}const _0x3e2ad6=_0x8d34c1+'_'+_0x3044aa,_0x1fb316=global['db']?.[_0x51b4aa(0x121)]?.[_0x51b4aa(0x14b)]?.[_0x3e2ad6];if(_0x1fb316){if(!_0x1fb316[_0x51b4aa(0x13e)]||Date[_0x51b4aa(0x122)]()<_0x1fb316[_0x51b4aa(0x13e)])return;delete global['db'][_0x51b4aa(0x121)][_0x51b4aa(0x14b)][_0x3e2ad6];}if(isVoiceMessage(_0x2506d6)){_0x1e0652(_0x2506d6,'',_0x8937e5)&&await handleVoiceMessage(_0x34c1af,_0x2506d6,_0x8d34c1,_0x381e36);return;}const _0x3b6e32=_0x2506d6[_0x51b4aa(0x14d)]['conversation']||_0x2506d6[_0x51b4aa(0x14d)][_0x51b4aa(0x11f)]?.[_0x51b4aa(0x142)]||_0x2506d6[_0x51b4aa(0x14d)]['imageMessage']?.['caption']||_0x2506d6[_0x51b4aa(0x14d)][_0x51b4aa(0x154)]?.[_0x51b4aa(0x153)]||'';if(!_0x3b6e32)return;if(!_0x1e0652(_0x2506d6,_0x3b6e32,_0x8937e5))return;const _0xccdf3d=cleanMessageText(_0x3b6e32,_0x2506d6,_0x4b9b32),_0x52aac4=esMencionSinContenido(_0xccdf3d),_0x1cbf84=_0x52aac4?_0x51b4aa(0x138):_0xccdf3d;if(_0xfe4429&&!_0x33dc02&&!_0x1f9c54['canHandle'](_0x1cbf84))return;const _0x1d6828=_0x2506d6['message']?.[_0x51b4aa(0x11f)]?.[_0x51b4aa(0x132)]?.[_0x51b4aa(0x128)]||[],_0x16427b=_0x174596?.['participants']||[],_0x5a8d68=_0x107b5c=>{const _0x3b0caf=_0x51b4aa;if(!_0x107b5c[_0x3b0caf(0x155)](_0x3b0caf(0x140)))return _0x34c1af[_0x3b0caf(0x130)](_0x107b5c);const _0x3927e0=_0x16427b[_0x3b0caf(0x141)](_0x1a1bdd=>_0x1a1bdd['id']===_0x107b5c||_0x34c1af[_0x3b0caf(0x130)](_0x1a1bdd[_0x3b0caf(0x150)]||'')===_0x34c1af[_0x3b0caf(0x130)](_0x107b5c));return _0x3927e0?_0x34c1af['decodeJid'](_0x3927e0['id']):_0x34c1af[_0x3b0caf(0x130)](_0x107b5c);},_0x3b1940=_0x34c1af[_0x51b4aa(0x130)](_0x4b9b32+_0x51b4aa(0x157)),_0x468a36=_0x16427b[_0x51b4aa(0x141)](_0x358946=>_0x34c1af[_0x51b4aa(0x130)](_0x358946['id'])===_0x3b1940),_0x4c2368=_0x468a36?.['lid']||null,_0x45baaf=_0x1d6828['filter'](_0x5ca69e=>{const _0x22c64c=_0x51b4aa;if(_0x5ca69e===_0x4c2368)return![];if(_0x4c2368&&_0x34c1af[_0x22c64c(0x130)](_0x5ca69e)===_0x34c1af['decodeJid'](_0x4c2368))return![];const _0x10ff5b=_0x5a8d68(_0x5ca69e);return!_0x10ff5b[_0x22c64c(0x155)](_0x4b9b32);})[_0x51b4aa(0x135)](_0xd6d48f=>_0x5a8d68(_0xd6d48f)),_0x35b321={};if(_0x1d6828[_0x51b4aa(0x14f)]){for(const _0x5d3380 of _0x16427b){const _0x2cd0f9=_0x34c1af[_0x51b4aa(0x130)](_0x5d3380['id']||_0x5d3380[_0x51b4aa(0x14c)]||''),_0x4a06ae=_0x5d3380[_0x51b4aa(0x125)]||_0x5d3380[_0x51b4aa(0x151)]||null,_0x47dd59=_0x2cd0f9[_0x51b4aa(0x127)]('@')[0x0];if(_0x2cd0f9)_0x4519c9(_0x2cd0f9,_0x4a06ae||_0x47dd59);if(_0x5d3380['lid']){const _0x5dedee=_0x34c1af['decodeJid'](_0x5d3380[_0x51b4aa(0x150)]);if(_0x5dedee)_0x4519c9(_0x5dedee,_0x4a06ae||_0x47dd59);}}for(const _0x28ffe0 of _0x1d6828){const _0x1f3206=_0x5a8d68(_0x28ffe0);if(_0x1f3206[_0x51b4aa(0x155)](_0x4b9b32))continue;const _0x2bdda4=_0x2cd141[_0x51b4aa(0x143)](_0x1f3206)||_0x2cd141[_0x51b4aa(0x143)](_0x34c1af['decodeJid'](_0x28ffe0)),_0xdfbb0a=_0x1f3206[_0x51b4aa(0x127)]('@')[0x0];if(_0xdfbb0a)_0x35b321[_0x1f3206]=_0x2bdda4||_0xdfbb0a;}}const _0x1bc08c={'conn':_0x34c1af,'msg':_0x2506d6,'jid':_0x8d34c1,'isGroup':!![],'isPrivate':![],'groupData':_0x174596,'mentionedJids':_0x45baaf,'mentionedNames':_0x35b321,'botNumber':_0x4b9b32,'mentionOnly':_0x52aac4},_0x2e6f04=_0x2506d6[_0x51b4aa(0x14d)]?.[_0x51b4aa(0x11f)]?.[_0x51b4aa(0x132)];_0x2e6f04?.[_0x51b4aa(0x128)]?.[_0x51b4aa(0x14f)]&&(_0x2e6f04[_0x51b4aa(0x128)]=_0x2e6f04[_0x51b4aa(0x128)][_0x51b4aa(0x13f)](_0x4ab246=>{const _0x189b10=_0x51b4aa,_0x5e6795=_0x34c1af[_0x189b10(0x130)](_0x4ab246);if(_0x4c2368&&(_0x4ab246===_0x4c2368||_0x5e6795===_0x34c1af['decodeJid'](_0x4c2368)))return![];return!_0x5e6795[_0x189b10(0x155)](_0x4b9b32);})),await dispatchToPlugins(_0x1cbf84,_0x1bc08c);}catch(_0x437996){}});}
+import { isVoiceMessage, handleVoiceMessage } from './voice-handler.js';
+import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
+import { getConfig } from '../lib/funcConfig.js';
+import { dispatchToPlugins } from './pluginDispatch.js';
+import { isBanned } from '../plugins/lunaia/banchat-plugin.js';
+import banchatPlugin from '../plugins/lunaia/banchat-plugin.js';
+import { esBotIgnorado, MARCA_LUNA } from '../lib/funcion/botsIgnorados.js';
+import { etiquetaUsuarioParaLog, etiquetaChatParaLog, resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
+import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
+import { cleanMessageText, esMencionSinContenido, tieneMencionPosible } from '../lib/funcion/mencion-sola.js';
+import { hayConfirmacionPendiente } from '../lib/funcion/confirmacion.js';
+import chalk from 'chalk';
+
+export default function mentionListener(conn) {
+  const recentMsgs = new Map();
+  const participantNames = new Map();
+  const PARTICIPANT_NAMES_MAX = 300;
+  let botNumber = null;
+
+  function rememberParticipantName(key, value) {
+    if (participantNames.size >= PARTICIPANT_NAMES_MAX) {
+      participantNames.delete(participantNames.keys().next().value);
+    }
+    participantNames.set(key, value);
+  }
+
+  function isGroupChat(jid) {
+    return jid.endsWith('@g.us');
+  }
+
+  let cachedOwnersCodes = null;
+  let cachedOwnersCodesAt = 0;
+
+  function getOwnerCodes() {
+    const now = Date['now']();
+    if (now < cachedOwnersCodesAt) return cachedOwnersCodes;
+    cachedOwnersCodes = getOwnerNumbers();
+    cachedOwnersCodesAt = now + 10000;
+    return cachedOwnersCodes;
+  }
+
+  function isOwnerNumber(id) {
+    const digits = String(id || '').replace(/\D/g, '');
+    if (!digits) return false;
+    return getOwnerCodes().includes(digits);
+  }
+
+  function isBotMentioned(msg, text, participants) {
+    if (!botNumber) return false;
+    const mentionedJid = msg['message']?.['extendedTextMessage']?.['contextInfo']?.['mentionedJid'] || [];
+    if (text.includes('@' + botNumber)) return true;
+    const botJid = conn.decodeJid(botNumber + '@s.whatsapp.net');
+    const botParticipant = (participants || []).find(p => conn.decodeJid(p.id || p.jid || '') === botJid);
+    const botLid = botParticipant?.['lid'] || null;
+    const lidPropio = (conn && conn.user && (conn.user.lid || conn.user.id)) || null;
+    for (const jid of mentionedJid) {
+      if (!jid) continue;
+      let decoded = null;
+      try { decoded = conn.decodeJid(jid); } catch {}
+      const matchesNumber = decoded ? decoded.includes(botNumber) : String(jid).replace(/[^0-9]/g, '').includes(String(botNumber).replace(/[^0-9]/g, ''));
+      const matchesLid = botLid && (decoded === conn.decodeJid(botLid) || jid === botLid);
+      if (matchesNumber || matchesLid) return true;
+      try {
+        const tel = resolveJidToPhone(jid, conn);
+        if (tel && tel.replace(/[^0-9]/g, '') === String(botNumber).replace(/[^0-9]/g, '')) return true;
+      } catch {}
+      try {
+        if (lidPropio && conn.decodeJid(lidPropio) === conn.decodeJid(jid)) return true;
+      } catch {}
+      if (typeof jid === 'string' && jid.indexOf('@') < 0) {
+        try {
+          const tel2 = resolveJidToPhone(jid + '@lid', conn);
+          if (tel2 && tel2.replace(/[^0-9]/g, '') === String(botNumber).replace(/[^0-9]/g, '')) return true;
+        } catch {}
+      }
+    }
+    return false;
+  }
+
+  function shouldSkipMessage(msg) {
+    const remoteJid = msg['key']['remoteJid'];
+    if (msg.key['fromMe']) return true;
+    if (remoteJid === 'status@broadcast') return true;
+    if (!isGroupChat(remoteJid)) return true;
+    return false;
+  }
+
+  conn.ev.on('messages.upsert', async upsert => {
+    try {
+      if (!upsert?.['messages']?.[0]?.['message']) return;
+      const msg = upsert.messages[0];
+      if (shouldSkipMessage(msg)) return;
+      const textoConfirmacion = msg['message']?.['conversation'] || msg['message']?.['extendedTextMessage']?.['text'] || '';
+      if (hayConfirmacionPendiente(msg['key']['remoteJid'], msg['key']['participant'] || msg['key']['remoteJid'], msg['key']['participantAlt'], textoConfirmacion)) return;
+      if (!tieneMencionPosible(msg)) return;
+      const posibleLunaJid = msg['key']['participant'] || msg['key']['remoteJid'];
+      const textoBruto = msg['message']?.['conversation'] || msg['message']?.['extendedTextMessage']?.['text'] || '';
+      if (textoBruto.includes(MARCA_LUNA)) return;
+      if (esBotIgnorado(posibleLunaJid, msg['key']['remoteJid'])) {
+        const ialunaChat = msg['key']['remoteJid'];
+        console.log(chalk.cyan(`[Ignorado] usuario posible bot ${etiquetaUsuarioParaLog(posibleLunaJid, conn)}${ialunaChat ? ` en chat ${etiquetaChatParaLog(ialunaChat, conn)}` : ''}`));
+        return;
+      }
+
+      const chatId = msg['key']['remoteJid'];
+      const msgId = msg['key'].id;
+      const now = Date['now']();
+      if (recentMsgs.has(msgId) && now - recentMsgs.get(msgId) < 10000) return;
+      recentMsgs.set(msgId, now);
+      if (recentMsgs.size > 100) {
+        for (const [id, ts] of recentMsgs.entries()) {
+          if (now - ts > 300000) recentMsgs.delete(id);
+        }
+      }
+
+      if (!botNumber && conn['user']?.id) {
+        botNumber = conn['user'].id.split('@')[0].split(':')[0];
+      }
+      if (!botNumber) return;
+
+      const chatSettings = global.db?.['data']?.['settings']?.[conn?.['user']?.['jid']];
+      if (chatSettings?.['iaLunaActive'] === false) return;
+      try { if (getConfig(chatId)?.ia === false) return; } catch {}
+
+      const senderId = msg['key']['participant'] || msg['key']['remoteJid'];
+      const userData = global.db?.['data']?.['users']?.[senderId];
+      if (userData?.['banned']) return;
+
+      const chatBaneado = isBanned(msg['key']['remoteJid']);
+      const remitenteOwner = isOwnerNumber(senderId);
+
+      const groupData = await getGroupDataForPlugin(conn, chatId, senderId);
+      const { participants } = groupData;
+
+      const chatCfg = getConfig(chatId);
+      if (chatCfg?.modoadmin && !groupData?.isAdmin && !isOwnerNumber(senderId)) return;
+
+      let senderJid = senderId;
+      if (senderId.includes('@lid')) {
+        const found = (participants || []).find(p => p['lid'] === senderId);
+        if (found?.id) senderJid = conn.decodeJid(found.id);
+      }
+
+      const muteKey = chatId + '_' + senderJid;
+      const muteData = global.db?.['data']?.['mutes']?.[muteKey];
+      if (muteData) {
+        if (!muteData['until'] || Date['now']() < muteData['until']) return;
+        delete global.db['data']['mutes'][muteKey];
+      }
+
+      if (isVoiceMessage(msg)) {
+        if (isBotMentioned(msg, '', participants)) {
+          await handleVoiceMessage(conn, msg, chatId, recentMsgs);
+        }
+        return;
+      }
+
+      const text = msg['message']['conversation']
+        || msg['message']['extendedTextMessage']?.['text']
+        || msg['message']['imageMessage']?.['caption']
+        || msg['message']['videoMessage']?.['caption']
+        || '';
+      if (!text) return;
+      if (!isBotMentioned(msg, text, participants)) return;
+
+      const textoLimpio = cleanMessageText(text, msg, botNumber);
+      const mentionOnly = esMencionSinContenido(textoLimpio);
+      const cleanText = mentionOnly ? 'Hola' : textoLimpio;
+      if (chatBaneado && !remitenteOwner && !banchatPlugin.canHandle(cleanText)) return;
+      const rawMentions = msg['message']?.['extendedTextMessage']?.['contextInfo']?.['mentionedJid'] || [];
+      const groupParticipants = groupData?.participants || [];
+
+      const resolveJid = jid => {
+        if (!jid.includes('@lid')) return conn.decodeJid(jid);
+        const found = groupParticipants.find(p => p['id'] === jid || conn.decodeJid(p.lid || '') === conn.decodeJid(jid));
+        return found ? conn.decodeJid(found.id) : conn.decodeJid(jid);
+      };
+
+      const botJid = conn.decodeJid(botNumber + '@s.whatsapp.net');
+      const botParticipant = groupParticipants.find(p => conn.decodeJid(p.id) === botJid);
+      const botLid = botParticipant?.['lid'] || null;
+
+      const mentionedJids = rawMentions
+        .filter(jid => {
+          if (jid === botLid) return false;
+          if (botLid && conn.decodeJid(jid) === conn.decodeJid(botLid)) return false;
+          const resolved = resolveJid(jid);
+          return !resolved.includes(botNumber);
+        })
+        .map(jid => resolveJid(jid));
+
+      const mentionedNames = {};
+      if (rawMentions.length) {
+        for (const participant of groupParticipants) {
+          const decoded = conn.decodeJid(participant.id || participant['jid'] || '');
+          const name = participant['name'] || participant['pushName'] || null;
+          const numberPart = decoded.split('@')[0];
+          if (decoded) rememberParticipantName(decoded, name || numberPart);
+          if (participant['lid']) {
+            const decodedLid = conn.decodeJid(participant['lid']);
+            if (decodedLid) rememberParticipantName(decodedLid, name || numberPart);
+          }
+        }
+        for (const jid of rawMentions) {
+          const decoded = resolveJid(jid);
+          if (decoded.includes(botNumber)) continue;
+          const name = participantNames.get(decoded) || participantNames.get(conn.decodeJid(jid));
+          const numberPart = decoded.split('@')[0];
+          if (numberPart) mentionedNames[decoded] = name || numberPart;
+        }
+      }
+
+      const context = {
+        conn,
+        msg,
+        jid: chatId,
+        isGroup: true,
+        isPrivate: false,
+        groupData,
+        mentionedJids,
+        mentionedNames,
+        botNumber,
+        mentionOnly
+      };
+
+      const contextInfoPre = msg['message']?.['extendedTextMessage']?.['contextInfo'];
+      if (contextInfoPre?.['mentionedJid']?.['length']) {
+        contextInfoPre['mentionedJid'] = contextInfoPre['mentionedJid'].filter(jid => {
+          const decoded = conn.decodeJid(jid);
+          if (botLid && (jid === botLid || decoded === conn.decodeJid(botLid))) return false;
+          return !decoded.includes(botNumber);
+        });
+      }
+
+      await dispatchToPlugins(cleanText, context);
+    } catch (err) {}
+  });
+}
