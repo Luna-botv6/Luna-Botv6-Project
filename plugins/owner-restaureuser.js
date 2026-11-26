@@ -3,7 +3,9 @@ import path from 'path';
 import { setUserStats } from '../lib/stats.js';
 import { resolverUsuarioObjetivo } from '../lib/funcion/resolver-usuario.js';
 import { esperarConfirmacion } from '../lib/funcion/confirmacion.js';
+import { limpiarResetEconomia, limpiarResetTodos } from '../lib/funcion/economia-reset-guard.js';
 import { notificarRestauracionEconomia } from '../lib/economiaReset.js';
+import { reemplazarClanes, restaurarClanUsuario } from '../lib/clanSystem.js';
 
 const BACKUP_DIR = './database/backups';
 
@@ -66,7 +68,9 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     for (const [key, user] of Object.entries(data.users || {})) {
       global.db.data.users[key] = user;
     }
+    reemplazarClanes(data.clanes || {});
     global.db.write?.();
+    limpiarResetTodos();
     return conn.sendMessage(m.chat, {
       text: `✅ *Restauración masiva completada.*\n\n👥 Usuarios: *${n}*\n💾 Copia: *${copia.nombre}*`
     }, { quoted: m });
@@ -169,6 +173,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     };
     if (info.banco && typeof info.banco === 'object') restaurado.banco = { ...info.banco };
     setUserStats(clave, restaurado);
+    limpiarResetEconomia(clave);
+    if (backup.clan?.nombre) restaurarClanUsuario(backup.clan.nombre, clave, !!backup.clan.eraLider, backup.clan.data || null);
     if (!global.db.data.users[clave]) global.db.data.users[clave] = {};
     Object.assign(global.db.data.users[clave], restaurado);
     await notificarRestauracionEconomia(res.numero, 'restoreuser');

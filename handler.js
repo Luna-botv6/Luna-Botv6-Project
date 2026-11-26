@@ -28,6 +28,7 @@ import { registerLidToJid } from './lib/funcion/userManager.js';
 import { gcIfNeeded } from './lib/gcHelper.js';
 import { isProtectedOwner, resolveTargetForOwnerCheck, rolProtegido } from './lib/funcion/ownerGuard.js';
 import { tienePoder } from './lib/funcion/subowner-perms.js';
+import { modoOwnerActivo, puedeUsarBot } from './lib/funcion/modo-owner.js';
 import { esPluginJuego, esPluginRpg, esMencionMasiva } from './lib/funcion/juegos-gate.js';
 import { estaBloqueado } from './lib/funcion/comandos-bloqueo.js';
 import { registrarActividad, sembrarIngreso } from './lib/funcion/inactivosDB.js';
@@ -498,6 +499,7 @@ export async function handler(chatUpdate) {
       if (typeof m.text !== 'string') m.text = '';
 
         const { isROwner, isOwner, isSubOwner, isMods, isPrems } = checkUserPermissions(m, this);
+        const modoOwner = modoOwnerActivo(this);
 
       if (opts['queque'] && m.text && !(isMods || isPrems)) {
         const queque = this.msgqueque;
@@ -591,6 +593,7 @@ export async function handler(chatUpdate) {
           );
 
           if (matchSin) {
+            if (!puedeUsarBot(modoOwner, { isOwner, isROwner, isSubOwner })) continue;
             m.plugin = name;
             if (this?.isSubBot && bloqueadoEnSubbot(cmdSin)) {
               m.reply(textoBloqueoSubbot());
@@ -639,6 +642,8 @@ export async function handler(chatUpdate) {
           const isAccept = checkCommandAcceptance(plugin, command);
 
           if (!isAccept) continue;
+
+          if (!puedeUsarBot(modoOwner, { isOwner, isROwner, isSubOwner })) continue;
 
           if (this?.isSubBot && bloqueadoEnSubbot(command)) {
             m.reply(textoBloqueoSubbot());

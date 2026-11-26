@@ -150,9 +150,9 @@ const handler = async (m, { conn, usedPrefix, command, args, isSubOwner }) => {
         },
         {
           emoji: '🌐',
-          title: 'Modo Privado & Grupos',
-          desc: 'Controla acceso privado y gestión de grupos\n_Solo owner_',
-          keys: ['antiprivado', 'modopublico', 'modogrupos']
+          title: 'Modo Privado, Grupos y Owner',
+          desc: 'Controla acceso privado, gestión de grupos y que solo owner/subowners usen el bot\n_Solo owner_',
+          keys: ['antiprivado', 'modopublico', 'modogrupos', 'modoowner']
         }
       ];
 
