@@ -93,6 +93,7 @@ export async function all(m) {
           const isAdmin = groupInfo.isAdmin;
           const isBotAdmin = groupInfo.isBotAdmin;
           const isOwnerCheck = global.owner.map(([num]) => num).includes(m.sender.replace(/[^0-9]/g, '')) || m.fromMe;
+          const user = global.db.data.users?.[m.sender] || {};
 
           if (plugin.admin && !isAdmin) {
             return this.reply(m.chat, t.solo_admins || 'Solo admins pueden usar este comando', m);
@@ -100,6 +101,10 @@ export async function all(m) {
 
           if (plugin.group && !m.isGroup) {
             return this.reply(m.chat, t.solo_grupos || 'Este comando solo funciona en grupos', m);
+          }
+
+          if (plugin.rowner && !isOwnerCheck) {
+            return this.reply(m.chat, t.solo_owner || 'Solo el owner puede usar este comando', m);
           }
 
           if (plugin.owner && !isOwnerCheck) {
@@ -129,7 +134,7 @@ export async function all(m) {
             participants,
             groupMetadata,
             user,
-            bot,
+            bot: {},
             isROwner,
             isOwner: isOwnerFinal,
             isSubOwner,
