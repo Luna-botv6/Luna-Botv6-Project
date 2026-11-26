@@ -7,7 +7,8 @@ const handler = async (m, {conn, text, usedPrefix, command}) => {
   let tradutor;
   try {
     const _translate = JSON.parse(fs.readFileSync(`./src/lunaidiomas/${idioma}.json`));
-    tradutor = _translate.plugins.cmd_add;
+    tradutor = _translate.plugins?.cmd_add;
+    if (!tradutor) throw new Error('cmd_add');
   } catch (e) {
     tradutor = {
       texto1: '❌ Responde a un sticker',
