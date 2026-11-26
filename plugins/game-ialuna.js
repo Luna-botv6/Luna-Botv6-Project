@@ -6,7 +6,8 @@ import { isBanned } from '../plugins/lunaia/banchat-plugin.js';
 import banchatPlugin from '../plugins/lunaia/banchat-plugin.js';
 import { esBotIgnorado, MARCA_LUNA } from '../lib/funcion/botsIgnorados.js';
 import { etiquetaUsuarioParaLog, etiquetaChatParaLog, resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
-import { getOwnerNumbers } from '../lib/funcion/system-owners.js';
+import { getOwnerNumbers, isSubOwnerJid } from '../lib/funcion/system-owners.js';
+import { modoOwnerActivo, puedeUsarBot } from '../lib/funcion/modo-owner.js';
 import { cleanMessageText, esMencionSinContenido, tieneMencionPosible } from '../lib/funcion/mencion-sola.js';
 import { hayConfirmacionPendiente } from '../lib/funcion/confirmacion.js';
 import chalk from 'chalk';
@@ -128,6 +129,7 @@ export default function mentionListener(conn) {
 
       const chatBaneado = isBanned(msg['key']['remoteJid']);
       const remitenteOwner = isOwnerNumber(senderId);
+      if (!puedeUsarBot(modoOwnerActivo(conn), { isOwner: remitenteOwner, isSubOwner: isSubOwnerJid(senderId, conn) })) return;
 
       const groupData = await getGroupDataForPlugin(conn, chatId, senderId);
       const { participants } = groupData;

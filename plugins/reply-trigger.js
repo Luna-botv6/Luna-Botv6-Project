@@ -4,6 +4,7 @@ import { checkUserPermissions } from '../lib/funcion/userPermissions.js';
 import { getGroupDataForPlugin } from '../lib/funcion/pluginHelper.js';
 import { dispatchToPlugins } from './pluginDispatch.js';
 import { resolveJidToPhone } from '../lib/funcion/lid-resolver.js';
+import { modoOwnerActivo, puedeUsarBot } from '../lib/funcion/modo-owner.js';
 
 const _cooldown = new Map();
 const COOLDOWN_MS = 1500;
@@ -171,7 +172,8 @@ handler.before = async function (m, { conn }) {
     const jid = m.key.remoteJid;
     if (!jid.endsWith('@g.us')) return;
 
-    const { isROwner, isOwner } = checkUserPermissions(m, conn);
+    const { isROwner, isOwner, isSubOwner } = checkUserPermissions(m, conn);
+    if (!puedeUsarBot(modoOwnerActivo(conn), { isOwner, isROwner, isSubOwner })) return;
     const chat = getConfig(jid);
     if (m.isGroup && chat?.modoadmin && !isOwner && !isROwner) return;
 

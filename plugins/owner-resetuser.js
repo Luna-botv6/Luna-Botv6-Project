@@ -3,13 +3,16 @@ import path from 'path';
 import { setUserStats, getTodosLosUsuarios } from '../lib/stats.js';
 import { resolverUsuarioObjetivo } from '../lib/funcion/resolver-usuario.js';
 import { esperarConfirmacion } from '../lib/funcion/confirmacion.js';
+import { marcarResetEconomia, marcarResetTodos } from '../lib/funcion/economia-reset-guard.js';
 import { notificarResetEconomia } from '../lib/economiaReset.js';
+import { getClanDeUsuario, quitarUsuarioDeClanes, resetTodosLosClanes, getClanes } from '../lib/clanSystem.js';
+import { mismoUsuario } from '../lib/identidad.js';
 
 const BACKUP_MS = 72 * 60 * 60 * 1000;
 const BACKUP_DIR = './database/backups';
 const MAX_COPIAS = 3;
 
-function escribirCopiaTodos(statsPrev, usersPrev, por) {
+function escribirCopiaTodos(statsPrev, usersPrev, por, clanesPrev) {
   try {
     if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
     const fecha = new Date();
@@ -23,7 +26,8 @@ function escribirCopiaTodos(statsPrev, usersPrev, por) {
       totalStats: Object.keys(statsPrev || {}).length,
       totalUsers: Object.keys(usersPrev || {}).length,
       stats: statsPrev || {},
-      users: usersPrev || {}
+      users: usersPrev || {},
+      clanes: clanesPrev || {}
     };
     const tmp = ruta + '.tmp';
     fs.writeFileSync(tmp, JSON.stringify(contenido));
@@ -85,7 +89,9 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
     const statsPrev = JSON.parse(JSON.stringify(getTodosLosUsuarios() || {}));
     const usersPrev = JSON.parse(JSON.stringify(global.db.data.users || {}));
-    const archivoCopia = escribirCopiaTodos(statsPrev, usersPrev, m.sender);
+    const clanesPrev = JSON.parse(JSON.stringify(getClanes() || {}));
+    marcarResetTodos();
+    const archivoCopia = escribirCopiaTodos(statsPrev, usersPrev, m.sender, clanesPrev);
     const resetData = {
       exp: 0, level: 0, money: 0, joincount: 0, premiumTime: 0,
       mysticcoins: 0, lunaCoins: 0, role: '🧰 Novato', limit: 10,
@@ -109,11 +115,13 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       }
       count++;
     }
+    resetTodosLosClanes();
     const copiaTexto = archivoCopia
       ? `\n\n💾 *Copia guardada:* ${archivoCopia}\n> Se guardan las últimas 3 copias (72 h). Restaurá con *.restoreuser todos*.`
       : '\n\n⚠️ *No se pudo guardar la copia de seguridad.*';
     return conn.sendMessage(m.chat, {
-      text: (t.todos_ok || '✅ *Reset masivo completado.*\n\n👥 Usuarios reseteados: *{n}*\n🗑️ Todos los datos de economia y experiencia han sido eliminados.').replace('{n}', count) + copiaTexto
+      text: (t.todos_ok || '✅ *Reset masivo completado.*\n\n👥 Usuarios reseteados: *{n}*\n🗑️ Todos los datos de economia y experiencia han sido eliminados.').replace('{n}', count) +
+        `\n🏰 *Clanes reseteados:* ${Object.keys(clanesPrev).length}` + copiaTexto
     }, { quoted: m });
   }
 
@@ -154,6 +162,9 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   }
 
   const stats = hallado.stats;
+  const clanInfo = getClanDeUsuario(hallado.key);
+  const eraLider = clanInfo ? mismoUsuario(clanInfo.clan.lider, hallado.key) : false;
+  const clanBackup = clanInfo ? { nombre: clanInfo.nombre, eraLider, data: JSON.parse(JSON.stringify(clanInfo.clan)) } : null;
   const previousStats = {
     exp: stats.exp || 0,
     level: stats.level || 0,
@@ -174,7 +185,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       `• ${t.dinero || 'Dinero'}: ${previousStats.money}\n` +
       `• MysticCoins: ${previousStats.mysticcoins}\n` +
       `• LunaCoins: ${previousStats.lunaCoins}\n` +
-      `• Banco: ${previousStats.banco.money || 0} diamantes\n\n` +
+      `• Banco: ${previousStats.banco.money || 0} diamantes\n` +
+      `• Clan: ${clanInfo ? clanInfo.nombre : 'sin clan'}\n\n` +
       (t.responder || '*Responde con "si" para confirmar o "no" para cancelar.*'),
     mentions: [res.mention]
   }, { quoted: m });
@@ -190,6 +202,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       userId: hallado.key,
       userNumber: res.numero,
       previousStats,
+      clan: clanBackup,
       resetBy: m.sender,
       resetDate: ahora,
       expiresAt: ahora + BACKUP_MS,
@@ -198,12 +211,12 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     global.db.data.backups[hallado.key] = backup;
     global.db.data.backups[`${res.numero}@s.whatsapp.net`] = backup;
 
+    marcarResetEconomia(hallado.key);
     setUserStats(hallado.key, {
       exp: 0, level: 0, money: 0, joincount: 0, premiumTime: 0,
       mysticcoins: 0, lunaCoins: 0, role: '🧰 Novato', limit: 10,
       dailyExp: 0, dailyMoney: 0, dailyMines: 0, banco: bancoLimpio()
     });
-
     if (global.db.data.users[hallado.key]) {
       Object.assign(global.db.data.users[hallado.key], {
         exp: 0,
@@ -218,6 +231,12 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         banco: bancoLimpio()
       });
     }
+    const clanRes = quitarUsuarioDeClanes(hallado.key);
+    const clanTexto = clanRes
+      ? clanRes.disuelto
+        ? `🏰 *Clan:* ${clanRes.nombre} disuelto (eras el único miembro).`
+        : `🏰 *Clan:* saliste de ${clanRes.nombre}${clanRes.eraLider ? ' y se transfirió el liderazgo.' : '.'}`
+      : '';
     if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = {};
     global.db.data.users[m.sender].lastResetUser = ahora;
     global.db.write?.();
@@ -228,8 +247,9 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         `• ${t.exp || 'Experiencia'}: ${previousStats.exp.toLocaleString()}\n` +
         `• Nivel: ${previousStats.level}\n` +
         `• ${t.dinero || 'Dinero'}: ${previousStats.money.toLocaleString()}\n` +
-        `• Banco: ${previousStats.banco.money.toLocaleString()} diamantes\n\n` +
-        `💾 ${(t.valido || 'para restaurar (valido 24h)').replace('24h', '72h')}\n` +
+        `• Banco: ${previousStats.banco.money.toLocaleString()} diamantes\n` +
+        (clanTexto ? `${clanTexto}\n` : '') +
+        `\n💾 ${(t.valido || 'para restaurar (valido 24h)').replace('24h', '72h')}\n` +
         `🔄 Usa \`${usedPrefix}restoreuser @${res.numero}\``,
       mentions: [res.mention]
     }, { quoted: m });
